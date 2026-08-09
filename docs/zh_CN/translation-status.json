@@ -1,0 +1,121 @@
+{
+  "translated": 0,
+  "total": 4337,
+  "files": {
+    "RELEASE.md": {
+      "translated": 0,
+      "total": 24,
+      "state": "pending"
+    },
+    "TRANSLATIONS.md": {
+      "translated": 0,
+      "total": 65,
+      "state": "pending"
+    },
+    "adapter-coverage.md": {
+      "translated": 0,
+      "total": 216,
+      "state": "pending"
+    },
+    "block-inspector.md": {
+      "translated": 0,
+      "total": 125,
+      "state": "pending"
+    },
+    "block-suites.md": {
+      "translated": 0,
+      "total": 125,
+      "state": "pending"
+    },
+    "code-snippets.md": {
+      "translated": 0,
+      "total": 90,
+      "state": "pending"
+    },
+    "connections-center.md": {
+      "translated": 0,
+      "total": 99,
+      "state": "pending"
+    },
+    "content-blocks.md": {
+      "translated": 0,
+      "total": 116,
+      "state": "pending"
+    },
+    "core-gaps.md": {
+      "translated": 0,
+      "total": 207,
+      "state": "pending"
+    },
+    "editor-direction.md": {
+      "translated": 0,
+      "total": 130,
+      "state": "pending"
+    },
+    "editor-roadmap.md": {
+      "translated": 0,
+      "total": 228,
+      "state": "pending"
+    },
+    "for-plugin-authors.md": {
+      "translated": 0,
+      "total": 790,
+      "state": "pending"
+    },
+    "form-plugins.md": {
+      "translated": 0,
+      "total": 70,
+      "state": "pending"
+    },
+    "full-ui-adapters.md": {
+      "translated": 0,
+      "total": 278,
+      "state": "pending"
+    },
+    "goals.md": {
+      "translated": 0,
+      "total": 38,
+      "state": "pending"
+    },
+    "license-manager.md": {
+      "translated": 0,
+      "total": 447,
+      "state": "pending"
+    },
+    "mail-plugins.md": {
+      "translated": 0,
+      "total": 27,
+      "state": "pending"
+    },
+    "native-editors.md": {
+      "translated": 0,
+      "total": 251,
+      "state": "pending"
+    },
+    "page-builders.md": {
+      "translated": 0,
+      "total": 106,
+      "state": "pending"
+    },
+    "plugin-support.md": {
+      "translated": 0,
+      "total": 296,
+      "state": "pending"
+    },
+    "shim-tutorial.md": {
+      "translated": 0,
+      "total": 133,
+      "state": "pending"
+    },
+    "user-guide.md": {
+      "translated": 0,
+      "total": 244,
+      "state": "pending"
+    },
+    "v1-readiness.md": {
+      "translated": 0,
+      "total": 232,
+      "state": "pending"
+    }
+  }
+}
