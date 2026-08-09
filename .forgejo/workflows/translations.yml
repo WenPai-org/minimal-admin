@@ -1,0 +1,63 @@
+name: Synchronize approved translations
+
+on:
+  schedule:
+    - cron: "47 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: minimal-admin-translations
+  cancel-in-progress: false
+
+jobs:
+  synchronize:
+    runs-on: linux-arm64
+    timeout-minutes: 20
+    steps:
+      - name: Checkout downstream repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Pull current GlotPress translations
+        shell: bash
+        run: tools/pull_translations.sh
+
+      - name: Validate package contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/build_release.py --root "$GITHUB_WORKSPACE"
+          python3 tools/verify_release.py --root "$GITHUB_WORKSPACE"
+          ZIP="$GITHUB_WORKSPACE/dist/minimal-admin-$(jq -r .version manifest.json).zip"
+          unzip -Z1 "$ZIP" | grep -q '^minimal-admin/languages/minimal-admin-zh_CN.po$'
+          unzip -Z1 "$ZIP" | grep -q '^minimal-admin/languages/minimal-admin-zh_TW.po$'
+
+      - name: Commit changed catalogs
+        shell: bash
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          git add languages/minimal-admin-zh_CN.* languages/minimal-admin-zh_TW.*
+          if git diff --cached --quiet; then
+            echo "Approved catalogs are unchanged"
+            exit 0
+          fi
+          [ -n "$RELEASE_TOKEN" ] || { echo "RELEASE_TOKEN is missing" >&2; exit 1; }
+          git config user.name "FeiCode Translation Bot"
+          git config user.email "translation-bot@wenpai.org"
+          git commit -m "i18n: synchronize approved Chinese translations"
+          ASKPASS=$(mktemp)
+          trap 'rm -f "$ASKPASS"' EXIT
+          cat > "$ASKPASS" <<'EOF'
+          #!/bin/sh
+          case "$1" in
+            *Username*) printf '%s\n' 'kekechong' ;;
+            *Password*) printf '%s\n' "$RELEASE_TOKEN" ;;
+          esac
+          EOF
+          chmod 700 "$ASKPASS"
+          git config --local --unset-all http.https://feicode.com/.extraheader || true
+          GIT_CONFIG_GLOBAL=/dev/null GIT_ASKPASS="$ASKPASS" GIT_TERMINAL_PROMPT=0 \
+            git push origin HEAD:main

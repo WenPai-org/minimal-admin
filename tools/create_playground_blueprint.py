@@ -12,6 +12,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--plugin-url", required=True)
     parser.add_argument("--version", required=True)
+    parser.add_argument("--locale", choices=("zh_CN", "zh_TW"))
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
 
@@ -46,6 +47,28 @@ def main() -> int:
             {"step": "wp-cli", "command": version_check},
         ],
     }
+    if args.locale:
+        blueprint["steps"].extend(
+            [
+                {
+                    "step": "wp-cli",
+                    "command": f"wp option update WPLANG {args.locale} --user=admin",
+                },
+                {
+                    "step": "wp-cli",
+                    "command": f"wp user meta update admin locale {args.locale} --user=admin",
+                },
+                {
+                    "step": "wp-cli",
+                    "command": (
+                        "wp eval 'if ( get_user_locale() !== \""
+                        f"{args.locale}"
+                        "\" ) { fwrite( STDERR, \"Locale activation failed\\n\" ); "
+                        "exit( 1 ); } echo get_user_locale();' --user=admin"
+                    ),
+                },
+            ]
+        )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(blueprint, indent=2) + "\n")
     return 0
