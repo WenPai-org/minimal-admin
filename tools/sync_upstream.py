@@ -153,9 +153,9 @@ def main() -> int:
         raise SystemExit("source is not a Minn Admin checkout")
     if not re.fullmatch(r"v\d+\.\d+\.\d+", args.upstream_tag):
         raise SystemExit("upstream tag must be a stable vX.Y.Z tag")
-    expected = args.upstream_tag.removeprefix("v") + ".1"
-    if args.version != expected:
-        raise SystemExit(f"downstream version must be {expected}")
+    upstream_version = args.upstream_tag.removeprefix("v")
+    if not re.fullmatch(re.escape(upstream_version) + r"\.[1-9][0-9]*", args.version):
+        raise SystemExit(f"downstream version must be {upstream_version}.N")
     if not re.fullmatch(r"[0-9a-f]{40}", args.upstream_commit):
         raise SystemExit("upstream commit must be a full SHA-1")
 

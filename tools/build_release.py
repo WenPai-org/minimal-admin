@@ -48,7 +48,8 @@ def main() -> int:
     dist.mkdir(parents=True, exist_ok=True)
     zip_path = dist / f"minimal-admin-{version}.zip"
 
-    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+    # Store entries without deflate so byte output is identical across Python/zlib builds.
+    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_STORED) as archive:
         for relative in relative_files:
             source = root / relative
             if not source.is_file():
@@ -62,7 +63,7 @@ def main() -> int:
             mode = source.stat().st_mode
             permissions = 0o755 if mode & stat.S_IXUSR else 0o644
             info.external_attr = (stat.S_IFREG | permissions) << 16
-            info.compress_type = zipfile.ZIP_DEFLATED
+            info.compress_type = zipfile.ZIP_STORED
             archive.writestr(info, data)
 
     checksum = hashlib.sha256(zip_path.read_bytes()).hexdigest()

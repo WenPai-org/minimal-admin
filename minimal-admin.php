@@ -3,7 +3,7 @@
  * Plugin Name:       Minimal Admin
  * Plugin URI:        https://feicode.com/WenPai-org/minimal-admin
  * Description:       A reimagined WordPress admin experience. Fast, focused and beautiful. Served at /minimal-admin/.
- * Version:           0.25.0.1
+ * Version:           0.25.0.2
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            WenPai.org
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MINIMAL_ADMIN_VERSION', '0.25.0.1' );
+define( 'MINIMAL_ADMIN_VERSION', '0.25.0.2' );
 define( 'MINIMAL_ADMIN_FILE', __FILE__ );
 define( 'MINIMAL_ADMIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MINIMAL_ADMIN_URL', plugin_dir_url( __FILE__ ) );
