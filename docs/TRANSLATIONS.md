@@ -39,8 +39,8 @@ Run the download locally with:
 tools/pull_translations.sh
 ```
 
-The command requires `curl`, GNU gettext `msgfmt`, and WP-CLI with the `i18n`
-command. Its output is written to `languages/minimal-admin-zh_CN.*` and
+The command requires `curl`, GNU gettext `msgfmt`, and Python 3. Its output is
+written to `languages/minimal-admin-zh_CN.*` and
 `languages/minimal-admin-zh_TW.*`.
 
 ## Machine translation boundary
