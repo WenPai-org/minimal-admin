@@ -23,7 +23,8 @@ pull_locale() {
 	tmp=$(mktemp)
 	trap 'rm -f "$tmp"' RETURN
 
-	curl --fail --silent --show-error --location --retry 3 --retry-all-errors \
+	curl --fail --silent --show-error --location \
+		--connect-timeout 15 --max-time 90 --retry 2 --retry-delay 5 --retry-all-errors \
 		"$BASE_URL/projects/$PROJECT/$gp_locale/default/export-translations/?format=po" \
 		-o "$tmp"
 	grep -q '^msgid ""' "$tmp" || {
