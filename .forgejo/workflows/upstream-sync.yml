@@ -92,5 +92,6 @@ jobs:
           esac
           EOF
           chmod 700 "$ASKPASS"
+          git config --local --unset-all http.https://feicode.com/.extraheader || true
           GIT_CONFIG_GLOBAL=/dev/null GIT_ASKPASS="$ASKPASS" GIT_TERMINAL_PROMPT=0 \
             git push --atomic origin HEAD:main "refs/tags/v$VERSION"
