@@ -5,6 +5,7 @@ import importlib.util
 import sys
 import tempfile
 import unittest
+import gettext
 from pathlib import Path
 
 
@@ -37,6 +38,24 @@ class DocsI18nTest(unittest.TestCase):
             source.write_text("# Visible heading\n\n```bash\nnever translate this command\n```\n")
             segments = DOCS_I18N.numbered_segments(source, docs)
             self.assertEqual(["Visible heading"], [segment.original for _, segment in segments])
+
+    def test_pending_catalog_does_not_publish_english_copy(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            docs = root / "docs"
+            output = root / "zh_CN"
+            docs.mkdir()
+            (docs / "guide.md").write_text("# Visible heading\n")
+            catalog = root / "catalog.mo"
+            catalog.write_bytes(b"\xde\x12\x04\x95" + b"\x00" * 24)
+            original = gettext.GNUTranslations
+            try:
+                gettext.GNUTranslations = lambda _stream: gettext.NullTranslations()  # type: ignore[assignment]
+                DOCS_I18N.render(docs, catalog, output)
+            finally:
+                gettext.GNUTranslations = original
+            self.assertFalse((output / "guide.md").exists())
+            self.assertTrue((output / "translation-status.json").exists())
 
 
 if __name__ == "__main__":
