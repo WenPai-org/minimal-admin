@@ -1,121 +1,121 @@
 {
-  "translated": 0,
+  "translated": 4338,
   "total": 4338,
   "files": {
     "RELEASE.md": {
-      "translated": 0,
+      "translated": 24,
       "total": 24,
-      "state": "pending"
+      "state": "partial"
     },
     "TRANSLATIONS.md": {
-      "translated": 0,
+      "translated": 66,
       "total": 66,
-      "state": "pending"
+      "state": "partial"
     },
     "adapter-coverage.md": {
-      "translated": 0,
+      "translated": 216,
       "total": 216,
-      "state": "pending"
+      "state": "partial"
     },
     "block-inspector.md": {
-      "translated": 0,
+      "translated": 125,
       "total": 125,
-      "state": "pending"
+      "state": "partial"
     },
     "block-suites.md": {
-      "translated": 0,
+      "translated": 125,
       "total": 125,
-      "state": "pending"
+      "state": "partial"
     },
     "code-snippets.md": {
-      "translated": 0,
+      "translated": 90,
       "total": 90,
-      "state": "pending"
+      "state": "partial"
     },
     "connections-center.md": {
-      "translated": 0,
+      "translated": 99,
       "total": 99,
-      "state": "pending"
+      "state": "partial"
     },
     "content-blocks.md": {
-      "translated": 0,
+      "translated": 116,
       "total": 116,
-      "state": "pending"
+      "state": "partial"
     },
     "core-gaps.md": {
-      "translated": 0,
+      "translated": 207,
       "total": 207,
-      "state": "pending"
+      "state": "partial"
     },
     "editor-direction.md": {
-      "translated": 0,
+      "translated": 130,
       "total": 130,
-      "state": "pending"
+      "state": "partial"
     },
     "editor-roadmap.md": {
-      "translated": 0,
+      "translated": 228,
       "total": 228,
-      "state": "pending"
+      "state": "partial"
     },
     "for-plugin-authors.md": {
-      "translated": 0,
+      "translated": 790,
       "total": 790,
-      "state": "pending"
+      "state": "partial"
     },
     "form-plugins.md": {
-      "translated": 0,
+      "translated": 70,
       "total": 70,
-      "state": "pending"
+      "state": "partial"
     },
     "full-ui-adapters.md": {
-      "translated": 0,
+      "translated": 278,
       "total": 278,
-      "state": "pending"
+      "state": "partial"
     },
     "goals.md": {
-      "translated": 0,
+      "translated": 38,
       "total": 38,
-      "state": "pending"
+      "state": "partial"
     },
     "license-manager.md": {
-      "translated": 0,
+      "translated": 447,
       "total": 447,
-      "state": "pending"
+      "state": "partial"
     },
     "mail-plugins.md": {
-      "translated": 0,
+      "translated": 27,
       "total": 27,
-      "state": "pending"
+      "state": "partial"
     },
     "native-editors.md": {
-      "translated": 0,
+      "translated": 251,
       "total": 251,
-      "state": "pending"
+      "state": "partial"
     },
     "page-builders.md": {
-      "translated": 0,
+      "translated": 106,
       "total": 106,
-      "state": "pending"
+      "state": "partial"
     },
     "plugin-support.md": {
-      "translated": 0,
+      "translated": 296,
       "total": 296,
-      "state": "pending"
+      "state": "partial"
     },
     "shim-tutorial.md": {
-      "translated": 0,
+      "translated": 133,
       "total": 133,
-      "state": "pending"
+      "state": "partial"
     },
     "user-guide.md": {
-      "translated": 0,
+      "translated": 244,
       "total": 244,
-      "state": "pending"
+      "state": "partial"
     },
     "v1-readiness.md": {
-      "translated": 0,
+      "translated": 232,
       "total": 232,
-      "state": "pending"
+      "state": "partial"
     }
   }
 }

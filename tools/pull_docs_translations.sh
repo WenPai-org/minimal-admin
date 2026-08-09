@@ -35,6 +35,8 @@ pull_locale() {
 	}
 	mv "$tmp" "$po"
 	chmod 0644 "$po"
+	python3 "$ROOT/tools/docs_i18n.py" normalize-po \
+		--pot "$ROOT/languages/minimal-admin-docs.pot" --po "$po"
 	msgfmt --check --output-file "$mo" "$po"
 	python3 "$ROOT/tools/docs_i18n.py" render \
 		--docs "$ROOT/docs" --mo "$mo" --output "$ROOT/docs/$wp_locale"

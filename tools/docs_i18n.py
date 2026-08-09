@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import gettext
+import html
 import json
 import re
 from dataclasses import dataclass
@@ -192,6 +193,58 @@ def render(docs_root: Path, mo_path: Path, output_root: Path) -> None:
     print(f"Rendered {translated}/{total} reviewed documentation strings to {output_root}")
 
 
+def po_value(line: str, directive: str) -> str:
+    if not line.startswith(directive + " "):
+        raise ValueError(f"expected {directive} directive")
+    return json.loads(line[len(directive) + 1 :])
+
+
+def normalize_exported_po(pot_path: Path, po_path: Path) -> None:
+    """Restore source msgids after locale punctuation filters alter GP exports."""
+    by_reference: dict[str, tuple[str, str]] = {}
+    for block in pot_path.read_text().split("\n\n"):
+        lines = block.splitlines()
+        reference_line = next((line for line in lines if line.startswith("#: ")), None)
+        context_line = next((line for line in lines if line.startswith("msgctxt ")), None)
+        message_line = next((line for line in lines if line.startswith("msgid ")), None)
+        if not reference_line or not context_line or not message_line:
+            continue
+        context = po_value(context_line, "msgctxt")
+        message = po_value(message_line, "msgid")
+        for reference in reference_line.removeprefix("#: ").split():
+            by_reference[reference] = (context, message)
+
+    normalized: list[str] = []
+    changed = 0
+    for block in po_path.read_text().split("\n\n"):
+        lines = block.splitlines()
+        reference_line = next((line for line in lines if line.startswith("#: ")), None)
+        context_index = next((i for i, line in enumerate(lines) if line.startswith("msgctxt ")), None)
+        message_index = next((i for i, line in enumerate(lines) if line.startswith("msgid ")), None)
+        translation_index = next((i for i, line in enumerate(lines) if line.startswith("msgstr ")), None)
+        if reference_line and context_index is not None and message_index is not None:
+            references = reference_line.removeprefix("#: ").split()
+            sources = {by_reference[reference] for reference in references if reference in by_reference}
+            if len(sources) != 1:
+                raise ValueError(f"exported PO references do not identify one source: {references}")
+            context, message = sources.pop()
+            replacement_context = "msgctxt " + po_quote(context)
+            replacement_message = "msgid " + po_quote(message)
+            if lines[context_index] != replacement_context or lines[message_index] != replacement_message:
+                changed += 1
+            lines[context_index] = replacement_context
+            lines[message_index] = replacement_message
+        if translation_index is not None:
+            translation = po_value(lines[translation_index], "msgstr")
+            decoded = html.unescape(translation)
+            if decoded != translation:
+                changed += 1
+                lines[translation_index] = "msgstr " + po_quote(decoded)
+        normalized.append("\n".join(lines))
+    po_path.write_text("\n\n".join(normalized))
+    print(f"Normalized {changed} GlotPress punctuation changes in {po_path}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -203,11 +256,16 @@ def main() -> int:
     render_parser.add_argument("--docs", type=Path, default=Path("docs"))
     render_parser.add_argument("--mo", type=Path, required=True)
     render_parser.add_argument("--output", type=Path, required=True)
+    normalize_parser = subparsers.add_parser("normalize-po")
+    normalize_parser.add_argument("--pot", type=Path, required=True)
+    normalize_parser.add_argument("--po", type=Path, required=True)
     args = parser.parse_args()
     if args.command == "extract":
         extract(args.docs.resolve(), args.output.resolve(), args.version)
-    else:
+    elif args.command == "render":
         render(args.docs.resolve(), args.mo.resolve(), args.output.resolve())
+    else:
+        normalize_exported_po(args.pot.resolve(), args.po.resolve())
     return 0
 
 

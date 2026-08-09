@@ -33,6 +33,14 @@ jobs:
           ZIP="$GITHUB_WORKSPACE/dist/minimal-admin-$(jq -r .version manifest.json).zip"
           unzip -Z1 "$ZIP" | grep -q '^minimal-admin/languages/minimal-admin-zh_CN.po$'
           unzip -Z1 "$ZIP" | grep -q '^minimal-admin/languages/minimal-admin-zh_TW.po$'
+          for LOCALE in zh_CN zh_TW; do
+            STATUS="$GITHUB_WORKSPACE/docs/$LOCALE/translation-status.json"
+            TRANSLATED=$(jq -r .translated "$STATUS")
+            TOTAL=$(jq -r .total "$STATUS")
+            if [ "$TRANSLATED" = "$TOTAL" ] && [ "$TOTAL" -gt 0 ]; then
+              unzip -Z1 "$ZIP" | grep -q "^minimal-admin/docs/$LOCALE/user-guide.md$"
+            fi
+          done
 
       - name: Commit changed catalogs
         shell: bash
