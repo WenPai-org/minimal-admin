@@ -1,0 +1,271 @@
+# Adapter coverage matrix
+
+Living checklist for **bundled** adapters: which Minimal surface primitives each
+one uses, last reviewed, and deliberate deep-links. Maintained by the
+**Adapter sweep** runbook in the `dev-minimal-admin` skill (`/dev-minimal-admin sweep`).
+
+This is **not** the marketing map. For "what plugins show up in Minimal," see
+`plugin-support.md`. For descriptor contracts, see `for-plugin-authors.md`.
+For the full-UI ladder (form engine, settings mappers, Rung 3), see
+`full-ui-adapters.md`.
+
+## How to read the matrix
+
+| Cell | Meaning |
+|---|---|
+| **Y** | Wired and useful for daily ops |
+| **—** | Not applicable (plugin has no such concept, or a thin shim is enough) |
+| **L** | Deliberate deep link to wp-admin / vendor UI (canvas, OAuth, condition builder) |
+| **·** | Possible Axis A gap: Minimal has the primitive; this adapter does not use it yet |
+
+Primitives (columns):
+
+| Col | Surface primitive |
+|---|---|
+| **list** | `collection` (paginated list + columns) |
+| **tabs** | Status/filter tabs or search on the list |
+| **bulk** | Multi-select bulk actions |
+| **detail** | Detail modal / `sectionsRoute` |
+| **manage** | Second collection (`manage`) |
+| **status** | Status card (`status.route`) |
+| **chart** | Status-card chart series |
+| **settings** | Surface `settings` (or settings-only) |
+| **views** | Extra list views (`views[]`) |
+| **suite** | Playwright suite under `tests/` |
+
+Do **not** treat missing cells as automatic work. Compare each provider to its
+**family reference** first. A thin log shim that matches siblings is done.
+
+## Families (surface adapters)
+
+Seeded 2026-07-12 from adapter sources + recent expansion rounds. Re-check
+on each sweep; update cells and `Reviewed` when inventory finds drift.
+
+### mail
+
+Reference depth: **Gravity SMTP**. Family doc: `mail-plugins.md`.
+
+| Adapter | list | tabs | bulk | detail | manage | status | chart | settings | views | suite | Reviewed | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| gravity-smtp | Y | Y | Y | Y | — | Y | Y | Y | Y | Y | 2026-07-15 | Settings, Suppressions, Debug log, Routing (toggle/delete), Filtered tab; **single + bulk log delete** via Event_Model; condition authoring = **L** |
+| fluent-smtp | Y | Y | Y | Y | — | Y | Y | Y | · | Y | 2026-08-06 | Status + chart + tabs; search + delete; **sections detail** (pill, sandboxed HTML body, provider-reply peek, **Resends trail**); **settings tab** (default/fallback connection, logging, retention, simulation via their Settings model; connection wizard = **L**); **2.3.0 catch-up**: resend via their `resendEmailFromLog` (trail + no duplicate row), "Resend to…" override action, ConnectionHealth status-card + System rows, caps via `fluent_mail/manage_capability` |
+| post-smtp | Y | Y | Y | Y | — | Y | Y | · | · | Y | 2026-07-17 | Status + chart + tabs; resend; search + delete; **sections detail** (pill, HTML body, failure code row); transcript still not exposed |
+| wp-mail-smtp | Y | Y | · | Y | — | · | · | · | · | Y | 2026-07-14 | Free = debug events only; full log is Pro |
+| wp-mail-logging | Y | Y | Y | Y | — | Y | Y | · | · | Y | 2026-07-17 | Log-only; bulk delete; status + chart; **sections detail** (pill, HTML body, raw headers + error code rows) |
+| suremails | Y | Y | Y | Y | — | Y | Y | · | · | Y | 2026-07-17 | Wave B: {prefix}suremails_email_log; sent/failed tabs; search; single+bulk delete; status+chart; sections detail; DB-tz→UTC helper; installed-inactive |
+| site-mailer | Y | Y | Y | Y | — | Y | Y | · | · | Y | 2026-07-17 | Wave B: site_mail_logs (Elementor cloud sender); delivered/failed tabs; search; delete; status+chart; sections detail; no local resend (cloud); installed-inactive |
+
+### forms
+
+Reference depth: **Gravity Forms**.
+
+| Adapter | list | tabs | bulk | detail | manage | status | chart | settings | views | suite | Reviewed | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| gravity-forms | Y | Y | Y | Y | Y | · | · | Y | Y | Y | 2026-07-17 | Form settings (item), Notifications view, **Feeds view** (add-on integrations: toggle/delete/deep-link; config mapper deferred, see full-ui-adapters); form builder = **L**; status/chart not needed for GF depth |
+| fluent-forms | Y | Y | Y | Y | Y | Y | · | · | · | Y | 2026-08-06 | Unread/spam/trash tabs + bulk; suite `fluent-forms` (24); active fixture |
+| elementor-forms | Y | Y | · | Y | · | · | · | · | · | · | 2026-07-14 | Elementor canvas = **L** |
+| cf7-flamingo | Y | Y | Y | Y | Y | Y | · | · | · | Y | 2026-08-06 | CF7 builder = **L**; bulk restore/delete already wired (matrix was stale) |
+| cfdb7 | Y | Y | Y | Y | · | · | · | · | · | Y | 2026-07-15 | bulk delete already wired (matrix was stale) |
+| ninja-forms | Y | Y | Y | Y | Y | Y | · | · | · | Y | 2026-08-06 | bulk trash/delete already wired (matrix was stale) |
+| forminator | Y | Y | Y | Y | Y | Y | · | · | · | Y | 2026-08-06 | Tabs + bulk + search present (matrix was stale) |
+| formidable | Y | Y | Y | Y | Y | · | · | · | · | Y | 2026-07-14 | Tabs + bulk + search present (matrix was stale) |
+| everest-forms | Y | Y | Y | Y | Y | Y | · | · | · | Y | 2026-08-06 | Received/Spam/Trash + bulk; suite `everest-forms` |
+| sureforms | Y | Y | Y | Y | — | Y | · | · | · | Y | 2026-07-17 | Wave B: {prefix}srfm_entries (form_data JSON keyed by label → contact-card entries); per-form tabs; read/unread/trash filter + status actions; search; delete; status card; installed-inactive |
+| wpforms | Y | Y | Y | Y | — | Y | · | · | · | Y | 2026-08-06 | Pro-only entries ({prefix}wpforms_entries: fields JSON, `date` UTC, viewed/starred flags, ''/spam/trash statuses); per-form tabs; unread/read/starred/spam/trash filter; search over fields JSON; star + read + spam/trash/restore actions (writes via their entry handler — hooks fire, delete cleans entry_fields/entry_meta); detail marks viewed like their screen; caps via wpforms_current_user_can (editor 403 verified); status card. ACTIVE fixture (Pro 2.0.0.2 dev zip, provenance-verified); Lite registers nothing (no entry handler) |
+
+### backups
+
+| Adapter | list | tabs | bulk | detail | manage | status | chart | settings | views | suite | Reviewed | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| updraftplus | Y | — | — | — | — | Y | — | — | — | Y | | Backup-now + System health; restore = **L** |
+| wpvivid | Y | — | — | Y | — | Y | — | — | — | Y | | Schedule + backup-now; restore = **L** |
+| duplicator | Y | — | — | — | — | Y | — | — | — | Y | | Package list; no freshness claim |
+| disembark | Y | — | — | — | — | Y | — | — | — | Y | | Connector; CLI command + sessions; no freshness |
+| backwpup | Y | — | — | Y | — | Y | — | — | — | Y | 2026-07-12 | Local FOLDER archives; run-job-now; remote dests = **L** |
+| ai1wm | Y | — | — | Y | — | Y | — | — | — | Y | 2026-07-12 | .wpress list; export/import wizards = **L**; no freshness |
+
+### activity-log
+
+| Adapter | list | tabs | bulk | detail | manage | status | chart | settings | views | suite | Reviewed | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| simple-history | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-15 | Real REST list; **status** card (24h/7d/total/severity) |
+| wp-activity-log | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-15 | Never unserialize meta; **status** card (24h/7d/high+critical) |
+| aryo-activity-log | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-15 | Local epoch trap; **status** card (24h/7d/top action) |
+| stream | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-15 | **status** card (24h/7d/top connector); blog_id scoped |
+| wordfence | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-14 | Login log + posture rows; inactive fixture (family) |
+| limit-login-attempts | Y | · | — | Y | — | Y | — | — | — | Y | 2026-07-14 | Unlock action; active resident |
+| solid-security | Y | · | — | Y | — | Y | — | — | — | Y | 2026-07-14 | Release + posture; **active** on minimaladmin now (was inactive convention) |
+| all-in-one-security | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-17 | Wave B: audit feed ({base_prefix}aiowps_audit_log, JSON details flattened to Context rows, UTC epoch); level tabs + search + status card; installed-inactive (WSAL/LLA-R residents); suite `aios-log` |
+
+### redirects / snippets
+
+| Adapter | list | tabs | bulk | detail | manage | status | chart | settings | views | suite | Reviewed | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| redirection | Y | · | Y | Y | — | Y | Y | Y | — | Y | 2026-07-17 | Setup gate + options; **status card** (rules, hits, served/404 7d, dual 14-day chart); suite `redirection-status` |
+| safe-redirect-manager | Y | · | Y | Y | — | Y | — | · | — | Y | 2026-07-17 | **Status card** (rules, status-code mix, regex count; SRM stores no hits); suite `redirects-status` |
+| simple-301-redirects | Y | · | Y | Y | — | Y | — | · | — | Y | 2026-07-17 | **Status card** (rule count + wildcard toggle; the store is one option array); suite `redirects-status` |
+| eps-301-redirects | Y | · | Y | Y | — | Y | — | · | — | Y | 2026-07-17 | No leading slash on source; **status card** (rules, lifetime hits, top redirect, 404 log) |
+| code-snippets | Y | · | Y | Y | — | Y | — | · | — | Y | 2026-07-17 | **Status card** (active/inactive/trashed, running scopes, last change, safe-mode warning); first card in the family |
+| wpcode | Y | Y | Y | Y | — | Y | — | · | — | Y | 2026-07-17 | **Status card** (active/inactive, running types, last change) |
+| fluent-snippets | Y | Y | Y | Y | — | Y | — | · | — | Y | 2026-07-17 | **Status card** (active/inactive + file-storage note) |
+| custom-css-js | Y | Y | Y | Y | — | Y | — | · | — | Y | 2026-07-17 | CPT shim; tree rebuild on write; **status card** (active codes, running languages via regex peek) |
+| hfcm | Y | Y | Y | Y | — | Y | — | · | — | Y | 2026-07-17 | hfcm_scripts; page targeting = **L**; **status card** (active/inactive, running types, last change) |
+
+### settings-only / other surfaces
+
+| Adapter | Shape | suite | Reviewed | Notes |
+|---|---|---|---|---|
+| perfmatters | settings-only (core Settings API); family `performance` | Y | 2026-07-14 | Reference for Settings-API mappers |
+| autoptimize | settings-only (curated options); family `performance` | Y | 2026-07-14 | Toggle store `on`/empty; purge still in cache-purge |
+| asset-cleanup | settings-only (JSON option); family `performance` | Y | 2026-07-14 | Page-level unload manager deep-linked |
+| performance-lab | features list + status + activate/deactivate; family `performance` | Y | 2026-07-14 | Hub for WP Performance Team standalone plugins |
+| licenses | Extensions → Licenses (filter providers) | Y | | Use license-manager skill loop for new vendors |
+| spam | Settings → Spam cards | Y | | |
+| seo | Editor panel (providers) | Y | | |
+| meta-box | Editor panel (simple fields) | Y | 2026-07-14 | Clone/media = locked + deep link |
+| seriously-simple-podcasting | Editor panel (episode details on ssp_post_types) | Y | 2026-07-17 | Schema live from their CPT_Podcast_Handler::custom_fields() (container service); 'on'/'' checkbox convention; cover image locked; Castos sync untouched; active fixture + standing demo episode |
+| the-events-calendar | Editor panel (Event details on tribe_events) + `suggest` panel primitive | Y | 2026-07-17 | Writes via Tribe__Events__API::saveEventMeta in their OWN REST endpoint's payload shape; venue/organizer via the new async-suggest field (minimal-admin/v1/tec/suggest); multi-organizer events lock the field; recurrence/tickets/timezone = **L**. Active fixture (six-pack) |
+| powerpress | Editor panel (default-channel episode on posts) | Y | 2026-07-17 | Enclosure blob mirrored (documented exception: no callable write model); diff-based rebuild, unmanaged extras byte-preserved; set_duration/set_size flags on manual edits; URL-clear = their remove flow; installed-INACTIVE (SSP is the podcasting resident) |
+| wp-job-manager | Editor panel (Listing details on job_listing) | Y | 2026-07-17 | Schema live from their get_job_listing_fields() (site/add-on filtered); their per-field sanitize_callbacks rule writes (application email-or-url, expiry Y-m-d); checkbox 1/0 ints; their save is nonce-gated so REST writes are safe; rest_base job-listings; active fixture |
+| pods | Editor panel (simple fields on extended types) | Y | 2026-07-14 | Advanced types locked + deep link |
+| safe-svg / svg-support | Media SVG filter tab + provider-named detail note | Y | 2026-07-17 | Sanitization stays the plugin's; note claims it only for Safe SVG; SVG Support installed-inactive |
+| regenerate-thumbnails / force-regenerate-thumbnails | Media detail ↻ Thumbnails | Y | 2026-07-17 | RT via its Regenerator class; FRT via its own admin-ajax + nonce when RT absent; FRT installed-inactive |
+| enable-media-replace | Media detail "Replace file" (EMR's own ReplaceController) | Y | 2026-07-17 | In-place only (same name/URL, same-type enforced); rename/move = **L** to EMR's screen; active fixture |
+| media-folders (FileBird / RML Lite / Premio Folders) | Media view folder combobox (`minimal_admin_media_folders` provider contract) | Y | 2026-07-17 | Browse-first; three bundled providers, first-active wins (FileBird via its own model, per-user mode honored; RML via wp_rml_* API, root -1 "Unorganized" → reserved id 0; Premio via its REST-exposed `media_folder` taxonomy, include_children matches their filter). Folder management = **L** to each plugin's UI. FileBird active fixture; RML + Premio installed-inactive (one-at-a-time convention) |
+| cache-purge | ⌘K purgers (+ Redis System row) | Y | 2026-07-12 | SpeedyCache, Redis, Breeze, Nginx Helper, Cloudflare pack |
+| site-kit / koko / burst / ia / … | Traffic providers (+ day drill) | partial | 2026-07-29 | Overview chart + traffic_day for Koko, WP Statistics, Burst, Independent Analytics, Matomo, Jetpack Stats |
+| matomo | Traffic provider (+ day drill) | Y | 2026-07-29 | Their reporting API via Bootstrap + `doAsSuperUser` (their Annotations precedent); `view_matomo` gate; 15-min transient (env boot ~300ms); numbers match their UI incl. hourly cron-archive lag; installed-inactive (Koko resident); suite seeds via their HTTP tracker + `minimal_test_matomo_archive` runs their archiver |
+| jetpack-stats | Traffic provider (+ day drill) | Y | 2026-07-29 | WPCOM_Stats blog-token client (their 5-min cache); gates: connected + stats module + `view_stats`; priority 20 (Site Kit tier); per-page counts views-only by WPCOM design; verified end to end on a live connected site 2026-07-29 (visits, top posts, referrers all match their UI); installed-inactive |
+| query-monitor | panel (not a surface) | — | 2026-07-13 | Footer arm + launcher chip; this-request only |
+| scrutoscope | Diagnostics family (list + detail + status + Cron view + Profile this hook on 1.4+) | Y | 2026-08-06 | family `diagnostics`; capture UI = **L**; Profile fires real side effects under their profiler; **zero direct SQL on 1.5+** (list via their `/v1/profiles`, status via `Storage::get_table_stats()`), column read kept as pre-1.5 fallback |
+| wp-crontrol | Diagnostics family (list + detail + status; run/pause/resume/delete) | Y | 2026-07-13 | family `diagnostics`; add/edit PHP/URL jobs = **L** |
+| transients-manager | Diagnostics family (list + detail + status; delete + delete-expired) | Y | 2026-07-13 | family `diagnostics`; never unserialize; edit UI = **L** |
+| rewrite-rules-inspector | Diagnostics family (list + detail + status; flush + test URL) | Y | 2026-07-13 | family `diagnostics`; via their RewriteRules / UrlTester; hard .htaccess flush not offered |
+
+## Deliberate deep-links (do not re-propose as Axis B)
+
+- Form / page / condition **builders** and OAuth handshakes
+- Backup **restores** (surgery, not daily ops)
+- GSMTP **routing condition tree** authoring (list/toggle/delete is wired)
+- GF **notification** events / conditional logic / routing rules (daily fields are wired)
+- Pro-only stores without fixtures (WP Mail SMTP Pro full log, WPForms Pro entries)
+
+## Sweep log
+
+| Date | Scope | Outcome |
+|---|---|---|
+| 2026-07-12 | Skill + this matrix seeded | Report-first runbook added to `dev-minimal-admin`; no auto-ship |
+| 2026-07-13 | v0.14.0 open / Dev tools review | QM classified panel-only; Scrutoscope + WP Crontrol + Transients Manager ranked in plugin-support Wave A; no ship |
+| 2026-07-13 | Scrutoscope adapter | Profiler surface shipped (profiles, detail, status, Cron view, delete); suite 22 checks |
+| 2026-07-13 | WP Crontrol adapter | Cron surface shipped (list, run-now, pause/resume, delete, status); suite 20 checks |
+| 2026-07-13 | Diagnostics family + Transients | Scrutoscope + Crontrol + Transients Manager collapse to one Tools item; TM suite 17 |
+| 2026-07-13 | Rewrite Rules Inspector | Diagnostics → Rewrites (list, flush, test URL); suite 15 |
+| 2026-07-14 | Focused report: mail → forms → activity-log | Ranked backlog below; **no ship** (report-first). Mail reference = Gravity SMTP; fixtures: FluentSMTP + WP Mail Logging + Gravity SMTP active |
+| 2026-07-14 | Ship top 1: fluent-smtp search + delete/bulk | Axis A parity with GSMTP/WPML; suite mail-log 17 checks |
+| 2026-07-14 | Full report-only re-sweep (mail → forms → activity-log → redirects/snippets → backups; fixtures inventory) | Matrix cells corrected (forminator/formidable/everest/fluent-forms); **no ship**. Top ship = post-smtp search + delete/bulk |
+| 2026-07-14 | Ship: post-smtp search + single/bulk delete | Axis A mail parity with WPML/FluentSMTP; mail-log suite extended |
+| 2026-07-14 | Ship: fluent-forms Playwright suite | Axis A coverage gap closed; 24 checks (list/tabs/filters/search/detail/trash/delete/manage); seeder `minimal_test_seed_fluent_forms` |
+| 2026-07-15 | Axis A: gravity-smtp bulk log delete | Single + bulk Delete via Event_Model (DELETE_EMAIL_LOG); mail-log suite extended; matrix fixed for cf7/cfdb7/ninja bulk (were already Y in code) |
+| 2026-07-15 | Axis A: activity-log status cards | Simple History, WSAL, Stream, Aryo status cards (24h/7d/total + family-specific mix); suite `activity-log-status` |
+| 2026-07-17 | Ship top 1: sectionsRoute row types | `pill`/`code`/sandboxed `html-preview`/`kv-table` rows in the sections detail renderer; contract-fixture Log view exercises all four with hostile payloads (suite detail-rows, 19 checks incl. sandbox + escaping proofs); Gravity SMTP log detail converted as the first consumer (status pill, HTML body preview, headers kv-table). Fluent/Post/WPML conversions are the natural next slices |
+| 2026-07-17 | Wave B: SureMails + Site Mailer mail adapters | Both over verified free log tables; full mail-family treatment (list/tabs/search/delete/status+chart/sections detail w/ sandboxed HTML). NEW shared helper minimal_admin_db_local_to_utc_iso(): DEFAULT current_timestamp() rides the DB SESSION zone (UTC on managed hosts, LOCAL on Cove's dev MariaDB) — asks the DB its offset once and shifts, correct on any host. Suite wave-b-mail 17. Both rest installed-inactive. SEED GOTCHA: `wp eval "…$wpdb…"` lets the shell expand $wpdb; use eval-file |
+| 2026-07-17 | Wave B: install + source-verify (AIOS, GoSMTP, SureMails, Site Mailer) | Installed all four; verified free-tier log storage. AIOS shipped (activity-log audit feed). SureMails ({prefix}suremails_email_log) + Site Mailer (site_mail_logs) VERIFIED to store full logs free → mail-family adapters queued. GoSMTP SKIPPED: its \GOSMTP\Logger is Pro-only, free build stores no logs (wp-mail-smtp-free pattern). AIOS + the two mail candidates rest installed-inactive; GoSMTP left installed-inactive as a documented skip |
+| 2026-07-17 | Redirects sibling status cards (Axis A parity batch) | SRM (CPT + status-code/regex meta; no hit data, card honestly stops at rules), Simple 301 (option array + wildcard toggle), EPS (own table: rules, lifetime hits, top redirect, 404 log). Suite `redirects-status` (7) activates each inactive sibling and restores. STATUS-CARD PARITY CHAPTER COMPLETE: every surface in mail, snippets and redirects now opens with a card |
+| 2026-07-17 | Snippets family status cards (Axis A parity batch) | wpcode (CPT publish=active + type meta), fluent-snippets (indexed file store), custom-css-js (CPT + _active meta; languages regex-peeked from serialized options, never unserialized), hfcm (own table). All match the code-snippets card shape; suites snippets-adapters 19 / snippets-leftovers 15 |
+| 2026-07-17 | Mail family sections detail (Axis A) | fluent-smtp, post-smtp, wp-mail-logging log detail converted to sectionsRoute with the new row types (GSMTP pattern): status pill, sandboxed html-preview/code body, per-store extras (provider-reply peek, failure + suggested fix, raw headers). Flat routes kept for API consumers; mail-log suite 30 |
+| 2026-08-08 | v0.25.0 pre-flight sweep (update-all + smoke) | **Gravity Forms 2.10.5 → 3.0.2 (MAJOR)**: full route smoke green (gf/v2 forms/entries, the shim's forms/notifications/entry detail/form settings; notes route is POST-only by design) and the gf-notifications + gf-form-settings suites ran in the release pre-flight. Elementor 4.2.2 and the other patch-level updates carry no adapter-relevant deltas. No breaking deltas |
+| 2026-07-17 | Ship next: code-snippets status card | Active/inactive/trashed counts, running scopes, last change and a safe-mode warning row from their own table (active -1 = trashed per their class-db docblock); suite code-snippets 26. Sweep-hygiene note: the report's snippets/redirects "family status parity" claims were grep over-matches; these two cards are family FIRSTS and the siblings are the real parity backlog |
+| 2026-07-17 | Sortable surface columns (Austin's ask) | New collection primitive: column `sort` tokens + `sortQuery` template, clickable headers with the users-list direction convention (num/ago start desc); validator + author guide + contract fixture in lockstep (contract 39). Redirection wired first (Source/Hits/Last hit via their orderby vocabulary); suite redirection-status now 14 |
+| 2026-07-17 | Ship top 1 (second slice): redirection status card | Rules/hits/served/404 rows + dual-series 14-day chart from Redirection's own log tables (SHOW TABLES-gated, site-local DATE buckets matching their log view); suite redirection-status (10). First status card in the redirects family |
+| 2026-07-17 | PowerPress panel (podcasting category closed) | Episode panel on plain posts, DEFAULT channel only (the plain `enclosure` meta). NO callable write model exists (their save is one $_POST['Powerpress'] handler, nonce/POST-gated → REST-safe) so the blob format is mirrored — documented exception with guardrails: their exact allowed_classes=>false unserialize; DIFF-BASED rebuild (untouched save = byte-identical blob, probe-proven); unmanaged extras (hosting, chapters, artwork, 50+ keys) byte-preserved; manual duration/size edits set their set_duration/set_size "modify" flags; URL-clear deletes enclosure + legacy itunes:duration (their remove flow); episode_type enum ''/full/trailer/bonus; content type auto-derived via powerpress_get_contenttype on URL change. Custom channels (_slug:enclosure) + post-type podcasting + artwork/explicit/chapters/transcripts = their metabox (locked 4). Suite powerpress-panel (8, activates + restores). Installed-INACTIVE (SSP resident). PODCASTING CATEGORY COMPLETE per the siblings report (Podlove/10up/Podcast Player = documented skips) |
+| 2026-07-17 | WP Job Manager panel (SSP-siblings report follow-up) | Job listing panel on job_listing (rest_base job-listings): 14 fields, 0 locked, from WP_Job_Manager_Post_Types::get_job_listing_fields() at request time (already filtered by job_manager_job_listing_data_fields → add-ons track live). Writes call each field's OWN sanitize_callback when declared (application email-or-url, expiry date → '' on junk), checkbox data_type integer 1/0, selects enum-validated. Their save_post handler is job_manager_nonce-gated → REST-safe. Suite wpjm-panel (6). ACTIVE fixture. Remaining from the report: PowerPress (enclosure-blob quirk, M) when the podcasting category should close out |
+| 2026-07-17 | TEC Event details panel + async-suggest primitive (Austin's pick from the SSP-siblings report) | NEW PANEL FIELD TYPE `suggest` (formControlHtml/formControlValue/bindSuggestField + the panel binder): async-searching picker, field declares `route` fetched with &q=, rows [{value,label}], Minimal prepends "— None", value round-trips as {value,label}|'' — documented in the author guide. TEC adapter: Event details panel on tribe_events (start/end 'YYYY-MM-DD HH:MM' text, all-day, venue+organizer suggest over minimal-admin/v1/tec/suggest, cost, website) writing through Tribe__Events__API::saveEventMeta with THEIR REST endpoint's exact payload shape (EventStartDate Y-m-d + EventStartTime H:i:s + venue.VenueID + organizer.OrganizerID). HARD-WON: the tribe_events() ORM can't update a bare date-less draft (its query joins on start-date meta — exactly Minimal's + New output); saveEventMeta handles it. End-before-start is AUTO-CORRECTED by TEC (their admin behavior), not refused; genuinely invalid meta → their false → 400. Multi-organizer events lock the organizer field (single-pick would drop the rest). Suite tec-panel (8, real typed suggest picks + all-day day-bounds snap) |
+| 2026-07-17 | Seriously Simple Podcasting adapter (Austin's ask) | Review verdict: episodes are already first-class in Minimal (`podcast` CPT show_in_rest, custom podcast caps map through edit_post) — the missing piece was the episode-detail metabox, shipped as the **Podcast episode editor panel**. Schema read LIVE from ssp_app()->get_service('cpt_podcast_handler')->custom_fields() (radio→select, episode_file→url, checkbox→'on'/'' storage, hidden/sync_status skipped, cover image locked); dedicated minimal_ssp REST field on ssp_post_types() (never generic meta); enum writes validated against their options. SAFE: their save_post handler bails without its metabox nonce, so REST saves can't be clobbered; Castos podmotor fields never touched. Feed/show settings (series taxonomy + ss_podcasting_* options framework) = deferred, terms manager already covers series. Suite ssp-panel (7). ACTIVE fixture + standing "Welcome to the Show" episode |
+| 2026-07-17 | GF Feeds view (backlog rank 10 resolved) | VERDICT: the feeds VIEW ships, the config MAPPER defers. New Feeds `views[]` entry on the GF surface (registers only while a GFFeedAddOn is present): every add-on integration across forms with per-form tabs, activate/deactivate (GFFormsModel::update_feed_property), delete (GFAPI::delete_feed), deep link to the add-on's feed screen (subview={slug}&fid={id}). HARD-WON: GFAPI::get_feeds defaults $is_active=true — pass null or deactivated feeds vanish (bit during the build); their "not_found" WP_Error just means zero feeds. Config mapper deferred with a written verdict in full-ui-adapters.md (needs a second item-scoped settings primitive + a creds-free mappable add-on fixture). FIXTURE: gravityformstwilio ACTIVE on minimaladmin (copied from anchor, the GF convention). Suite gf-feeds (10); gf-notifications' pinned switcher list relaxed to first-three (rule-52 class) |
+| 2026-07-17 | fluent-smtp settings tab (backlog rank 9 resolved) | VERDICT: wire the misc settings, deep-link the wizard. New surface `settings` tab on the FluentSMTP Email surface: default + fallback connection (comboboxes of their connections, titles/senders only — never credentials; unknown key → 400), log_emails toggle, retention select (their preset days; nonstandard stored value stays pickable), simulate_emails toggle (hidden + locked when the FLUENTMAIL_SIMULATE_EMAILS constant forces it). Reads via Settings::getMisc(), writes via Settings::updateMiscSettings() — byte-identical to their own SettingsController. The per-provider connection wizard stays FluentSMTP's app (deep-link). Suite fsmtp-settings (8); mail-log still 30 |
+| 2026-07-17 | Move to folder (media bulk bar) | Contract gains OPTIONAL `move( $folder_id, $ids )` (0 = out of every folder; boot mediaFolders.move gates the UI; route POST media/folders/move registers only when offered, upload_files + provider's own checks). Bulk bar grows a folder picker + Move button (Move disabled until a pick; counts cache busted after). All three providers wired through their own machinery: FileBird verifyAuthor + Folder::assignFolder (their hooks + counters fire), RML wp_rml_move (their validation, root -1 for out), Premio wp_set_object_terms (empty list = Unassigned). All three move-probed both directions; suite media-folders 20 |
+| 2026-07-17 | Wave D parity crumbs: SVG Support + FRT | SVG Support joins the Safe SVG gate (minimal_admin_svg_provider(): Safe SVG wins when both active; boot `svgProvider` names it; detail note claims sanitization ONLY for Safe SVG — its sanitize-on-upload is per-role config). Force Regenerate Thumbnails joins ↻ Thumbnails via ITS OWN admin-ajax handler + 'force-regenerate-attachment' nonce in boot `frt` (wcpdf precedent; their cap property honored; RT wins when both active; FRT's delete-stale-files semantics apply as on their Tools screen). Suites: safe-svg 12 (provider swap leg), media-regen 10 (real FRT ajax rebuild). Both installed-INACTIVE (Safe SVG + RT stay residents). WAVE D COMPLETE |
+| 2026-07-17 | Wave D: RML Lite + Premio Folders providers | Both siblings join minimal_admin_media_folders. RML: public wp_rml_* API (wp_rml_objects / wp_rml_get_attachments; getCnt per folder); root id -1 "Unorganized" maps to the contract's reserved 0; Lite has no subfolders/per-user. Premio: plain WP taxonomy `media_folder` (registered only while option folders_settings contains "attachment" — SET on minimaladmin 2026-07-17, keep it); terms = folders, ids via tax_query include_children (their filter semantics), Unassigned (-1 view) = reserved 0; taxonomy is show_in_rest so the suite seeds over CORE REST. Both E2E-probed with real assignments; suite media-folders 15 (phase 2 = live FileBird→Premio swap, restores residents in finally). RML suite leg skipped: no REST seeding path (probe-verified instead) |
+| 2026-07-17 | Wave D: media folders contract + FileBird | New provider filter `minimal_admin_media_folders` (first-non-null, traffic-style; documented in the author guide + Integrations listeners): folders() flat list w/ parent+count (id 0 reserved = Uncategorized), ids(folder). Core routes GET media/folders (tree-ordered w/ depth) + media/folders/{id}/ids (newest-500 cap, capped flag) → client folder combobox filtering via include= (empty folder short-circuits — include= with no ids means no filter). FileBird provider rides its OWN model (allFolders/countAttachments/verifyAuthor/getAttachmentIdsByFolderId; per-user mode via their fbv_folder_created_by filter; uncategorized mirrors their scoped NOT IN clause). SUITE SEEDS THROUGH FILEBIRD'S OWN REST (filebird/v1 new-folder/assign-folder/delete-folder, upload_files + nonce): suite media-folders (12). FileBird ACTIVE fixture. Move-to-folder + RML/Premio providers = follow-ups |
+| 2026-07-17 | Wave D: core media polish | Unattached quiet filter (core parent=0), month combobox (new GET minimal-admin/v1/media/months; client builds inclusive local after/before windows), "Attached to" on the media detail modal (lazy REST field minimal_attached_to on attachment: parent title/type/rest_base/editable; click jumps to the parent's editor). Media toolbar moved to the two-row views/filters convention. Suite media-polish (15). Closes the core-gaps media items; Wave D rank 6 fully shipped |
+| 2026-07-17 | Wave D opener: Enable Media Replace adapter | ⇅ Replace file on the media detail modal via EMR's ReplaceController (MODE_REPLACE + TIME_UPDATEMODIFIED, their defaults): old files removed, new file over the same path, metadata + thumbnails rebuilt, their hooks fired. Caps mirror EMR (upload_files + checkImagePermission, EMR_CAPABILITY honored). Same-type guard server-side (in-place keeps the URL, so the extension must not lie); rename-and-search stays EMR's screen. Boot flag `mediaReplace`; suite media-replace (12, real file chooser + served-bytes proof). EMR ACTIVE fixture on minimaladmin |
+| 2026-07-17 | v0.18.0-open report-only re-sweep (all 73 adapters, primitive grep + fixture states) | Waves resume after the v0.17.0 pause. Mail chart parity confirmed DONE (fluent-smtp, post-smtp, wp-mail-logging all carry `chart`). NEW Axis A finds: **redirection** (active resident) and **code-snippets** (active resident) are the only family surfaces without a `status` card. sectionsRoute row types still unbuilt (`pill` exists only as a column format). Fixture note: SearchWP DEACTIVATED (its profile_update loopbacks slowed every user save; license reads survive inactive). Wave B/D candidates (AIOS, GoSMTP/SureMails/Site Mailer, SureForms/MetForm, FileBird, Enable Media Replace) all uninstalled. **No ship.** |
+| 2026-07-23 | Roadmap-doc stale check at v0.21.0 open | No adapter work in the v0.19.0 (WooCommerce depth), v0.20.0 (consent + Search & Filter Pro / Admin Columns Pro licenses) or unreleased v0.21.0 (polish: i18n, a11y, boot consolidation, updater hash) cycles, so the matrix stands. Ranked-backlog rows 4-5 struck (shipped 2026-07-17 later the same day the backlog was written). Open backlog is now rank 7 only: WPForms Pro entries (needs a Pro license for fixtures) |
+| 2026-07-24 | Roadmap refresh at v0.22.0 open (v0.21.0 released same day) | The v0.22.0 cycle opened with the read-only database viewer, a NATIVE surface (`class-minimal-admin-db.php` + bespoke view, `native-editors.md` case study 2) rather than an adapter, so the matrix is untouched. No adapter work yet this cycle. Open backlog unchanged: WPForms Pro entries (license-blocked), plus the deliberate long tail (family status-card siblings when a sweep schedules them) |
+| 2026-07-27 | v0.22.0 adapter sweep (report-only): update-all first, then inventory | **Plugins:** 21/22 updated on minimaladmin (see list below). **Elementor Pro 4.1.2→4.2.0 failed** (license gate); free Elementor is on 4.2.0 so free/Pro are skewed. Axis A matrix cells still match code (mail chart parity, status cards across mail/redirects/snippets/activity-log, forms manage where applicable). Axis B from changelogs: **Scrutoscope 1.4** on-demand cron profiling is the one real ship candidate (admin-ajax + `Profiler::profile_cron_hook`; Cron view is inventory-only today). Disembark 2.8 restore is deliberate **L** (surgery). Stream 4.3 / WSAL 5.6.5 / IA 2.15 / SVG Support 2.6 / Updraft 1.26.6 / Yoast 28.1: no adapter-visible daily-ops delta. Smoke: elementor submissions, scrutoscope profiles+cron, disembark status all 200. **No ship.** |
+| 2026-07-27 | Ship top 1: scrutoscope Profile this hook | Axis B: Cron view row action POSTs `minimal-admin/v1/scrutoscope/cron/{id}/profile` → `Profiler::profile_cron_hook` with the row's scheduled args; confirm names side effects; action hidden when the method is absent. Fixture no-op hook `minimal_scruto_profile_noop` scheduled by the existing seeder. Suite scrutoscope extended. |
+| 2026-07-27 | Ship next top 1: disembark Restore deep-link | Axis B: status-card `Restore a backup` href → `tools.php?page=disembark` when `\Disembark\Import` exists (2.8+); restore UI stays **L**. Suite disembark extended. |
+| 2026-07-27 | Ship next: AIOS failed-login / permanent-block posture | Axis B: status card gains Failed logins (24h) / Locked out now / Permanent blocks from `aiowps_login_lockdown`, `aiowps_permanent_block`, audit_log `failed_login`; System `minimal_admin_aios_checks()` health row; deep-links to AIOS locked-ip / permanent-block tabs. Suite aios-log extended. |
+| 2026-08-06 | scrutoscope: onto their 1.5 list API (vendor-reported, GitHub issue #3) | Axis B, prompted by the plugin author. Scrutoscope 1.5.0 added `GET /scrutoscope/v1/profiles` specifically so integrators stop reading the table; list now rides it through `rest_do_request` (gated on `RestApi::shape_profile_list_item`, the shaper their contract names), status totals via `Storage::get_table_stats()`. **The win is not tidiness: their output Sanitizer runs on that path and did not run on ours** (reduced SQL + host-only HTTP URLs are re-applied at read time as defense-in-depth for rows written by older builds; a direct SELECT is what skips it). Same pass fixed a self-inflicted gap: Minimal's own "Profile this hook" writes `profile_type=on_demand` but the tabs were pinned/session/background, so Minimal's captures were findable under All profiles only. Added the On demand tab plus a Context column from `route_class`. Column read kept for pre-1.5. Suite scrutoscope 29→34. |
+| 2026-08-06 | Ship top 1: FluentSMTP 2.3.0 catch-up (all three slices) | Resend now rides their `Logger::resendEmailFromLog($id,'resend',$recipients)` — `resent_count` + the `extra['resends']` trail record, headers/attachments restored, cc/bcc dropped on redirects, no duplicate log row (`FLUENTMAIL_LOG_OFF`); gated on the `resent_count` column so a pre-2.3.0 build keeps the `wp_mail` fallback and can never half-send through a failing update. New parameterized "Resend to…" action (comma-separated override, all-or-nothing validation; detail-modal only — list rows render field-less actions by design). Detail sections gain a Resends trail (via their `Logger::find`; their unserialize refuses objects). ConnectionHealth (2.3.0) feeds a status-card row (All passing / N failing / Not checked yet) and a System health row (`minimal_admin_fluent_smtp_checks()`: all-failing = fail, some = warn, spliced after AIOS). Caps resolve through `fluent_mail/manage_capability` (their helper when present). Suites: mail-log 30→36, fsmtp-settings 8 green. E2E: real Mailpit deliveries, override + 400 path, their checkAll() against the live connection. |
+| 2026-08-06 | Residual-suite pass (sweep close-out) | The update wave's remaining active-fixture adapters, suite-verified: seo-mappers 11 (**AIOSEO 4.9.10→5.0.0.1 MAJOR confirmed compatible** — the suite drives the panel against AIOSEO's own model; Yoast 28.2 + SEOPress 10.1 also covered), media-folders 20 (FileBird 6.5.7), tec-panel 8 (TEC 6.17.2), cache-purge 11 (Breeze 2.5.12), activity-log-status 20 (Simple History 5.30), meta-box-panel 19 (Meta Box 5.14). All green, zero fixes needed. Sweep cycle fully closed: backlog empty, fixture debt clear. Unranked future candidates on record: Really Simple SSL 9.7 posture provider (plugin-support waves), GoSMTP stays a documented skip (free build stores no logs). |
+| 2026-08-06 | WPForms Pro entries adapter (ship top 1, fourth slice — the last big forms name) | adapters/wpforms.php: full forms-family treatment. Reads = prefix-scoped SELECTs (search LIKE over the fields JSON); WRITES through their `wpforms()->obj('entry')` handler (update/delete — hooks fire, delete cleans entry_fields + entry_meta, verified rows-left=0). Caps defer to `wpforms_current_user_can()` (view_entries/edit_entries/delete_entries; editor = 403 + hidden surface, empirically checked). HARD-WON: `date` column is UTC (14:22 stored at 10:22 EDT) → emit ISO Z + column utc:true; display status derives spam/trash-win-else-viewed; opening a detail marks viewed through their update (their screen's behavior; never for spam/trash); their `get_entries()` search machinery deliberately NOT used (advanced-search complexity; LIKE matches their fallback). Star/unstar as when-gated actions on a '★' item key. Registers only when the entry handler exists (Lite = nothing). SUITE GOTCHA: execSync + `wp eval` with a JSON.stringify'd arg lets the shell expand `$wpdb`/`$f` to empty — the suite's wp() helper writes a temp file + `eval-file`; and the forms-family detail modal is a CONTACT CARD (renderEntryDetail — no "Answers" heading; assert card content). Suites: wpforms 16, forms-status 14. |
+| 2026-08-06 | Forms family status cards (Axis A parity batch, ship top 1 third slice) | Five cards matching the SureForms shape: **fluent-forms** (unread + total/spam hint from fluentform_submissions, forms count), **ninja-forms** (live nf_sub publish count + trash hint — NOT nf3_forms.subs, which survives deletes; no read state exists so the headline is Submissions), **forminator** (received/spam counts mirroring the entries list's exact scope: entry_type custom-forms, drafts/abandoned stay on their screen), **cf7-flamingo** (core wp_count_posts on their CPT — publish/flamingo-spam/trash, zero model queries), **everest-forms** (unread = publish minus viewed=1, spam hint — added beyond the ranked four because family consistency was the why). Each links out to the plugin's real entries screen (slugs verified in plugin source: fluent_forms_all_entries / nf-submissions / forminator-entries / flamingo_inbound / evf-entries). Suite forms-status (12); regressions fluent-forms 24 / ninja 13 / forminator 12 / cf7-flamingo 19 / everest 16 all green. Integrations validator clean. |
+| 2026-08-06 | WC 11.0 deep pass (ship top 1, second slice) | All 10 ecommerce suites run sequentially against WooCommerce 11.0.0: 153/153 green, zero console errors, WC Subscriptions 9.0.1 compatible. Changelog audit of the 11.0.0 section: removals are the product block editor feature/routes (Gutenberg-side; Minimal never used them) and several WC admin notices relocated into Site Health (their nag reduction; nothing to wire). No wc/v3 or Analytics API surface changes. **No code change** — the ops backlog item closes as verified. |
+| 2026-08-06 | Elementor Pro 4.2.1 review (Austin licensed + updated it mid-sweep) | 4.2.x delta is the new **Atomic Form** widget (Atomic Editor). Verified in source: its `Collect_Submissions_Action` writes through the SAME `Modules\Forms\Submissions\Database\Query` + `Form_Snapshot_Repository` as the classic form widget, so Atomic Form submissions land in the store the elementor-forms adapter already lists. **No adapter change needed.** 4.2.1 itself: no forms/submissions delta. WC Subscriptions remains license-blocked at 9.0.1. |
+| 2026-08-06 | Adapter sweep (report-only): update-all + upstream skim | **Plugins:** 36/38 updated on minimaladmin. Failures both license-gated: elementor-pro (still 4.1.2, target now 4.2.1) + woocommerce-subscriptions 9.0.1. **WooCommerce 10.9.4→11.0.0 (major) landed clean** — wc/v3 orders/products smoke 200; run the ecommerce suite before the next release cut. Axis B skim: **FluentSMTP 2.3.0 is the find** (three slices, see backlog): their new `Logger::resendEmailFromLog()` records `resent_count` + an `extra['resends']` trail that Minimal's bare-`wp_mail` resend bypasses; new `ConnectionHealth` service (`getReport()`/`getFailing()`, option-backed) is a ready status-card/System row; new `fluent_mail/manage_capability` filter vs the adapter's three hardcoded `manage_options`. Non-events: CFDB7 1.4.0 (settings page only, blob format unchanged — surface 200), GenerateBlocks 2.4 (dynamic-tag hardening; designs route 200, 37 patterns), Meta Box 5.14 (Block Bindings = Gutenberg-side), Forminator 1.56.x (security fixes), Disable Comments 2.8 (Abilities API; Minimal reads options directly), Simple History 5.30 (inactive fixture, rides their REST). Smoke: 10/10 routes 200 (wc/v3, fluent-smtp ×3, cfdb7, gb + kadence designs, overview, plugin-updates). **No ship.** |
+
+### Ranked backlog (2026-08-06 sweep)
+
+| Rank | Adapter | Axis | Gap | Effort | Why now |
+|---|---|---|---|---|---|
+| ~~1~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~Resend through their `Logger::resendEmailFromLog()` + resend-history detail + "Resend to…" override~~ | ~~S–M~~ | **Shipped 2026-08-06** (mail-log 36) |
+| ~~2~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~ConnectionHealth status-card + System rows~~ | ~~S~~ | **Shipped 2026-08-06** |
+| ~~3~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~Honor `fluent_mail/manage_capability`~~ | ~~S~~ | **Shipped 2026-08-06** |
+| ~~1~~ | ~~**ecommerce suite re-run vs WC 11.0**~~ | ~~ops~~ | ~~Major-version deep pass~~ | ~~S~~ | **Verified 2026-08-06**: all 10 WC suites green (orders, order-page, order-payment, order-refunds, products, coupons, customers, ecommerce-create, ecommerce-depth, wcs-subscriptions = 153/153) against WC 11.0.0 with WC Subscriptions 9.0.1 riding on it; 11.0 changelog removals are the product block editor + admin notices moved to Site Health, nothing wc/v3-facing. No code change |
+| ~~1~~ | ~~forms status cards (fluent / ninja / forminator / flamingo)~~ | ~~A~~ | ~~Status-card parity with SureForms~~ | ~~S each~~ | **Shipped 2026-08-06** (+ everest-forms as a fifth; suite forms-status 12) |
+| ~~1~~ | ~~WPForms Pro entries~~ | ~~B~~ | ~~Forms family~~ | ~~M–L~~ | **SHIPPED 2026-08-06** (adapters/wpforms.php; suite wpforms 16; forms-status 14). Fixture history: **UNBLOCKED + fixture ready 2026-08-06.** Austin supplied a WPForms Pro 2.0.0.2 zip (dev use; GPL). Provenance-verified before install: 823 shared PHP files byte-identical to wp.org Lite 2.0.0.2, only diff = plugin header line; no eval/base64/odd-host patterns outside vendor; no nulled watermarks; license code intact; single build date 2026-07-22. ACTIVE on minimaladmin; all 13 tables created on activation; entries VERIFIED to store unlicensed through their own `wpforms()->obj('entry')->add()` (license gates updates/addons, not storage). Standing fixture: form 5363 "Minimal Contact Form" (name/email/textarea) + 2 entries (Dana/Miguel). Storage: wpforms CPT (form JSON in post_content), {prefix}wpforms_entries (status/viewed/starred + fields JSON) + wpforms_entry_fields per-answer rows |
+| — | ~~woocommerce-subscriptions update~~ | ~~ops~~ | ~~License-gated at 9.0.1~~ | — | **Resolved 2026-08-06**: Austin supplied the 9.1.0 zip; provenance-scanned (pattern-clean, no nulled markers, 474 files identical to installed 9.0.1, coherent 45-file minor-release delta, changelog dated 2026-08-05), manually updated, wcs-subscriptions 18/18 green (their "hardened REST permission checks" don't affect Minimal's admin cookie+nonce path). Elementor Pro was resolved earlier the same day (licensed, 4.2.1). All fixture-update debt is now clear |
+
+Ranks 1–3 (the FluentSMTP 2.3.0 catch-up) shipped as one unit on 2026-08-06.
+
+### Ranked backlog (2026-07-27, v0.22.0 sweep)
+
+| Rank | Adapter | Axis | Gap | Effort | Why now |
+|---|---|---|---|---|---|
+| ~~1~~ | ~~**scrutoscope**~~ | ~~B~~ | ~~Cron view: "Profile this hook"~~ | ~~S~~ | **Shipped 2026-07-27** (suite scrutoscope; Scrutoscope 1.4+ only) |
+| ~~2~~ | ~~**disembark**~~ | ~~B~~ | ~~Status-card deep-link "Restore a backup ↗"~~ | ~~S~~ | **Shipped 2026-07-27** (suite disembark; Disembark 2.8+ only) |
+| ~~3~~ | ~~**all-in-one-security**~~ | ~~B~~ | ~~Failed-login / permanent-block posture~~ | ~~S–M~~ | **Shipped 2026-07-27** (status card + System health row; suite aios-log) |
+| 1 | **forms status cards** (fluent / ninja / forminator / flamingo) | A | Status card parity with SureForms | S each | Optional polish; GF deliberately skips chart/status; only ship if dogfooding wants at-a-glance inbox counts |
+| 2 | **WPForms Pro entries** | B | Forms family | M–L | Still needs Pro license + fixtures; biggest uncovered forms name |
+| — | elementor-pro update | ops | License-blocked 4.2.0 | — | Free Elementor is 4.2.0; Pro stuck on 4.1.2 until license updates; forms adapter still 200 |
+
+Superseded open items from 2026-07-17 (struck above) remain shipped. Matrix cells: no Axis A drift found this pass.
+
+### Ranked backlog (2026-07-17, v0.18.0 open)
+
+| Rank | Adapter | Axis | Gap | Effort | Why now |
+|---|---|---|---|---|---|
+| ~~1~~ | ~~sectionsRoute row types (`pill`, `code`, `html-preview` sandboxed, `kv-table`)~~ | ~~A~~ | ~~Shared detail primitive~~ | ~~M~~ | **Shipped 2026-07-17** (suite detail-rows, 19; GSMTP log detail is the first consumer) |
+| ~~2~~ | ~~redirection~~ | ~~A~~ | ~~`status` card~~ | ~~S~~ | **Shipped 2026-07-17** (rows + dual redirects/404s chart; suite redirection-status, 10) |
+| ~~3~~ | ~~code-snippets~~ | ~~A~~ | ~~`status` card~~ | ~~S~~ | **Shipped 2026-07-17** (active/inactive/trashed, running scopes, last change, safe-mode row; suite code-snippets 26). CORRECTION: the 07-17 report's "siblings all have one" claim was a grep over-match on the word status; Redirection and Code Snippets are the FIRST cards in their families. Sibling cards (wpcode, fluent-snippets, custom-css-js, hfcm, SRM, S301, EPS) are now legitimate S-effort follow-ups |
+| ~~4~~ | ~~All-In-One Security (AIOS)~~ | ~~B~~ | ~~Activity-log + posture~~ | ~~M~~ | **Shipped 2026-07-17** (audit feed + level tabs + status card; suite `aios-log`; the failed-login/permanent-block posture row stays a future add) |
+| ~~5~~ | ~~GoSMTP / SureMails / Site Mailer~~ | ~~B~~ | ~~New mail-log providers~~ | ~~M~~ | **Resolved 2026-07-17**: SureMails + Site Mailer shipped (full mail-family treatment, suite `wave-b-mail`); GoSMTP is a documented skip (free build stores no logs) |
+| ~~6~~ | ~~Enable Media Replace + core media polish~~ | ~~B~~ | ~~Wave D opener (unattached/date filters, "attached to", replace-in-place)~~ | ~~M~~ | **Shipped 2026-07-17 in two slices**: EMR ⇅ Replace file (suite media-replace 12) + core media polish (Unattached/month filters, Attached to; suite media-polish 15) |
+| 7 | WPForms Pro entries | B | Forms family | M–L | Needs a Pro license for fixtures; biggest uncovered forms name |
+| ~~8~~ | ~~Media folders provider contract (FileBird first)~~ | ~~B~~ | ~~Wave D, browse-first~~ | ~~L~~ | **Shipped 2026-07-17 IN FULL** (minimal_admin_media_folders + FileBird, RML Lite and Premio Folders providers + the Move to folder bulk action; suite media-folders 20) |
+| ~~9~~ | ~~fluent-smtp~~ | ~~B~~ | ~~Settings mapper (connections)~~ | ~~M–L~~ | **Resolved 2026-07-17**: misc settings WIRED (connections routing, logging, retention, simulation; suite fsmtp-settings 8); the per-provider connection wizard is the canvas part and stays a deep-link |
+| ~~10~~ | ~~GF add-on/feed settings~~ | ~~B~~ | ~~Schema-export multiplier from full-ui-adapters~~ | ~~L~~ | **Resolved 2026-07-17**: Feeds VIEW shipped (list/toggle/delete/deep-link; suite gf-feeds 10); config mapper deferred with a written verdict (full-ui-adapters.md) |
+
+### Ranked backlog (2026-07-15 Axis A pass, superseded)
+
+| Rank | Adapter | Axis | Gap | Effort | Why now |
+|---|---|---|---|---|---|
+| ~~1~~ | ~~**gravity-smtp**~~ | ~~A~~ | ~~Bulk log delete~~ | ~~S~~ | **Shipped 2026-07-15** |
+| ~~1~~ | ~~**simple-history / wsal / stream / aryo**~~ | ~~A~~ | ~~**status** cards~~ | ~~S–M~~ | **Shipped 2026-07-15** |
+| 1 | sectionsRoute row types (`pill`, `code`, `html-preview`, `kv-table`) | A | Email-log detail fidelity | M | Shared primitive; benefits GSMTP/Fluent/Post detail |
+| 3 | All-In-One Security (AIOS) | B | Activity-log + posture (LLA-R/Solid pattern) | M | Wave B leftover; **not installed** on minimaladmin — install first |
+| 4 | GoSMTP / SureMails / Site Mailer | B | New mail-log providers | M | **Not installed**; source-verify free log storage first |
+| 5 | WPForms Pro entries | B | Forms family | M–L | Needs Pro license + fixtures; biggest missing forms name |
+| 6 | fluent-smtp | B | Settings mapper (connections) | M | GSMTP has settings; Fluent connection UI is canvas-ish → likely **L** |
+
+**Matrix fixes this sweep:** gravity-smtp bulk → **Y**; cf7-flamingo / cfdb7 / ninja-forms bulk → **Y** (code already had bulk; cells were stale).
+
+**Deliberate non-goals:** GSMTP routing tree authoring; GF form builder / notifications events; backup restores; WP Mail SMTP Pro log without Pro; forminator "status card" (inbox plugins don't need GSMTP-style charts); ecommerce (shipped v0.14); re-proposing forminator/formidable tabs (already wired).
+
+**Fixtures snapshot (minimaladmin):** mail residents FluentSMTP + WP Mail Logging + Gravity SMTP active, Post SMTP + WP Mail SMTP inactive; forms pack active (GF not listed in grep but usually is, Fluent Forms, Ninja, Forminator, Formidable, Everest, Flamingo, CFDB7, Elementor Pro); activity-log WSAL + LLA-R + **Solid active**; redirects Redirection active, SRM/S301/EPS inactive; backups Updraft/WPvivid/Duplicator/Disembark/BackWPup active.
+
+When a sweep updates cells or ships work, append a row and set `Reviewed` on
+touched adapters (or stamp `// last-sweep: YYYY-MM-DD` in the adapter header).
+Rows are public: record adapter-relevant facts (versions, deltas, verdicts)
+and keep development-environment details out of them.

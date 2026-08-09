@@ -1,0 +1,114 @@
+/**
+ * Gravity SMTP Suppressions view (the manage slot): list, suppress, search
+ * and reactivate through Gravity SMTP's own Suppressed_Emails_Model, gated
+ * on its granular suppression caps.
+ *
+ * Standing fixtures: bounce@example.com and unsubscribed@example.com are
+ * seeded suppressions that must survive; the suite creates and reactivates
+ * its own disposable address.
+ */
+const { launch, login, reporter, BASE } = require( './helpers' );
+
+( async () => {
+	const t = reporter( 'gsmtp-suppression' );
+	const { browser, page, errors } = await launch();
+	await login( page );
+
+	const DISPOSABLE = 'suite-suppress@example.com';
+
+	const openSuppressions = async () => {
+		await page.goto( BASE + '/minimal-admin/gravity-smtp', { waitUntil: 'domcontentloaded' } );
+		await page.waitForSelector( '[data-sview="manage"]', { timeout: 20000 } );
+		await page.click( '[data-sview="manage"]' );
+		// v0.16 soft-reload keeps the Log view's stale rows painted while the
+		// Suppressions collection loads, so .minimal-table-row matches instantly
+		// with the WRONG table. The Add button only exists on the manage view
+		// (Log has no create) — it appearing means this view actually painted.
+		await page.waitForSelector( '#minimal-surface-add', { timeout: 20000 } );
+		await page.waitForSelector( '.minimal-table-row', { timeout: 15000 } );
+	};
+
+	try {
+		await openSuppressions();
+
+		/* ===== Switcher + standing fixtures ===== */
+		t.check( 'switcher reads Log / Suppressions / Settings', await page.evaluate( () => {
+			const labels = [ ...document.querySelectorAll( '[data-sview]' ) ].map( ( b ) => b.textContent.trim() );
+			// Extra views (Debug log, Routing) may sit between when those packages
+			// ship; require the three this suite needs rather than exact equality.
+			return labels.includes( 'Log' ) && labels.includes( 'Suppressions' ) && labels.includes( 'Settings' );
+		} ) );
+		const listText = await page.$eval( '.minimal-table', ( el ) => el.textContent );
+		t.check( 'standing suppressions list', /bounce@example\.com/.test( listText ) && /unsubscribed@example\.com/.test( listText ) );
+		t.check( 'reason renders as a pill', /manually added/.test( listText ) );
+
+		/* ===== Suppress a new address through the create form ===== */
+		await page.click( '#minimal-surface-add' );
+		await page.waitForSelector( '[data-createfield="email"]', { timeout: 10000 } );
+		await page.fill( '[data-createfield="email"]', DISPOSABLE );
+		await page.fill( '[data-createfield="notes"]', 'Suite disposable' );
+		await page.click( '#minimal-surface-create' );
+		await page.waitForFunction( ( addr ) => {
+			const tbl = document.querySelector( '.minimal-table' );
+			return tbl && tbl.textContent.includes( addr );
+		}, DISPOSABLE, { timeout: 20000 } );
+		t.check( 'suppressed address appears in the list', true );
+
+		/* ===== Search narrows ===== */
+		await page.fill( '#minimal-surface-search', 'bounce' );
+		await page.waitForFunction( () => {
+			const tbl = document.querySelector( '.minimal-table' );
+			return tbl && tbl.textContent.includes( 'bounce@example.com' ) && ! tbl.textContent.includes( 'unsubscribed@example.com' );
+		}, { timeout: 20000 } );
+		t.check( 'search filters through their model', true );
+		await page.fill( '#minimal-surface-search', '' );
+		await page.waitForFunction( ( addr ) => {
+			const tbl = document.querySelector( '.minimal-table' );
+			return tbl && tbl.textContent.includes( addr );
+		}, DISPOSABLE, { timeout: 20000 } );
+
+		/* ===== Reactivate through their model ===== */
+		await page.$$eval( '.minimal-table-row', ( rows, addr ) => {
+			const row = rows.find( ( r ) => r.textContent.includes( addr ) );
+			if ( row ) row.click();
+		}, DISPOSABLE );
+		await page.waitForFunction( () => {
+			const m = document.querySelector( '.minimal-modal' );
+			return m && [ ...m.querySelectorAll( '[data-saction]' ) ].some( ( b ) => /Reactivate/.test( b.textContent ) );
+		}, { timeout: 20000 } );
+		page.once( 'dialog', ( d ) => d.accept() );
+		await page.evaluate( () => {
+			[ ...document.querySelectorAll( '[data-saction]' ) ].find( ( b ) => /Reactivate/.test( b.textContent ) ).click();
+		} );
+		// The route returns an honest outcome message naming the address.
+		await page.waitForFunction( ( addr ) => {
+			const tEl = document.querySelector( '.minimal-toast-msg' );
+			return tEl && tEl.textContent.includes( 'can send to ' + addr );
+		}, DISPOSABLE, { timeout: 20000 } );
+		t.check( 'reactivate toasts the outcome message', true );
+		await page.waitForFunction( ( addr ) => {
+			const tbl = document.querySelector( '.minimal-table' );
+			return tbl && ! tbl.classList.contains( 'minimal-busy' ) && ! tbl.textContent.includes( addr );
+		}, DISPOSABLE, { timeout: 20000 } );
+		t.check( 'reactivated address leaves the list', true );
+
+		/* ===== Standing fixtures untouched ===== */
+		const finalText = await page.$eval( '.minimal-table', ( el ) => el.textContent );
+		t.check( 'standing suppressions survive', /bounce@example\.com/.test( finalText ) && /unsubscribed@example\.com/.test( finalText ) );
+	} finally {
+		// Belt and braces: the disposable must not linger suppressed.
+		await page.evaluate( async ( addr ) => {
+			const r = await fetch( window.MINIMAL.restUrl + 'minimal-admin/v1/gravity-smtp/suppressed?search=' + encodeURIComponent( addr ), {
+				headers: { 'X-WP-Nonce': window.MINIMAL.nonce }, credentials: 'same-origin',
+			} );
+			const d = await r.json();
+			for ( const it of ( d.items || [] ) ) {
+				await fetch( window.MINIMAL.restUrl + 'minimal-admin/v1/gravity-smtp/suppressed/' + it.id + '/reactivate', {
+					method: 'POST', headers: { 'X-WP-Nonce': window.MINIMAL.nonce }, credentials: 'same-origin',
+				} );
+			}
+		}, DISPOSABLE ).catch( () => {} );
+	}
+
+	await t.done( browser, errors );
+} )();

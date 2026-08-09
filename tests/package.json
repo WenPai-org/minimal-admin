@@ -1,0 +1,11 @@
+{
+	"name": "minimal-admin-tests",
+	"private": true,
+	"description": "Browser test harness for Minimal Admin — see README.md",
+	"dependencies": {
+		"playwright-core": "^1.45.0"
+	},
+	"devDependencies": {
+		"axe-core": "^4.12.1"
+	}
+}

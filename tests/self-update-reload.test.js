@@ -1,0 +1,192 @@
+/**
+ * When "Update everything" (notifications panel) includes Minimal Admin in the
+ * bulk plugin batch, the SPA must hard-reload so the new app.js / version
+ * badge land. Extensions single-plugin and bulk paths already did this;
+ * the notif-panel path did not (Austin, 2026-07-12).
+ *
+ * No real update runs: update-all is stubbed via page.route. The 700ms
+ * setTimeout that schedules location.reload is intercepted (Chromium will
+ * not let tests assign to location.reload).
+ */
+const { BASE, launch, login, reporter } = require( './helpers' );
+
+( async () => {
+	const t = reporter( 'self-update-reload' );
+	const { browser, page, errors } = await launch();
+
+	// Routes before any SPA boot that fetches plugin-updates. Boot now folds
+	// plugin-updates into the consolidated /boot-status request (v0.21.0), and
+	// that section is produced by a server-side sub-dispatch page.route can't
+	// intercept — so the offer must be injected into the real /boot-status
+	// response, or state.cache.pluginUpdates lands empty and the reload toast
+	// loses the version. The standalone stub stays for the fallback path and
+	// any later Updates-tab re-fetch.
+	const minimalOffer = { updates: { 'minimal-admin/minimal-admin.php': '9.9.9' }, themes: {} };
+	await page.route( '**/minimal-admin/v1/boot-status**', async ( route ) => {
+		if ( route.request().method() !== 'GET' ) return route.continue();
+		const resp = await route.fetch();
+		let data;
+		try { data = await resp.json(); } catch ( e ) { return route.fulfill( { response: resp } ); }
+		data.pluginUpdates = minimalOffer;
+		await route.fulfill( { response: resp, json: data } );
+	} );
+	await page.route( '**/minimal-admin/v1/plugin-updates**', async ( route ) => {
+		if ( route.request().method() !== 'GET' ) return route.continue();
+		await route.fulfill( {
+			status: 200,
+			contentType: 'application/json',
+			body: JSON.stringify( minimalOffer ),
+		} );
+	} );
+	await page.route( '**/minimal-admin/v1/plugins/update-all**', async ( route ) => {
+		if ( route.request().method() !== 'POST' ) return route.continue();
+		await route.fulfill( {
+			status: 200,
+			contentType: 'application/json',
+			body: JSON.stringify( {
+				updated: [ 'minimal-admin/minimal-admin.php' ],
+				failed: [],
+				errors: [],
+			} ),
+		} );
+	} );
+
+	page.on( 'dialog', ( d ) => d.accept().catch( () => {} ) );
+
+	try {
+		await login( page );
+		// Re-goto so boot's loadPlugins hits the stubbed offer.
+		await page.goto( BASE + '/minimal-admin/overview', { waitUntil: 'domcontentloaded' } );
+		await page.waitForFunction( () => window.MINIMAL && window.MINIMAL.nonce, null, { timeout: 15000 } );
+		await page.waitForSelector( '#minimal-notif-btn', { timeout: 15000 } );
+		await page.waitForFunction( () => {
+			const dot = document.querySelector( '#minimal-plugin-dot' );
+			return dot && ! dot.hidden;
+		}, null, { timeout: 15000 } );
+
+		await page.evaluate( () => {
+			window.__minimalReloadScheduled = 0;
+			window.__minimalReloadMsgs = [];
+			const orig = window.setTimeout.bind( window );
+			window.setTimeout = ( fn, ms, ...args ) => {
+				if ( ms === 700 && typeof fn === 'function' ) {
+					let src = '';
+					try { src = Function.prototype.toString.call( fn ); } catch ( e ) { /* ignore */ }
+					if ( /reload/i.test( src ) ) {
+						window.__minimalReloadScheduled++;
+						return 0; // swallow — do not navigate
+					}
+				}
+				return orig( fn, ms, ...args );
+			};
+			const obs = new MutationObserver( () => {
+				document.querySelectorAll( '.minimal-toast-msg' ).forEach( ( el ) => {
+					const text = el.textContent.trim();
+					if ( text && ! window.__minimalReloadMsgs.includes( text ) ) {
+						window.__minimalReloadMsgs.push( text );
+					}
+				} );
+			} );
+			obs.observe( document.body, { childList: true, subtree: true } );
+		} );
+
+		await page.click( '#minimal-notif-btn' );
+		await page.waitForSelector( '.minimal-notif-panel', { timeout: 10000 } );
+		await page.click( '.minimal-notif-tab[data-tab="updates"]' );
+		await page.waitForSelector( '#minimal-update-all', { timeout: 15000 } );
+
+		const sub = await page.evaluate( () => ( document.querySelector( '.minimal-update-all-sub' ) || {} ).textContent || '' );
+		t.check( 'Update everything sees the stubbed plugin offer', /plugin/i.test( sub ), sub );
+
+		await page.click( '#minimal-update-all' );
+		await page.waitForSelector( '.minimal-confirm-modal [data-ok]', { timeout: 8000 } );
+		await page.click( '.minimal-confirm-modal [data-ok]' );
+
+		await page.waitForFunction(
+			() => ( window.__minimalReloadScheduled > 0 )
+				|| ( window.__minimalReloadMsgs || [] ).some( ( m ) => /Minimal Admin updated/i.test( m ) ),
+			null,
+			{ timeout: 8000 }
+		);
+
+		const result = await page.evaluate( () => ( {
+			scheduled: window.__minimalReloadScheduled,
+			msgs: window.__minimalReloadMsgs.slice(),
+		} ) );
+
+		t.check(
+			'reload toast names the update',
+			result.msgs.some( ( m ) => /Minimal Admin updated/i.test( m ) && /reload/i.test( m ) ),
+			result.msgs.join( ' | ' ) || '(no toasts)'
+		);
+		t.check(
+			'toast includes the offered version when known',
+			result.msgs.some( ( m ) => /v9\.9\.9/.test( m ) ),
+			result.msgs.join( ' | ' ) || '(no toasts)'
+		);
+		t.check(
+			'hard-reload scheduled after Minimal is in the bulk updated list',
+			result.scheduled >= 1,
+			`scheduled=${ result.scheduled }`
+		);
+
+		// Control: bulk without Minimal must NOT schedule a reload.
+		await page.evaluate( () => {
+			window.__minimalReloadScheduled = 0;
+			window.__minimalReloadMsgs = [];
+		} );
+		await page.unroute( '**/minimal-admin/v1/plugins/update-all**' );
+		await page.route( '**/minimal-admin/v1/plugins/update-all**', async ( route ) => {
+			if ( route.request().method() !== 'POST' ) return route.continue();
+			await route.fulfill( {
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify( {
+					updated: [ 'akismet/akismet.php' ],
+					failed: [],
+					errors: [],
+				} ),
+			} );
+		} );
+
+		if ( ! await page.$( '#minimal-update-all' ) ) {
+			await page.click( '#minimal-notif-btn' );
+			await page.waitForSelector( '.minimal-notif-panel', { timeout: 10000 } );
+			await page.click( '.minimal-notif-tab[data-tab="updates"]' );
+			await page.waitForSelector( '#minimal-update-all', { timeout: 15000 } );
+		}
+		await page.click( '#minimal-update-all' );
+		await page.waitForSelector( '.minimal-confirm-modal [data-ok]', { timeout: 8000 } );
+		await page.click( '.minimal-confirm-modal [data-ok]' );
+		// "Minimal Admin updated" also contains "updated" — match the normal
+		// completion toast specifically ("Updated N plugins. Everything is current.").
+		await page.waitForFunction(
+			() => ( window.__minimalReloadMsgs || [] ).some( ( m ) => /^Updated\b/i.test( m ) && /Everything is current/i.test( m ) ),
+			null,
+			{ timeout: 8000 }
+		);
+		const control = await page.evaluate( () => ( {
+			scheduled: window.__minimalReloadScheduled,
+			msgs: window.__minimalReloadMsgs.slice(),
+		} ) );
+		t.check(
+			'non-Minimal bulk does not schedule a hard-reload',
+			control.scheduled === 0,
+			`scheduled=${ control.scheduled } msgs=${ control.msgs.join( ' | ' ) }`
+		);
+		t.check(
+			'non-Minimal bulk still toasts a normal completion',
+			control.msgs.some( ( m ) => /^Updated\b/i.test( m ) && /Everything is current/i.test( m ) ),
+			control.msgs.join( ' | ' ) || '(no toasts)'
+		);
+
+		await t.done( browser, errors );
+	} catch ( e ) {
+		console.error( e );
+		await t.done( browser, errors.concat( [ String( e ) ] ) );
+		process.exit( 1 );
+	}
+} )().catch( ( e ) => {
+	console.error( e );
+	process.exit( 1 );
+} );

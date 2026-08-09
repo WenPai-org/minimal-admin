@@ -1,0 +1,81 @@
+<?php
+/**
+ * Regenerate Thumbnails (Alex Mills, 1M+) — a Regenerate button on the media
+ * detail modal.
+ *
+ * The plugin's RegenerateThumbnails_Regenerator does the pixel work exactly as
+ * its own Tools screen would; Minimal only adds the per-image entry point. Gated
+ * on the plugin's own capability property (filterable via regenerate_thumbs_cap,
+ * default manage_options) so a site that loosened or tightened it is honored.
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Whether the current user can regenerate thumbnails (drives the boot flag
+ * and the endpoint permission).
+ */
+function minimal_admin_regen_thumbs_available() {
+	return function_exists( 'RegenerateThumbnails' )
+		&& class_exists( 'RegenerateThumbnails_Regenerator' )
+		&& current_user_can( RegenerateThumbnails()->capability );
+}
+
+/**
+ * Force Regenerate Thumbnails (200k) joins the same ↻ Thumbnails button.
+ * Its regenerate lives only inside its admin-ajax handler (nonce-bound), so
+ * the client calls FRT's own endpoint directly with FRT's own nonce (the
+ * WCPDF admin-ajax precedent) — Minimal reimplements nothing, and FRT's
+ * delete-stale-files behavior applies exactly as on its Tools screen.
+ * Regenerate Thumbnails wins when both are active (one button, one path).
+ */
+function minimal_admin_frt_boot() {
+	if ( minimal_admin_regen_thumbs_available() || ! function_exists( 'force_regenerate_thumbnails' ) ) {
+		return null;
+	}
+	$frt = force_regenerate_thumbnails();
+	if ( ! is_object( $frt ) || empty( $frt->capability ) || ! current_user_can( $frt->capability ) ) {
+		return null;
+	}
+	return array(
+		'ajax'  => admin_url( 'admin-ajax.php' ),
+		'nonce' => wp_create_nonce( 'force-regenerate-attachment' ),
+	);
+}
+
+add_action( 'rest_api_init', function () {
+	if ( ! function_exists( 'RegenerateThumbnails' ) ) {
+		return;
+	}
+	register_rest_route(
+		'minimal-admin/v1',
+		'/media/(?P<id>\d+)/regenerate',
+		array(
+			'methods'             => 'POST',
+			'permission_callback' => 'minimal_admin_regen_thumbs_available',
+			'callback'            => function ( $req ) {
+				$regenerator = RegenerateThumbnails_Regenerator::get_instance( (int) $req['id'] );
+				if ( is_wp_error( $regenerator ) ) {
+					$regenerator->add_data( array( 'status' => 400 ) );
+					return $regenerator;
+				}
+				// Full regenerate, not missing-only: the button exists for
+				// "the theme's registered sizes changed" where thumbnail
+				// files already exist at the old dimensions.
+				try {
+					$metadata = $regenerator->regenerate( array( 'only_regenerate_missing_thumbnails' => false ) );
+				} catch ( \Throwable $e ) {
+					return new WP_Error( 'minimal_regen_failed', $e->getMessage(), array( 'status' => 500 ) );
+				}
+				if ( is_wp_error( $metadata ) ) {
+					$metadata->add_data( array( 'status' => 400 ) );
+					return $metadata;
+				}
+				return rest_ensure_response( array(
+					'ok'    => true,
+					'sizes' => isset( $metadata['sizes'] ) ? count( (array) $metadata['sizes'] ) : 0,
+				) );
+			},
+		)
+	);
+} );

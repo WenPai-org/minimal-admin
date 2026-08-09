@@ -1,0 +1,100 @@
+/**
+ * Interactive + live-updating site-visibility controls (Austin's report):
+ *  - toggling maintenance mode in Settings updated the banner/chip only after
+ *    a page reload — now it refreshes live,
+ *  - the chip/banner just dumped the user to Settings — now the chip opens a
+ *    popover with a real toggle, and the banner carries inline controls.
+ *
+ * Drives the real UI: the Settings maintenance toggle + Save, the chip
+ * popover toggle, and the Overview banner toggle; asserts the chip and server
+ * state track each change without a reload. Resets maintenance + blog_public
+ * in the finally.
+ */
+const { launch, login, reporter, BASE } = require( './helpers' );
+
+( async () => {
+	const t = reporter( 'visibility-interactive' );
+	const { browser, page, errors } = await launch();
+	await login( page );
+
+	const setOpt = ( k, v ) => page.evaluate( async ( [ key, val ] ) => {
+		const h = { 'Content-Type': 'application/json', 'X-WP-Nonce': window.MINIMAL.nonce };
+		await fetch( window.MINIMAL.restUrl + 'wp/v2/settings', { method: 'POST', headers: h, credentials: 'same-origin', body: JSON.stringify( { [ key ]: val } ) } );
+	}, [ k, v ] );
+	const serverOpt = ( k ) => page.evaluate( async ( key ) => {
+		const r = await fetch( window.MINIMAL.restUrl + 'wp/v2/settings?_cb=' + Math.random(), { headers: { 'X-WP-Nonce': window.MINIMAL.nonce }, credentials: 'same-origin' } );
+		return ( await r.json() )[ key ];
+	}, k );
+	const chipHidden = () => page.$eval( '#minimal-vis-chip', ( c ) => c.hidden );
+
+	try {
+		// Start public. Clear the fixture provider too — a crashed
+		// visibility-partial run would otherwise leave the chip up.
+		await setOpt( 'minimal_admin_maintenance', false );
+		await setOpt( 'blog_public', 1 );
+		await setOpt( 'minimal_test_visibility', '' );
+
+		/* ===== Settings toggle updates the chip live (no reload) ===== */
+		// Maintenance mode lives on the Visibility tab now.
+		await page.goto( BASE + '/minimal-admin/settings', { waitUntil: 'domcontentloaded' } );
+		await page.waitForSelector( '.minimal-settings-nav-item', { timeout: 20000 } );
+		await page.evaluate( () => { [ ...document.querySelectorAll( '.minimal-settings-nav-item' ) ].find( ( b ) => b.textContent.trim() === 'Visibility' ).click(); } );
+		await page.waitForSelector( '[data-setting="minimal_admin_maintenance"]', { timeout: 8000 } );
+		t.check( 'chip hidden while public', await chipHidden() === true );
+		await page.click( '[data-setting="minimal_admin_maintenance"]' );
+		await page.click( '#minimal-save-settings' );
+		// The chip must appear WITHOUT navigating away.
+		await page.waitForFunction( () => ! document.querySelector( '#minimal-vis-chip' ).hidden, null, { timeout: 8000 } );
+		t.check( 'chip appears live after the Settings save', await chipHidden() === false );
+
+		/* ===== Chip popover has a real toggle, flips it off live ===== */
+		await page.click( '#minimal-vis-chip' );
+		await page.waitForSelector( '#minimal-vis-pop [data-vistoggle]', { timeout: 5000 } );
+		t.check( 'popover shows a Maintenance mode switch (on)', await page.$eval( '#minimal-vis-pop [data-vistoggle]', ( b ) => b.classList.contains( 'on' ) ) );
+		t.check( 'popover names the state', /hidden from the public/i.test( await page.$eval( '.minimal-vis-pop-title', ( e ) => e.textContent ) ) );
+		await page.click( '#minimal-vis-pop [data-vistoggle]' );
+		await page.waitForFunction( () => document.querySelector( '#minimal-vis-chip' ).hidden, null, { timeout: 8000 } );
+		t.check( 'toggling off in the popover hides the chip live', await chipHidden() === true );
+		t.check( 'popover closes when the site is public', ( await page.$( '#minimal-vis-pop' ) ) === null );
+		t.check( 'server maintenance is actually off', ! ( await serverOpt( 'minimal_admin_maintenance' ) ) );
+
+		/* ===== Overview banner carries an inline toggle ===== */
+		await setOpt( 'blog_public', 0 ); // search-discouraged
+		await page.goto( BASE + '/minimal-admin/overview', { waitUntil: 'domcontentloaded' } );
+		await page.waitForSelector( '.minimal-stats', { timeout: 20000 } );
+		t.check( 'banner shows for search-discouraged', ( await page.$( '.minimal-vis-banner' ) ) !== null );
+		const bannerToggle = await page.$( '.minimal-vis-banner [data-vistoggle]' );
+		t.check( 'banner carries an inline toggle (not just a link)', bannerToggle !== null );
+		// Flip search-engine visibility back on from the banner.
+		await bannerToggle.click();
+		await page.waitForFunction( () => document.querySelector( '#minimal-vis-chip' ).hidden && ! document.querySelector( '.minimal-vis-banner' ), null, { timeout: 8000 } );
+		t.check( 'banner + chip clear after enabling indexing from the banner', ( await page.$( '.minimal-vis-banner' ) ) === null && await chipHidden() === true );
+		t.check( 'blog_public is back on', !! ( await serverOpt( 'blog_public' ) ) );
+
+		/* ===== Toggling from the chip syncs the Settings page (Austin's bug) ===== */
+		// Drive everything through the UI to avoid the REST-settings write race.
+		// On the Settings Visibility tab, discourage indexing via the switch + Save.
+		await page.goto( BASE + '/minimal-admin/settings', { waitUntil: 'domcontentloaded' } );
+		await page.waitForSelector( '.minimal-settings-nav-item', { timeout: 20000 } );
+		await page.evaluate( () => { [ ...document.querySelectorAll( '.minimal-settings-nav-item' ) ].find( ( b ) => b.textContent.trim() === 'Visibility' ).click(); } );
+		await page.waitForSelector( '[data-setting="blog_public"]', { timeout: 8000 } );
+		if ( await page.$eval( '[data-setting="blog_public"]', ( b ) => b.classList.contains( 'on' ) ) ) {
+			await page.click( '[data-setting="blog_public"]' ); // turn indexing OFF
+			await page.click( '#minimal-save-settings' );
+			await page.waitForFunction( () => ! document.querySelector( '#minimal-vis-chip' ).hidden, null, { timeout: 8000 } );
+		}
+		t.check( 'Settings shows search-engine visibility OFF', await page.$eval( '[data-setting="blog_public"]', ( b ) => b.classList.contains( 'on' ) ) === false );
+		// Turn it back ON from the topbar chip popover while ON the Settings page.
+		await page.click( '#minimal-vis-chip' );
+		await page.waitForSelector( '#minimal-vis-pop [data-vistoggle]', { timeout: 5000 } );
+		await page.click( '#minimal-vis-pop [data-vistoggle]' );
+		await page.waitForFunction( () => document.querySelector( '#minimal-vis-chip' ).hidden, null, { timeout: 8000 } );
+		await page.waitForSelector( '[data-setting="blog_public"]', { timeout: 8000 } );
+		t.check( 'the Settings toggle reflects the chip change without a reload', await page.$eval( '[data-setting="blog_public"]', ( b ) => b.classList.contains( 'on' ) ) === true );
+
+	} finally {
+		await setOpt( 'minimal_admin_maintenance', false ).catch( () => {} );
+		await setOpt( 'blog_public', 1 ).catch( () => {} );
+	}
+	await t.done( browser, errors );
+} )();

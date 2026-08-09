@@ -1,0 +1,83 @@
+/**
+ * Per-post format picker (core-gaps bundle). post_format sits in TAX_SKIP, so
+ * format-driven themes couldn't be worked in Minimal; only the site default was
+ * settable. The editor sidebar now has a Format select, gated on the theme
+ * declaring post-format support (the minimal-dev-fixtures mu-plugin declares a
+ * representative set), that saves through wp/v2's native `format` field.
+ *
+ * Uses a throwaway draft; deletes it in the finally.
+ */
+const { launch, login, reporter, BASE } = require( './helpers' );
+
+( async () => {
+	const t = reporter( 'post-format' );
+	const { browser, page, errors } = await launch();
+	await login( page );
+
+	const rest = ( path, opts ) => page.evaluate( async ( [ p, o ] ) => {
+		const r = await fetch( window.MINIMAL.restUrl + p, Object.assign( {
+			headers: { 'X-WP-Nonce': window.MINIMAL.nonce, 'Content-Type': 'application/json' },
+			credentials: 'same-origin',
+		}, o || {} ) );
+		return { status: r.status, body: await r.json().catch( () => null ) };
+	}, [ path, opts ] );
+
+	let postId = null;
+	try {
+		const created = await rest( 'wp/v2/posts', { method: 'POST', body: JSON.stringify( {
+			title: 'Minimal format picker test', status: 'draft', content: 'Format test body.',
+		} ) } );
+		postId = created.body && created.body.id;
+		t.check( 'draft post created', !! postId, String( postId ) );
+		t.check( 'new post defaults to standard format', created.body && created.body.format === 'standard', created.body && created.body.format );
+
+		// v0.16: the format picker moved into the Settings door modal. Open it
+		// to reach #minimal-post-format; the door closes with #minimal-modal-close.
+		const openSettingsDoor = async () => {
+			await page.waitForSelector( '[data-side-door="settings"]', { timeout: 20000 } );
+			await page.evaluate( () => document.querySelector( '[data-side-door="settings"]' ).click() );
+			await page.waitForSelector( '#minimal-post-format', { timeout: 15000 } );
+		};
+		const closeDoor = async () => {
+			await page.evaluate( () => { const x = document.querySelector( '#minimal-modal-close' ); if ( x ) x.click(); } );
+			await page.waitForFunction( () => ! document.querySelector( '#minimal-post-format' ), { timeout: 5000 } ).catch( () => {} );
+		};
+
+		await page.goto( BASE + `/minimal-admin/editor/posts/${ postId }`, { waitUntil: 'domcontentloaded' } );
+		await page.waitForSelector( '#minimal-editor-body', { timeout: 20000 } );
+		await openSettingsDoor();
+
+		// Boot payload exposes the theme's supported formats.
+		const bootFormats = await page.evaluate( () => Object.keys( window.MINIMAL.postFormats || {} ) );
+		t.check( 'boot payload lists supported formats incl. standard + aside', bootFormats.includes( 'standard' ) && bootFormats.includes( 'aside' ), bootFormats.join( ',' ) );
+
+		const initial = await page.$eval( '#minimal-post-format', ( s ) => s.value );
+		t.check( 'picker starts on the post\'s current format', initial === 'standard', initial );
+
+		// Choose Aside in the door (marks dirty), close it, then save on the rail.
+		await page.selectOption( '#minimal-post-format', 'aside' );
+		await closeDoor();
+		await page.click( '#minimal-save-draft-btn' );
+
+		// Poll the server for the saved format.
+		let saved = '';
+		for ( let i = 0; i < 20; i++ ) {
+			const r = await rest( `wp/v2/posts/${ postId }?context=edit&_fields=format` );
+			saved = r.body && r.body.format;
+			if ( saved === 'aside' ) break;
+			await page.waitForTimeout( 500 );
+		}
+		t.check( 'chosen format saved to the server', saved === 'aside', saved );
+
+		// Reload and confirm the picker reflects the saved value.
+		await page.goto( BASE + `/minimal-admin/editor/posts/${ postId }`, { waitUntil: 'domcontentloaded' } );
+		await page.waitForSelector( '#minimal-editor-body', { timeout: 20000 } );
+		await openSettingsDoor();
+		const reloaded = await page.$eval( '#minimal-post-format', ( s ) => s.value );
+		t.check( 'picker reflects the saved format after reload', reloaded === 'aside', reloaded );
+
+	} finally {
+		if ( postId ) await rest( `wp/v2/posts/${ postId }?force=true`, { method: 'DELETE' } ).catch( () => {} );
+	}
+	await t.done( browser, errors );
+} )();

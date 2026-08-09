@@ -1,0 +1,79 @@
+/**
+ * Context menus beyond content rows: Media items (Preview / Copy URL / Open /
+ * Edit image / Delete) and Comment rows (the row's own moderation verbs,
+ * built FROM its buttons so the menu can never drift from the tab).
+ */
+const { BASE, launch, login, reporter } = require( './helpers' );
+
+( async () => {
+	const { browser, page, errors } = await launch();
+	const t = reporter( 'ctx-menus' );
+	await login( page );
+
+	/* ===== Media ===== */
+	await page.goto( `${ BASE }/minimal-admin/media`, { waitUntil: 'domcontentloaded' } );
+	await page.waitForSelector( '[data-media]', { timeout: 15000 } );
+	await page.click( '[data-media]', { button: 'right' } );
+	await page.waitForSelector( '.minimal-ctx-menu', { timeout: 5000 } );
+	const media = await page.evaluate( () => ( {
+		labels: [ ...document.querySelectorAll( '.minimal-ctx-menu button, .minimal-ctx-menu a' ) ].map( ( e ) => e.textContent.trim() ),
+		openHref: ( document.querySelector( '.minimal-ctx-menu a[href*="uploads"]' ) || {} ).href || '',
+	} ) );
+	t.check( 'media menu offers the item verbs', media.labels.includes( 'Preview' ) && media.labels.includes( 'Copy URL' ) && media.labels.includes( 'Delete' ), JSON.stringify( media.labels ) );
+	t.check( 'image items offer the in-app editor', media.labels.includes( 'Edit image' ), JSON.stringify( media.labels ) );
+	await page.evaluate( () => [ ...document.querySelectorAll( '.minimal-ctx-menu button' ) ].find( ( b ) => b.textContent.trim() === 'Preview' ).click() );
+	await page.waitForSelector( '#minimal-modal-overlay .minimal-modal.media', { timeout: 5000 } );
+	t.check( 'Preview opens the media modal', true, '' );
+	await page.keyboard.press( 'Escape' );
+	await page.waitForTimeout( 300 );
+
+	/* ===== Comments (seed a pending comment, moderate via the menu) =====
+	   Disable Comments is an ACTIVE resident fixture (spam-settings cycle);
+	   it blocks REST comment creation and nav-gates the route, so seed the
+	   baseline like spam-settings does and restore it no matter what. */
+	const setPlugin = ( plugin, status ) => page.evaluate( async ( a ) => {
+		const r = await fetch( window.MINIMAL.restUrl + 'wp/v2/plugins/' + a.plugin, {
+			method: 'PUT', credentials: 'same-origin',
+			headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': window.MINIMAL.nonce },
+			body: JSON.stringify( { status: a.status } ),
+		} );
+		return r.ok;
+	}, { plugin, status } );
+	await setPlugin( 'disable-comments/disable-comments', 'inactive' ).catch( () => {} );
+	try {
+	const cid = await page.evaluate( async () => {
+		const mk = await fetch( window.MINIMAL.restUrl + 'wp/v2/comments', {
+			method: 'POST', headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': window.MINIMAL.nonce },
+			body: JSON.stringify( { post: 1, content: 'Context menu probe comment' } ),
+		} );
+		const c = await mk.json();
+		await fetch( window.MINIMAL.restUrl + 'wp/v2/comments/' + c.id, {
+			method: 'POST', headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': window.MINIMAL.nonce },
+			body: JSON.stringify( { status: 'hold' } ),
+		} );
+		return c.id;
+	} );
+	await page.goto( `${ BASE }/minimal-admin/comments`, { waitUntil: 'domcontentloaded' } );
+	await page.waitForSelector( `.minimal-comment-row[data-crow="${ cid }"]`, { timeout: 15000 } );
+	await page.click( `.minimal-comment-row[data-crow="${ cid }"]`, { button: 'right' } );
+	await page.waitForSelector( '.minimal-ctx-menu', { timeout: 5000 } );
+	const cm = await page.$$eval( '.minimal-ctx-menu button', ( els ) => els.map( ( e ) => e.textContent.trim() ) );
+	t.check( 'comment menu mirrors the pending-tab verbs', cm.includes( 'Approve' ) && cm.some( ( l ) => /Spam/i.test( l ) ) && cm.some( ( l ) => /Trash/i.test( l ) ), JSON.stringify( cm ) );
+	await page.evaluate( () => [ ...document.querySelectorAll( '.minimal-ctx-menu button' ) ].find( ( b ) => b.textContent.trim() === 'Approve' ).click() );
+	await page.waitForFunction( ( id ) => ! document.querySelector( `.minimal-comment-row[data-crow="${ id }"]` ), cid, { timeout: 10000 } );
+	const status = await page.evaluate( async ( id ) => {
+		const r = await fetch( window.MINIMAL.restUrl + 'wp/v2/comments/' + id + '?_fields=status', { headers: { 'X-WP-Nonce': window.MINIMAL.nonce } } );
+		return ( await r.json() ).status;
+	}, cid );
+	t.check( 'Approve via the menu persists', status === 'approved', status );
+
+	// Cleanup the fixture comment.
+	await page.evaluate( async ( id ) => {
+		await fetch( window.MINIMAL.restUrl + 'wp/v2/comments/' + id + '?force=true', { method: 'DELETE', headers: { 'X-WP-Nonce': window.MINIMAL.nonce } } );
+	}, cid );
+	} finally {
+		await setPlugin( 'disable-comments/disable-comments', 'active' ).catch( () => {} );
+	}
+
+	await t.done( browser, errors );
+} )().catch( ( e ) => { console.error( e ); process.exit( 1 ); } );

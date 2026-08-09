@@ -1,0 +1,96 @@
+name: Sync upstream release
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: minimal-admin-upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: linux-arm64
+    timeout-minutes: 30
+    steps:
+      - name: Checkout downstream repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve latest stable mirror tag
+        id: upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          MIRROR_URL="https://feicode.com/WPFork/minn-admin-upstream.git"
+          TAG=$(git ls-remote --tags --refs "$MIRROR_URL" \
+            | awk '{sub("refs/tags/", "", $2); print $2}' \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -V | tail -1)
+          [ -n "$TAG" ] || { echo "No stable upstream tag found" >&2; exit 1; }
+          CURRENT=$(jq -r '.upstream_tag // ""' upstream-lock.json)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if [ "$TAG" = "$CURRENT" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Already synchronized: $TAG"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fetch and transform pinned upstream source
+        if: ${{ steps.upstream.outputs.changed == 'true' }}
+        id: transform
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.upstream.outputs.tag }}"
+          VERSION="${TAG#v}.1"
+          SOURCE="$RUNNER_TEMP/minn-admin-source"
+          git clone --quiet --depth=1 --branch "$TAG" \
+            https://feicode.com/WPFork/minn-admin-upstream.git "$SOURCE"
+          COMMIT=$(git -C "$SOURCE" rev-parse HEAD)
+          EXPECTED=$(git ls-remote --tags --refs \
+            https://feicode.com/WPFork/minn-admin-upstream.git "refs/tags/$TAG" | awk '{print $1}')
+          [ "$COMMIT" = "$EXPECTED" ] || { echo "Pinned tag changed during fetch" >&2; exit 1; }
+          if git show-ref --verify --quiet "refs/tags/v$VERSION"; then
+            echo "Downstream tag v$VERSION already exists" >&2
+            exit 1
+          fi
+          python3 tools/sync_upstream.py \
+            --source "$SOURCE" --output "$GITHUB_WORKSPACE" \
+            --upstream-tag "$TAG" --upstream-commit "$COMMIT" --version "$VERSION"
+          python3 tools/build_release.py --root "$GITHUB_WORKSPACE" --update-manifest
+          python3 tools/verify_release.py --root "$GITHUB_WORKSPACE" \
+            --zip "$GITHUB_WORKSPACE/dist/minimal-admin-$VERSION.zip"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and tag verified source
+        if: ${{ steps.upstream.outputs.changed == 'true' }}
+        shell: bash
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          [ -n "$RELEASE_TOKEN" ] || { echo "RELEASE_TOKEN is missing" >&2; exit 1; }
+          VERSION="${{ steps.transform.outputs.version }}"
+          UPSTREAM_TAG="${{ steps.upstream.outputs.tag }}"
+          git config user.name "FeiCode Release Bot"
+          git config user.email "release-bot@wenpai.org"
+          git add -A ':!dist'
+          git commit -m "release: sync upstream $UPSTREAM_TAG as $VERSION"
+          git tag -a "v$VERSION" -m "Minimal Admin $VERSION"
+          ASKPASS=$(mktemp)
+          trap 'rm -f "$ASKPASS"' EXIT
+          cat > "$ASKPASS" <<'EOF'
+          #!/bin/sh
+          case "$1" in
+            *Username*) printf '%s\n' 'kekechong' ;;
+            *Password*) printf '%s\n' "$RELEASE_TOKEN" ;;
+          esac
+          EOF
+          chmod 700 "$ASKPASS"
+          GIT_ASKPASS="$ASKPASS" GIT_TERMINAL_PROMPT=0 \
+            git push --atomic origin HEAD:main "refs/tags/v$VERSION"

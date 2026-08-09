@@ -1,0 +1,254 @@
+/**
+ * Soft-reload (v0.16.0): tab, filter, and search changes keep list chrome
+ * (toolbar + tabs) painted and dim the body with .minimal-busy instead of
+ * replacing the view with the full "Loading…" shell. Covers the Content
+ * type tabs and search, Media type tabs, surface tabs (Gravity Forms),
+ * the Extensions cold-shell first visit (tab strip never unmounts), and
+ * softListReload's route guard (a slow response never clobbers a view the
+ * user already navigated away from).
+ *
+ * Network delays are injected with page.route so the busy window is
+ * deterministic instead of racing the local server.
+ */
+const { BASE, launch, login, reporter } = require( './helpers' );
+
+( async () => {
+	const { browser, page, errors } = await launch();
+	const t = reporter( 'soft-reload' );
+	await login( page );
+
+	const delayRoute = ( pattern, ms ) =>
+		page.route( pattern, async ( route ) => {
+			await new Promise( ( r ) => setTimeout( r, ms ) );
+			await route.continue().catch( () => {} );
+		} );
+
+	// Tag the chrome node that owns the given element so we can prove the
+	// node survives (is not re-created) while the list body reloads.
+	const tagChrome = ( sel ) => page.evaluate( ( s ) => {
+		const el = document.querySelector( s );
+		const bar = el && el.closest( '.minimal-toolbar' );
+		if ( bar ) bar._minimalProbe = true;
+		return !! bar;
+	}, sel );
+	const chromeProbeAlive = ( sel ) => page.evaluate( ( s ) => {
+		const el = document.querySelector( s );
+		const bar = el && el.closest( '.minimal-toolbar' );
+		return !! ( bar && bar._minimalProbe );
+	}, sel );
+	const busyGone = async () => {
+		await page.waitForFunction(
+			() => ! document.querySelector( '#minimal-view .minimal-busy' ),
+			{ timeout: 15000 }
+		);
+		await page.waitForTimeout( 250 );
+	};
+
+	// Content's type control is tabs on small sites and a combobox when the
+	// site has many post types (minimaladmin: Woo + CPT UI). Handle both.
+	const typeChromeSel = '[data-typecombo], .minimal-tab[data-filter]';
+	const pickType = async ( value ) => {
+		if ( await page.$( `.minimal-tab[data-filter="${ value }"]` ) ) {
+			await page.click( `.minimal-tab[data-filter="${ value }"]` );
+			return 'tab';
+		}
+		await page.click( '[data-typecombo] .minimal-ac-input' );
+		await page.waitForSelector( `[data-typecombo] .minimal-ac-item[data-acv="${ value }"]`, { timeout: 5000 } );
+		await page.click( `[data-typecombo] .minimal-ac-item[data-acv="${ value }"]` );
+		return 'combo';
+	};
+
+	/* ===== Content: type filter soft reload ===== */
+	await page.goto( `${ BASE }/minimal-admin/content`, { waitUntil: 'domcontentloaded' } );
+	await page.waitForSelector( '.minimal-table-row', { timeout: 15000 } );
+	t.check( 'content chrome tagged', await tagChrome( typeChromeSel ) );
+
+	await delayRoute( '**/wp/v2/pages*', 900 );
+	const typeMode = await pickType( 'pages' );
+	const mid = await page.evaluate( () => ( {
+		tabActive: !! document.querySelector( '.minimal-tab[data-filter="pages"].active' ),
+		busy: !! document.querySelector( '#minimal-view .minimal-table.minimal-busy' ),
+		fullShell: !! document.querySelector( '#minimal-view > .minimal-loading' ),
+	} ) );
+	if ( typeMode === 'tab' ) t.check( 'clicked tab paints active before the data arrives', mid.tabActive );
+	t.check( 'list body dims with .minimal-busy while loading', mid.busy );
+	t.check( 'no full Loading… shell replaces the view', ! mid.fullShell );
+	t.check( 'toolbar node survives the reload (not re-created mid-load)', await chromeProbeAlive( typeChromeSel ) );
+	await page.unroute( '**/wp/v2/pages*' );
+	await busyGone();
+	t.check( 'pages render after the soft reload', !! ( await page.$( '.minimal-table-row' ) ) && ! ( await page.$( '.minimal-table.minimal-busy' ) ) );
+	if ( typeMode === 'combo' ) {
+		t.check( 'type combobox reflects the pick after render', await page.evaluate( () => {
+			const i = document.querySelector( '[data-typecombo] .minimal-ac-input' );
+			return !! i && ( i.placeholder === 'Pages' || i.value === 'Pages' );
+		} ) );
+	}
+
+	/* ===== Content: search keeps chrome and regains focus ===== */
+	await delayRoute( '**/wp/v2/pages*', 700 );
+	await tagChrome( '#minimal-content-search' );
+	await page.click( '#minimal-content-search' );
+	await page.keyboard.type( 'a' );
+	await page.waitForTimeout( 500 ); // 350ms debounce + handler start
+	t.check( 'search keeps the toolbar painted mid-load', await chromeProbeAlive( '#minimal-content-search' ) );
+	await page.unroute( '**/wp/v2/pages*' );
+	await busyGone();
+	t.check( 'search field regains focus after the re-render', await page.evaluate(
+		() => document.activeElement && document.activeElement.id === 'minimal-content-search'
+	) );
+
+	/* ===== Media: type tab soft reload ===== */
+	await page.goto( `${ BASE }/minimal-admin/media`, { waitUntil: 'domcontentloaded' } );
+	await page.waitForSelector( '[data-mtype]', { timeout: 15000 } );
+	await page.waitForFunction( () => ! document.querySelector( '#minimal-view > .minimal-loading' ), { timeout: 15000 } );
+	await tagChrome( '[data-mtype]' );
+	await delayRoute( '**/wp/v2/media*', 900 );
+	await page.click( '[data-mtype="image"]' );
+	const midMedia = await page.evaluate( () => ( {
+		active: !! document.querySelector( '[data-mtype="image"].active' ),
+		busy: !! document.querySelector( '#minimal-view .minimal-media-grid.minimal-busy, #minimal-view .minimal-media-list.minimal-busy, #minimal-view .minimal-table.minimal-busy' ),
+	} ) );
+	t.check( 'media type tab paints active immediately', midMedia.active );
+	t.check( 'media body dims while the grid refetches', midMedia.busy );
+	t.check( 'media toolbar survives the reload', await chromeProbeAlive( '[data-mtype]' ) );
+	await page.unroute( '**/wp/v2/media*' );
+	await busyGone();
+
+	/* ===== Surface tabs: Gravity Forms entries =====
+	 * Form tabs render as pills on short lists and as a [data-stabcombo]
+	 * combobox past 6 tabs (minimaladmin is past it) — handle both. */
+	await page.goto( `${ BASE }/minimal-admin/gravity-forms`, { waitUntil: 'domcontentloaded' } );
+	await page.waitForSelector( '[data-stab], [data-stabcombo]', { timeout: 20000 } );
+	await page.waitForFunction( () => ! document.querySelector( '#minimal-view > .minimal-loading' ), { timeout: 20000 } );
+	const stabChromeSel = '[data-stab], [data-stabcombo]';
+	await tagChrome( stabChromeSel );
+	await delayRoute( '**/gf/v2/**', 900 );
+	const pillTab = await page.evaluate( () => {
+		const btn = Array.from( document.querySelectorAll( '[data-stab]' ) )
+			.find( ( b ) => ! b.classList.contains( 'active' ) );
+		return btn ? btn.dataset.stab : null;
+	} );
+	if ( pillTab != null ) {
+		await page.click( `[data-stab="${ pillTab }"]` );
+		t.check( 'surface tab paints active immediately', await page.evaluate(
+			( tab ) => !! document.querySelector( `[data-stab="${ tab }"].active` ), pillTab
+		) );
+	} else {
+		await page.click( '[data-stabcombo] .minimal-ac-input' );
+		await page.waitForSelector( '[data-stabcombo] .minimal-ac-item', { timeout: 5000 } );
+		const comboVal = await page.evaluate( () => {
+			const items = Array.from( document.querySelectorAll( '[data-stabcombo] .minimal-ac-item' ) );
+			const pick = items.find( ( i ) => ! i.classList.contains( 'current' ) && i.dataset.acv !== '' );
+			return pick ? pick.dataset.acv : null;
+		} );
+		t.check( 'form tab combobox offers another form', !! comboVal, String( comboVal ) );
+		await page.click( `[data-stabcombo] .minimal-ac-item[data-acv="${ comboVal }"]` );
+	}
+	const midGf = await page.evaluate( () => ( {
+		busy: !! document.querySelector( '#minimal-view .minimal-busy' ),
+		fullShell: !! document.querySelector( '#minimal-view > .minimal-loading' ),
+	} ) );
+	t.check( 'surface list dims instead of a full Loading… swap', midGf.busy && ! midGf.fullShell );
+	t.check( 'surface tabs survive the reload', await chromeProbeAlive( stabChromeSel ) );
+	await page.unroute( '**/gf/v2/**' );
+	await busyGone();
+	t.check( 'surface list renders after the soft reload', !! ( await page.$( '.minimal-table-row, .minimal-empty' ) ) );
+
+	/* ===== Extensions: cold first visit keeps the tab strip ===== */
+	await page.goto( `${ BASE }/minimal-admin/extensions`, { waitUntil: 'domcontentloaded' } );
+	await page.waitForSelector( '[data-xtab="themes"]', { timeout: 20000 } );
+	await page.waitForFunction( () => ! document.querySelector( '#minimal-view > .minimal-loading' ), { timeout: 20000 } );
+	await delayRoute( '**/minimal-admin/v1/themes*', 900 );
+	await page.click( '[data-xtab="themes"]' );
+	const midExt = await page.evaluate( () => ( {
+		strip: !! document.querySelector( '[data-xtab="plugins"]' ),
+		active: !! document.querySelector( '[data-xtab="themes"].active' ),
+		loading: ( ( document.querySelector( '#minimal-view .minimal-loading' ) || {} ).textContent || '' ).trim(),
+	} ) );
+	t.check( 'cold Themes visit keeps the Plugins/Themes/Licenses strip', midExt.strip && midExt.active );
+	t.check( 'cold Themes visit shows a scoped loading note under the strip', /^Loading themes/.test( midExt.loading ), midExt.loading );
+	await page.unroute( '**/minimal-admin/v1/themes*' );
+	await page.waitForSelector( '.minimal-card.minimal-theme', { timeout: 15000 } );
+	t.check( 'themes render after the cold soft load', !! ( await page.$( '.minimal-theme-grid' ) ) );
+
+	/* ===== Route guard: a slow list response never clobbers another view ===== */
+	await page.click( '.minimal-nav-btn[data-nav="content"]' );
+	await page.waitForSelector( '.minimal-table-row', { timeout: 15000 } );
+	await delayRoute( '**/wp/v2/posts*', 1500 );
+	await pickType( 'posts' );
+	await page.click( '.minimal-nav-btn[data-nav="media"]' );
+	await page.waitForSelector( '[data-mtype]', { timeout: 15000 } );
+	await page.waitForTimeout( 1800 ); // let the stale content response resolve
+	const guard = await page.evaluate( () => ( {
+		mediaChrome: !! document.querySelector( '#minimal-view [data-mtype]' ),
+		contentTabs: !! document.querySelector( '#minimal-view .minimal-tab[data-filter]' ),
+	} ) );
+	t.check( 'stale content response never clobbers the Media view', guard.mediaChrome && ! guard.contentTabs, JSON.stringify( guard ) );
+	await page.unroute( '**/wp/v2/posts*' );
+
+	/* ===== Failed reload: no stale rows under the new state; Retry recovers =====
+	 * A dropped reply used to leave the previous rows painted (wrong-item
+	 * detail actions) with the mutated state, and re-click was a no-op. A
+	 * search change (always a fresh query) is the deterministic trigger. */
+	await page.click( '.minimal-nav-btn[data-nav="content"]' );
+	await page.waitForSelector( '.minimal-table-row', { timeout: 15000 } );
+	// A single dropped socket is retried once (the worker-recycle rule), so
+	// the persistent-failure path needs BOTH the attempt and its retry dead.
+	let failsLeft = 2;
+	await page.route( '**/wp/v2/**', async ( route ) => {
+		if ( failsLeft > 0 && /[?&]search=zzsoftfail/.test( route.request().url() ) ) {
+			failsLeft--;
+			await route.abort();
+		} else {
+			await route.continue().catch( () => {} );
+		}
+	} );
+	await page.fill( '#minimal-content-search', 'zzsoftfail' );
+	await page.waitForSelector( '#minimal-view [data-soft-retry]', { timeout: 15000 } );
+	const failState = await page.evaluate( () => ( {
+		rows: document.querySelectorAll( '.minimal-table-row' ).length,
+		toolbar: !! document.querySelector( '#minimal-view .minimal-toolbar' ),
+		searchKept: ( document.querySelector( '#minimal-content-search' ) || {} ).value === 'zzsoftfail',
+	} ) );
+	t.check( 'failed reload shows Retry, drops stale rows, keeps the toolbar + search',
+		failState.rows === 0 && failState.toolbar && failState.searchKept, JSON.stringify( failState ) );
+	await page.click( '#minimal-view [data-soft-retry]' );
+	await page.waitForFunction( () => ( document.querySelector( '.minimal-empty' ) || document.querySelector( '.minimal-table-row' ) )
+		&& ! document.querySelector( '[data-soft-retry]' ), null, { timeout: 15000 } );
+	t.check( 'Retry re-runs the load and the list recovers', true );
+	await page.unroute( '**/wp/v2/**' );
+
+	/* ===== Single dropped socket: silent one-shot retry, no error card =====
+	 * A reload right after a plugin-flipping action (Performance Lab
+	 * activate) lands on a recycled worker and dies with a TypeError while
+	 * the server is fine — softListReload replays once before painting the
+	 * error card, so the user never sees "Couldn't load this list". */
+	let dropOnce = true;
+	await page.route( '**/wp/v2/**', async ( route ) => {
+		if ( dropOnce && /[?&]search=zzdroponce/.test( route.request().url() ) ) {
+			dropOnce = false;
+			await route.abort();
+		} else {
+			await route.continue().catch( () => {} );
+		}
+	} );
+	await page.fill( '#minimal-content-search', 'zzdroponce' );
+	// Sequence on the actual drop first (the settle condition would match the
+	// PREVIOUS list state before the debounced reload even starts), then let
+	// the 1.2s replay land and the list settle.
+	for ( let i = 0; i < 40 && dropOnce; i++ ) {
+		await page.waitForTimeout( 200 );
+	}
+	t.check( 'the reload attempt was dropped', ! dropOnce, '' );
+	await page.waitForFunction( () => {
+		const busy = document.querySelector( '#minimal-view .minimal-busy' );
+		const settled = document.querySelector( '.minimal-empty' ) || document.querySelector( '.minimal-table-row' );
+		const search = document.querySelector( '#minimal-content-search' );
+		return ! busy && settled && search && search.value === 'zzdroponce';
+	}, null, { timeout: 20000 } );
+	t.check( 'one dropped reload retries silently (no error card)',
+		! ( await page.$( '#minimal-view [data-soft-retry]' ) ), '' );
+	await page.unroute( '**/wp/v2/**' );
+
+	await t.done( browser, errors );
+} )().catch( ( e ) => { console.error( e ); process.exit( 1 ); } );

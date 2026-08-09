@@ -1,0 +1,296 @@
+/**
+ * Scrutoscope profiler adapter — profiles list, detail sections, status card,
+ * Cron view, on-demand Profile this hook (1.4+), and delete-through-Storage.
+ *
+ * Fixture: minimal_test_seed_scrutoscope inserts two profiles via their
+ * Storage::save_profile (session home + background slow) and schedules
+ * minimal_scruto_profile_noop for the profile action. Scrutoscope must be active
+ * (GitHub install on minimaladmin).
+ */
+const { BASE, launch, login, reporter } = require( './helpers' );
+
+( async () => {
+	const { browser, page, errors } = await launch();
+	const t = reporter( 'scrutoscope' );
+
+	page.on( 'dialog', ( d ) => d.accept().catch( () => {} ) );
+
+	await login( page );
+
+	const api = ( path, opts ) => page.evaluate( async ( a ) => {
+		const r = await fetch( window.MINIMAL.restUrl + a.path, Object.assign( {
+			headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': window.MINIMAL.nonce },
+			credentials: 'same-origin',
+		}, a.opts || {} ) );
+		const text = await r.text();
+		let body = null;
+		try { body = JSON.parse( text ); } catch ( e ) { body = text; }
+		return { status: r.status, body };
+	}, { path, opts } );
+
+	// Ensure Scrutoscope is active (adapter routes only register while it is).
+	const plug = await page.evaluate( async () => {
+		const id = 'scrutoscope/scrutoscope';
+		const r = await fetch( window.MINIMAL.restUrl + 'wp/v2/plugins/' + id + '?_fields=status', {
+			headers: { 'X-WP-Nonce': window.MINIMAL.nonce }, credentials: 'same-origin',
+		} );
+		if ( ! r.ok ) return { ok: false, status: r.status };
+		return { ok: true, status: ( await r.json() ).status };
+	} );
+	t.check( 'scrutoscope plugin is installed', !! plug.ok, JSON.stringify( plug ) );
+	if ( plug.ok && plug.status !== 'active' ) {
+		await page.evaluate( async () => {
+			const id = 'scrutoscope/scrutoscope';
+			try {
+				await fetch( window.MINIMAL.restUrl + 'wp/v2/plugins/' + id, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': window.MINIMAL.nonce },
+					credentials: 'same-origin',
+					body: JSON.stringify( { status: 'active' } ),
+				} );
+			} catch ( e ) { /* dropped socket */ }
+		} );
+		await page.waitForTimeout( 1200 );
+	}
+
+	// Seed two fixture profiles (write-then-poll — flag is self-clearing).
+	await page.evaluate( async () => {
+		try {
+			await fetch( window.MINIMAL.restUrl + 'wp/v2/settings', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': window.MINIMAL.nonce },
+				credentials: 'same-origin',
+				body: JSON.stringify( { minimal_test_seed_scrutoscope: '1' } ),
+			} );
+		} catch ( e ) { /* ignore */ }
+	} );
+
+	let list = null;
+	for ( let i = 0; i < 10; i++ ) {
+		list = await api( 'minimal-admin/v1/scrutoscope/profiles?per_page=25' );
+		if ( list.status === 200 && list.body && list.body.total >= 2
+			&& ( list.body.items || [] ).some( ( r ) => /minimal-fixture-home/.test( r.route ) )
+			&& ( list.body.items || [] ).some( ( r ) => /minimal-fixture-slow/.test( r.route ) ) ) {
+			break;
+		}
+		await page.waitForTimeout( 700 );
+	}
+	t.check( 'list returns fixture profiles', !! list && list.status === 200 && list.body.total >= 2,
+		JSON.stringify( list && { status: list.status, total: list.body && list.body.total } ) );
+
+	const home = ( list.body.items || [] ).find( ( r ) => /minimal-fixture-home/.test( r.route ) );
+	const slow = ( list.body.items || [] ).find( ( r ) => /minimal-fixture-slow/.test( r.route ) );
+	t.check( 'home row has duration and session type',
+		!! home && home.type === 'session' && /ms/.test( home.duration ) && home.id > 0,
+		JSON.stringify( home ) );
+	// route_class rides every row (front/admin/rest/wp-cron), humanized.
+	t.check( 'rows carry a humanized route context',
+		!! home && !! slow && 'Front end' === home.context && 'Front end' === slow.context,
+		JSON.stringify( { home: home && home.context, slow: slow && slow.context } ) );
+	t.check( 'slow row is background type',
+		!! slow && slow.type === 'background' && slow.role === 'anonymous',
+		JSON.stringify( slow ) );
+
+	// Detail via sectionsRoute (Scrutoscope's own /profile/{id} under the hood).
+	const detail = await api( 'minimal-admin/v1/scrutoscope/profiles/' + home.id );
+	t.check( 'detail 200 with sections', detail.status === 200 && Array.isArray( detail.body.sections ) && detail.body.sections.length >= 2,
+		JSON.stringify( detail.status ) );
+	const titles = ( detail.body.sections || [] ).map( ( s ) => s.title );
+	t.check( 'detail has Summary + Top sources', titles.includes( 'Summary' ) && titles.includes( 'Top sources' ), titles.join( ',' ) );
+	t.check( 'detail adminUrl points at Scrutoscope',
+		/tools\.php\?page=scrutoscope/.test( detail.body.adminUrl || '' ),
+		detail.body.adminUrl || '' );
+	const sourceSec = ( detail.body.sections || [] ).find( ( s ) => s.title === 'Top sources' );
+	t.check( 'sources name minimal-admin or wordpress',
+		!! sourceSec && sourceSec.rows.some( ( r ) => /minimal-admin|wordpress/.test( r.label ) ),
+		JSON.stringify( sourceSec && sourceSec.rows ) );
+
+	// Status card.
+	const st = await api( 'minimal-admin/v1/scrutoscope/status' );
+	t.check( 'status card returns rows + open action',
+		st.status === 200 && ( st.body.rows || [] ).length >= 3
+		&& ( st.body.actions || [] ).some( ( a ) => /Scrutoscope/.test( a.label ) && a.href ),
+		JSON.stringify( st.body && { rows: ( st.body.rows || [] ).length, actions: st.body.actions } ) );
+	t.check( 'status reports profiles stored',
+		( st.body.rows || [] ).some( ( r ) => r.label === 'Profiles stored' && parseInt( String( r.value ).replace( /\D/g, '' ), 10 ) >= 2 ),
+		JSON.stringify( st.body.rows ) );
+	// Storage::get_table_stats() (Scrutoscope 1.5+) — coverage breadth without
+	// the adapter running its own SQL. Absent on older builds, so gate on it.
+	const hasStats = ( st.body.rows || [] ).some( ( r ) => r.label === 'Routes covered' );
+	t.check( 'status reports routes covered on Scrutoscope 1.5+',
+		! hasStats || ( st.body.rows || [] ).some(
+			( r ) => r.label === 'Routes covered' && parseInt( String( r.value ).replace( /\D/g, '' ), 10 ) >= 1 ),
+		JSON.stringify( ( st.body.rows || [] ).filter( ( r ) => r.label === 'Routes covered' ) ) );
+
+	// Cron view.
+	const cron = await api( 'minimal-admin/v1/scrutoscope/cron?per_page=100' );
+	t.check( 'cron inventory returns events',
+		cron.status === 200 && cron.body.total > 0 && ( cron.body.items || [] ).length > 0,
+		JSON.stringify( cron.body && { total: cron.body.total } ) );
+	t.check( 'cron rows have hook + schedule + status',
+		( cron.body.items || [] ).every( ( r ) => r.hook && r.schedule && r.status ),
+		JSON.stringify( ( cron.body.items || [] )[ 0 ] ) );
+	t.check( 'cron rows offer can_profile when Scrutoscope 1.4+',
+		( cron.body.items || [] ).every( ( r ) => r.can_profile === true ),
+		JSON.stringify( ( cron.body.items || [] )[ 0 ] ) );
+
+	// On-demand profile of the fixture no-op hook (side-effect free).
+	// Search across pages — the fixture is ~24h out so not overdue-sorted first.
+	let noop = ( cron.body.items || [] ).find( ( r ) => r.hook === 'minimal_scruto_profile_noop' );
+	if ( ! noop && cron.body.total > ( cron.body.items || [] ).length ) {
+		const all = await api( 'minimal-admin/v1/scrutoscope/cron?search=minimal_scruto_profile_noop&per_page=10' );
+		noop = ( all.body.items || [] ).find( ( r ) => r.hook === 'minimal_scruto_profile_noop' );
+	}
+	t.check( 'fixture no-op cron hook is scheduled', !! noop && !! noop.id,
+		JSON.stringify( { total: cron.body.total, sample: ( cron.body.items || [] ).slice( 0, 3 ).map( ( r ) => r.hook ) } ) );
+	let profiled = null;
+	if ( noop ) {
+		profiled = await api( 'minimal-admin/v1/scrutoscope/cron/' + noop.id + '/profile', { method: 'POST' } );
+		t.check( 'profile this hook returns profile_id',
+			profiled.status === 200 && profiled.body && profiled.body.ok && profiled.body.profile_id > 0,
+			JSON.stringify( profiled ) );
+		t.check( 'profile message names the hook',
+			!! profiled.body && /minimal_scruto_profile_noop/.test( profiled.body.message || '' ),
+			JSON.stringify( profiled.body ) );
+		if ( profiled.body && profiled.body.profile_id ) {
+			const pd = await api( 'minimal-admin/v1/scrutoscope/profiles/' + profiled.body.profile_id );
+			t.check( 'new profile has detail sections',
+				pd.status === 200 && Array.isArray( pd.body.sections ) && pd.body.sections.length >= 1,
+				JSON.stringify( { status: pd.status, titles: ( pd.body.sections || [] ).map( ( s ) => s.title ) } ) );
+
+			// Profile this hook writes profile_type=on_demand — the On demand
+			// tab is what makes Minimal's own capture findable (it used to land
+			// under All profiles only).
+			const od = await api( 'minimal-admin/v1/scrutoscope/profiles?kind=on_demand' );
+			t.check( 'on-demand tab finds the profile Minimal just captured',
+				od.status === 200
+				&& ( od.body.items || [] ).some( ( r ) => r.id === profiled.body.profile_id ),
+				JSON.stringify( od.body && { total: od.body.total, ids: ( od.body.items || [] ).map( ( r ) => r.id ) } ) );
+			t.check( 'on-demand tab returns only on_demand rows',
+				( od.body.items || [] ).length > 0
+				&& ( od.body.items || [] ).every( ( r ) => r.type === 'on_demand' ),
+				JSON.stringify( ( od.body.items || [] ).map( ( r ) => r.type ) ) );
+			t.check( 'cron capture carries its route context',
+				( od.body.items || [] ).some( ( r ) => r.id === profiled.body.profile_id && /cron/i.test( String( r.context ) ) ),
+				JSON.stringify( ( od.body.items || [] ).map( ( r ) => ( { id: r.id, context: r.context } ) ) ) );
+
+			// Clean up the on-demand profile so fixture totals stay stable.
+			await api( 'minimal-admin/v1/scrutoscope/profiles/' + profiled.body.profile_id, { method: 'DELETE' } );
+		}
+		// Bad id → 404.
+		const bad = await api( 'minimal-admin/v1/scrutoscope/cron/ffffffffffffffffffffffffffffffff/profile', { method: 'POST' } );
+		t.check( 'unknown cron id profiles 404', bad.status === 404, JSON.stringify( bad ) );
+	}
+
+	// UI: open surface, status card, row open, Cron tab.
+	await page.goto( BASE + '/minimal-admin/scrutoscope', { waitUntil: 'domcontentloaded' } );
+	await page.waitForSelector( '.minimal-surface-status, .minimal-table-row, .minimal-empty', { timeout: 20000 } );
+	await page.waitForTimeout( 400 );
+
+	const ui = await page.evaluate( () => {
+		const status = !! document.querySelector( '.minimal-surface-status' );
+		const rows = Array.from( document.querySelectorAll( '.minimal-table-row' ) ).map( ( r ) => r.textContent );
+		const hasHome = rows.some( ( t ) => /minimal-fixture-home/.test( t ) );
+		const openScruto = Array.from( document.querySelectorAll( '.minimal-sstat-actions a, .minimal-sstat-actions button, a' ) )
+			.some( ( el ) => /Scrutoscope/.test( el.textContent ) );
+		const views = Array.from( document.querySelectorAll( '.minimal-view-tab, [data-sview], .minimal-surface-views button, .minimal-tabs button' ) )
+			.map( ( b ) => b.textContent.trim() );
+		return { status, hasHome, openScruto, views, rowCount: rows.length };
+	} );
+	t.check( 'UI status card renders', ui.status, JSON.stringify( ui ) );
+	t.check( 'UI lists fixture home route', ui.hasHome, JSON.stringify( ui ) );
+
+	// Open detail modal from the home row.
+	const opened = await page.evaluate( () => {
+		const row = Array.from( document.querySelectorAll( '.minimal-table-row' ) )
+			.find( ( r ) => /minimal-fixture-home/.test( r.textContent ) );
+		if ( ! row ) return false;
+		row.click();
+		return true;
+	} );
+	t.check( 'clicked fixture row', opened, '' );
+	if ( opened ) {
+		await page.waitForSelector( '.minimal-modal [data-saction], .minimal-modal .minimal-ssec, .minimal-modal .minimal-modal-body', { timeout: 10000 } ).catch( () => null );
+		await page.waitForTimeout( 300 );
+		const modal = await page.evaluate( () => {
+			const m = document.querySelector( '.minimal-modal' );
+			if ( ! m ) return { open: false };
+			const text = m.textContent || '';
+			return {
+				open: true,
+				hasSources: /Top sources|minimal-admin|wordpress/.test( text ),
+				hasDuration: /ms/.test( text ),
+			};
+		} );
+		t.check( 'detail modal shows sources/duration', modal.open && modal.hasSources && modal.hasDuration, JSON.stringify( modal ) );
+		// Close modal.
+		await page.keyboard.press( 'Escape' );
+		await page.waitForTimeout( 200 );
+	}
+
+	// Cron view switcher (views[] → data-sview="x0").
+	const switcher = await page.$$eval( '.minimal-view-switch [data-sview]', ( els ) =>
+		els.map( ( e ) => e.dataset.sview + ':' + e.textContent.trim() ) );
+	t.check( 'switcher has Profiles + Cron',
+		switcher.includes( 'main:Profiles' ) && switcher.includes( 'x0:Cron' ),
+		switcher.join( ' · ' ) );
+	await page.click( '[data-sview="x0"]' );
+	// v0.16 soft-reload keeps the stale Profiles rows AND status card painted
+	// while the Cron collection loads — a flat wait reads stale UI. The card
+	// disappearing is the marker that the x0 render actually landed.
+	await page.waitForFunction( () => ! document.querySelector( '.minimal-surface-status' )
+		&& document.querySelectorAll( '.minimal-table-row' ).length > 0, null, { timeout: 20000 } );
+	const cronUi = await page.evaluate( () => {
+		const rows = document.querySelectorAll( '.minimal-table-row' );
+		const statusGone = ! document.querySelector( '.minimal-surface-status' );
+		return { n: rows.length, statusGone, sample: rows[ 0 ] ? rows[ 0 ].textContent.slice( 0, 120 ) : '' };
+	} );
+	t.check( 'Cron view lists events (status card hidden)',
+		cronUi.n > 0 && cronUi.statusGone, JSON.stringify( cronUi ) );
+
+	// Row menu offers Profile this hook (right-click ⋯ pattern).
+	const menuOk = await page.evaluate( () => {
+		const row = document.querySelector( '.minimal-table-row' );
+		if ( ! row ) return { ok: false, why: 'no row' };
+		const more = row.querySelector( '.minimal-row-more' );
+		if ( ! more ) return { ok: false, why: 'no more button' };
+		more.click();
+		const items = Array.from( document.querySelectorAll( '.minimal-new-menu button, .minimal-ctx-menu button' ) )
+			.map( ( b ) => ( b.textContent || '' ).trim() );
+		// Close menu (Escape).
+		document.dispatchEvent( new KeyboardEvent( 'keydown', { key: 'Escape', bubbles: true } ) );
+		return { ok: items.some( ( t ) => /Profile this hook/i.test( t ) ), items };
+	} );
+	t.check( 'Cron row menu offers Profile this hook', menuOk.ok, JSON.stringify( menuOk ) );
+
+	// Delete the slow fixture through the shim (Storage::delete_profile).
+	const del = await api( 'minimal-admin/v1/scrutoscope/profiles/' + slow.id, { method: 'DELETE' } );
+	t.check( 'delete profile ok', del.status === 200 && del.body && del.body.ok, JSON.stringify( del ) );
+	const after = await api( 'minimal-admin/v1/scrutoscope/profiles?search=minimal-fixture-slow' );
+	t.check( 'deleted profile gone from list',
+		after.status === 200 && ( after.body.items || [] ).every( ( r ) => r.id !== slow.id ),
+		JSON.stringify( after.body && after.body.items ) );
+
+	// Background tab filters to background type.
+	await page.evaluate( async () => {
+		try {
+			await fetch( window.MINIMAL.restUrl + 'wp/v2/settings', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': window.MINIMAL.nonce },
+				credentials: 'same-origin',
+				body: JSON.stringify( { minimal_test_seed_scrutoscope: '1' } ),
+			} );
+		} catch ( e ) { /* ignore */ }
+	} );
+	await page.waitForTimeout( 900 );
+	const bg = await api( 'minimal-admin/v1/scrutoscope/profiles?kind=background' );
+	t.check( 'background tab only background rows',
+		bg.status === 200 && ( bg.body.items || [] ).length > 0
+		&& ( bg.body.items || [] ).every( ( r ) => r.type === 'background' ),
+		JSON.stringify( bg.body && { total: bg.body.total, types: ( bg.body.items || [] ).map( ( r ) => r.type ) } ) );
+
+	await t.done( browser, errors );
+} )().catch( ( e ) => {
+	console.error( e );
+	process.exit( 1 );
+} );

@@ -1,0 +1,295 @@
+# Native editors and developer surfaces — the rungs above the adapter ladder
+
+**Status: one shipped, two parked (updated 2026-08-06 at v0.24.0 in
+tree).** The read-only
+database viewer (case study 2) shipped in the v0.22.0 cycle, built exactly to
+the scope drawn here; the Gravity Forms 80% editor and the file browser stay
+parked and unscheduled. The original premise held: this doc exists so that
+when one of these pulls hard enough to build, the scope argument is already
+made and the boundaries are already drawn. The viewer proved that pattern
+works. It extends `full-ui-adapters.md`,
+whose four-rung ladder ends at "delegate the bespoke screens"; this is the map
+of what could sit above that, and the test for deciding whether something
+belongs there.
+
+## The decision test
+
+The adapter ladder's Rung 4 says: when a plugin screen can't be expressed in
+descriptors, deep-link to it. That rule conflates two different situations, and
+separating them is the whole insight:
+
+1. **The screen is a canvas.** The interaction itself is the product: dragging
+   Elementor sections, painting Bricks layouts, GF's live form preview. The
+   artifact these produce is either opaque (builder meta blobs) or inseparable
+   from the rendering loop. Delegation is permanently correct here. This never
+   changes.
+2. **The screen is a fancy form over a clean document.** The UI looks
+   complex, but what it *produces* is an enumerable, round-trippable data
+   document with a public write path. Here Minimal doesn't need the plugin's
+   screen at all: it can build its own editor for the document, in Minimal's
+   idiom, and the plugin can't tell the difference.
+
+So the test is: **ignore the UI, look at the artifact.** Is it a clean document
+(JSON through a REST route, an enumerable schema, a versioned option shape)?
+Then a native editor is *possible* and the question becomes product scope. Is
+it opaque, or is the interaction the product? Then the deep link is the answer
+forever, and no amount of demand should reopen it.
+
+Two families pass the test today, and they are different enough to treat
+separately: **native editors over clean documents** (the Gravity Forms case)
+and **developer surfaces over site primitives** (database viewer, file
+browser), where the "document" is the site itself.
+
+## Case study 1: a Gravity Forms form editor (the 80% editor)
+
+### Why it passes the test
+
+From the 2026-07-06 source research (details in `full-ui-adapters.md`):
+
+- A GF form is ONE JSON document (`display_meta`) that round-trips through
+  `PUT gf/v2/forms/{id}`. Fields, settings, notifications and confirmations
+  all live inside it.
+- The field palette is programmatic: `GF_Fields::get_all()` enumerates every
+  registered field type, including add-on-provided ones.
+- Per-type settings keys are enumerable, and conditional logic is a small rule
+  JSON (`{ actionType, logicType, rules: [{ fieldId, operator, value }] }`),
+  which is Minimal's own `when`-condition shape, grown up.
+- GF's own editor is hand-authored inline JS on top of this document. Nothing
+  it does is privileged; a foreign editor writing the same document produces
+  forms GF renders and edits interchangeably.
+
+### The scope decision: 80%, not parity
+
+A parity editor (GF's drag-drop canvas, ~100 hand-authored setting panels,
+live preview) fails the canvas test and would put Minimal on a permanent parity
+treadmill. The Stackable lesson applies: chasing a plugin's own React UI is a
+race Minimal loses by winning.
+
+The 80% editor is a different product: **form management with field editing**,
+in Minimal's list-first idiom, covering the edits people actually make to forms
+that already exist:
+
+- **Field list** — add, remove, reorder (the menu-drag pattern), duplicate.
+  Rendered as rows, not a canvas; a static preview panel can render the form
+  via GF's own front-end markup in an island-style preview, read-only.
+- **Per-field basics** through the shared form engine: label, description,
+  required, placeholder, choices (add/reorder/default), field size, admin
+  label. Field types whose settings map onto the form vocabulary get full
+  editing; the rest render their mapped subset plus a locked count with
+  "edit in Gravity Forms ↗" (the ACF locked-fields pattern).
+- **Form settings, notifications, confirmations** — the Phase-2 GF Settings
+  mapper ✅ shipped (v0.13.0 cycle, 2026-07-12): per-form settings via the
+  item-scoped settings view, notifications as a list view with daily-field
+  editing; confirmations editing was deliberately skipped (form-build-time
+  work, not daily). The 80% editor composes with them rather than
+  containing them.
+- **Conditional logic, read-first**: render existing rules as sentences
+  ("Show when Budget is greater than 500"). Editing rules is a v2 decision;
+  the rule JSON is trivial but the UX of building rules well is not.
+
+Explicitly OUT, permanently: drag-drop canvas, live styled preview, layout
+columns, the pricing/product field wiring, add-on feed UIs beyond what the
+settings mapper covers. The deep link is one click and GF's editor is good.
+
+### Load-bearing risks
+
+- **Full-form PUT concurrency.** One notification edit round-trips the whole
+  form JSON; two editors can clobber each other, and GF's own locking is
+  admin-screen-bound so it cannot help. Mitigation: read-modify-write inside
+  the shim with a `date_updated` check before write, plus Minimal-side locking
+  if this ever ships (the `_edit_lock` pattern proved core and Minimal can share
+  a lock protocol; GF would need the same idea via form meta).
+- **Version drift.** The mapper reads schemas at runtime so *fields* self-heal,
+  but the editor's assumptions about `display_meta` structure are code. Guard
+  every read, degrade to the deep link, never fatal (the standing shim rule).
+- **The treadmill boundary must be written down.** The moment a request needs
+  per-field-type bespoke UI beyond the form vocabulary, the answer is the
+  locked count, not a new control. This is the same discipline that keeps the
+  block inspector honest.
+
+### Cost, honestly
+
+This is "Minimal builds a second editor" scale: think the block-inspector effort,
+not an adapter. Ballpark a full cycle for field-list + basics + suites. The
+prerequisite plumbing (item-scoped settings, the Settings-framework mapper,
+notifications write path) shipped in the v0.13.0 cycle, and the management
+ring around the parked editor has kept growing since: the entry workflow
+(star, spam, bulk, resend) in v0.12.0 and a Feeds view in v0.18.0 that
+lists every add-on feed with on/off and delete through GF's own model
+while configuration stays deep-linked, so the "no add-on feed UIs"
+boundary held even as feeds became visible. As of v0.24.0 no field-editing
+code exists in the tree (`includes/adapters/gravity-forms.php` writes only
+form settings and notifications through `GFAPI::update_form`); what
+remains before committing is unchanged: dogfooding that form-management
+depth on a real site with active Gravity Forms use, so the bet is earned,
+not assumed.
+
+### The generalization
+
+GF is the reference, not the target. The same 80%-editor shape fits any plugin
+whose artifact is a clean document: Fluent Forms (forms are JSON in its own
+tables with REST), Redirection groups, WP Mail SMTP connection wizards. The
+rule: build the document editor ONCE against the hardest well-shaped case
+(GF), extract what generalizes into the form engine, and let other adapters
+opt in with mappers, exactly like the settings-surface multiplier.
+
+## Case study 2: a database viewer (developer surface)
+
+**✅ Shipped (v0.22.0 cycle, 2026-07-24)** — `/minimal-admin/database`, built to
+the scope below: `includes/class-minimal-admin-db.php` (three GET routes under
+`manage_options`, identifier whitelisting against information_schema, LIMIT
+discipline with a 10k paging window and capped filtered counts, per-cell
+byte caps with a roomier row-detail refetch) plus the bespoke client view
+(table list → paged rows → row detail modal). Suite: `tests/database.test.js`.
+The boundaries held: no writes, no SQL console, serialized blobs render raw.
+
+**Extended in the same cycle (2026-07-24)** with the two additions that stay
+inside the original envelope, after an explicit pros-and-cons pass on going
+further (the phpMyAdmin question, answered no):
+
+- **Structure tab** (`GET /db/structure`) — columns plus `indexes_of()` from
+  `SHOW INDEX`. Metadata only, so it is free on a table of any size, which is
+  why this tab is unbounded while Rows stays windowed.
+- **Health view** (`GET /db/health`) — a fixed check registry (orphan scans,
+  index and engine hygiene, fragmentation, auto-increment headroom, revision
+  and queue backlogs), cached 10 minutes and summarised as one System health
+  row. Suite: `tests/db-health.test.js`.
+
+Three properties make these additions free rather than new surface, and any
+future check MUST hold all three: **the SQL is authored** (no request
+parameter reaches it, so there is no new identifier or injection surface over
+what the viewer already had); **scans are bounded** by the same `COUNT_CAP`
+subquery idiom as `rows()` and skipped entirely above `SCAN_MAX_ROWS`, so the
+diagnostic cannot hurt the large sites that need it most; and **the only
+remedy is a WP-CLI command to copy**. That last one is the load-bearing one.
+A "clean up" button is the exact step that turns this viewer into an editor,
+and the reasoning against it below has not changed. Copying a command hands
+the write to the admin's own shell, where it belongs, and keeps Minimal's claim
+literally true.
+
+The deliberate non-goal that came up while scoping this and was rejected: a
+**database dump**. Read-only does not mean harmless when the read is total. A
+dump changes the blast radius of any auth bug from "an admin reads capped
+rows one page at a time" to "one request yields every password hash, customer
+address, stored SMTP password and license key", and the recurring real-world
+CVE in this space is an export plugin leaving a `.sql` in a web-served
+directory. Minimal already has a backups family (UpdraftPlus, Duplicator,
+Disembark, WPvivid) that owns that threat model and its recovery story; that
+surface, or WP-CLI, is the honest answer. If it is ever revisited, the only
+defensible shape is streamed (never written to disk), minted by a POST and
+consumed by a single-use short-TTL token, structure-only by default, with
+credential-bearing columns redacted unless explicitly opted in, and logged.
+
+### Why it passes the test
+
+The "document" is the database itself: enumerable (information_schema),
+pageable, and already partially surfaced (the System page's table-size card).
+A read-only browser is the surface engine pointed at a `$wpdb` shim: table
+list → paged rows → row detail. No plugin required, no new client machinery;
+the build is almost embarrassingly small next to its usefulness as a
+diagnostic.
+
+### The boundary that makes it shippable
+
+**Read-only is not a v1 compromise; it is the product.** A database *editor*
+bypasses every plugin's invariants (serialized blobs, caches, foreign-key-ish
+conventions WordPress fakes in code) and converts a diagnostic into a foot-gun.
+Writes are a permanent non-goal, stated in the UI ("read-only by design").
+
+Scope sketch:
+
+- System-page adjacent (Manage group, `manage_options`, and consider gating
+  behind the same spirit as the wp-config debug tools: visible only where
+  file-mod-style trust already exists).
+- Table list with row counts and sizes (the System card, promoted), search
+  by table name, prefix-scoped by default with an explicit toggle for
+  foreign-prefix tables.
+- Paged rows with the surface engine's table renderer; a row detail modal
+  reusing the entry-detail shape. LONGTEXT/blob columns render truncated with
+  a copy control, serialized values render RAW and are never unserialized
+  (the standing shim rule protects even a viewer).
+- Column sort, simple per-column contains-filter. No JOINs, no query box: a
+  SQL console is a different product with a different threat model, and the
+  answer to "I need real SQL" is WP-CLI or Adminer, honestly.
+
+### Risks
+
+Small and mostly about restraint: the temptation to add "just one" write path
+(fix a typo in an option) is how viewers become editors. The one real
+technical caution: SELECTs against huge tables need LIMIT discipline and a
+row-count cap read from information_schema estimates, or the viewer becomes a
+site-killer on the exact sites where it is most needed.
+
+## Case study 3: a file browser (developer surface)
+
+The weakest of the three cases, recorded mostly to draw its boundary.
+
+- **Read-only listing + file viewer** (browse wp-content, view a log or a
+  config with the debug-log overlay pattern) is defensible and cheap; the
+  System debug tools already read files by path. The v0.19.0 log viewer
+  strengthened this case's "already covered" half: one viewer over every
+  log the site has (the debug log, a separate PHP error log, WooCommerce
+  channels, plus host and plugin sources through the
+  `minimal_admin_log_sources` filter in `includes/class-minimal-admin-logs.php`),
+  which covers the diagnostic reads that actually come up. No general
+  file browser exists at v0.24.0 and none is scheduled.
+- **A file MANAGER (write, upload, chmod, edit PHP) is a non-goal.** It is
+  the single most abused surface in WordPress security, it exists in
+  wp-admin-adjacent plugins for those who accept the risk, and nothing about
+  Minimal's product (calm daily admin) needs it.
+- Disembark note: its connector already exposes file/database primitives over
+  REST (`disembark/v1/database`, `/stream-file`, `/file/save`, ...) and could
+  in principle power this. Before Minimal ever points UI at those routes, they
+  need real auth upstream: as of v2.7.0 they register without
+  `permission_callback` (token checks live elsewhere), which is already
+  flagged as an upstream fix. Server-side shim access under Minimal's own cap
+  gate would be the pattern regardless (the rest_do_request precedent).
+  The shipped Backups adapter (v0.12.0, `includes/adapters/disembark.php`)
+  holds exactly that line: it reads Disembark's options and file layout
+  server-side under `manage_options` and never calls the token-guarded
+  HTTP routes; the v0.22.0 restore addition is a deep link, not a call.
+
+## What we will never build (this doc's additions to the standing list)
+
+- Parity clones of drag-drop canvases (form builders included: the 80% editor
+  is a different product, and the canvas stays GF's).
+- Database writes or a SQL console.
+- File write/upload/manager surfaces.
+- Any of these behind a feature flag "just to try": the boundaries above are
+  product decisions, not staging.
+
+## Sequencing, if any of this ever schedules
+
+1. ~~GF Settings mapper ships first~~ ✅ shipped (v0.13.0 cycle,
+   2026-07-12) — the prerequisite plumbing for the 80% editor now exists:
+   item-scoped settings views, the Settings-framework mapper, and the
+   notifications write path through `save_form_notifications`.
+2. ~~**Plugin Dev tools adapters first when the cycle wants diagnostics**
+   (v0.14.0 open, 2026-07-13): Scrutoscope (REST-first profiler history)
+   complements Query Monitor's this-request panel without Minimal inventing
+   a profiler. WP Crontrol / Transients Manager fill inventory gaps the
+   System page only counts. Ranked in `docs/plugin-support.md` Wave A.~~
+   ✅ shipped (v0.14.0, 2026-07-14) as the Diagnostics family: one Tools
+   nav item with a provider switcher over Scrutoscope, WP Crontrol,
+   Transients Manager and Rewrite Rules Inspector
+   (`includes/adapters/scrutoscope.php`, `wp-crontrol.php`,
+   `transients-manager.php`, `rewrite-rules-inspector.php`; suites
+   `scrutoscope`, `wp-crontrol`, `transients-manager`, `rewrite-rules`).
+   Deepened since: on-demand cron profiling in the v0.22.0 cycle, and
+   the v0.24.0 cycle reads profiles through Scrutoscope 1.5's own list
+   API instead of its table.
+3. ~~Database viewer is still the cheapest **native** full item and the best
+   trial balloon for "developer surfaces": one cycle fragment, no plugin
+   dependency. Pairs naturally with Scrutoscope (profile → table drill).~~
+   ✅ shipped (v0.22.0 cycle, 2026-07-24) — and it was indeed one cycle
+   fragment. The trial balloon holds: developer surfaces in Minimal's idiom
+   work when the boundary (read-only) is drawn before the build starts.
+4. The GF 80% editor is a full cycle and should be a deliberate product bet,
+   made when form management in Minimal (entries + settings + notifications
+   live as of v0.13.0, the entry workflow as of v0.12.0, feeds as of
+   v0.18.0) has proven that users stay in Minimal for form work. Dogfooding
+   on a real site with active Gravity Forms traffic is the honest test
+   before committing. Still parked and unscheduled at v0.24.0.
+5. File browsing only ever ships as read-only, and only if a real diagnostic
+   need surfaces that the log viewer (multi-source since v0.19.0) doesn't
+   already cover. None has at v0.24.0.
