@@ -31,14 +31,15 @@ jobs:
           python3 tools/build_release.py --root "$GITHUB_WORKSPACE"
           python3 tools/verify_release.py --root "$GITHUB_WORKSPACE"
           ZIP="$GITHUB_WORKSPACE/dist/minimal-admin-$(jq -r .version manifest.json).zip"
-          unzip -Z1 "$ZIP" | grep -q '^minimal-admin/languages/minimal-admin-zh_CN.po$'
-          unzip -Z1 "$ZIP" | grep -q '^minimal-admin/languages/minimal-admin-zh_TW.po$'
+          unzip -Z1 "$ZIP" > "$RUNNER_TEMP/release-files.txt"
+          grep -Fxq 'minimal-admin/languages/minimal-admin-zh_CN.po' "$RUNNER_TEMP/release-files.txt"
+          grep -Fxq 'minimal-admin/languages/minimal-admin-zh_TW.po' "$RUNNER_TEMP/release-files.txt"
           for LOCALE in zh_CN zh_TW; do
             STATUS="$GITHUB_WORKSPACE/docs/$LOCALE/translation-status.json"
             TRANSLATED=$(jq -r .translated "$STATUS")
             TOTAL=$(jq -r .total "$STATUS")
             if [ "$TRANSLATED" = "$TOTAL" ] && [ "$TOTAL" -gt 0 ]; then
-              unzip -Z1 "$ZIP" | grep -q "^minimal-admin/docs/$LOCALE/user-guide.md$"
+              grep -Fxq "minimal-admin/docs/$LOCALE/user-guide.md" "$RUNNER_TEMP/release-files.txt"
             fi
           done
 

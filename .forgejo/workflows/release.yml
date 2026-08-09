@@ -30,13 +30,14 @@ jobs:
           python3 tools/build_release.py --root "$GITHUB_WORKSPACE"
           ZIP="$GITHUB_WORKSPACE/dist/minimal-admin-$VERSION.zip"
           python3 tools/verify_release.py --root "$GITHUB_WORKSPACE" --zip "$ZIP"
+          unzip -Z1 "$ZIP" > "$RUNNER_TEMP/release-files.txt"
           for LOCALE in zh_CN zh_TW; do
             STATUS="$GITHUB_WORKSPACE/docs/$LOCALE/translation-status.json"
             [ "$(jq -r .translated "$STATUS")" = "$(jq -r .total "$STATUS")" ] || {
               echo "Localized documentation is incomplete for $LOCALE" >&2
               exit 1
             }
-            unzip -Z1 "$ZIP" | grep -q "^minimal-admin/docs/$LOCALE/user-guide.md$"
+            grep -Fxq "minimal-admin/docs/$LOCALE/user-guide.md" "$RUNNER_TEMP/release-files.txt"
           done
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
