@@ -6,14 +6,15 @@ translations with GlotPress status `current` are shipped.
 
 ## Projects and locales
 
-- Project: `plugins/minimal-admin`
-- Plugin strings: `plugins/minimal-admin/body`
-- Readme strings: `plugins/minimal-admin/readme`
+- Project: `hosting/minimal-admin`
+- Plugin strings: `hosting/minimal-admin/body`
+- Readme strings: `hosting/minimal-admin/readme`
 - Simplified Chinese: `zh-cn/default`, packaged as WordPress locale `zh_CN`
 - Traditional Chinese: `zh-tw/default`, packaged as WordPress locale `zh_TW`
 
-The production GlotPress installation organizes plugin projects as `body` and
-`readme`. Release versions are tracked by the POT header, Git tags, and
+Minimal Admin is hosted under the independent `hosting` tree rather than the
+WordPress plugin-directory tree. The project uses `body` and `readme` children.
+Release versions are tracked by the POT header, Git tags, and
 `upstream-lock.json`; separate Stable and Development project branches are not
 used.
 

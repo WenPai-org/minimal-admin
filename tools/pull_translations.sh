@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 BASE_URL=${GLOTPRESS_BASE_URL:-https://translate.wenpai.org}
-PROJECT=${GLOTPRESS_PROJECT:-plugins/minimal-admin/body}
+PROJECT=${GLOTPRESS_PROJECT:-hosting/minimal-admin/body}
 LANG_DIR="$ROOT/languages"
 
 for command in curl msgfmt python3; do
