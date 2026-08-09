@@ -61,6 +61,7 @@ jobs:
           python3 tools/sync_upstream.py \
             --source "$SOURCE" --output "$GITHUB_WORKSPACE" \
             --upstream-tag "$TAG" --upstream-commit "$COMMIT" --version "$VERSION"
+          tools/pull_translations.sh
           python3 tools/build_release.py --root "$GITHUB_WORKSPACE" --update-manifest
           python3 tools/verify_release.py --root "$GITHUB_WORKSPACE" \
             --zip "$GITHUB_WORKSPACE/dist/minimal-admin-$VERSION.zip"
