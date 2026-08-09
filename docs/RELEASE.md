@@ -9,6 +9,10 @@ a downstream version by appending `.1` (for example `0.25.0` becomes
 reproducible ZIP, updates `manifest.json`, commits the pinned provenance, tags
 the commit, and creates a FeiCode release with ZIP and SHA-256 assets.
 
+Before publishing assets, the release workflow boots WordPress Playground,
+installs the locally built ZIP, verifies that `minimal-admin` is active, and
+checks that the runtime version matches the release tag.
+
 The upstream source is treated as untrusted: upstream workflows are excluded,
 and no upstream scripts or tests execute in the job. Only trusted local tooling,
 `php -l`, and `node --check` run before the release token is used.
