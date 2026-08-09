@@ -6,7 +6,7 @@ BASE_URL=${GLOTPRESS_BASE_URL:-https://translate.wenpai.org}
 PROJECT=${GLOTPRESS_PROJECT:-plugins/minimal-admin/body}
 LANG_DIR="$ROOT/languages"
 
-for command in curl msgfmt wp; do
+for command in curl msgfmt python3; do
 	command -v "$command" >/dev/null 2>&1 || {
 		echo "Required command is missing: $command" >&2
 		exit 1
@@ -34,8 +34,7 @@ pull_locale() {
 	chmod 0644 "$po"
 
 	msgfmt --check --output-file "$LANG_DIR/minimal-admin-$wp_locale.mo" "$po"
-	rm -f "$LANG_DIR"/minimal-admin-"$wp_locale"-*.json
-	wp i18n make-json "$po" "$LANG_DIR" --no-purge >/dev/null
+	python3 "$ROOT/tools/make_jed_json.py" "$po" "$LANG_DIR" >/dev/null
 	printf 'Synchronized %s -> %s\n' "$gp_locale" "$wp_locale"
 }
 
