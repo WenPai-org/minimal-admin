@@ -71,11 +71,12 @@ whose slug is `body`, selects a translation set without a locale constraint,
 and targets only Simplified Chinese. That can write to unrelated projects and
 cannot safely maintain both locales.
 
-The Minimal Admin replacement job is pinned to project ID 450462 and the two
-known translation-set IDs. It requires an exact locale/target mapping, ignores
-any original that already has a translation in that set, and writes only
-`waiting`. Human approval remains required before a translation reaches a
-release. See the operations runbook for deployment paths and diagnostics.
+The Minimal Admin replacement job is pinned to body project ID 450462, readme
+project ID 450463, and translation-set IDs 318136–318139. It requires an exact
+project/locale/target mapping, ignores any original that already has a
+translation in that set, and writes only `waiting`. Human approval remains
+required before a translation reaches a release. See the operations runbook
+for deployment paths and diagnostics.
 
 ## Release and rollback
 
