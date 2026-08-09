@@ -1,5 +1,5 @@
-# Translation of 插件目录 - Minimal Admin - 插件主体 in Chinese (Taiwan)
-# This file is distributed under the same license as the 插件目录 - Minimal Admin - 插件主体 package.
+# Translation of 项目托管 - Minimal Admin - 插件主体 in Chinese (Taiwan)
+# This file is distributed under the same license as the 项目托管 - Minimal Admin - 插件主体 package.
 msgid ""
 msgstr ""
 "PO-Revision-Date: +0000\n"
@@ -9,7 +9,7 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: GlotPress/4.0.2\n"
 "Language: zh_TW\n"
-"Project-Id-Version: 插件目录 - Minimal Admin - 插件主体\n"
+"Project-Id-Version: 项目托管 - Minimal Admin - 插件主体\n"
 
 #: assets/js/app.js:29017
 msgid "Item"
