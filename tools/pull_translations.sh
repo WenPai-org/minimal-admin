@@ -15,6 +15,11 @@ done
 
 mkdir -p "$LANG_DIR"
 
+VERSION=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$ROOT/manifest.json")
+python3 "$ROOT/tools/docs_i18n.py" extract \
+	--docs "$ROOT/docs" --version "$VERSION" \
+	--output "$ROOT/languages/minimal-admin-docs.pot"
+
 pull_locale() {
 	local gp_locale=$1
 	local wp_locale=$2
@@ -41,3 +46,5 @@ pull_locale() {
 
 pull_locale zh-cn zh_CN
 pull_locale zh-tw zh_TW
+
+"$ROOT/tools/pull_docs_translations.sh"

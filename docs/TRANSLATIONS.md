@@ -34,6 +34,12 @@ used.
    tagging a release, so a new upstream version includes the latest approved
    catalogs. Missing translations fall back to the source English strings.
 
+The `readme` child contains the Markdown documentation extracted from
+`docs/*.md`. Inline code, links, URLs, HTML tags, printf placeholders, and code
+fences are protected from translation. Approved entries are rendered to
+`docs/zh_CN/` and `docs/zh_TW/`; untranslated entries remain in English rather
+than being guessed during the build.
+
 Run the download locally with:
 
 ```bash
@@ -42,7 +48,17 @@ tools/pull_translations.sh
 
 The command requires `curl`, GNU gettext `msgfmt`, and Python 3. Its output is
 written to `languages/minimal-admin-zh_CN.*` and
-`languages/minimal-admin-zh_TW.*`.
+`languages/minimal-admin-zh_TW.*`. Reviewed documentation catalogs are written
+to `docs/languages/`, and localized Markdown is rendered below `docs/zh_CN/`
+and `docs/zh_TW/`.
+
+Regenerate the documentation POT after changing source Markdown:
+
+```bash
+python3 tools/docs_i18n.py extract \
+  --version "$(jq -r .version manifest.json)" \
+  --output languages/minimal-admin-docs.pot
+```
 
 ## Machine translation boundary
 
