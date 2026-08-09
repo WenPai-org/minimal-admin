@@ -57,6 +57,25 @@ class DocsI18nTest(unittest.TestCase):
             self.assertFalse((output / "guide.md").exists())
             self.assertTrue((output / "translation-status.json").exists())
 
+    def test_glotpress_export_normalization_restores_source_punctuation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            pot = root / "docs.pot"
+            po = root / "docs.po"
+            pot.write_text(
+                '#: docs/guide.md:1\nmsgctxt "docs/guide.md"\n'
+                'msgid "Same \\u201cLabel\\u201d and plugin\\u2019s."\nmsgstr ""\n'
+            )
+            po.write_text(
+                '#: docs/guide.md:1\nmsgctxt "docs/guide.md"\n'
+                'msgid "Same &#12300;Label&#12301; and plugin&#12303;s."\n'
+                'msgstr "相同的&#12300;标签&#12301;。"\n'
+            )
+            DOCS_I18N.normalize_exported_po(pot, po)
+            result = po.read_text()
+            self.assertIn('msgid "Same “Label” and plugin’s."', result)
+            self.assertIn('msgstr "相同的「标签」。"', result)
+
 
 if __name__ == "__main__":
     unittest.main()

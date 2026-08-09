@@ -49,6 +49,14 @@ def main() -> int:
         for path in (root / "languages").glob("minimal-admin-*")
         if path.is_file() and path.suffix in TRANSLATION_SUFFIXES
     )
+    for locale in ("zh_CN", "zh_TW"):
+        locale_root = root / "docs" / locale
+        if locale_root.is_dir():
+            relative_files.extend(
+                path.relative_to(root).as_posix()
+                for path in locale_root.iterdir()
+                if path.is_file() and path.suffix in {".md", ".json"}
+            )
     relative_files = sorted(set(relative_files))
     dist = (args.dist or root / "dist").resolve()
     dist.mkdir(parents=True, exist_ok=True)
