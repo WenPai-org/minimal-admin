@@ -10,7 +10,9 @@ from pathlib import Path
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--plugin-url", required=True)
+    plugin_source = parser.add_mutually_exclusive_group(required=True)
+    plugin_source.add_argument("--plugin-url")
+    plugin_source.add_argument("--plugin-path", type=Path)
     parser.add_argument("--version", required=True)
     parser.add_argument("--locale", choices=("zh_CN", "zh_TW"))
     parser.add_argument("--output", required=True, type=Path)
@@ -18,8 +20,18 @@ def main() -> int:
 
     if not re.fullmatch(r"\d+\.\d+\.\d+\.\d+", args.version):
         raise SystemExit("version must be X.Y.Z.N")
-    if not re.fullmatch(r"https?://[^\s]+\.zip", args.plugin_url):
+    if args.plugin_url and not re.fullmatch(r"https?://[^\s]+\.zip", args.plugin_url):
         raise SystemExit("plugin URL must be an HTTP(S) ZIP URL")
+    if args.plugin_path and (args.plugin_path.is_absolute() or args.plugin_path.name != str(args.plugin_path)):
+        raise SystemExit("plugin path must name an adjacent ZIP file")
+    if args.plugin_path and args.plugin_path.suffix != ".zip":
+        raise SystemExit("plugin path must be a ZIP file")
+
+    plugin_data = (
+        {"resource": "url", "url": args.plugin_url}
+        if args.plugin_url
+        else {"resource": "bundled", "path": str(args.plugin_path)}
+    )
 
     version_check = (
         "wp eval 'if ( ! defined( \"MINIMAL_ADMIN_VERSION\" ) || "
@@ -36,7 +48,7 @@ def main() -> int:
             {"step": "login"},
             {
                 "step": "installPlugin",
-                "pluginData": {"resource": "url", "url": args.plugin_url},
+                "pluginData": plugin_data,
                 "options": {"activate": True, "targetFolderName": "minimal-admin"},
                 "ifAlreadyInstalled": "overwrite",
             },
