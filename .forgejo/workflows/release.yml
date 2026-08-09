@@ -50,23 +50,15 @@ jobs:
           set -euo pipefail
           VERSION="${{ steps.build.outputs.version }}"
           ZIP="${{ steps.build.outputs.zip }}"
-          PORT=8123
-          python3 -m http.server "$PORT" --bind 127.0.0.1 \
-            --directory "$(dirname "$ZIP")" >"$RUNNER_TEMP/playground-http.log" 2>&1 &
-          SERVER_PID=$!
-          trap 'kill "$SERVER_PID"' EXIT
-          for _ in $(seq 1 20); do
-            curl -fsS -o /dev/null "http://127.0.0.1:$PORT/$(basename "$ZIP")" && break
-            sleep 0.25
-          done
-          curl -fsS -o /dev/null "http://127.0.0.1:$PORT/$(basename "$ZIP")"
+          cp "$ZIP" "$RUNNER_TEMP/"
           for LOCALE in zh_CN zh_TW; do
             python3 tools/create_playground_blueprint.py \
-              --plugin-url "http://127.0.0.1:$PORT/$(basename "$ZIP")" \
+              --plugin-path "$(basename "$ZIP")" \
               --version "$VERSION" --locale "$LOCALE" \
               --output "$RUNNER_TEMP/playground-$LOCALE.json"
             npx --yes @wp-playground/cli@3.1.48 run-blueprint \
-              --blueprint="$RUNNER_TEMP/playground-$LOCALE.json" --verbosity=normal
+              --blueprint="$RUNNER_TEMP/playground-$LOCALE.json" \
+              --blueprint-may-read-adjacent-files --verbosity=normal
           done
 
       - name: Create FeiCode release and upload assets
