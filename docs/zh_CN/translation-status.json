@@ -1,6 +1,6 @@
 {
   "translated": 0,
-  "total": 4337,
+  "total": 4338,
   "files": {
     "RELEASE.md": {
       "translated": 0,
@@ -9,7 +9,7 @@
     },
     "TRANSLATIONS.md": {
       "translated": 0,
-      "total": 65,
+      "total": 66,
       "state": "pending"
     },
     "adapter-coverage.md": {
