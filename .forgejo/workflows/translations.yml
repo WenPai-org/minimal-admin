@@ -27,6 +27,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 tests/docs_i18n_test.py
           python3 tools/build_release.py --root "$GITHUB_WORKSPACE"
           python3 tools/verify_release.py --root "$GITHUB_WORKSPACE"
           ZIP="$GITHUB_WORKSPACE/dist/minimal-admin-$(jq -r .version manifest.json).zip"
@@ -39,7 +40,11 @@ jobs:
           RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           set -euo pipefail
-          git add languages/minimal-admin-zh_CN.* languages/minimal-admin-zh_TW.*
+          git add languages/minimal-admin-zh_CN.* languages/minimal-admin-zh_TW.* \
+            languages/minimal-admin-docs.pot \
+            docs/languages/minimal-admin-docs-zh_CN.po \
+            docs/languages/minimal-admin-docs-zh_TW.po \
+            docs/zh_CN docs/zh_TW
           if git diff --cached --quiet; then
             echo "Approved catalogs are unchanged"
             exit 0
