@@ -38,7 +38,10 @@ The `readme` child contains the Markdown documentation extracted from
 `docs/*.md`. Inline code, links, URLs, HTML tags, printf placeholders, and code
 fences are protected from translation. Approved entries are rendered to
 `docs/zh_CN/` and `docs/zh_TW/`; untranslated entries remain in English rather
-than being guessed during the build.
+than being guessed during the build. A localized Markdown file is created only
+after that file has at least one reviewed translation; each locale directory's
+`translation-status.json` reports reviewed and total string counts so an
+English-only copy cannot be mistaken for a translated document.
 
 Run the download locally with:
 

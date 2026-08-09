@@ -137,12 +137,17 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "Data flow"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:65
+#: docs/TRANSLATIONS.md:68
 msgctxt "docs/TRANSLATIONS.md"
 msgid "Do not run the existing __MA_DOC_TOKEN_1__"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:63
+#: docs/TRANSLATIONS.md:44
+msgctxt "docs/TRANSLATIONS.md"
+msgid "English-only copy cannot be mistaken for a translated document."
+msgstr ""
+
+#: docs/TRANSLATIONS.md:66
 msgctxt "docs/TRANSLATIONS.md"
 msgid "Machine translation boundary"
 msgstr ""
@@ -177,12 +182,12 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "Readme strings: __MA_DOC_TOKEN_1__"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:55
+#: docs/TRANSLATIONS.md:58
 msgctxt "docs/TRANSLATIONS.md"
 msgid "Regenerate the documentation POT after changing source Markdown:"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:77
+#: docs/TRANSLATIONS.md:80
 msgctxt "docs/TRANSLATIONS.md"
 msgid "Release and rollback"
 msgstr ""
@@ -192,7 +197,7 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "Release versions are tracked by the POT header, Git tags, and"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:43
+#: docs/TRANSLATIONS.md:46
 msgctxt "docs/TRANSLATIONS.md"
 msgid "Run the download locally with:"
 msgstr ""
@@ -202,7 +207,7 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "Simplified Chinese: __MA_DOC_TOKEN_1__, packaged as WordPress locale __MA_DOC_TOKEN_2__"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:71
+#: docs/TRANSLATIONS.md:74
 msgctxt "docs/TRANSLATIONS.md"
 msgid "The Minimal Admin replacement job is pinned to project ID 450462 and the two"
 msgstr ""
@@ -212,7 +217,7 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "The __MA_DOC_TOKEN_1__ child contains the Markdown documentation extracted from"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:49
+#: docs/TRANSLATIONS.md:52
 msgctxt "docs/TRANSLATIONS.md"
 msgid "The command requires __MA_DOC_TOKEN_1__, GNU gettext __MA_DOC_TOKEN_2__, and Python 3. Its output is"
 msgstr ""
@@ -222,12 +227,12 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "The production importer fetches __MA_DOC_TOKEN_1__ from FeiCode,"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:79
+#: docs/TRANSLATIONS.md:82
 msgctxt "docs/TRANSLATIONS.md"
 msgid "The release ZIP must contain the PO/MO catalogs and any generated Jed JSON"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:86
+#: docs/TRANSLATIONS.md:89
 msgctxt "docs/TRANSLATIONS.md"
 msgid "To stop synchronization, disable the translation workflow and the production"
 msgstr ""
@@ -262,7 +267,12 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "__MA_DOC_TOKEN_1__ downloads only __MA_DOC_TOKEN_2__ translations"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:74
+#: docs/TRANSLATIONS.md:43
+msgctxt "docs/TRANSLATIONS.md"
+msgid "__MA_DOC_TOKEN_1__ reports reviewed and total string counts so an"
+msgstr ""
+
+#: docs/TRANSLATIONS.md:77
 msgctxt "docs/TRANSLATIONS.md"
 msgid "__MA_DOC_TOKEN_1__. Human approval remains required before a translation reaches a"
 msgstr ""
@@ -272,7 +282,7 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "__MA_DOC_TOKEN_1__. Inline code, links, URLs, HTML tags, printf placeholders, and code"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:51
+#: docs/TRANSLATIONS.md:54
 msgctxt "docs/TRANSLATIONS.md"
 msgid "__MA_DOC_TOKEN_1__. Reviewed documentation catalogs are written"
 msgstr ""
@@ -282,27 +292,32 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "__MA_DOC_TOKEN_1__; separate Stable and Development project branches are not"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:53
+#: docs/TRANSLATIONS.md:42
+msgctxt "docs/TRANSLATIONS.md"
+msgid "after that file has at least one reviewed translation; each locale directory's"
+msgstr ""
+
+#: docs/TRANSLATIONS.md:56
 msgctxt "docs/TRANSLATIONS.md"
 msgid "and __MA_DOC_TOKEN_1__."
 msgstr ""
 
-#: docs/TRANSLATIONS.md:68
+#: docs/TRANSLATIONS.md:71
 msgctxt "docs/TRANSLATIONS.md"
 msgid "and targets only Simplified Chinese. That can write to unrelated projects and"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:73
+#: docs/TRANSLATIONS.md:76
 msgctxt "docs/TRANSLATIONS.md"
 msgid "any original that already has a translation in that set, and writes only"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:88
+#: docs/TRANSLATIONS.md:91
 msgctxt "docs/TRANSLATIONS.md"
 msgid "available; do not delete GlotPress history."
 msgstr ""
 
-#: docs/TRANSLATIONS.md:69
+#: docs/TRANSLATIONS.md:72
 msgctxt "docs/TRANSLATIONS.md"
 msgid "cannot safely maintain both locales."
 msgstr ""
@@ -317,7 +332,7 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "catalogs. Missing translations fall back to the source English strings."
 msgstr ""
 
-#: docs/TRANSLATIONS.md:80
+#: docs/TRANSLATIONS.md:83
 msgctxt "docs/TRANSLATIONS.md"
 msgid "catalogs. The WordPress Playground release smoke test installs that exact ZIP"
 msgstr ""
@@ -327,7 +342,7 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "checks its SHA-256 digest, and imports changed originals into the __MA_DOC_TOKEN_1__"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:66
+#: docs/TRANSLATIONS.md:69
 msgctxt "docs/TRANSLATIONS.md"
 msgid "command for this project. The installed implementation searches all projects"
 msgstr ""
@@ -337,7 +352,7 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "containing runtime placeholders, markup, shortcodes, braces, or URLs. A"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:87
+#: docs/TRANSLATIONS.md:90
 msgctxt "docs/TRANSLATIONS.md"
 msgid "cron independently. Previously committed catalogs and release ZIPs remain"
 msgstr ""
@@ -357,7 +372,7 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "for zh-cn and zh-tw and submits them only as __MA_DOC_TOKEN_1__. It skips strings"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:72
+#: docs/TRANSLATIONS.md:75
 msgctxt "docs/TRANSLATIONS.md"
 msgid "known translation-set IDs. It requires an exact locale/target mapping, ignores"
 msgstr ""
@@ -367,7 +382,7 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "project. It runs every six hours under a lock."
 msgstr ""
 
-#: docs/TRANSLATIONS.md:75
+#: docs/TRANSLATIONS.md:78
 msgctxt "docs/TRANSLATIONS.md"
 msgid "release. See the operations runbook for deployment paths and diagnostics."
 msgstr ""
@@ -377,12 +392,12 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "reviewer promotes accepted strings to __MA_DOC_TOKEN_1__."
 msgstr ""
 
-#: docs/TRANSLATIONS.md:82
+#: docs/TRANSLATIONS.md:85
 msgctxt "docs/TRANSLATIONS.md"
 msgid "runtime and locale-loading gate, not a linguistic review. A reviewer must"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:83
+#: docs/TRANSLATIONS.md:86
 msgctxt "docs/TRANSLATIONS.md"
 msgid "separately check an approved marker string in each locale before declaring"
 msgstr ""
@@ -394,15 +409,15 @@ msgstr ""
 
 #: docs/TRANSLATIONS.md:41
 msgctxt "docs/TRANSLATIONS.md"
-msgid "than being guessed during the build."
+msgid "than being guessed during the build. A localized Markdown file is created only"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:52
+#: docs/TRANSLATIONS.md:55
 msgctxt "docs/TRANSLATIONS.md"
 msgid "to __MA_DOC_TOKEN_1__, and localized Markdown is rendered below __MA_DOC_TOKEN_2__"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:84
+#: docs/TRANSLATIONS.md:87
 msgctxt "docs/TRANSLATIONS.md"
 msgid "translation coverage complete."
 msgstr ""
@@ -417,7 +432,7 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "translations. The source strings remain in the product repository; only"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:81
+#: docs/TRANSLATIONS.md:84
 msgctxt "docs/TRANSLATIONS.md"
 msgid "twice and verifies plugin activation under __MA_DOC_TOKEN_1__ and __MA_DOC_TOKEN_2__. This is a"
 msgstr ""
@@ -427,12 +442,12 @@ msgctxt "docs/TRANSLATIONS.md"
 msgid "used."
 msgstr ""
 
-#: docs/TRANSLATIONS.md:67
+#: docs/TRANSLATIONS.md:70
 msgctxt "docs/TRANSLATIONS.md"
 msgid "whose slug is __MA_DOC_TOKEN_1__, selects a translation set without a locale constraint,"
 msgstr ""
 
-#: docs/TRANSLATIONS.md:50
+#: docs/TRANSLATIONS.md:53
 msgctxt "docs/TRANSLATIONS.md"
 msgid "written to __MA_DOC_TOKEN_1__ and"
 msgstr ""

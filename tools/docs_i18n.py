@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import gettext
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -139,10 +140,14 @@ def render(docs_root: Path, mo_path: Path, output_root: Path) -> None:
         catalog = gettext.GNUTranslations(stream)
     translated = 0
     total = 0
+    status: dict[str, dict[str, int | str]] = {}
+    output_root.mkdir(parents=True, exist_ok=True)
     for path in source_files(docs_root):
         relative = path.relative_to(docs_root.parent).as_posix()
         output_lines: list[str] = []
         fence: str | None = None
+        file_translated = 0
+        file_total = 0
         for raw in path.read_text().splitlines(keepends=True):
             newline = "\n" if raw.endswith("\n") else ""
             line = raw[:-1] if newline else raw
@@ -163,15 +168,27 @@ def render(docs_root: Path, mo_path: Path, output_root: Path) -> None:
             prefix, _body, suffix = PREFIX_RE.match(line).groups()  # type: ignore[union-attr]
             value = catalog.pgettext(segment.context, segment.protected)
             total += 1
+            file_total += 1
             if value != segment.protected:
                 value = restore(value, segment.tokens)
                 translated += 1
+                file_translated += 1
             else:
                 value = segment.original
             output_lines.append(prefix + value + suffix + newline)
         destination = output_root / path.name
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_text("".join(output_lines))
+        if file_translated:
+            destination.write_text("".join(output_lines))
+        else:
+            destination.unlink(missing_ok=True)
+        status[path.name] = {
+            "translated": file_translated,
+            "total": file_total,
+            "state": "partial" if file_translated else "pending",
+        }
+    (output_root / "translation-status.json").write_text(
+        json.dumps({"translated": translated, "total": total, "files": status}, indent=2) + "\n"
+    )
     print(f"Rendered {translated}/{total} reviewed documentation strings to {output_root}")
 
 
