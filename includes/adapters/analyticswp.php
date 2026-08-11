@@ -16,9 +16,23 @@
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * AnalyticsWP is loaded AND this user may read its reports.
+ *
+ * No public reporting-capability API, so fall back to the floor its own
+ * dashboard uses.
+ */
+function minimal_admin_awp_ready() {
+	return ( defined( 'ANALYTICSWP_VERSION' ) || class_exists( 'AnalyticsWP\\Plugin' ) )
+		&& current_user_can( 'manage_options' );
+}
+
 add_filter( 'minimal_admin_traffic', function ( $traffic, $days ) {
 	if ( null !== $traffic ) {
 		return $traffic; // another provider answered first
+	}
+	if ( ! minimal_admin_awp_ready() ) {
+		return $traffic;
 	}
 	if ( ! defined( 'ANALYTICSWP_VERSION' ) ) {
 		return $traffic;

@@ -1590,6 +1590,17 @@ select.minimal-input {
   border: 1px dashed var(--border2); border-radius: 11px; padding: 14px 16px; margin: 0 0 18px; display: block;
 }
 .minimal-editor-body > figure.wp-block-image img, .minimal-slot > figure.wp-block-image img { max-width: 100%; height: auto; display: block; border-radius: 6px; }
+/* In a column that frame is a THIRD of the width: a four-up row of photos
+   rendered as stamps floating in mostly-empty cards (James's slide deck,
+   where each image lost 32px of its ~120px column). The cutout still reads
+   at this size, and the photo gets the space. No :has() here — it would
+   match inside the editor body and force a full-subtree style recalc on
+   every keystroke (the editor-feel benchmark's one hard rule); an empty
+   delete-husk wearing a small frame for one undo step is the cheaper miss. */
+.minimal-cols-island .minimal-slot > figure.wp-block-image,
+.minimal-cols-island .minimal-slot > img {
+  padding: 5px; border-radius: 9px; margin: 0 0 10px;
+}
 .minimal-editor-body > figure.wp-block-image figcaption, .minimal-slot > figure.wp-block-image figcaption { color: var(--text3); font-size: 13px; margin-top: 8px; }
 .minimal-editor-body iframe, .minimal-editor-body video { max-width: 100%; }
 .minimal-editor-body p { margin: 0 0 16px; }
@@ -1903,6 +1914,323 @@ a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2);
 .minimal-editor-body.locked { opacity: 0.75; }
 .minimal-editor-body.locked img { max-width: 100%; height: auto; }
 .minimal-editor-body img { max-width: 100%; height: auto; border-radius: 8px; }
+
+/* Row-layout containers: mirror the front end's horizontal flow in the
+   writing slot. Minimal typography stays; only direction/justification carry
+   over — full styling remains the previews' job. */
+.minimal-slot.minimal-slot-flex { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4em 1.2em; }
+.minimal-slot.minimal-slot-flex.nowrap { flex-wrap: nowrap; overflow-x: auto; }
+.minimal-slot.minimal-slot-flex > * { margin: 0; }
+.minimal-slot.minimal-slot-flex > .minimal-block-island { flex: 0 1 auto; min-width: 0; }
+.minimal-slot.minimal-slot-flex.justify-center { justify-content: center; }
+.minimal-slot.minimal-slot-flex.justify-end { justify-content: flex-end; }
+.minimal-slot.minimal-slot-flex.justify-between { justify-content: space-between; }
+
+/* Responsive embeds inside previews. Core's aspect-ratio rules are gated on
+   the front end's `wp-embed-responsive` BODY class, which the scoper turns
+   into a descendant selector that nothing in a preview can satisfy — so the
+   iframe renders at its raw oEmbed size (500x281) and, once a theme's own
+   spacer rule does apply, stacks below a padding-top spacer leaving dead
+   space. Minimal states the contract itself: the wrapper carries the aspect,
+   the iframe fills it. */
+.minimal-island-preview .wp-block-embed.wp-has-aspect-ratio .wp-block-embed__wrapper { position: relative; }
+.minimal-island-preview .wp-block-embed.wp-has-aspect-ratio .wp-block-embed__wrapper::before {
+  content: ""; display: block; padding-top: 50%;
+}
+.minimal-island-preview .wp-block-embed.wp-embed-aspect-21-9 .wp-block-embed__wrapper::before { padding-top: 42.85%; }
+.minimal-island-preview .wp-block-embed.wp-embed-aspect-18-9 .wp-block-embed__wrapper::before { padding-top: 50%; }
+.minimal-island-preview .wp-block-embed.wp-embed-aspect-16-9 .wp-block-embed__wrapper::before { padding-top: 56.25%; }
+.minimal-island-preview .wp-block-embed.wp-embed-aspect-4-3 .wp-block-embed__wrapper::before { padding-top: 75%; }
+.minimal-island-preview .wp-block-embed.wp-embed-aspect-1-1 .wp-block-embed__wrapper::before { padding-top: 100%; }
+.minimal-island-preview .wp-block-embed.wp-embed-aspect-9-16 .wp-block-embed__wrapper::before { padding-top: 177.77%; }
+.minimal-island-preview .wp-block-embed.wp-embed-aspect-1-2 .wp-block-embed__wrapper::before { padding-top: 200%; }
+.minimal-island-preview .wp-block-embed.wp-has-aspect-ratio .wp-block-embed__wrapper > iframe {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; margin: 0;
+}
+/* Providers without a declared aspect (tweets, generic oEmbed) simply use
+   the full width they are given rather than their raw oEmbed pixel width. */
+.minimal-island-preview .wp-block-embed:not(.wp-has-aspect-ratio) .wp-block-embed__wrapper > iframe { max-width: 100%; }
+
+/* ===== Island Images editor (reorder / remove / add) =====
+   Sits UNDER the media picker overlay (z 55) so "Add images…" stacks the
+   picker on top while the tile grid stays visible behind it. */
+.minimal-imgedit-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 52;
+  display: flex; align-items: center; justify-content: center; padding: 4vh 20px;
+}
+.minimal-imgedit {
+  width: 720px; max-width: 94vw; max-height: 88vh; display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--border2); border-radius: 14px;
+  box-shadow: var(--shadow); animation: minimalScaleIn 0.18s ease;
+}
+.minimal-imgedit-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.minimal-imgedit-head strong { font-size: 16px; }
+.minimal-imgedit-hint { color: var(--text2); font-size: 13px; flex: 1; min-width: 0; }
+/* grid-auto-rows is LOAD-BEARING: with 1fr columns a tile's width is not
+   definite while row tracks are sized, so Chrome cannot derive the square
+   height from aspect-ratio and collapses each auto row to the intrinsic
+   height of its contents (the img is height:100%, so ~nothing). The tiles
+   then overflow their tracks and overlap — a 30-image gallery rendered as
+   vertically crushed strips (Austin's repro). min-content sizes the track
+   from the tile's own aspect-derived height. */
+.minimal-imgedit-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  grid-auto-rows: min-content;
+  gap: 12px; padding: 16px 18px; overflow-y: auto; min-height: 120px;
+}
+/* ===== Editor ignores viewport-sized heights =====
+   A slide deck sets min-height:100vh on every section so each one fills the
+   screen for a reader. While EDITING that is acres of dead space between two
+   paragraphs (James's deck runs six viewports tall). The front end still gets
+   it: this is a stylesheet rule, so the saved markup is untouched, and it is
+   scoped to viewport units — a cover block's fixed pixel height still means
+   what it says. */
+.minimal-editor-body [style*="min-height"][style*="vh"],
+.minimal-island-preview [style*="min-height"][style*="vh"] { min-height: 0 !important; }
+
+/* A gallery of two dozen photos previews as a column of full-width images you
+   have to scroll past to reach the rest of the post, with the editing doorway
+   somewhere in the middle (Austin's 23-image repro). Clamp the card and fade
+   its foot: the hover badge carries the real count, and clicking anywhere in
+   it opens the images editor. */
+.minimal-island-preview.minimal-preview-clamped {
+  max-height: 420px; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 74%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 74%, transparent 100%);
+}
+
+/* ===== Missing-image placeholder =====
+   A dead image URL renders as the browser's broken glyph — on a themed slide
+   that reads as "this block is broken" rather than "this photo is gone"
+   (James's slider, whose first image 404s). A failed <img> still paints its
+   own background and border, so the illustration goes there: no element is
+   swapped, the src attribute stays exactly as authored (the image-tooling
+   doorway matches on it), and this only ever runs on preview and modal
+   chrome, never on the images in your content. */
+.minimal-img-missing {
+  /* `content: url(...)` REPLACES the failed image, which is what keeps
+     Chrome's own broken-file glyph from painting (an empty content value does
+     not), and object-fit:none draws the illustration at its own size instead
+     of blowing it up to fill a full-bleed slide. The src attribute is never
+     touched. */
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='168' viewBox='0 0 240 168' fill='none'%3E%3Crect x='9' y='9' width='222' height='150' rx='15' stroke='%238a8a94' stroke-width='2' stroke-dasharray='8 8' opacity='.5'/%3E%3Cg opacity='.42' fill='%238a8a94'%3E%3Ccircle cx='79' cy='56' r='11'/%3E%3Cpath d='M40 111l35-33 24 23 20-16 41 33H40z'/%3E%3C/g%3E%3Cpath d='M120 22l-9 26 15 8-13 26 12 9-10 24 14 12' stroke='%238a8a94' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' opacity='.85' fill='none'/%3E%3Ctext x='120' y='146' text-anchor='middle' fill='%238a8a94' font-family='system-ui,-apple-system,Segoe UI,sans-serif' font-size='15' font-weight='600'%3EImage missing%3C/text%3E%3C/svg%3E");
+  object-fit: none !important; object-position: center;
+  min-width: 96px; min-height: 96px;
+  border-radius: 10px;
+  background-color: var(--panel2);
+}
+/* Tiles are square and small: the label would not survive the scale-down. */
+/* Small chrome (tiles, inspector rows) scales the illustration down to fit. */
+.minimal-imgedit-tile .minimal-img-missing,
+.minimal-insp-img-row .minimal-img-missing { min-width: 0; min-height: 0; object-fit: contain !important; }
+
+/* Drop-to-add affordance. The modal owns every drop while it is open, so the
+   app-wide "Drop files to upload" veil stays down and this is the only hint;
+   pointer-events:none keeps the drop itself landing on the overlay. */
+.minimal-imgedit { position: relative; }
+.minimal-imgedit-drop-veil {
+  position: absolute; inset: 8px; z-index: 3; display: flex;
+  align-items: center; justify-content: center; border-radius: 11px;
+  border: 2px dashed var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--panel));
+  color: var(--text); font-size: 14.5px; font-weight: 650;
+  opacity: 0; pointer-events: none; transition: opacity 0.12s;
+}
+.minimal-imgedit-overlay.dropping .minimal-imgedit-drop-veil { opacity: 1; }
+/* Tile + its caption field are one grid cell, so captions never break the
+   columns and a long one wraps under its own photo. */
+.minimal-imgedit-cell { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.minimal-imgedit-cap {
+  width: 100%; box-sizing: border-box; padding: 5px 8px; font: inherit; font-size: 12.5px;
+  color: var(--text); background: var(--bg); border: 1px solid var(--border);
+  border-radius: 7px; outline: none;
+}
+.minimal-imgedit-cap::placeholder { color: var(--text3); }
+.minimal-imgedit-cap:focus { border-color: var(--accent); }
+.minimal-imgedit-tile {
+  position: relative; border: 1px solid var(--border); border-radius: 10px;
+  overflow: hidden; aspect-ratio: 1; cursor: grab; background: var(--bg);
+}
+.minimal-imgedit-tile.drag { opacity: 0.4; }
+.minimal-imgedit-tile.flash { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Preview images that open image tooling on click: punch through the
+   preview's pointer-events:none inertness (same technique as
+   .minimal-island-run) so the image itself receives the press. Without this the
+   event falls through to the island beneath and the container gets selected
+   instead — the image looks clickable but nothing happens (Austin's repro).
+   !important because the block's OWN front-end CSS is injected after this
+   file and often disables pointer events on slide images (Jetpack's swiper
+   does exactly that) — a plain declaration loses that cascade on real
+   third-party blocks while passing on plain fixtures. */
+/* The island whose ⚙ popover is open. Nested containers stack their chips in
+   the same corner, so without this two popovers read as one changing its
+   mind: the outer group says 2 blocks, the inner one 14, and which is which
+   is invisible (Austin's mmonroe repro). */
+.minimal-block-island.minimal-insp-target { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Hovering a ⚙ chip previews the same thing: which card that pill configures.
+   Dashed = "about to", solid = "open". Class set by a cheap mouseover handler
+   (never :has() in the editor surface — the chip-density perf rule). */
+.minimal-block-island.minimal-chip-hover { outline: 2px dashed color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
+.minimal-block-island[data-imgtool] > .minimal-island-preview,
+.minimal-block-island[data-cted] > .minimal-island-preview { pointer-events: auto; cursor: pointer; }
+.minimal-block-island[data-imgtool] > .minimal-island-preview img { pointer-events: auto !important; cursor: pointer; }
+/* Text that is editable in place keeps its own cursor and its own click. */
+.minimal-block-island[data-imgtool] > .minimal-island-preview .minimal-island-run,
+.minimal-block-island[data-cted] > .minimal-island-preview .minimal-island-run { cursor: text; }
+/* Hover affordance: name the action right on the images. pointer-events:none
+   so the badge never swallows the press it is advertising; the generic
+   "edit via ⚙" hint steps aside since this block has a better doorway. */
+.minimal-imgtool-badge {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 650;
+  background: rgba(17, 17, 21, 0.82); color: #fff; backdrop-filter: blur(3px);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3); user-select: none;
+  opacity: 0; transition: opacity 0.15s; white-space: nowrap; z-index: 3;
+  /* The badge is a real target. It sits dead centre, which is where the hand
+     goes, and on a card whose slides carry text that centre may be editable
+     text that would otherwise take the press (Austin's repro). Hidden at rest,
+     so it can only be hit while the card is offering it. */
+  pointer-events: none; cursor: pointer; border: none; font: inherit; font-weight: 650;
+}
+.minimal-block-island[data-imgtool]:hover > .minimal-imgtool-badge,
+.minimal-block-island[data-cted]:hover > .minimal-imgtool-badge { pointer-events: auto; }
+/* Over editable text the card stops claiming the click: no dim, no badge, so
+   what you see is what the press will do. */
+.minimal-block-island[data-imgtool].minimal-run-hover::after,
+.minimal-block-island[data-cted].minimal-run-hover::after,
+.minimal-block-island[data-imgtool].minimal-run-hover > .minimal-imgtool-badge,
+.minimal-block-island[data-cted].minimal-run-hover > .minimal-imgtool-badge { opacity: 0; pointer-events: none; }
+.minimal-block-island[data-imgtool]:hover > .minimal-imgtool-badge,
+.minimal-block-island[data-cted]:hover > .minimal-imgtool-badge { opacity: 1; }
+/* Dim the card behind the badge, exactly like the synced-pattern cover: the
+   images ARE the button, so hovering should say so with more than a pill.
+   pointer-events:none keeps the press on the image underneath, and the chip
+   is lifted over the wash (it keeps its own settings job). */
+.minimal-block-island[data-imgtool]::after,
+.minimal-block-island[data-cted]::after {
+  content: ""; position: absolute; inset: 0; border-radius: 10px; z-index: 1;
+  background: rgba(8, 8, 12, 0.45); opacity: 0; transition: opacity 0.15s;
+  pointer-events: none;
+}
+.minimal-block-island[data-imgtool]:hover::after,
+.minimal-block-island[data-cted]:hover::after { opacity: 1; }
+.minimal-block-island[data-imgtool] > .minimal-island-chip,
+.minimal-block-island[data-cted] > .minimal-island-chip { z-index: 4; }
+/* Synced-pattern doorway: its content lives in another post, so the card
+   offers that pattern's editor rather than pretending to edit in place. */
+/* The WHOLE card is the doorway: a synced pattern has nothing editable in
+   place, so any click on it should open the pattern. The cover sits under
+   the ⚙ chip (which keeps its own settings job) and dims on hover so the
+   card reads as one big button. */
+.minimal-pattern-cover {
+  position: absolute; inset: 0; z-index: 2; display: flex;
+  align-items: center; justify-content: center; padding: 0;
+  background: transparent; border: none; cursor: pointer; border-radius: 10px;
+  transition: background 0.15s;
+}
+.minimal-pattern-cover:hover, .minimal-pattern-cover:focus-visible { background: rgba(8, 8, 12, 0.45); }
+.minimal-pattern-badge {
+  padding: 9px 18px; border-radius: 999px; font-size: 13px; font-weight: 650;
+  background: rgba(17, 17, 21, 0.88); color: #fff;
+  backdrop-filter: blur(3px); box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  opacity: 0; transition: opacity 0.15s; white-space: nowrap; pointer-events: none;
+}
+.minimal-pattern-cover:hover .minimal-pattern-badge,
+.minimal-pattern-cover:focus-visible .minimal-pattern-badge { opacity: 1; }
+/* The chip must stay clickable above the cover. */
+.minimal-block-island[data-patternref] > .minimal-island-chip { z-index: 4; }
+.minimal-block-island[data-patternref]:hover > .minimal-island-hint { opacity: 0; }
+.minimal-block-island[data-imgtool]:hover > .minimal-island-hint,
+.minimal-block-island[data-cted]:hover > .minimal-island-hint { opacity: 0; }
+.minimal-block-island[data-imgtool].minimal-island-covered:hover > .minimal-imgtool-badge,
+.minimal-block-island[data-cted].minimal-island-covered:hover > .minimal-imgtool-badge { opacity: 0; }
+.minimal-block-island[data-imgtool].minimal-island-covered:hover::after,
+.minimal-block-island[data-cted].minimal-island-covered:hover::after { opacity: 0; }
+.minimal-imgedit-tile img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.minimal-imgedit-x {
+  position: absolute; top: 6px; right: 6px; width: 24px; height: 24px;
+  border-radius: 50%; border: none; background: rgba(0,0,0,0.55); color: #fff;
+  font-size: 15px; line-height: 1; cursor: pointer; opacity: 0; transition: opacity 0.12s;
+}
+.minimal-imgedit-dup {
+  position: absolute; top: 6px; right: 34px; width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: none; background: rgba(0,0,0,0.55); color: #fff;
+  cursor: pointer; opacity: 0; transition: opacity 0.12s; padding: 0;
+}
+.minimal-imgedit-dup svg { width: 13px; height: 13px; }
+.minimal-imgedit-moves {
+  position: absolute; bottom: 6px; left: 6px; right: 6px;
+  display: flex; justify-content: space-between; opacity: 0; transition: opacity 0.12s;
+}
+.minimal-imgedit-moves button {
+  width: 26px; height: 24px; border-radius: 7px; border: none;
+  background: rgba(0,0,0,0.55); color: #fff; font-size: 14px; line-height: 1; cursor: pointer;
+}
+.minimal-imgedit-moves button[disabled] { opacity: 0.35; cursor: default; }
+.minimal-imgedit-tile:hover .minimal-imgedit-x,
+.minimal-imgedit-tile:hover .minimal-imgedit-dup,
+.minimal-imgedit-tile:hover .minimal-imgedit-moves,
+.minimal-imgedit-tile:focus-within .minimal-imgedit-x,
+.minimal-imgedit-tile:focus-within .minimal-imgedit-dup,
+.minimal-imgedit-tile:focus-within .minimal-imgedit-moves { opacity: 1; }
+.minimal-imgedit-new {
+  position: absolute; top: 6px; left: 6px; padding: 2px 7px; border-radius: 6px;
+  background: var(--accent); color: #fff; font-size: 11px; font-weight: 700;
+}
+.minimal-imgedit-empty { grid-column: 1 / -1; color: var(--text2); font-size: 14px; padding: 20px 4px; }
+.minimal-imgedit-foot { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--border); }
+.minimal-insp-imghead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+/* ===== Content editor modal (nested blocks — GitHub #12) =====
+   The nested-content sibling of the images editor: same overlay tier (z 52,
+   under the media picker's 55), one card per child block — text flat and
+   prominent, the schema form tucked behind a per-card Settings disclosure. */
+.minimal-cted-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 52;
+  display: flex; align-items: center; justify-content: center; padding: 4vh 20px;
+}
+.minimal-cted {
+  width: 640px; max-width: 94vw; max-height: 88vh; display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--border2); border-radius: 14px;
+  box-shadow: var(--shadow); animation: minimalScaleIn 0.18s ease;
+}
+.minimal-cted-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.minimal-cted-head strong { font-size: 16px; }
+.minimal-cted-hint { color: var(--text2); font-size: 13px; flex: 1; min-width: 0; }
+/* position:relative makes card offsetTop scroll-space for the focus math. */
+.minimal-cted-body {
+  position: relative; display: flex; flex-direction: column; gap: 12px;
+  padding: 16px 18px; overflow-y: auto; min-height: 120px;
+}
+.minimal-cted-card {
+  border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px;
+  display: flex; flex-direction: column; gap: 8px; background: var(--bg);
+}
+.minimal-cted-card.flash { outline: 2px solid var(--accent); outline-offset: 2px; }
+.minimal-cted-card-head { display: flex; align-items: center; gap: 8px; }
+.minimal-cted-card-title {
+  font-size: 11.5px; font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text2); flex: 1; min-width: 0;
+}
+.minimal-cted-text { min-height: 52px; }
+.minimal-cted-setbtn {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border);
+  background: transparent; color: var(--text2); font: inherit; font-size: 12.5px; cursor: pointer;
+}
+.minimal-cted-setbtn:hover { color: var(--text); border-color: var(--border2); }
+.minimal-cted-setbtn svg { width: 13px; height: 13px; transition: transform 0.15s; }
+.minimal-cted-setbtn[aria-expanded="true"] svg { transform: rotate(180deg); }
+/* The [hidden]-vs-display rule (rules 38/44): an explicit display would
+   defeat the hidden attribute, so gate it on :not([hidden]). */
+.minimal-cted-set:not([hidden]) {
+  display: flex; flex-direction: column; gap: 2px;
+  padding-top: 6px; border-top: 1px dashed var(--border);
+}
+.minimal-cted-empty { color: var(--text2); font-size: 14px; padding: 22px 8px; text-align: center; }
+.minimal-cted-foot { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--border); }
+.minimal-cted-addslot { display: inline-flex; align-items: center; gap: 8px; }
+.minimal-cted-addslot select { width: auto; }
 
 /* ===== Modal (media preview · order detail · picker) ===== */
 .minimal-modal-overlay {
@@ -2636,7 +2964,17 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-media-slot-island .wp-block-cover__background { position: absolute; inset: 0; opacity: 0.35; }
 .minimal-media-slot-island img.wp-block-cover__image-background,
 .minimal-media-slot-island video.wp-block-cover__video-background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.minimal-media-slot-island .wp-block-cover > .minimal-slot { position: relative; z-index: 1; padding: 26px; }
+/* The writing slot sits INSIDE the cover's inner container, not directly in
+   the cover, so a direct-child rule never lifted it above the background:
+   the absolutely positioned image painted over the text and swallowed every
+   click, which left no caret and therefore no way to reach the "/" menu
+   (Austin's repro). Lift the slot at any depth, and make the background
+   media inert so a press always reaches the words. */
+.minimal-media-slot-island .wp-block-cover .minimal-slot { position: relative; z-index: 1; padding: 26px; }
+.minimal-media-slot-island .wp-block-cover__inner-container { position: relative; z-index: 1; }
+.minimal-media-slot-island .wp-block-cover__background,
+.minimal-media-slot-island img.wp-block-cover__image-background,
+.minimal-media-slot-island video.wp-block-cover__video-background { pointer-events: none; }
 .minimal-media-slot-island .wp-block-media-text { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center; }
 .minimal-media-slot-island .wp-block-media-text__media img,
 .minimal-media-slot-island .wp-block-media-text__media video { max-width: 100%; height: auto; display: block; border-radius: 6px; }
@@ -2935,6 +3273,12 @@ button.minimal-ac-item:hover { background: var(--hover); }
   border: 1px solid var(--border); padding: 2px 9px; border-radius: 5px; cursor: pointer; line-height: 1.4;
   touch-action: manipulation;
 }
+/* Chips stay out of the way until you point at their block: a page of
+   images otherwise wears a chip on every one. `.shown` is driven by the
+   pointer tracker (block OR chip, with a grace delay so crossing the gap
+   between them never flickers it away). */
+.minimal-code-chip { opacity: 0; transition: opacity 0.12s, color 0.12s, border-color 0.12s; pointer-events: none; }
+.minimal-code-chip.shown { opacity: 1; pointer-events: auto; }
 .minimal-code-chip:hover, .minimal-code-chip.hot { color: var(--accent2); border-color: var(--accent); }
 .minimal-code-chip:focus-visible, .minimal-island-chip:focus-visible {
   outline: 2px solid var(--accent); outline-offset: 2px; color: var(--accent2); border-color: var(--accent);
@@ -2967,8 +3311,12 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-table-ops { display: flex; gap: 6px; margin-bottom: 12px; }
 .minimal-table-ops:last-child { margin-bottom: 2px; }
 .minimal-table-ops .minimal-btn-soft { flex: 1; justify-content: center; padding: 5px 8px; font-size: 12.5px; }
-.minimal-img-pop { width: 300px; }
+.minimal-img-pop { width: 348px; }
 .minimal-img-pop .minimal-insp-actions .minimal-btn-primary { flex: 0 1 auto; }
+/* Apply · Replace · duplicate · remove read as one row (they wrapped the
+   trash button onto a second line at the old width). */
+.minimal-img-pop .minimal-insp-actions { flex-wrap: nowrap; align-items: center; }
+.minimal-img-pop .minimal-insp-actions .minimal-btn-soft { padding-left: 10px; padding-right: 10px; }
 .minimal-insp-note { color: var(--text3); font-size: 13px; line-height: 1.5; }
 /* "More settings" collapse for huge block schemas (300+ attr design suites). */
 .minimal-insp-more-btn { width: 100%; justify-content: center; margin: 10px 0 2px; }

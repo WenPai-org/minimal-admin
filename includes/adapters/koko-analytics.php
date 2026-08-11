@@ -15,9 +15,25 @@
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Koko Analytics is loaded AND this user may read its reports.
+ *
+ * Koko grants `view_koko_analytics` to administrator only (src/Plugin.php).
+ * A traffic provider owns its own capability check: the consuming routes
+ * (/overview, /overview/traffic-day) only require edit_posts, so without this
+ * a Contributor reads the site's top URLs and referrers.
+ */
+function minimal_admin_koko_ready() {
+	return ( defined( 'KOKO_ANALYTICS_VERSION' ) || class_exists( 'KokoAnalytics\\Plugin' ) )
+		&& current_user_can( 'view_koko_analytics' );
+}
+
 add_filter( 'minimal_admin_traffic', function ( $traffic, $days ) {
 	if ( null !== $traffic ) {
 		return $traffic; // another provider answered first
+	}
+	if ( ! minimal_admin_koko_ready() ) {
+		return $traffic;
 	}
 	if ( ! defined( 'KOKO_ANALYTICS_VERSION' ) && ! class_exists( 'KokoAnalytics\Plugin' ) ) {
 		return $traffic;
@@ -67,6 +83,9 @@ add_filter( 'minimal_admin_traffic_day', function ( $data, $from, $to ) {
 		return $data;
 	}
 	if ( ! defined( 'KOKO_ANALYTICS_VERSION' ) && ! class_exists( 'KokoAnalytics\Plugin' ) ) {
+		return $data;
+	}
+	if ( ! minimal_admin_koko_ready() ) {
 		return $data;
 	}
 

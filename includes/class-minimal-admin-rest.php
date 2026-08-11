@@ -415,9 +415,19 @@ class Minimal_Admin_REST {
 			)
 		);
 
+		// Per-object meta cap, not the plural primitive. `edit_users` is
+		// administrator-only on stock WordPress, but WooCommerce grants it
+		// outright to every shop_manager and relies ENTIRELY on its
+		// map_meta_cap filter to confine them to customers — a filter that only
+		// runs for `edit_user, $id`. Checking the primitive skips that
+		// confinement and lets a shop manager read an administrator's session
+		// IPs and force them out. Also require a session and a real target: an
+		// anonymous request has get_current_user_id() === 0, and the route
+		// regex happily matches /users/0/sessions.
 		$sessions_perm = function ( WP_REST_Request $request ) {
 			$uid = (int) $request['id'];
-			return get_current_user_id() === $uid || current_user_can( 'edit_users' );
+			return is_user_logged_in() && $uid > 0
+				&& ( get_current_user_id() === $uid || current_user_can( 'edit_user', $uid ) );
 		};
 
 		register_rest_route(
@@ -736,8 +746,10 @@ class Minimal_Admin_REST {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( __CLASS__, 'user_reset_password' ),
-				'permission_callback' => function () {
-					return current_user_can( 'edit_users' );
+				// Per-object meta cap — see $sessions_perm above for why the
+				// plural primitive is not enough on a WooCommerce site.
+				'permission_callback' => function ( WP_REST_Request $request ) {
+					return current_user_can( 'edit_user', (int) $request['id'] );
 				},
 			)
 		);
@@ -749,8 +761,9 @@ class Minimal_Admin_REST {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( __CLASS__, 'user_send_email' ),
-				'permission_callback' => function () {
-					return current_user_can( 'edit_users' );
+				// Per-object meta cap — see $sessions_perm above.
+				'permission_callback' => function ( WP_REST_Request $request ) {
+					return current_user_can( 'edit_user', (int) $request['id'] );
 				},
 				'args'                => array(
 					'subject' => array(
@@ -1127,6 +1140,36 @@ class Minimal_Admin_REST {
 			)
 		);
 
+		// Rebuild an image block's markup for a chosen set of images. The
+		// layout rules belong to the plugin that owns the block; Minimal only
+		// says WHICH images, in what order (see Minimal_Admin::image_blocks).
+		register_rest_route(
+			self::NS,
+			'/image-block',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'rebuild_image_block' ),
+				'permission_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+				'args'                => array(
+					'block' => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+					'ids'   => array(
+						'type'     => 'array',
+						'required' => true,
+						'items'    => array( 'type' => 'integer' ),
+					),
+					'raw'   => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+				),
+			)
+		);
+
 		register_rest_route(
 			self::NS,
 			'/render-blocks',
@@ -1264,8 +1307,12 @@ class Minimal_Admin_REST {
 		// Custom CSS — core's per-theme custom_css post (what the Customizer's
 		// "Additional CSS" edits), surfaced in Settings → Design. Cap is core's
 		// own edit_css (unfiltered_html-mapped; super-admin-only on multisite).
+		// Core's only UI for the custom_css post is the Customizer, which needs
+		// `customize` (edit_theme_options) on top of edit_css. edit_css alone
+		// resolves to unfiltered_html, which editors hold — so this route was a
+		// lower door to a stylesheet that renders on every front-end page.
 		$css_perm = function () {
-			return current_user_can( 'edit_css' );
+			return current_user_can( 'edit_css' ) && current_user_can( 'edit_theme_options' );
 		};
 		register_rest_route(
 			self::NS,
@@ -1425,6 +1472,12 @@ class Minimal_Admin_REST {
 				'get_callback' => array( __CLASS__, 'post_modified_unsaved' ),
 				'schema'       => array(
 					'type'        => 'boolean',
+					// Editor-list data, like minimal_lock below. Without this the
+					// field defaults into `view` context, so an anonymous
+					// wp/v2/posts read computes it — one extra revision query
+					// per item, and it tells the public which posts carry
+					// unsaved edits.
+					'context'     => array( 'edit' ),
 					'description' => 'Whether an autosave newer than the saved post exists (live post carrying unsaved edits).',
 				),
 			)
@@ -1840,6 +1893,52 @@ class Minimal_Admin_REST {
 	 * same render callbacks the front end runs on every page view; the cap gate
 	 * (edit_posts) matches the editor itself.
 	 */
+	/**
+	 * Hand a block's owner the images a writer picked, take back its markup.
+	 *
+	 * Attachments are resolved HERE rather than trusted from the browser: the
+	 * callable gets real dimensions and URLs, which is what a layout needs,
+	 * and a caller cannot describe an image that isn't in the library.
+	 */
+	public static function rebuild_image_block( $req ) {
+		$name   = (string) $req->get_param( 'block' );
+		$blocks = Minimal_Admin::image_blocks();
+		if ( ! isset( $blocks[ $name ] ) ) {
+			return new WP_Error( 'minimal_unknown_image_block', __( 'That block does not offer image editing here.', 'minimal-admin' ), array( 'status' => 400 ) );
+		}
+		$images = array();
+		foreach ( (array) $req->get_param( 'ids' ) as $id ) {
+			$id = (int) $id;
+			$post = $id ? get_post( $id ) : null;
+			if ( ! $post || 'attachment' !== $post->post_type ) {
+				continue;
+			}
+			$meta = wp_get_attachment_metadata( $id );
+			$full = wp_get_attachment_image_src( $id, 'full' );
+			$images[] = array(
+				'id'     => $id,
+				'url'    => $full ? $full[0] : wp_get_attachment_url( $id ),
+				'width'  => $full ? (int) $full[1] : (int) ( isset( $meta['width'] ) ? $meta['width'] : 0 ),
+				'height' => $full ? (int) $full[2] : (int) ( isset( $meta['height'] ) ? $meta['height'] : 0 ),
+				'alt'    => (string) get_post_meta( $id, '_wp_attachment_image_alt', true ),
+				'link'   => (string) get_attachment_link( $id ),
+			);
+		}
+		if ( ! $images ) {
+			return new WP_Error( 'minimal_no_images', __( 'Pick at least one image.', 'minimal-admin' ), array( 'status' => 400 ) );
+		}
+		$markup = null;
+		try {
+			$markup = call_user_func( $blocks[ $name ]['rebuild'], $images, (string) $req->get_param( 'raw' ) );
+		} catch ( Throwable $e ) {
+			return new WP_Error( 'minimal_image_block_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
+		if ( ! is_string( $markup ) || '' === trim( $markup ) ) {
+			return new WP_Error( 'minimal_image_block_failed', __( 'That block could not be rebuilt for those images.', 'minimal-admin' ), array( 'status' => 500 ) );
+		}
+		return array( 'markup' => $markup );
+	}
+
 	public static function render_blocks( WP_REST_Request $request ) {
 		$blocks = $request['blocks'];
 		if ( ! is_array( $blocks ) ) {
@@ -1893,6 +1992,18 @@ class Minimal_Admin_REST {
 			'urls'   => array(),
 			'inline' => '',
 		);
+		// Core's layout support (gallery columns, group flex/grid, blockGap)
+		// generates per-render `wp-container-…` classes whose CSS lands in the
+		// style engine's store; a real pageload emits it via
+		// wp_enqueue_stored_styles, a REST render never does — so a columns:4
+		// gallery previewed at the browser's default wrap (James's corporate
+		// page). The store only holds THIS render's rules, so hand them over.
+		if ( function_exists( 'wp_style_engine_get_stylesheet_from_context' ) ) {
+			$support_css = (string) wp_style_engine_get_stylesheet_from_context( 'block-supports' );
+			if ( '' !== trim( $support_css ) ) {
+				$styles['inline'] = trim( ( $styles['inline'] ?? '' ) . "\n" . $support_css );
+			}
+		}
 		/**
 		 * Preview styles adapters can extend — e.g. per-post generated CSS a
 		 * plugin cached in postmeta (Otter/atomic-wind) or CSS carried inside
@@ -2423,10 +2534,19 @@ class Minimal_Admin_REST {
 		// date and sort out of an orderby=modified window, but a fresh draft
 		// IS activity — the by-date query catches them. The usort below
 		// settles the merged order.
+		// 'perm' => 'editable' makes WP_Query add the post_author restriction
+		// for callers without edit_others_posts. Without it the non-public
+		// statuses below come back for EVERY author, so a Contributor reading
+		// /overview saw the titles and authors of other people's unpublished
+		// and embargoed drafts — content wp-admin's list table scopes away from
+		// them and core's wp/v2/posts strips per item. Each row is additionally
+		// filtered through read_post below, the same way the comment rows a few
+		// lines down already gate on moderate_comments.
 		$base_query   = array(
 			'post_type'   => array( 'post', 'page' ),
 			'post_status' => array( 'publish', 'draft', 'future', 'pending' ),
 			'numberposts' => 5,
+			'perm'        => 'editable',
 		);
 		$recent_posts = get_posts( array_merge( $base_query, array( 'orderby' => 'modified' ) ) );
 		$seen_ids     = wp_list_pluck( $recent_posts, 'ID' );
@@ -2436,6 +2556,12 @@ class Minimal_Admin_REST {
 			}
 		}
 		foreach ( $recent_posts as $p ) {
+			// Belt and braces behind 'perm' => 'editable': never surface a row
+			// for a post this user cannot read (a published post is fine; a
+			// draft resolves read_post to edit_post).
+			if ( ! current_user_can( 'read_post', $p->ID ) ) {
+				continue;
+			}
 			$time = strtotime( $p->post_modified_gmt . ' UTC' );
 			if ( ! $time || $time < 0 ) {
 				// Never-updated drafts zero BOTH gmt columns — post_date
@@ -3301,10 +3427,26 @@ class Minimal_Admin_REST {
 	}
 
 	/**
+	 * Which user a shared /me + /users/{id} handler is acting on.
+	 *
+	 * Read the id from the URL SEGMENT only. `$request['id']` also resolves
+	 * from the JSON body, the POST body and the QUERY STRING (see
+	 * WP_REST_Request::get_parameter_order), so on the /me/* routes — whose
+	 * permission callback is only `edit_posts` — `?id=1` used to retarget the
+	 * write at any account, including an administrator's. The /users/{id}
+	 * routes carry a real per-object gate ($edit_user_gate) and a real URL
+	 * segment, so they are unaffected.
+	 */
+	private static function target_user_id( WP_REST_Request $request ) {
+		$url = $request->get_url_params();
+		return isset( $url['id'] ) ? (int) $url['id'] : get_current_user_id();
+	}
+
+	/**
 	 * GET minimal-admin/v1/me/appearance — current user's color scheme preference.
 	 */
 	public static function get_my_appearance( WP_REST_Request $request ) {
-		$uid = $request['id'] ? (int) $request['id'] : get_current_user_id();
+		$uid = self::target_user_id( $request );
 		return rest_ensure_response( Minimal_Admin::get_user_appearance( $uid ) );
 	}
 
@@ -3449,7 +3591,7 @@ class Minimal_Admin_REST {
 		}
 		$result = wp_update_user(
 			array(
-				'ID'     => $request['id'] ? (int) $request['id'] : get_current_user_id(),
+				'ID'     => self::target_user_id( $request ),
 				'locale' => $locale,
 			)
 		);
@@ -3504,7 +3646,7 @@ class Minimal_Admin_REST {
 	public static function update_my_appearance( WP_REST_Request $request ) {
 		// {id} present = the admin user-edit page targeting another user
 		// (permission_callback gated on edit_user); absent = self.
-		$uid = $request['id'] ? (int) $request['id'] : get_current_user_id();
+		$uid = self::target_user_id( $request );
 		$cur = Minimal_Admin::get_user_appearance( $uid );
 		// JSON body may put nested custom under get_json_params.
 		$json = $request->get_json_params();
@@ -3972,16 +4114,21 @@ class Minimal_Admin_REST {
 	/**
 	 * List WooCommerce emails that can be re-triggered for an order.
 	 */
-	public static function order_list_emails( WP_REST_Request $request ) {
-		if ( ! function_exists( 'WC' ) || ! function_exists( 'wc_get_order' ) ) {
-			return new WP_Error( 'no_wc', 'WooCommerce is not available.', array( 'status' => 400 ) );
-		}
-		$order = wc_get_order( (int) $request['id'] );
-		if ( ! $order ) {
-			return new WP_Error( 'not_found', 'Order not found.', array( 'status' => 404 ) );
-		}
-		// Order-scoped transactional emails only (not account/reset).
-		$allow = array(
+	/**
+	 * Order-scoped transactional emails only — never account/reset.
+	 *
+	 * The listing filtered on this while the trigger walked the whole
+	 * WC()->mailer() registry, so a shop_manager could fire
+	 * customer_new_account or customer_reset_password (or any third-party
+	 * WC_Email) with the order-email signature. WC_Email_Customer_New_Account
+	 * reads trigger( $order_id, $order ) as trigger( $user_id, $user_pass ) and
+	 * mails whichever user holds that numeric id a set-password link they never
+	 * asked for. Both handlers use this list now.
+	 *
+	 * @return string[]
+	 */
+	private static function order_email_allowlist() {
+		return array(
 			'new_order',
 			'cancelled_order',
 			'failed_order',
@@ -3994,6 +4141,17 @@ class Minimal_Admin_REST {
 			'customer_failed_order',
 			'customer_cancelled_order',
 		);
+	}
+
+	public static function order_list_emails( WP_REST_Request $request ) {
+		if ( ! function_exists( 'WC' ) || ! function_exists( 'wc_get_order' ) ) {
+			return new WP_Error( 'no_wc', 'WooCommerce is not available.', array( 'status' => 400 ) );
+		}
+		$order = wc_get_order( (int) $request['id'] );
+		if ( ! $order ) {
+			return new WP_Error( 'not_found', 'Order not found.', array( 'status' => 404 ) );
+		}
+		$allow = self::order_email_allowlist();
 		$out = array();
 		foreach ( WC()->mailer()->get_emails() as $email ) {
 			if ( ! is_object( $email ) || empty( $email->id ) || ! in_array( $email->id, $allow, true ) ) {
@@ -4030,6 +4188,9 @@ class Minimal_Admin_REST {
 			return new WP_Error( 'not_found', 'Order not found.', array( 'status' => 404 ) );
 		}
 		$email_id = (string) $request['email_id'];
+		if ( ! in_array( $email_id, self::order_email_allowlist(), true ) ) {
+			return new WP_Error( 'unknown_email', 'That email type is not available.', array( 'status' => 400 ) );
+		}
 		$found    = null;
 		foreach ( WC()->mailer()->get_emails() as $email ) {
 			if ( is_object( $email ) && ! empty( $email->id ) && $email->id === $email_id ) {
@@ -5845,12 +6006,75 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		return '';
 	}
 
+	/** Where the pre-edit copy of wp-config.php lives (see backup_wpconfig). */
+	private static function wpconfig_backup_path( $path ) {
+		return dirname( $path ) . '/wp-config-minimal-bak.php';
+	}
+
+	/**
+	 * Copy wp-config.php next to itself, in a form the web server can never
+	 * disclose.
+	 *
+	 * Two properties do the work:
+	 *
+	 *   1. The name ENDS IN .php, so nginx's `location ~ \.php$` and Apache's
+	 *      `<FilesMatch \.php$>` hand it to PHP instead of serving it as static
+	 *      text. A `.bak`/`.minimal-bak` suffix does not match those rules and is
+	 *      served verbatim — DB credentials and the whole salt block, at a
+	 *      fixed path published in this plugin's source.
+	 *   2. It opens with `<?php exit;`, so on the off chance someone requests
+	 *      it, it stops on line 1 rather than defining the DB constants and
+	 *      running `require_once ABSPATH . 'wp-settings.php'` the way a bare
+	 *      copy would — a copy is otherwise a second, unauthenticated
+	 *      WordPress bootstrap.
+	 *
+	 * Restoring is a manual, emergency-only step: delete that first line and
+	 * rename over wp-config.php. The header says so in the file.
+	 */
+	private static function backup_wpconfig( $path ) {
+		$contents = @file_get_contents( $path );
+		if ( false === $contents ) {
+			return '';
+		}
+		$header = "<?php exit; /* Minimal Admin backup of wp-config.php, taken "
+			. gmdate( 'Y-m-d H:i:s' ) . " UTC before a debug-constant edit.\n"
+			. "To restore: delete this first line, then rename this file over wp-config.php.\n"
+			. "The exit keeps the web server from ever serving these credentials. */ ?>\n";
+		$dest = self::wpconfig_backup_path( $path );
+		return false === file_put_contents( $dest, $header . $contents ) ? '' : $dest;
+	}
+
+	/**
+	 * Remove the web-root wp-config backup older versions left behind.
+	 *
+	 * Up to 0.26.0 every debug-constant toggle wrote `wp-config.php.minimal-bak`
+	 * next to wp-config.php and never removed it. That name does not end in
+	 * .php, so the web server serves it as static text — any install that used
+	 * the toggle is still handing out its DB credentials and salts at a fixed,
+	 * published path. Sweep it on the settings read (cheap, admin-gated, runs
+	 * whenever the System page loads) and again on every write.
+	 */
+	private static function purge_legacy_wpconfig_backup() {
+		$path = self::wpconfig_path();
+		if ( ! $path ) {
+			return false;
+		}
+		$legacy = $path . '.minimal-bak';
+		return file_exists( $legacy ) ? @unlink( $legacy ) : false;
+	}
+
 	/**
 	 * Whether editing wp-config is possible here, and the current state of each
 	 * debug constant. A constant defined OUTSIDE wp-config (a mu-plugin, the
 	 * host's prepend) is 'locked' — editing wp-config wouldn't change it.
 	 */
 	private static function config_state() {
+		// Clean up the web-root backup older versions left behind (see
+		// purge_legacy_wpconfig_backup). This read is admin-gated and runs
+		// whenever the System page loads, which is the earliest reliable
+		// moment to get the credentials off a public path.
+		self::purge_legacy_wpconfig_backup();
+
 		$path       = self::wpconfig_path();
 		$writable   = $path && wp_is_writable( $path );
 		$disallowed = ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS ) || ( is_multisite() && ! is_super_admin() );
@@ -5890,9 +6114,10 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 	 * Set a whitelisted boolean debug constant in wp-config.php. Every write is
 	 * gated (writability / DISALLOW_FILE_MODS / multisite super-admin), scoped
 	 * to the whitelist, syntax-validated before it touches disk, and preceded
-	 * by a .minimal-bak backup.
+	 * by a backup the web server cannot disclose (see backup_wpconfig).
 	 */
 	public static function set_config_constant( WP_REST_Request $request ) {
+		self::purge_legacy_wpconfig_backup();
 		$name  = (string) $request['constant'];
 		$value = (bool) $request['value'];
 
@@ -5944,7 +6169,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			return new WP_Error( 'parse_error', 'The change would break wp-config.php, so it was not saved.', array( 'status' => 500 ) );
 		}
 
-		@copy( $path, $path . '.minimal-bak' );
+		self::backup_wpconfig( $path );
 		if ( false === file_put_contents( $path, $new ) ) {
 			return new WP_Error( 'write_failed', 'Could not write wp-config.php.', array( 'status' => 500 ) );
 		}

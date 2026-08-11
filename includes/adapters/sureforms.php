@@ -88,7 +88,9 @@ function minimal_admin_sureforms_summary( array $data ) {
 }
 
 add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
-	if ( ! minimal_admin_sureforms_active() ) {
+	// Every sibling forms adapter gates registration on its own helper; without
+	// it the nav entry is advertised to every Contributor and dead-ends on 403.
+	if ( ! minimal_admin_sureforms_active() || ! minimal_admin_sureforms_can() ) {
 		return $surfaces;
 	}
 	$surfaces['sureforms'] = array(

@@ -4,14 +4,14 @@
   "author": "<a href=\"https://wenpai.org\">WenPai.org</a>",
   "author_profile": "https://wenpai.org",
   "donate_link": "https://wenpai.org",
-  "version": "0.26.0.1",
-  "download_url": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.26.0.1/minimal-admin-0.26.0.1.zip",
-  "sha256": "8fa1b6fc0711abe4ff80750a3fe2ed797fb71bb29c1341d6593f69fe66202f47",
+  "version": "0.27.0.1",
+  "download_url": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.27.0.1/minimal-admin-0.27.0.1.zip",
+  "sha256": "cbc7299bcda0c822977a97374c0e0314c71094dbebd6f911b16a55ef9192f070",
   "requires": "6.0",
   "tested": "7.0",
   "requires_php": "7.4",
   "added": "2026-07-03 16:00:00",
-  "last_updated": "2026-08-09 12:00:00",
+  "last_updated": "2026-08-10 12:00:00",
   "homepage": "https://feicode.com/WenPai-org/minimal-admin",
   "sections": {
     "description": "A reimagined WordPress admin experience. Fast, focused and beautiful. Served at /minimal-admin/."

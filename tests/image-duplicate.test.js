@@ -1,0 +1,110 @@
+/**
+ * Duplicating an editable image from its ⚙ popover — the path that applies
+ * to images inside container slots, where the block is real editable DOM
+ * rather than a protected card. The copy carries caption, classes and the
+ * attachment id, lands right after the original, and saves as a second
+ * real image block.
+ */
+const { BASE, launch, login, createPost, deletePost, openEditor, reporter } = require( './helpers' );
+
+const IMG = ( n ) => `<!-- wp:image {"id":${ 950 + n },"sizeSlug":"large"} -->\n<figure class="wp-block-image size-large"><img src="${ BASE }/wp-content/uploads/2026/07/gal-blue.png" alt="" class="wp-image-${ 950 + n }"/><figcaption class="wp-element-caption">Caption ${ n }</figcaption></figure>\n<!-- /wp:image -->`;
+const CONTENT = '<!-- wp:group {"layout":{"type":"constrained"}} -->\n<div class="wp-block-group">' + IMG( 1 ) + '\n\n<!-- wp:paragraph -->\n<p>After.</p>\n<!-- /wp:paragraph --></div>\n<!-- /wp:group -->';
+
+( async () => {
+	const t = reporter( 'image-duplicate' );
+	const { browser, page, errors } = await launch();
+	await login( page );
+
+	let id = 0;
+	try {
+		id = await createPost( page, { title: 'Image duplicate probe', content: CONTENT } );
+		t.check( 'fixture post created', id > 0, String( id ) );
+		await openEditor( page, id );
+		await page.waitForSelector( '.minimal-slot img', { timeout: 20000 } );
+		await page.waitForTimeout( 2000 );
+
+		t.check( 'image inside the container is editable DOM, not a card',
+			await page.evaluate( () => {
+				const i = document.querySelector( '.minimal-slot img' );
+				return !! i && ! i.closest( '.minimal-island-preview' );
+			} ) );
+
+		// The persistent ⚙ chip opens the image popover.
+		const chip = await page.evaluate( () => {
+			const img = document.querySelector( '.minimal-slot img' );
+			img.scrollIntoView( { block: 'center' } );
+			return true;
+		} );
+		t.check( 'image located', chip );
+		// Chips reveal on hover of their block now — point at the image first.
+		const spot = await page.evaluate( () => {
+			const img = document.querySelector( '.minimal-slot img' );
+			const r = img.getBoundingClientRect();
+			return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+		} );
+		await page.mouse.move( spot.x, spot.y );
+		await page.waitForTimeout( 700 );
+		const chipShown = await page.evaluate( () => document.querySelectorAll( '#minimal-table-chips .minimal-code-chip.shown' ).length );
+		t.check( 'only the hovered image shows a chip', chipShown === 1, String( chipShown ) );
+		const opened = await page.evaluate( () => {
+			const c = [ ...document.querySelectorAll( '#minimal-table-chips button, .minimal-table-chip' ) ].find( ( b ) => b._kind === 'image' || /image/i.test( b.textContent ) );
+			if ( ! c ) return false;
+			c.click();
+			return true;
+		} );
+		t.check( 'image chip opens its popover', opened && await page.waitForSelector( '[data-img-dup]', { timeout: 6000 } ).then( () => true ).catch( () => false ) );
+
+		await page.click( '[data-img-dup]' );
+		await page.waitForTimeout( 800 );
+		const domCount = await page.evaluate( () => document.querySelectorAll( '.minimal-slot figure.wp-block-image' ).length );
+		t.check( 'a second image appears in the container', domCount === 2, String( domCount ) );
+
+		// ⌥-clicking the ⚙ chip duplicates without opening the popover.
+		await page.keyboard.press( 'Escape' );
+		await page.waitForTimeout( 500 );
+		// REAL modifier click (page.mouse), never a synthetic MouseEvent: a
+		// dispatched event bypasses the OS/browser layer, which is exactly
+		// where ⌃-click turned out to be a right-click on macOS.
+		await page.mouse.move( spot.x, spot.y );
+		await page.waitForTimeout( 600 );
+		const altDup = await page.click( '#minimal-table-chips .minimal-code-chip.shown', { modifiers: [ 'Alt' ] } ).then( () => 'clicked' ).catch( ( e ) => String( e ) );
+		await page.waitForTimeout( 900 );
+		const afterAlt = await page.evaluate( () => ( {
+			figures: document.querySelectorAll( '.minimal-slot figure.wp-block-image' ).length,
+			popoverOpen: !! document.querySelector( '[data-img-dup]' ),
+		} ) );
+		t.check( 'alt-click on the chip duplicates without opening settings',
+			altDup === 'clicked' && afterAlt.figures === 3 && ! afterAlt.popoverOpen, JSON.stringify( afterAlt ) );
+
+		// ⌃⌥-click removes, through the undoable path.
+		await page.mouse.move( spot.x, spot.y );
+		await page.waitForTimeout( 600 );
+		const removed = await page.click( '#minimal-table-chips .minimal-code-chip.shown', { modifiers: [ 'Alt', 'Shift' ] } ).then( () => true ).catch( () => false );
+		await page.waitForTimeout( 900 );
+		const afterRemove = await page.evaluate( () => document.querySelectorAll( '.minimal-slot figure.wp-block-image img' ).length );
+		t.check( 'shift-alt-click removes an image', removed && afterRemove === 2, String( afterRemove ) );
+		await page.keyboard.press( 'Meta+z' );
+		await page.waitForTimeout( 700 );
+		const afterUndo = await page.evaluate( () => document.querySelectorAll( '.minimal-slot figure.wp-block-image img' ).length );
+		t.check( 'undo brings it back', afterUndo === 3, String( afterUndo ) );
+
+		await page.keyboard.press( 'Meta+s' );
+		await page.waitForTimeout( 3500 );
+		const raw = await page.evaluate( async ( pid ) => {
+			const r = await fetch( window.MINIMAL.restUrl + 'wp/v2/posts/' + pid + '?context=edit&_cb=' + Math.random(), {
+				headers: { 'X-WP-Nonce': window.MINIMAL.nonce }, credentials: 'same-origin',
+			} );
+			const j = await r.json();
+			return ( j.content && j.content.raw ) || '';
+		}, id );
+		const imgBlocks = ( raw.match( /<!-- wp:image/g ) || [] ).length;
+		t.check( 'saved as three real image blocks', imgBlocks === 3, String( imgBlocks ) );
+		t.check( 'every copy kept the caption and attachment id',
+			( raw.match( /Caption 1/g ) || [] ).length === 3 && ( raw.match( /wp-image-951/g ) || [] ).length === 3 );
+		t.check( 'the paragraph after it survived', raw.indexOf( '<p>After.</p>' ) !== -1 );
+	} finally {
+		await deletePost( page, id );
+	}
+
+	await t.done( browser, errors );
+} )();

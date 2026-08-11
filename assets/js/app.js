@@ -55,10 +55,16 @@
 		'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 	}[ c ] ) );
 
+	// Parse in an INERT document. A div created from the live document still
+	// runs the resource-loading side of HTML parsing, so `<img src=x
+	// onerror=…>` fires its handler during the parse — before any escaping of
+	// the RETURN value can help. An inert document fetches nothing and fires
+	// nothing. (`<script>` never executes via innerHTML either way; event
+	// handler attributes are the vector, so test with those.)
+	const stripTagsDoc = document.implementation.createHTMLDocument( '' );
 	const stripTags = ( html ) => {
-		const d = document.createElement( 'div' );
-		d.innerHTML = html || '';
-		return d.textContent || '';
+		stripTagsDoc.body.innerHTML = html || '';
+		return stripTagsDoc.body.textContent || '';
 	};
 
 	const decodeEntities = stripTags;
@@ -1889,7 +1895,7 @@
 						<div class="minimal-user-role">${ esc( B.user.role ) }</div>
 					</div>
 					<div class="minimal-user-acts">
-						<a class="minimal-user-logout" href="${ esc( B.site.adminUrl ) }" target="_blank" rel="noopener" title="${ esc( __( 'WordPress admin (opens in a new tab)' ) ) }" aria-label="${ esc( __( 'WordPress admin (opens in a new tab)' ) ) }">${ icon( 'wp' ) }</a>
+						<a class="minimal-user-logout" id="minimal-wp-admin-link" href="${ esc( B.site.adminUrl ) }" target="_blank" rel="noopener" title="${ esc( __( 'WordPress admin (opens in a new tab) · ⌥-click while editing opens this post in the block editor)' ) ) }" aria-label="${ esc( __( 'WordPress admin (opens in a new tab)' ) ) }">${ icon( 'wp' ) }</a>
 						<a class="minimal-user-logout" href="${ esc( B.site.logout ) }" title="${ esc( __( 'Log out' ) ) }" aria-label="${ esc( __( 'Log out' ) ) }">${ icon( 'logout' ) }</a>
 					</div>
 				</div>
@@ -1939,6 +1945,16 @@
 			try { localStorage.setItem( 'minimal-nav-hidden', hidden ? '1' : '' ); } catch ( e ) { /* private mode */ }
 		} );
 		$( '#minimal-user-area' ).addEventListener( 'click', ( e ) => {
+			// ⌥-click the WordPress button while editing a post: open THAT
+			// post in wp-admin's block editor instead of the dashboard. The
+			// quiet escape hatch — no new chrome, and the ⌘K palette carries
+			// the same command for anyone who doesn't know the modifier.
+			const wpLink = e.target.closest( '#minimal-wp-admin-link' );
+			if ( wpLink && e.altKey && state.route === 'editor' && state.editor ) {
+				e.preventDefault();
+				openInBlockEditor();
+				return;
+			}
 			if ( e.target.closest( 'a' ) ) return; // logout link
 			go( 'profile' );
 		} );
@@ -15253,6 +15269,21 @@
 		const short = String( name || '' ).replace( /^core\//, '' );
 		const parts = slotParseContent( raw, short );
 		if ( ! parts ) return null;
+		// Row-layout containers (layout:{"type":"flex"}) flow their children
+		// HORIZONTALLY on the front end. The slot keeps Minimal typography by
+		// design, but flow DIRECTION is gross layout the writing surface must
+		// honor — a details strip of label/value paragraphs otherwise reads
+		// as a tower of one-word lines (James's mmonroe repro).
+		let slotCls = 'minimal-slot';
+		try {
+			const am = parts.head.match( /\{[\s\S]*\}/ );
+			const lay = ( am ? JSON.parse( am[ 0 ] ) : {} ).layout || {};
+			if ( lay.type === 'flex' && lay.orientation !== 'vertical' ) {
+				slotCls += ' minimal-slot-flex' + ( lay.flexWrap === 'nowrap' ? ' nowrap' : '' );
+				const j = { left: 'start', center: 'center', right: 'end', 'space-between': 'between' }[ lay.justifyContent || '' ];
+				if ( j ) slotCls += ' justify-' + j;
+			}
+		} catch ( e ) {}
 		const chip = `<button class="minimal-island-chip" data-inspect="${ idx }" title="Configure block" type="button" aria-label="Configure ${ esc( short ) } block">⚙ ${ esc( short ) }</button>`;
 		// One slot child → its editable HTML, or a NESTED island registered
 		// in ed.islands (a complex leaf keeps its protected card, a nested
@@ -15304,11 +15335,8 @@
 				colCount++;
 			}
 			if ( ! colCount ) return null;
-			/* translators: island hover hint on an editable columns container */
-			const colHint = __( 'Columns — write inside · layout via ⚙' );
 			return `<div class="minimal-block-island minimal-slot-island minimal-cols-island" contenteditable="false" data-island="${ idx }" data-block="${ esc( name ) }">
 			${ chip }
-			<span class="minimal-island-hint" aria-hidden="true">${ esc( colHint ) }</span>
 			${ parts.open }${ cols.join( '' ) }</${ parts.tag }>
 		</div>`;
 		}
@@ -15316,16 +15344,13 @@
 		if ( ! kids ) return null;
 		const childrenHtml = joinKids( kids );
 		if ( childrenHtml == null ) return null;
-		/* translators: island hover hint on an editable group container */
-		const hint = __( 'Grouped content — write inside · layout via ⚙' );
 		// SLOT_CONTENT blocks (cover, media-text): the preamble carries the
 		// background/media bytes plus the content container's OPEN tag, so
 		// the slot nests inside the content container; the tail closes it.
 		const closers = parts.preamble ? '</div></' + parts.tag + '>' : '</' + parts.tag + '>';
 		return `<div class="minimal-block-island minimal-slot-island${ parts.preamble ? ' minimal-media-slot-island' : '' }" contenteditable="false" data-island="${ idx }" data-block="${ esc( name ) }">
 			${ chip }
-			<span class="minimal-island-hint" aria-hidden="true">${ esc( hint ) }</span>
-			${ parts.open }${ parts.preamble }<div class="minimal-slot" contenteditable="true">${ childrenHtml }</div>${ closers }
+			${ parts.open }${ parts.preamble }<div class="${ slotCls }" contenteditable="true">${ childrenHtml }</div>${ closers }
 		</div>`;
 	}
 
@@ -15402,11 +15427,122 @@
 		islands[ idx ] = parts.head + parts.open + parts.preamble + serializeToBlocks( slots[ 0 ], islands ) + parts.tail;
 	}
 
+	/* Column operations on a Columns block. The stored raw and the live DOM are
+	 * index-aligned (the serializer walks the raw's column segments and the
+	 * DOM's slots in step), so every op moves BOTH, in the same position. A
+	 * fresh column carries no width: Gutenberg writes the same for one added to
+	 * an unsized set, and a width copied off a sibling would silently squeeze
+	 * the row. Ops: 'before' / 'after' (relative to refCol, or the end when
+	 * there is none) and 'remove'. */
+	function columnOp( island, op, refCol ) {
+		const ed = state.editor;
+		if ( ! ed || ! ed.islands || ! island ) return null;
+		const idx = parseInt( island.dataset.island, 10 );
+		if ( ! Number.isFinite( idx ) || ed.islands[ idx ] == null ) return null;
+		// The writer has been typing in these columns — take the live text into
+		// the stored raw before rewriting it.
+		flushSlotIsland( island, ed.islands );
+		const parts = slotParseContent( String( ed.islands[ idx ] ), 'columns' );
+		if ( ! parts ) return null;
+		const segs = tokenizeBlocks( parts.inner );
+		if ( ! segs ) return null;
+		// Column segments with their offsets, plus the separator this block
+		// already uses between them.
+		const cols = [];
+		let at = 0;
+		let sep = '';
+		segs.forEach( ( seg ) => {
+			if ( seg.type === 'block' ) cols.push( { start: at, end: at + seg.raw.length } );
+			else if ( ! sep && ! seg.raw.trim() && cols.length ) sep = seg.raw;
+			at += seg.raw.length;
+		} );
+		if ( ! cols.length ) return null;
+		const domCols = $$( '.minimal-slot', island )
+			.filter( ( sl ) => sl.closest( '.minimal-slot-island' ) === island )
+			.map( ( sl ) => sl.parentElement );
+		if ( domCols.length !== cols.length ) return null; // never guess when they disagree
+		let i = refCol ? domCols.indexOf( refCol ) : -1;
+		if ( i < 0 ) i = domCols.length - 1;
+		const gap = sep || '\n';
+		const write = ( inner ) => { ed.islands[ idx ] = parts.head + parts.open + inner + parts.tail; };
+
+		if ( op === 'remove' ) {
+			// The last column would leave an empty Columns block behind; remove
+			// the whole block from its ⚙ instead, which offers Undo.
+			if ( cols.length < 2 ) { toast( 'A columns block keeps at least one column.', true ); return null; }
+			const cut = cols[ i ];
+			// Swallow one separator so the remaining columns stay evenly joined.
+			const from = i > 0 ? cols[ i - 1 ].end : cut.start;
+			const to = i > 0 ? cut.end : cols[ i + 1 ].start;
+			const removedRaw = parts.inner.slice( cut.start, cut.end );
+			const removedEl = domCols[ i ];
+			const anchor = domCols[ i + 1 ] || null;
+			const holder = removedEl.parentElement;
+			write( parts.inner.slice( 0, from ) + parts.inner.slice( to ) );
+			removedEl.remove();
+			stampSlotDirtyFor( holder.querySelector( '.minimal-slot' ) );
+			scheduleAutosave();
+			// Structural deletion is the one thing Blink's undo can't restore
+			// (rule: island removal offers a toast instead).
+			toastAction( 'Column removed', 'Undo', () => {
+				const back = slotParseContent( String( ed.islands[ idx ] ), 'columns' );
+				if ( ! back ) return;
+				const marks = tokenizeBlocks( back.inner );
+				if ( ! marks ) return;
+				let a2 = 0;
+				const spots = [];
+				marks.forEach( ( seg ) => { if ( seg.type === 'block' ) spots.push( a2 + seg.raw.length ); a2 += seg.raw.length; } );
+				const cutAt = i > 0 ? spots[ i - 1 ] : 0;
+				ed.islands[ idx ] = back.head + back.open
+					+ back.inner.slice( 0, cutAt ) + ( i > 0 ? gap + removedRaw : removedRaw + gap ) + back.inner.slice( cutAt )
+					+ back.tail;
+				if ( anchor && anchor.isConnected ) anchor.before( removedEl );
+				else holder.appendChild( removedEl );
+				scheduleAutosave();
+			} );
+			return removedEl;
+		}
+
+		const colRaw = '<!-- wp:column -->\n<div class="wp-block-column"></div>\n<!-- /wp:column -->';
+		const cutAt = op === 'before' ? cols[ i ].start : cols[ i ].end;
+		write( parts.inner.slice( 0, cutAt )
+			+ ( op === 'before' ? colRaw + gap : gap + colRaw )
+			+ parts.inner.slice( cutAt ) );
+		const el = document.createElement( 'div' );
+		el.className = 'wp-block-column';
+		el.innerHTML = '<div class="minimal-slot" contenteditable="true"><p><br></p></div>';
+		if ( op === 'before' ) domCols[ i ].before( el );
+		else domCols[ i ].after( el );
+		const slot = el.querySelector( '.minimal-slot' );
+		const p = slot && slot.firstElementChild;
+		if ( p ) {
+			const range = document.createRange();
+			range.selectNodeContents( p );
+			range.collapse( true );
+			const sel = window.getSelection();
+			sel.removeAllRanges();
+			sel.addRange( range );
+		}
+		stampSlotDirtyFor( slot );
+		scheduleAutosave();
+		return el;
+	}
+
 	// The contenteditable=false card an island renders as. Shared by content
 	// loading and slash-menu insertion of custom blocks.
 	// Special interactive islands (shortcode, details, buttons) host live
 	// fields and commit into ed.islands[idx] on every edit — serialize never
 	// reads the fields themselves, and renderIslandPreviews must not overwrite them.
+	// Top-level child blocks inside an island's markup — a cheap census for
+	// the content-editor doorway (full modeling waits until the modal opens).
+	function islandChildCount( raw ) {
+		const parts = blockParts( raw || '' );
+		if ( ! parts || parts.selfClosing || ! parts.inner ) return 0;
+		const segs = tokenizeBlocks( parts.inner );
+		if ( ! segs ) return 0;
+		return segs.filter( ( s ) => s.type === 'block' ).length;
+	}
+
 	function islandHtml( idx, name, raw, ed ) {
 		const short = String( name || '' ).replace( /^core\//, '' );
 		if ( SLOT_BLOCKS.includes( short ) ) {
@@ -15463,12 +15599,44 @@
 		// can't reproduce; everything else is protected markup. Reveal rides
 		// island hover/selection in CSS; the span is chrome, so it joins the
 		// island-chip exclusion lists (copy, word count).
-		const hint = SIMPLE_BLOCKS.includes( short )
-			? __( 'Styled block: edit text via ⚙' )
-			: __( 'Edit via ⚙ or the block editor' );
-		return `<div class="minimal-block-island" contenteditable="false" data-island="${ idx }" data-block="${ esc( name ) }">
-			<button class="minimal-island-chip" data-inspect="${ idx }" title="Configure block" type="button" aria-label="Configure ${ esc( chipLabel ) } block">⚙ ${ esc( chipLabel ) }</button>
-			<span class="minimal-island-hint" aria-hidden="true">${ esc( hint ) }</span>
+		// Only blocks locked for a REASON explain themselves: a styled text
+		// block looks typeable and is not, so the hint answers "why can't I
+		// type here?". Everything else already has the ⚙ chip in view, and a
+		// label repeating it was pure noise (Austin).
+		const hint = SIMPLE_BLOCKS.includes( short ) ? __( 'Styled block: edit text via ⚙' ) : '';
+		// Images in the preview are click-through doorways: gallery-shaped
+		// blocks open the Images editor, single-image blocks the replace
+		// picker. The stamp drives the pointer cursor and the click branch.
+		const imgUnits = imageUnitsOf( raw );
+		const imgTool = imgUnits ? 'edit' : ( islandImageUrls( raw || '' ).length ? 'swap' : '' );
+		// The count matters on sliders: the preview shows one slide, so the
+		// overlay is where "there are six of these" gets said.
+		/* translators: %d: number of images in the block */
+		const imgBadge = imgTool === 'edit' ? sprintf( _n( 'Edit image · %d', 'Edit images · %d', imgUnits.units.length ), imgUnits.units.length )
+			/* translators: overlay on a single-image block's image */
+			: imgTool ? __( 'Replace image' ) : '';
+		// A synced pattern is a REFERENCE to a wp_block post — its content
+		// isn't in this post at all, so the doorway is that pattern's own
+		// editor (where every editing tool already works, and where the
+		// save-reach warning lives).
+		const refM = short === 'block' ? ( raw || '' ).match( /"ref"\s*:\s*(\d+)/ ) : null;
+		const patternRef = refM ? refM[ 1 ] : '';
+		// Nested-content islands (a protected Group of styled paragraphs): the
+		// whole card opens the content editor — text first, settings tucked —
+		// instead of unrolling every child in the ⚙ popover (GitHub #12).
+		// Mutually exclusive with the image and pattern doorways (those win;
+		// their nested text still reaches the modal through the ⚙ popover).
+		// Slot containers never take this path — their children are live DOM.
+		const kidCount = imgTool || patternRef ? 0 : islandChildCount( raw );
+		const ctool = kidCount >= 2;
+		/* translators: %d: number of nested blocks */
+		const ctedBadge = ctool ? sprintf( __( 'Edit content · %d' ), kidCount ) : '';
+		return `<div class="minimal-block-island" contenteditable="false" data-island="${ idx }" data-block="${ esc( name ) }"${ imgTool ? ` data-imgtool="${ imgTool }"` : '' }${ ctool ? ` data-cted="${ kidCount }"` : '' }${ patternRef ? ` data-patternref="${ esc( patternRef ) }"` : '' }>
+			<button class="minimal-island-chip" data-inspect="${ idx }" title="Configure block · ⌥-click duplicates · ⇧⌥-click removes" type="button" aria-label="Configure ${ esc( chipLabel ) } block">⚙ ${ esc( chipLabel ) }</button>
+			${ hint ? `<span class="minimal-island-hint" aria-hidden="true">${ esc( hint ) }</span>` : '' }
+			${ imgBadge ? `<button class="minimal-imgtool-badge" type="button" data-imgbadge="1" tabindex="-1">${ esc( imgBadge ) }</button>` : '' }
+			${ ctedBadge ? `<button class="minimal-imgtool-badge" type="button" data-ctedbadge="1" tabindex="-1">${ esc( ctedBadge ) }</button>` : '' }
+			${ patternRef ? `<button class="minimal-pattern-cover" data-patternedit="${ esc( patternRef ) }" type="button" aria-label="${ esc( __( 'Edit this pattern' ) ) }"><span class="minimal-pattern-badge">${ esc( __( 'Edit pattern' ) ) } ↗</span></button>` : '' }
 			<div class="minimal-island-preview" data-preview="${ idx }">${ inner || '<div class="minimal-island-empty">Dynamic block — rendered on the site</div>' }</div>
 		</div>`;
 	}
@@ -15545,7 +15713,7 @@
 			const wrap = document.createElement( 'div' );
 			wrap.appendChild( frag );
 			// Drop editor chrome if any leaked in.
-			$$( '.minimal-island-chip, .minimal-island-hint, .minimal-table-chip', wrap ).forEach( ( c ) => c.remove() );
+			$$( '.minimal-island-chip, .minimal-island-hint, .minimal-imgtool-badge, .minimal-pattern-cover, .minimal-table-chip', wrap ).forEach( ( c ) => c.remove() );
 			return {
 				html: wrap.innerHTML,
 				text: ( wrap.innerText || wrap.textContent || '' ).replace( /\u00a0/g, ' ' ),
@@ -15567,7 +15735,7 @@
 		const preview = el.querySelector( '.minimal-island-preview' );
 		if ( preview ) {
 			const clone = preview.cloneNode( true );
-			$$( 'script, style, .minimal-island-chip', clone ).forEach( ( n ) => n.remove() );
+			$$( 'script, style, .minimal-island-chip, .minimal-imgtool-badge, .minimal-pattern-cover', clone ).forEach( ( n ) => n.remove() );
 			// Run spans are editor chrome — unwrap so copied HTML stays clean.
 			$$( '.minimal-island-run', clone ).forEach( ( s ) => {
 				while ( s.firstChild ) s.parentNode.insertBefore( s.firstChild, s );
@@ -16163,8 +16331,17 @@
 				return span;
 			} );
 			island._minimalRuns = { base, runs, spans };
-			const hint = island.querySelector( '.minimal-island-hint' );
-			if ( hint ) hint.textContent = __( 'Text is editable in place · structure via ⚙' );
+			// This hint is an AFFORDANCE, not a restatement of the ⚙ chip: the
+			// card looks locked but its text is not. Cards with nothing to say
+			// carry no hint element at all now, so create one here.
+			let hint = island.querySelector( ':scope > .minimal-island-hint' );
+			if ( ! hint ) {
+				hint = document.createElement( 'span' );
+				hint.className = 'minimal-island-hint';
+				hint.setAttribute( 'aria-hidden', 'true' );
+				island.insertBefore( hint, island.firstChild );
+			}
+			hint.textContent = __( 'Text is editable in place · structure via ⚙' );
 		} );
 	}
 
@@ -16178,6 +16355,14 @@
 		const idx = parseInt( island.dataset.island, 10 );
 		if ( ! Number.isFinite( idx ) || ed.islands[ idx ] == null ) return;
 		const arm = island._minimalRuns;
+		// The island's stored markup changed under this arming (an image
+		// replaced, a URL swapped, an inspector Apply): splicing the armed
+		// base would write those old bytes back. Drop the arming instead —
+		// the next preview render re-arms against the new raw. This arming's
+		// OWN commits are the expected case: they splice from the pristine
+		// base every time, so the stored raw is whatever it last wrote.
+		const stored = ed.islands[ idx ];
+		if ( stored !== arm.base && stored !== arm.last ) { island._minimalRuns = null; return; }
 		arm.spans.forEach( ( span, i ) => {
 			if ( ! span || ! span.isConnected ) return;
 			const r = arm.runs[ i ];
@@ -16193,7 +16378,8 @@
 			r.value = v;
 		} );
 		const next = spliceTextRuns( arm.base, arm.runs );
-		if ( ed.islands[ idx ] === next ) return;
+		arm.last = next;
+		if ( stored === next ) return;
 		ed.islands[ idx ] = next;
 		ed.dirty = true;
 		if ( ! ( opts && opts.silent ) ) scheduleAutosave();
@@ -16323,7 +16509,7 @@
 				injectPreviewStyles( r && r.styles );
 				const rendered = r && r.rendered && r.rendered[ 0 ];
 				const prev = islandEl && islandEl.querySelector( '.minimal-island-preview' );
-				if ( prev && rendered && rendered.trim() ) prev.innerHTML = rendered;
+				if ( prev && rendered && rendered.trim() ) setPreviewHtml( prev, rendered );
 				updateEditorStats();
 			} )
 			.catch( () => {} );
@@ -16473,6 +16659,10 @@
 						.then( ( css ) => absolutizeCssUrls( css, u ) )
 						.catch( () => '' )
 				) );
+				// These count as injected too, so a later pass that reports the
+				// same sheet (a render-blocks queue diff, the runtime harvest
+				// below) adds only what is genuinely new.
+				( r.urls || [] ).forEach( ( u ) => injectedPreviewCss.add( u ) );
 				texts.push( r.inline || '' );
 				const scoped = scopeCssToPreviews( texts.join( '\n' ) );
 				if ( ! scoped ) return;
@@ -16522,6 +16712,13 @@
 		setTimeout( poll, 3500 );
 	}
 	async function injectPreviewStyles( styles ) {
+		await addPreviewStyles( styles ).catch( () => {} );
+		// Styles and preview HTML from the same response land in this tick;
+		// the reveal pass must see both, so it rides behind this promise.
+		schedulePreviewReveal();
+	}
+
+	async function addPreviewStyles( styles ) {
 		if ( ! styles ) return;
 		if ( styles.warm ) warmPreviewStyles( styles.warm );
 		const urls = ( styles.urls || [] ).filter( ( u ) => ! injectedPreviewCss.has( u ) );
@@ -16545,6 +16742,273 @@
 			el.textContent = scoped;
 			document.head.appendChild( el );
 		} catch ( e ) { /* previews simply stay unstyled */ }
+	}
+
+	/* Some blocks load the CSS their layout is built on at RUNTIME, from their
+	 * own front-end script: Gutenslider pulls build/vendor/gs-base.css as a
+	 * webpack async chunk, and that file is where the slide's grid lives. It
+	 * never passes through wp_styles(), so neither the editor-styles sweep nor
+	 * render-blocks' queue diff can report it, and previews never run
+	 * third-party JS to fetch it themselves. What is left stacks in normal
+	 * flow: on James's slider the slide text landed one pixel past a 360px
+	 * frame and was clipped away, so a working block previewed as an empty box.
+	 *
+	 * The only place that stylesheet exists is a real front-end load, so take
+	 * it from one. The same hidden same-origin iframe the Otter warm-up uses
+	 * runs the page's scripts, and whatever they pull in lands in its document
+	 * as a <link>; harvest those, drop the ones already injected, and send the
+	 * rest through the same scoper as every other preview stylesheet. Runtime
+	 * <style> ELEMENTS are deliberately left alone: a page's inline CSS is
+	 * mostly what the server already reported, and re-injecting it wholesale
+	 * would double a payload that is already hundreds of KB. Preview chrome
+	 * only, exactly like the rest of this pipeline. */
+	let runtimeCssHarvested = false;
+	function harvestRuntimeStyles() {
+		if ( runtimeCssHarvested ) return;
+		const ed = state.editor;
+		if ( ! ed || ! ed.id || ! ed.link ) return;
+		runtimeCssHarvested = true;
+		// minimal_warm marks the load as ours, the same hint the Otter warm-up
+		// carries — this IS a real front-end render, third-party scripts and
+		// all, so anything counting pageviews has a way to tell.
+		let url = ed.status === 'publish' ? ed.link
+			: ed.link + ( ed.link.includes( '?' ) ? '&' : '?' ) + 'preview=true';
+		url += ( url.includes( '?' ) ? '&' : '?' ) + 'minimal_warm=1';
+		const frame = document.createElement( 'iframe' );
+		frame.style.cssText = 'position:fixed;width:10px;height:10px;left:-9999px;top:-9999px;visibility:hidden;';
+		let settled = false;
+		const finish = ( urls ) => {
+			if ( settled ) return;
+			settled = true;
+			clearTimeout( bail );
+			frame.remove();
+			if ( ! urls || ! urls.length ) return;
+			addPreviewStyles( { urls } )
+				.then( () => {
+					resetPreviewPolish();
+					schedulePreviewReveal();
+				} )
+				.catch( () => {} );
+		};
+		const bail = setTimeout( () => finish( null ), 20000 );
+		frame.addEventListener( 'load', () => {
+			// The chunks are requested by the page's own scripts, so they land
+			// after load rather than with it.
+			setTimeout( () => {
+				let urls = [];
+				try {
+					urls = Array.from( frame.contentDocument.querySelectorAll( 'link[rel="stylesheet"][href]' ) )
+						.map( ( l ) => l.href )
+						.filter( ( u ) => u && ! injectedPreviewCss.has( u ) );
+				} catch ( e ) { /* cross-origin document: nothing to take */ }
+				finish( urls );
+			}, 2500 );
+		} );
+		frame.src = url;
+		document.body.appendChild( frame );
+	}
+
+	/* New CSS invalidates every measurement the polish passes made — a slider
+	 * collapsed because it stacked may lay out as a proper row once its real
+	 * stylesheet lands. Put the hidden slides back and let the sweep decide
+	 * again from what is now on screen. */
+	function resetPreviewPolish() {
+		$$( '.minimal-island-preview' ).forEach( ( el ) => {
+			( el._minimalCollapsedSlides || [] ).forEach( ( n ) => { n.style.display = ''; } );
+			delete el._minimalCollapsedSlides;
+			delete el.dataset.sliderCollapsed;
+			delete el.dataset.sliderWait;
+			delete el.dataset.harvestWait;
+			el.classList.remove( 'minimal-preview-clamped' );
+		} );
+	}
+
+	/* Text sitting at or past the bottom edge of its own preview means an
+	 * ancestor with a fixed height clipped it away: the block expected an
+	 * overlay that its runtime CSS never built. Deliberately geometric, with no
+	 * class-name guessing, so it reads the same for any library. Previews Minimal
+	 * clamped itself are exempt — that clip is ours. */
+	function previewLayoutUnfinished( el ) {
+		if ( ! el || ! el.isConnected || el.offsetHeight < 24 ) return false;
+		if ( el.classList.contains( 'minimal-preview-clamped' ) ) return false;
+		// An image that has not loaded carries no height, so the geometry would
+		// read as settled before it is. Decide once the frame is real.
+		const pending = $$( 'img', el ).filter( ( im ) => ! im.complete );
+		if ( pending.length ) {
+			if ( ! el.dataset.harvestWait ) {
+				el.dataset.harvestWait = '1';
+				pending.forEach( ( im ) => {
+					im.addEventListener( 'load', schedulePreviewReveal, { once: true } );
+					im.addEventListener( 'error', schedulePreviewReveal, { once: true } );
+				} );
+			}
+			return false;
+		}
+		const frame = el.getBoundingClientRect();
+		return $$( 'p, h1, h2, h3, h4, h5, h6, li, figcaption, blockquote', el ).some( ( n ) => {
+			if ( ! ( n.textContent || '' ).trim() ) return false;
+			const b = n.getBoundingClientRect();
+			return b.height > 0 && b.top >= frame.bottom - 2;
+		} );
+	}
+
+	/* Some blocks hide their markup until a view script finishes booting —
+	 * Jetpack slideshow keeps its whole container at opacity:0 until Swiper
+	 * adds wp-swiper-initialized. Previews never run third-party JS, so such
+	 * a block renders as a correctly-sized but invisible box. When a preview
+	 * has size and NOTHING visible in it, un-hide the opacity-0 (then
+	 * visibility:hidden) wrappers. Preview DOM only: saves splice the stored
+	 * raw, so inline styles set here can never reach serialized content. */
+	// Every write to a preview's contents goes through here: the polish passes
+	// below stamp what they already did on the element, and fresh markup must
+	// start from a clean slate or a re-render (Apply, a server render landing)
+	// leaves the slider stack un-collapsed with the flag still saying "done"
+	// (Austin's post-drop repro).
+	function setPreviewHtml( prev, html ) {
+		if ( ! prev ) return;
+		delete prev.dataset.sliderCollapsed;
+		delete prev.dataset.sliderWait;
+		delete prev.dataset.harvestWait;
+		delete prev._minimalCollapsedSlides;
+		prev.innerHTML = html;
+	}
+
+	let previewRevealRaf = 0;
+	function schedulePreviewReveal() {
+		if ( previewRevealRaf ) return;
+		previewRevealRaf = requestAnimationFrame( () => {
+			previewRevealRaf = 0;
+			let unfinished = false;
+			$$( '.minimal-island-preview' ).forEach( ( el ) => {
+				revealJsGatedPreview( el );
+				collapseSliderPreview( el );
+				clampTallImagePreview( el );
+				markMissingImages( el );
+				if ( ! unfinished && previewLayoutUnfinished( el ) ) unfinished = true;
+			} );
+			// One front-end load per session, and only once a preview shows the
+			// symptom — nothing is fetched for a post whose blocks all render.
+			if ( unfinished ) harvestRuntimeStyles();
+		} );
+	}
+
+	function previewHasVisibleContent( el ) {
+		const nodes = $$( 'img, video, iframe, svg, p, h1, h2, h3, h4, h5, h6, li, td, blockquote, figcaption, span, a, button', el );
+		for ( const n of nodes ) {
+			const media = /^(img|video|iframe|svg)$/i.test( n.tagName );
+			if ( ! media && ! ( n.textContent || '' ).trim() ) continue;
+			try {
+				// No checkVisibility (older engines): claim visible so the
+				// reveal pass stays a no-op rather than firing blind.
+				if ( ! n.checkVisibility || n.checkVisibility( { opacityProperty: true, visibilityProperty: true } ) ) return true;
+			} catch ( e ) { return true; }
+		}
+		return false;
+	}
+
+	function revealJsGatedPreview( el ) {
+		if ( ! el || ! el.isConnected || el.offsetHeight < 24 ) return;
+		if ( previewHasVisibleContent( el ) ) return;
+		$$( '*', el ).forEach( ( n ) => {
+			try { if ( getComputedStyle( n ).opacity === '0' ) n.style.opacity = '1'; } catch ( e ) {}
+		} );
+		if ( ! previewHasVisibleContent( el ) ) {
+			$$( '*', el ).forEach( ( n ) => {
+				try { if ( getComputedStyle( n ).visibility === 'hidden' ) n.style.visibility = 'visible'; } catch ( e ) {}
+			} );
+		}
+	}
+
+	/* A dead image URL is worth SAYING rather than leaving as the browser's
+	 * broken glyph — inside a themed slide that glyph reads as a broken block.
+	 * The placeholder is painted as the failed image's own background (CSS),
+	 * so no element is replaced and the src attribute stays exactly as
+	 * authored: the image-tooling doorway still matches on it, and the class
+	 * lands only on PREVIEW and MODAL chrome. Images in the content itself are
+	 * never touched — a class there would serialize into the saved markup. */
+	function markMissingImages( root ) {
+		if ( ! root ) return;
+		$$( 'img', root ).forEach( ( img ) => {
+			if ( ! img.complete ) return;              // still loading; the error handler covers it
+			if ( img.naturalWidth || ! img.getAttribute( 'src' ) ) { img.classList.remove( 'minimal-img-missing' ); return; }
+			img.classList.add( 'minimal-img-missing' );
+		} );
+	}
+
+	// `error` never bubbles, so this rides the capture phase for the whole
+	// document and filters down to chrome images.
+	document.addEventListener( 'error', ( e ) => {
+		const img = e.target;
+		if ( ! img || img.tagName !== 'IMG' || ! img.closest ) return;
+		if ( ! img.closest( '.minimal-island-preview, .minimal-imgedit-tile, .minimal-insp-img-row' ) ) return;
+		img.classList.add( 'minimal-img-missing' );
+	}, true );
+
+	/* A slider is a STACK until its JS runs. Carousel markup saves every slide
+	 * as a sibling and lets a view script turn them into a one-at-a-time
+	 * viewport; previews never run third-party JS, so a six-slide carousel
+	 * renders as six full-width images and buries the rest of the post
+	 * (James's mmonroe repro). Show the first slide only, which is what the
+	 * block itself shows on the site. Preview DOM only — saves splice the
+	 * stored raw, so nothing hidden here can reach serialized content, and the
+	 * images stay reachable through the Edit images modal on the ⚙ chip. */
+	const SLIDER_MARKUP_RE = /(^|[-_\s])(swiper|slick|glide|splide|owl|flickity|carousel|slider|slideshow)($|[-_\s])/i;
+	function collapseSliderPreview( el ) {
+		if ( ! el || ! el.isConnected || el.dataset.sliderCollapsed ) return;
+		const classOf = ( n ) => ( typeof n.className === 'string' ? n.className : '' );
+		const root = $$( '*', el ).find( ( n ) => n.hasAttribute( 'data-slick' ) || SLIDER_MARKUP_RE.test( classOf( n ) ) );
+		if ( ! root ) return;
+		// The slide list: the deepest run of sibling elements that each carry
+		// exactly one image. Arrows, dots and captions are left alone.
+		let best = null;
+		const scan = ( p ) => {
+			const kids = Array.from( p.children );
+			const slides = kids.filter( ( k ) => k.querySelectorAll( 'img' ).length === 1 );
+			if ( slides.length >= 2 && ( ! best || slides.length > best.length ) ) best = slides;
+			kids.forEach( scan );
+		};
+		scan( root );
+		if ( ! best ) return;
+		// Images the preview hasn't loaded yet carry no height, so the stack
+		// test would read as a tidy row and skip the collapse. Wait for them
+		// and re-run the sweep instead of deciding on an empty box.
+		const pending = $$( 'img', el ).filter( ( im ) => ! im.complete );
+		if ( pending.length ) {
+			if ( ! el.dataset.sliderWait ) {
+				el.dataset.sliderWait = '1';
+				pending.forEach( ( im ) => {
+					im.addEventListener( 'load', schedulePreviewReveal, { once: true } );
+					im.addEventListener( 'error', schedulePreviewReveal, { once: true } );
+				} );
+			}
+			return;
+		}
+		// Only when they actually stack: a slider whose slides already lay out
+		// in a row reads fine as-is and keeps every image visible.
+		if ( el.offsetHeight < best[ 0 ].offsetHeight * 1.6 ) return;
+		const hidden = best.slice( 1 );
+		hidden.forEach( ( n ) => { n.style.display = 'none'; } );
+		// Kept so a later stylesheet (the runtime harvest) can undo this and let
+		// the sweep re-measure against the layout the block actually has.
+		el._minimalCollapsedSlides = hidden;
+		el.dataset.sliderCollapsed = String( best.length );
+	}
+
+	/* Galleries are not sliders — every photo is meant to be visible — but two
+	 * dozen of them at full width turn one block into a scroll marathon with
+	 * the editing doorway buried in the middle. Clamp the card instead: the
+	 * layout stays the block's own, the badge says how many images are inside,
+	 * and clicking opens the editor. Only ever applied to blocks that HAVE that
+	 * editor, so the clamp can never hide something with no way in. */
+	const PREVIEW_CLAMP_AT = 560;
+	function clampTallImagePreview( el ) {
+		if ( ! el || ! el.isConnected ) return;
+		const island = el.closest( '.minimal-block-island' );
+		if ( ! island || island.dataset.imgtool !== 'edit' ) return;
+		if ( el.classList.contains( 'minimal-preview-clamped' ) ) return;
+		if ( el.dataset.sliderCollapsed ) return;   // already showing one slide
+		if ( el.offsetHeight <= PREVIEW_CLAMP_AT ) return;
+		el.classList.add( 'minimal-preview-clamped' );
 	}
 
 	// Relative url(...) references break once CSS moves into an inline <style>
@@ -17766,7 +18230,7 @@
 	// started typing this open. Goal is a global localStorage target.
 	function countEditorWords( body ) {
 		const walker = document.createTreeWalker( body, NodeFilter.SHOW_TEXT, {
-			acceptNode: ( n ) => n.parentNode.closest( '.minimal-island-chip, .minimal-island-hint, .minimal-island-empty, .minimal-shortcode-label, .minimal-shortcode-input' )
+			acceptNode: ( n ) => n.parentNode.closest( '.minimal-island-chip, .minimal-island-hint, .minimal-imgtool-badge, .minimal-pattern-cover, .minimal-island-empty, .minimal-shortcode-label, .minimal-shortcode-input' )
 				? NodeFilter.FILTER_REJECT
 				: NodeFilter.FILTER_ACCEPT,
 		} );
@@ -17902,11 +18366,40 @@
 		el.classList.toggle( 'has-goal', !! goal );
 		el.classList.toggle( 'goal-met', !!( goal && words >= goal ) );
 		syncTableChips();
+		fanIslandChips( body );
 		updateOutline();
 		// Focus mode and the find bar ride the same typing cadence.
 		syncFocusDim();
 		focusTypewriter();
 		syncFindBar();
+	}
+
+	// Nested ⚙ chips fan LEFT of their ancestors' chips. The deepest-wins
+	// reveal swaps chips IN PLACE, so two "⚙ group" pills could occupy the
+	// same pixels and answer differently depending on hover approach — the
+	// outer group said 2 blocks, the inner one 14, and the cluster read as
+	// one button changing its mind (Austin's Royal Palm repro). Geometry
+	// instead of hover state: a click target never changes identity.
+	function fanIslandChips( body ) {
+		// Cheap bail on the common page: no nested island carries a chip.
+		if ( ! body.querySelector( '.minimal-block-island .minimal-block-island > .minimal-island-chip' ) ) return;
+		$$( '.minimal-block-island .minimal-block-island > .minimal-island-chip', body ).forEach( ( chip ) => {
+			chip.style.transform = '';
+			const own = chip.closest( '.minimal-block-island' );
+			const r = chip.getBoundingClientRect();
+			if ( ! r.width ) return;
+			let dx = 0;
+			for ( let anc = own.parentElement && own.parentElement.closest( '.minimal-block-island' ); anc;
+				anc = anc.parentElement && anc.parentElement.closest( '.minimal-block-island' ) ) {
+				const ac = anc.querySelector( ':scope > .minimal-island-chip' );
+				if ( ! ac ) continue;
+				const ar = ac.getBoundingClientRect();
+				if ( r.left + dx < ar.right + 6 && r.right + dx > ar.left - 6 && r.top < ar.bottom && r.bottom > ar.top ) {
+					dx = ( ar.left - 6 - r.width ) - r.left;
+				}
+			}
+			if ( dx ) chip.style.transform = `translateX(${ Math.round( dx ) }px)`;
+		} );
 	}
 
 	/* ===== Outline panel ===== */
@@ -20309,14 +20802,141 @@
 		if ( ed.lockState === 'taken' || ed.lockState === 'blocked' ) setEditorWritable( false );
 		// Image loads change layout under the fixed chips — reposition then.
 		body.addEventListener( 'load', queueTableChips, true );
+		bindChipHover( body );
 		// Island chips open the block inspector (works in locked mode too — read-only there is fine
 		// because locked posts never send content, but islands only exist in blocks mode anyway).
 		body.addEventListener( 'click', ( e ) => {
 			const chip = e.target.closest( '.minimal-island-chip' );
-			if ( ! chip ) return;
+			if ( chip ) {
+				e.preventDefault();
+				const island = chip.closest( '.minimal-block-island' );
+				if ( ! island ) return;
+				// Modifier grammar on the handle: ⌥ duplicates, ⇧⌥ removes.
+				// NOT ⌃⌥: on macOS Control+click IS the secondary click, so it
+				// fires contextmenu and the OS menu opens instead (Austin's
+				// repro). Removal routes through the Undo-toast path, never a
+				// bare delete — a modifier click must always be take-backable.
+				if ( e.altKey && e.shiftKey ) { removeIslandWithUndo( island ); return; }
+				if ( e.altKey ) { duplicateIsland( island ); return; }
+				openInspector( island );
+				return;
+			}
+			// Synced pattern → its own editor. Save first (same discipline as
+			// the block-editor escape hatch) so nothing in this post is lost
+			// on the way out.
+			const patBtn = e.target.closest( '[data-patternedit]' );
+			if ( patBtn ) {
+				e.preventDefault();
+				const ref = patBtn.dataset.patternedit;
+				( async () => {
+					try {
+						if ( ed.dirty || ! ed.id ) await saveEditor( { _explicit: true } );
+					} catch ( err ) {}
+					go( 'editor/blocks/' + ref );
+				} )();
+				return;
+			}
+			// The card takes pointer events so it can be pressed anywhere
+			// (mousedown opens the tooling). Swallow the click so a linked
+			// photo or caption can never navigate the editor away.
+			if ( e.target.closest( '.minimal-block-island[data-imgtool] > .minimal-island-preview, .minimal-block-island[data-cted] > .minimal-island-preview' ) ) e.preventDefault();
+		} );
+		// Clicking an image inside a protected preview opens the image tooling
+		// directly (Austin's ask): gallery-shaped blocks → the Images editor
+		// with the clicked image's tile highlighted; single-image blocks → the
+		// replace picker for that image.
+		// MOUSEDOWN, NOT CLICK: a real mouse press moves the caret/selection,
+		// which re-renders the island — the img node is replaced between
+		// mousedown and mouseup, so the browser fires `click` on the nearest
+		// surviving ancestor (the container) and the image never sees it.
+		// Same detach-between-press-and-release class as the marketing
+		// palette's rebuild-on-hover bug. preventDefault also keeps the press
+		// from seating a caret inside the protected card.
+		body.addEventListener( 'mousedown', ( e ) => {
+			if ( e.button !== 0 ) return;
+			// Nested-content cards first: the whole card is the doorway to the
+			// content editor (GitHub #12) — in-place editable text still wins
+			// the press, exactly like the image doorway below.
+			const cbadge = e.target.closest && e.target.closest( '[data-ctedbadge]' );
+			const cprev = cbadge
+				? cbadge.parentElement.querySelector( ':scope > .minimal-island-preview' )
+				: ( e.target.closest && e.target.closest( '.minimal-block-island[data-cted] > .minimal-island-preview' ) );
+			if ( cprev ) {
+				const ceditable = ! cbadge && e.target.closest( '[contenteditable="true"]' );
+				if ( ! cbadge && ( e.target.closest( '.minimal-island-run' ) || ( ceditable && cprev.contains( ceditable ) ) ) ) return;
+				const cisland = cprev.closest( '.minimal-block-island' );
+				if ( ! cisland || ! ed.islands || ed.lockState === 'taken' || ed.lockState === 'blocked' ) return;
+				const cidx = parseInt( cisland.dataset.island, 10 );
+				const craw = ed.islands[ cidx ];
+				if ( craw == null ) return;
+				e.preventDefault();
+				// Best-effort focus: when the rendered wrapper's children align
+				// 1:1 with the child blocks, the pressed one opens highlighted.
+				let focus = null;
+				const wrap = cprev.firstElementChild;
+				const kidCount = parseInt( cisland.dataset.cted, 10 ) || 0;
+				if ( ! cbadge && wrap && wrap !== e.target && wrap.children.length === kidCount ) {
+					const hit = Array.from( wrap.children ).find( ( el2 ) => el2.contains( e.target ) );
+					if ( hit ) focus = Array.prototype.indexOf.call( wrap.children, hit );
+				}
+				closeInspector();
+				openContentEditor( cidx, cisland, craw, { focus } );
+				return;
+			}
+			// The WHOLE card is the doorway: it dims and names the action as
+			// one button, so the gaps between photos (captions, the block's own
+			// padding) have to open the editor too — clicking a photo simply
+			// opens it with that photo's tile highlighted (Austin's repro:
+			// only the images themselves were live).
+			const badge = e.target.closest && e.target.closest( '.minimal-imgtool-badge' );
+			const prev = badge
+				? badge.parentElement.querySelector( ':scope > .minimal-island-preview' )
+				: ( e.target.closest && e.target.closest( '.minimal-block-island[data-imgtool] > .minimal-island-preview' ) );
+			if ( ! prev ) return;
+			// Text a writer can edit in place inside the card wins the click —
+			// unless the press is on the badge, which says what it does.
+			// The editable ancestor has to be INSIDE the card: the editor body
+			// itself is contenteditable, so an unscoped check bails always.
+			const editable = ! badge && e.target.closest( '[contenteditable="true"]' );
+			if ( ! badge && ( e.target.closest( '.minimal-island-run' ) || ( editable && prev.contains( editable ) ) ) ) return;
+			const island = prev.closest( '.minimal-block-island' );
+			if ( ! island || ! ed.islands || ed.lockState === 'taken' || ed.lockState === 'blocked' ) return;
+			const idx = parseInt( island.dataset.island, 10 );
+			const raw = ed.islands[ idx ];
+			if ( raw == null ) return;
+			const img = badge ? null : e.target.closest( 'img' );
+			const src = img ? ( img.getAttribute( 'src' ) || '' ) : '';
+			const info = imageUnitsOf( raw );
+			if ( info ) {
+				e.preventDefault();
+				const focus = info.units.findIndex( ( u ) => u.src && ( u.src === src || src.endsWith( u.src ) || u.src.endsWith( src ) ) );
+				closeInspector();
+				openImagesEditor( idx, island, raw, info, { focus: focus === -1 ? null : focus } );
+				return;
+			}
+			const oldUrl = src && islandImageUrls( raw ).find( ( u ) => u === src || src.endsWith( u ) || u.endsWith( src ) );
+			if ( ! oldUrl ) return;
 			e.preventDefault();
-			const island = chip.closest( '.minimal-block-island' );
-			if ( island ) openInspector( island );
+			closeInspector();
+			openMediaPicker( ( it ) => {
+				if ( ! it || ! it.url ) return;
+				replaceIsland( idx, island, swapIslandImage( raw, oldUrl, it ) );
+				toast( 'Image replaced' );
+			} );
+		} );
+		body.addEventListener( 'click', ( e ) => {
+			const prev = e.target.closest && e.target.closest( '.minimal-block-island[data-imgtool] > .minimal-island-preview, .minimal-block-island[data-cted] > .minimal-island-preview' );
+			if ( prev && e.target.closest( 'a' ) ) e.preventDefault(); // a linked photo must not navigate
+		} );
+		// Hovering a ⚙ chip outlines the island it configures — with nested
+		// chips fanned side by side, the outline says which card each pill
+		// belongs to before the click commits. Event-set class, never :has()
+		// (the chip-density perf rule).
+		body.addEventListener( 'mouseover', ( e ) => {
+			const chip = e.target.closest && e.target.closest( '.minimal-island-chip' );
+			const isl = chip && chip.closest( '.minimal-block-island' );
+			$$( '.minimal-chip-hover', body ).forEach( ( el ) => { if ( el !== isl ) el.classList.remove( 'minimal-chip-hover' ); } );
+			if ( isl ) isl.classList.add( 'minimal-chip-hover' );
 		} );
 		const openBe = $( '#minimal-open-block-editor', view );
 		if ( openBe ) openBe.addEventListener( 'click', () => openInBlockEditor( openBe ) );
@@ -20599,6 +21219,37 @@
 			e.preventDefault();
 			openLinkPop( a );
 		} );
+		// Hovering editable text inside an image card: the card stops advertising
+		// itself as one button, because right there it is not one.
+		body.addEventListener( 'pointerover', ( e ) => {
+			const isl = e.target.closest && e.target.closest( '.minimal-block-island[data-imgtool]' );
+			$$( '.minimal-run-hover', body ).forEach( ( el ) => { if ( el !== isl ) el.classList.remove( 'minimal-run-hover' ); } );
+			if ( ! isl ) return;
+			isl.classList.toggle( 'minimal-run-hover', !! e.target.closest( '.minimal-island-run' ) );
+		} );
+
+		// Right-click inside a column → column ops on THAT column, the shape the
+		// table block already uses. Bound before the table handler so a table
+		// inside a column still gets its own menu (its check runs first when
+		// the press lands in a cell).
+		body.addEventListener( 'contextmenu', ( e ) => {
+			if ( e.defaultPrevented ) return;
+			if ( e.target.closest && e.target.closest( 'td, th' ) ) return; // the table menu owns cells
+			const slot = e.target.closest ? e.target.closest( '.minimal-slot' ) : null;
+			const col = slot && slot.parentElement;
+			const island = col && col.parentElement && col.parentElement.closest( '.minimal-cols-island' );
+			if ( ! island || ! body.contains( island ) ) return;
+			// Only this island's OWN columns: a nested Columns block inside a
+			// column has its own slots and owns its own menu.
+			if ( slot.closest( '.minimal-slot-island' ) !== island ) return;
+			e.preventDefault();
+			openMinimalMenu( e.clientX, e.clientY, [
+				{ label: __( 'Add column before' ), run: () => columnOp( island, 'before', col ) },
+				{ label: __( 'Add column after' ), run: () => columnOp( island, 'after', col ) },
+				{ label: __( 'Remove column' ), danger: true, run: () => columnOp( island, 'remove', col ) },
+			] );
+		} );
+
 		// Right-click in a table cell → targeted row/column ops on THAT cell.
 		body.addEventListener( 'contextmenu', ( e ) => {
 			const cell = e.target.closest ? e.target.closest( 'td, th' ) : null;
@@ -21239,6 +21890,52 @@
 		...( raw.replace( /\\\//g, '/' ).match( ISLAND_IMG_RE ) || [] ),
 	] ) ];
 	const escRegex = ( s ) => s.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
+
+	/* Media objects in block attributes often describe ONE image with several
+	 * URL keys: a sized copy under "url" and the original under "fullUrl"
+	 * (Gutenslider), a thumbnail under "thumbUrl", and so on. Return the other
+	 * image URLs living in the same attribute object as `url` — the inspector
+	 * lists one row per image instead of one per key, and a replace moves the
+	 * whole set. Flat-object scan, no JSON parse: attribute JSON is machine
+	 * written, and anything this misreads simply isn't paired. */
+	const imgUrlKeyRe = () => /"[\w.-]*(?:url|src)"\s*:\s*"([^"]+)"/gi;
+	// Every spelling of an image URL a key's value can yield: as written
+	// (what islandImageUrls surfaces, which stops at a backslash escape) and
+	// with the serializer's escapes undone.
+	function imageTokensIn( value ) {
+		const set = new Set();
+		[ value, value.replace( /\\u002d/gi, '-' ).replace( /\\\//g, '/' ) ].forEach( ( v ) => {
+			( v.match( ISLAND_IMG_RE ) || [] ).forEach( ( u ) => set.add( u ) );
+		} );
+		return [ ...set ];
+	}
+	function islandImageSiblings( raw, url ) {
+		const out = new Set();
+		( String( raw || '' ).match( /\{[^{}]*\}/g ) || [] ).forEach( ( obj ) => {
+			const groups = [];
+			let m;
+			const re = imgUrlKeyRe();
+			while ( ( m = re.exec( obj ) ) ) {
+				const toks = imageTokensIn( m[ 1 ] );
+				if ( toks.length ) groups.push( toks );
+			}
+			if ( groups.length < 2 || ! groups.some( ( g ) => g.includes( url ) ) ) return;
+			groups.forEach( ( g ) => g.forEach( ( u ) => { if ( u !== url ) out.add( u ); } ) );
+		} );
+		return [ ...out ];
+	}
+
+	// The image list an inspector should offer: one row per picture, with the
+	// extra keys of a multi-URL media object folded into their primary.
+	function islandImageRows( raw ) {
+		const all = islandImageUrls( String( raw || '' ) );
+		const secondary = new Set();
+		all.forEach( ( u ) => {
+			if ( secondary.has( u ) ) return;
+			islandImageSiblings( raw, u ).forEach( ( s ) => secondary.add( s ) );
+		} );
+		return all.filter( ( u ) => ! secondary.has( u ) );
+	}
 	function swapIslandImage( raw, oldUrl, item ) {
 		const newUrl = item && item.url;
 		if ( ! newUrl || newUrl === oldUrl ) return raw;
@@ -21246,9 +21943,32 @@
 		const encAttr = ( s ) => s.replace( /--/g, '\\u002d\\u002d' ).replace( /</g, '\\u003c' ).replace( />/g, '\\u003e' ).replace( /&/g, '\\u0026' );
 		// PHP-side wp_json_encode escapes forward slashes — cover that form too.
 		const slashEsc = ( s ) => s.split( '/' ).join( '\\/' );
-		raw = raw.split( oldUrl ).join( newUrl );
-		if ( encAttr( oldUrl ) !== oldUrl ) raw = raw.split( encAttr( oldUrl ) ).join( encAttr( newUrl ) );
-		raw = raw.split( slashEsc( oldUrl ) ).join( slashEsc( newUrl ) );
+		const swapUrl = ( str, from ) => {
+			let out = str.split( from ).join( newUrl );
+			if ( encAttr( from ) !== from ) out = out.split( encAttr( from ) ).join( encAttr( newUrl ) );
+			return out.split( slashEsc( from ) ).join( slashEsc( newUrl ) );
+		};
+		// One image, several URLs: an attribute media object routinely carries
+		// a sized copy AND the original (Gutenslider's url + fullUrl). They
+		// describe the same picture, so every image key in the object that
+		// holds this one is rewritten WHOLE. Substring swapping can't do that
+		// safely: a serialize-escaped URL ("…jpg--700x700.jpg")
+		// contains the sibling key's value as a prefix, so a plain replace
+		// would splice the new name into the middle of the old one.
+		const writeUrl = ( oldVal ) => encAttr( /\\\//.test( oldVal ) ? slashEsc( newUrl ) : newUrl );
+		raw = raw.replace( /\{[^{}]*\}/g, ( obj ) => {
+			let holds = false;
+			obj.replace( imgUrlKeyRe(), ( m0, val ) => {
+				if ( imageTokensIn( val ).includes( oldUrl ) ) holds = true;
+				return m0;
+			} );
+			if ( ! holds ) return obj;
+			return obj.replace( imgUrlKeyRe(), ( m0, val ) =>
+				( imageTokensIn( val ).length ? m0.replace( '"' + val + '"', '"' + writeUrl( val ) + '"' ) : m0 ) );
+		} );
+		// Remaining occurrences (saved HTML, srcset, anything outside an
+		// attribute object).
+		raw = swapUrl( raw, oldUrl );
 		if ( item.id ) {
 			const urlPat = '(?:' + escRegex( newUrl ) + '|' + escRegex( encAttr( newUrl ) ) + '|' + escRegex( slashEsc( newUrl ) ) + ')';
 			raw = raw.replace( /<!--(?:(?!-->)[\s\S])*-->/g, ( comment ) => {
@@ -21263,19 +21983,22 @@
 						? [ m[ 1 ] + m[ 2 ] ]      // bgImg → bgImgID / bgImgId
 						: [ m[ 1 ] ];               // imageUrl → imageId / imageID
 					stems.forEach( ( stem ) => {
-						out = out.replace( new RegExp( '"' + stem + '(Id|ID)":\\d+', 'g' ), '"' + stem + '$1":' + item.id );
+						// Ids are written both as numbers and as strings
+						// ("id":"1971" — Gutenslider); keep whichever the
+						// block used.
+						out = out.replace( new RegExp( '"' + stem + '(Id|ID)":("?)\\d+\\2', 'g' ), '"' + stem + '$1":$2' + item.id + '$2' );
 					} );
 				}
 				// Media objects ({ "url": …, "id": N } in either order): bare
 				// keys are only safe to retarget INSIDE the object that carries
 				// the swapped URL.
 				out = out.replace( new RegExp( '\\{[^{}]*"url":"' + urlPat + '"[^{}]*\\}', 'g' ), ( obj ) =>
-					obj.replace( /"id":\d+/g, '"id":' + item.id ) );
+					obj.replace( /"id":("?)\d+\1/g, '"id":$1' + item.id + '$1' ) );
 				// GenerateBlocks: no URL attribute at all — mediaId pairs with
 				// the src living in htmlAttributes/saved HTML. Comment-scoped:
 				// a GB media comment carries exactly one mediaId.
 				if ( new RegExp( urlPat ).test( comment ) ) {
-					out = out.replace( /"mediaId":\d+/g, '"mediaId":' + item.id );
+					out = out.replace( /"mediaId":("?)\d+\1/g, '"mediaId":$1' + item.id + '$1' );
 				}
 				return out;
 			} );
@@ -21290,6 +22013,910 @@
 			} );
 		}
 		return raw;
+	}
+
+	/* ===== Island Images editor (reorder / remove / add) =====
+	 * Gallery-shaped blocks are a run of repeating sibling units — one <li>
+	 * or <figure> per image (Jetpack slideshow, tiled galleries) or one
+	 * inner wp:image block per image (core gallery) — plus an optional
+	 * "ids" array in the block comment. Reordering permutes the unit
+	 * SUBSTRINGS verbatim: each unit is exactly what save() emitted for
+	 * that image, so the permuted whole is exactly what save() emits for
+	 * the new order — byte-safe, revalidates clean, captions travel with
+	 * their unit. Remove drops a unit + its id; Add clones a sibling unit
+	 * as prototype and retargets the src/id conventions. Detection is
+	 * offset-based on the raw string (the textRunsOf discipline); when the
+	 * shape doesn't map cleanly the feature simply doesn't offer itself. */
+	/* Two shapes of image block. A RUN is a list of repeating units, one per
+	 * image, that can be permuted, dropped and cloned freely. SLOTS are a fixed
+	 * layout whose openings happen to hold images — Jetpack's tiled gallery
+	 * packs its photos into columns whose widths it computed from their aspect
+	 * ratios, so the arrangement is not ours to rewrite. Where the openings
+	 * carry nothing of their own, though, the images inside them are
+	 * interchangeable: they can be reordered and replaced, just not added or
+	 * removed (the layout has a fixed number of openings). */
+	function imageUnitsOf( raw ) {
+		return imageUnitRunOf( raw ) || imageSlotsOf( raw );
+	}
+
+	function imageUnitRunOf( raw ) {
+		if ( typeof raw !== 'string' ) return null;
+		const open = raw.match( /^<!--\s*wp:[a-z][\w-]*(?:\/[\w-]+)?(\s+\{[\s\S]*?\})?\s*-->/ );
+		if ( ! open ) return null;
+		const innerStart = open[ 0 ].length;
+		const closeAt = raw.lastIndexOf( '<!-- /wp:' );
+		if ( closeAt <= innerStart ) return null;
+		const inner = raw.slice( innerStart, closeAt );
+
+		let spans = null;         // [ { start, end } ] relative to `base`
+		let base = inner;         // the region those offsets index into
+		let baseOff = innerStart; // where `base` starts inside raw
+
+		// Mode 1: a run of same-name inner blocks. Core gallery keeps that run
+		// directly in the block's markup; slider blocks nest it inside their
+		// viewport element and give each image its own wrapper block (Carousel
+		// Slider's cb/carousel > div > cb/slide > wp:image). Peel single
+		// wrapper ELEMENTS until the interior is a uniform run — the units are
+		// still complete sibling blocks, so permuting them stays byte-safe.
+		if ( /<!--\s*wp:/.test( inner ) ) {
+			for ( let level = 0; level < 4; level++ ) {
+				spans = uniformBlockRun( base );
+				if ( spans ) break;
+				const peel = peelWrapperEl( base );
+				if ( ! peel ) break;
+				baseOff += peel.start;
+				base = base.slice( peel.start, peel.end );
+			}
+			// Inner blocks that never resolve to a uniform run are structure,
+			// not a flat image list — don't guess at HTML siblings under them.
+			if ( ! spans ) return null;
+		} else {
+			// Mode 2: repeated same-tag HTML siblings, non-nested (opens and
+			// closes strictly alternate).
+			for ( const tag of [ 'li', 'figure' ] ) {
+				const opens = [];
+				const closes = [];
+				const oRe = new RegExp( '<' + tag + '[\\s>]', 'g' );
+				const cRe = new RegExp( '</' + tag + '>', 'g' );
+				let m;
+				while ( ( m = oRe.exec( base ) ) ) opens.push( m.index );
+				while ( ( m = cRe.exec( base ) ) ) closes.push( m.index + m[ 0 ].length );
+				if ( opens.length < 2 || opens.length !== closes.length ) continue;
+				let alternate = true;
+				for ( let i = 0; i < opens.length; i++ ) {
+					if ( ! ( opens[ i ] < closes[ i ] && ( i === 0 || closes[ i - 1 ] <= opens[ i ] ) ) ) { alternate = false; break; }
+				}
+				if ( ! alternate ) continue;
+				spans = opens.map( ( s, i ) => ( { start: s, end: closes[ i ] } ) );
+				break;
+			}
+			if ( ! spans ) return null;
+		}
+
+		// Between-unit material must be pure whitespace — anything else means
+		// the run isn't the uniform sibling list this editor assumes.
+		for ( let i = 1; i < spans.length; i++ ) {
+			if ( /\S/.test( base.slice( spans[ i - 1 ].end, spans[ i ].start ) ) ) return null;
+		}
+		const units = spans.map( ( s ) => {
+			const text = base.slice( s.start, s.end );
+			const imgs = ( text.match( /<img[\s>]/g ) || [] ).length;
+			// Sliders that keep no image tag at all (Gutenslider) carry the
+			// picture in the block's attributes instead: one media object per
+			// slide, whose several URL keys describe the same image.
+			const attrPics = imgs ? [] : islandImageRows( text );
+			const srcM = text.match( /<img[^>]*\ssrc="([^"]+)"/ ) || text.match( /\ssrc="([^"]+)"/ );
+			const idM = text.match( /wp-image-(\d+)/ ) || text.match( /data-id="(\d+)"/ ) || text.match( /"id":"?(\d+)"?/ );
+			return {
+				text,
+				attrOnly: ! imgs,
+				pictures: imgs || attrPics.length,
+				src: imgs ? ( srcM ? srcM[ 1 ] : '' ) : ( attrPics[ 0 ] || '' ),
+				id: idM ? parseInt( idM[ 1 ], 10 ) : 0,
+			};
+		} );
+		// Every unit must carry exactly one picture — a mixed run (text slides,
+		// video slides) can't be safely tile-edited as images.
+		if ( units.some( ( u ) => u.pictures !== 1 || ! u.src ) ) return null;
+
+		// Comment "ids" array: must align 1:1 with the units, and where a
+		// unit declares its own id the two must agree, or the mapping is off.
+		let ids = null;
+		const idsM = open[ 0 ].match( /"ids":\[([^\]]*)\]/ );
+		if ( idsM ) {
+			ids = idsM[ 1 ].trim() === '' ? [] : idsM[ 1 ].split( ',' ).map( ( n ) => parseInt( n, 10 ) );
+			if ( ids.length !== units.length ) return null;
+			if ( units.some( ( u, i ) => u.id && ids[ i ] !== u.id ) ) return null;
+		}
+
+		const gaps = [];
+		for ( let i = 1; i < spans.length; i++ ) gaps.push( base.slice( spans[ i - 1 ].end, spans[ i ].start ) );
+		return {
+			prefix: raw.slice( 0, baseOff + spans[ 0 ].start ),
+			suffix: raw.slice( baseOff + spans[ spans.length - 1 ].end ),
+			units,
+			gaps,
+			ids,
+			mirror: findMediaMirror( open[ 0 ], units ),
+		};
+	}
+
+	/* Images sitting in a fixed layout. Every image is a unit; the markup
+	 * BETWEEN them is the layout, kept exactly where it is, so a reorder moves
+	 * the photos through the openings and changes nothing else. Only offered
+	 * when the openings carry no identity of their own: a wrapper with an
+	 * href, an id, a data-attribute or a caption might belong to the image it
+	 * currently holds, and moving images past it would quietly mismatch them.
+	 * The block's own opening comment is exempt — its attributes are handled
+	 * separately (the ids array permutes with the units). */
+	const IMG_TAG_RE = /<img\b[^>]*>/gi;
+	function imageSlotsOf( raw ) {
+		if ( typeof raw !== 'string' ) return null;
+		const open = raw.match( /^<!--\s*wp:[a-z][\w-]*(?:\/[\w-]+)?(\s+\{[\s\S]*?\})?\s*-->/ );
+		if ( ! open ) return null;
+		const spans = [];
+		let m;
+		IMG_TAG_RE.lastIndex = 0;
+		while ( ( m = IMG_TAG_RE.exec( raw ) ) ) spans.push( { start: m.index, end: m.index + m[ 0 ].length } );
+		if ( spans.length < 2 ) return null;
+		// The layout, with the images and the block's own comments taken out.
+		const chrome = ( raw.slice( 0, spans[ 0 ].start ) + spans.slice( 1 ).map( ( sp, i ) => raw.slice( spans[ i ].end, sp.start ) ).join( '' ) + raw.slice( spans[ spans.length - 1 ].end ) )
+			.replace( /<!--[\s\S]*?-->/g, '' );
+		if ( /\s(?:href|id|data-[\w-]+|title|alt)\s*=/i.test( chrome ) ) return null;
+		if ( /<figcaption|<a\b/i.test( chrome ) ) return null;
+		const units = spans.map( ( sp ) => {
+			const text = raw.slice( sp.start, sp.end );
+			const srcM = text.match( /\ssrc="([^"]+)"/ );
+			const idM = text.match( /wp-image-(\d+)/ ) || text.match( /data-id="(\d+)"/ );
+			return { text, slotImg: true, pictures: 1, src: srcM ? srcM[ 1 ] : '', id: idM ? parseInt( idM[ 1 ], 10 ) : 0 };
+		} );
+		if ( units.some( ( u ) => ! u.src ) ) return null;
+		let ids = null;
+		const idsM = open[ 0 ].match( /"ids":\[([^\]]*)\]/ );
+		if ( idsM ) {
+			ids = idsM[ 1 ].trim() === '' ? [] : idsM[ 1 ].split( ',' ).map( ( n ) => parseInt( n, 10 ) );
+			if ( ids.length !== units.length ) return null;
+			if ( units.some( ( u, i ) => u.id && ids[ i ] !== u.id ) ) return null;
+		}
+		const gaps = [];
+		for ( let i = 1; i < spans.length; i++ ) gaps.push( raw.slice( spans[ i - 1 ].end, spans[ i ].start ) );
+		return {
+			prefix: raw.slice( 0, spans[ 0 ].start ),
+			suffix: raw.slice( spans[ spans.length - 1 ].end ),
+			units,
+			gaps,
+			ids,
+			mirror: null,
+			// A fixed number of openings: reorder and replace, never add or drop.
+			fixedSlots: true,
+		};
+	}
+
+	// Depth- and quote-aware scan for the matching bracket of the one at `at`.
+	function matchBracket( str, at ) {
+		let depth = 0;
+		let quoted = false;
+		for ( let i = at; i < str.length; i++ ) {
+			const c = str[ i ];
+			if ( quoted ) {
+				if ( c === '\\' ) i++;
+				else if ( c === '"' ) quoted = false;
+				continue;
+			}
+			if ( c === '"' ) quoted = true;
+			else if ( c === '[' || c === '{' ) depth++;
+			else if ( c === ']' || c === '}' ) { depth--; if ( ! depth ) return i; }
+		}
+		return -1;
+	}
+
+	// Top-level members of a JSON array body, as verbatim substrings.
+	function splitJsonArray( body ) {
+		const out = [];
+		let depth = 0;
+		let quoted = false;
+		let start = 0;
+		for ( let i = 0; i < body.length; i++ ) {
+			const c = body[ i ];
+			if ( quoted ) {
+				if ( c === '\\' ) i++;
+				else if ( c === '"' ) quoted = false;
+				continue;
+			}
+			if ( c === '"' ) quoted = true;
+			else if ( c === '[' || c === '{' ) depth++;
+			else if ( c === ']' || c === '}' ) depth--;
+			else if ( c === ',' && ! depth ) { out.push( body.slice( start, i ) ); start = i + 1; }
+		}
+		if ( body.slice( start ).trim() !== '' ) out.push( body.slice( start ) );
+		return out;
+	}
+
+	/* A parent block that ALSO keeps a flat list of its images (Gutenslider's
+	 * "media") has to travel with the units: reorder the slides without it and
+	 * the block renders one set while listing another. Found by shape, never by
+	 * name — an array attribute whose entries each describe exactly the picture
+	 * of the unit in the same position. */
+	function findMediaMirror( head, units ) {
+		const re = /"(\w+)"\s*:\s*\[/g;
+		let m;
+		while ( ( m = re.exec( head ) ) ) {
+			const at = m.index + m[ 0 ].length - 1;
+			const end = matchBracket( head, at );
+			if ( end < 0 ) continue;
+			const entries = splitJsonArray( head.slice( at + 1, end ) );
+			if ( ! entries || entries.length !== units.length ) continue;
+			const pics = entries.map( ( e ) => islandImageRows( e ) );
+			if ( pics.some( ( p ) => p.length !== 1 ) ) continue;
+			if ( ! units.every( ( u, i ) => pics[ i ][ 0 ] === u.src ) ) continue;
+			return { key: m[ 1 ], start: at, end: end + 1, entries };
+		}
+		return null;
+	}
+
+	// Top-level segments of a region that are ALL blocks of one name, with
+	// nothing but whitespace between them — the shape a gallery or slide run
+	// has. Offsets are relative to the region.
+	function uniformBlockRun( str ) {
+		const segs = tokenizeBlocks( str );
+		if ( ! segs ) return null;
+		if ( segs.some( ( s ) => s.type === 'html' && /\S/.test( s.raw ) ) ) return null;
+		const blocks = segs.filter( ( s ) => s.type === 'block' );
+		if ( blocks.length < 2 || blocks.some( ( s ) => s.name !== blocks[ 0 ].name ) ) return null;
+		const spans = [];
+		let at = 0;
+		segs.forEach( ( s ) => {
+			if ( s.type === 'block' ) spans.push( { start: at, end: at + s.raw.length } );
+			at += s.raw.length;
+		} );
+		return spans;
+	}
+
+	// The interior of a region that is ONE wrapper element (`<div …>…</div>`
+	// with only whitespace outside it) — a slider's viewport/track markup.
+	// Returns offsets into str, or null when the region isn't shaped that way.
+	function peelWrapperEl( str ) {
+		const m = str.match( /^\s*<([a-z][\w-]*)(?:\s[^>]*)?>/i );
+		if ( ! m ) return null;
+		const tag = m[ 1 ].toLowerCase();
+		const openEnd = m[ 0 ].length;
+		const lower = str.toLowerCase();
+		let depth = 1;
+		let i = openEnd;
+		let close = -1;
+		while ( i < str.length ) {
+			if ( str.startsWith( '<!--', i ) ) {
+				const e = str.indexOf( '-->', i );
+				i = e === -1 ? str.length : e + 3;
+				continue;
+			}
+			if ( str[ i ] === '<' ) {
+				const e = str.indexOf( '>', i );
+				if ( e === -1 ) return null;
+				if ( lower.startsWith( '</' + tag, i ) ) {
+					depth--;
+					if ( ! depth ) { close = i; break; }
+				} else if ( lower.startsWith( '<' + tag, i ) && /[\s>/]/.test( lower[ i + 1 + tag.length ] || '' ) && str[ e - 1 ] !== '/' ) {
+					depth++;
+				}
+				i = e + 1;
+				continue;
+			}
+			i++;
+		}
+		if ( close === -1 ) return null;
+		if ( str.slice( str.indexOf( '>', close ) + 1 ).trim() !== '' ) return null;
+		return { start: openEnd, end: close };
+	}
+
+	// Clone an existing unit for a newly picked attachment: swap the source
+	// URL (all escape forms), retarget the id conventions, refresh the alt
+	// and aspect hint, and strip what belongs to the OLD image (srcset/sizes
+	// variants, the caption). A REPLACE keeps the caption (opts.keepCaption):
+	// the slot's editorial text usually still applies to its stand-in image.
+	function cloneImageUnit( proto, item, opts = {} ) {
+		// Attribute-only units (no image tag anywhere) carry the picture in
+		// block settings: paired URL keys, string ids, a mirror entry. The
+		// attribute swapper already knows all of that.
+		if ( proto.attrOnly && proto.src ) return swapIslandImage( proto.text, proto.src, item );
+		// A slot's unit IS the image tag: rewrite what describes the picture
+		// and drop what described the OLD one. data-link points at the old
+		// attachment's page, and a wrong link is worse than none.
+		if ( proto.slotImg ) {
+			let t = proto.text;
+			if ( proto.src && item.url ) t = t.split( proto.src ).join( item.url );
+			t = t.replace( /\sdata-url="[^"]*"/i, item.url ? ' data-url="' + esc( item.url ) + '"' : '' );
+			t = t.replace( /\sdata-link="[^"]*"/i, '' );
+			t = t.replace( /\ssrcset="[^"]*"/i, '' ).replace( /\ssizes="[^"]*"/i, '' );
+			if ( item.id ) {
+				t = t.replace( /\sdata-id="\d+"/i, ' data-id="' + item.id + '"' );
+				t = t.replace( /(wp-image-)\d+/i, '$1' + item.id );
+			}
+			if ( item.width ) t = t.replace( /\sdata-width="\d+"/i, ' data-width="' + item.width + '"' );
+			if ( item.height ) t = t.replace( /\sdata-height="\d+"/i, ' data-height="' + item.height + '"' );
+			t = t.replace( /(\salt=")[^"]*(")/i, '$1' + esc( item.alt || '' ) + '$2' );
+			return t;
+		}
+		let u = proto.text;
+		const encAttr = ( s ) => s.replace( /--/g, '\\u002d\\u002d' ).replace( /</g, '\\u003c' ).replace( />/g, '\\u003e' ).replace( /&/g, '\\u0026' );
+		const slashEsc = ( s ) => s.split( '/' ).join( '\\/' );
+		if ( proto.src && item.url ) {
+			u = u.split( proto.src ).join( item.url );
+			if ( encAttr( proto.src ) !== proto.src ) u = u.split( encAttr( proto.src ) ).join( encAttr( item.url ) );
+			u = u.split( slashEsc( proto.src ) ).join( slashEsc( item.url ) );
+		}
+		if ( proto.id && item.id ) {
+			u = u.replace( new RegExp( '(wp-image-)' + proto.id + '\\b', 'g' ), '$1' + item.id );
+			u = u.replace( new RegExp( '(data-id=")' + proto.id + '(")', 'g' ), '$1' + item.id + '$2' );
+			u = u.replace( new RegExp( '(data-media-id=")' + proto.id + '(")', 'g' ), '$1' + item.id + '$2' );
+			u = u.replace( new RegExp( '("id":)' + proto.id + '\\b', 'g' ), '$1' + item.id );
+		}
+		u = u.replace( /<img[^>]*>/g, ( tag ) => tag.replace( /\s(?:srcset|sizes)="[^"]*"/g, '' ) );
+		u = u.replace( /(<img[^>]*?\salt=")[^"]*(")/g, '$1' + esc( item.alt || '' ) + '$2' );
+		if ( item.width && item.height ) {
+			u = u.replace( /(data-aspect-ratio=")[^"]*(")/g, '$1' + item.width + ' / ' + item.height + '$2' );
+		}
+		if ( ! opts.keepCaption ) u = u.replace( /<figcaption[^>]*>[\s\S]*?<\/figcaption>/g, '' );
+		return u;
+	}
+
+	/* Captions live in the unit's own markup (<figcaption>), which is where the
+	 * block editor puts them and where the front end reads them. Read the first
+	 * one; write it back in place so everything else about the unit stays
+	 * byte-identical, and only when it actually changed. Units with no figure
+	 * (a slider that keeps its picture in settings) have nowhere to put one,
+	 * and simply do not offer the field. */
+	const FIGCAPTION_RE = /(<figcaption[^>]*>)([\s\S]*?)(<\/figcaption>)/;
+	function unitCaption( text ) {
+		const m = String( text || '' ).match( FIGCAPTION_RE );
+		return m ? decodeEntities( m[ 2 ].replace( /<br\s*\/?>/gi, '\n' ) ) : '';
+	}
+	function unitCanCaption( unit ) {
+		return !! unit && ! unit.attrOnly && /<\/figure>/i.test( String( unit.text || '' ) );
+	}
+	function setUnitCaption( text, value ) {
+		const escText = ( v ) => String( v ).replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ).replace( /\n/g, '<br>' );
+		const has = FIGCAPTION_RE.test( text );
+		if ( ! String( value ).trim() ) {
+			// An emptied caption leaves no empty element behind (both
+			// serializers drop those anyway).
+			return has ? text.replace( FIGCAPTION_RE, '' ) : text;
+		}
+		if ( has ) return text.replace( FIGCAPTION_RE, ( m0, open, was, close ) => open + escText( value ) + close );
+		// Core's own class, so the front end styles it like any other caption.
+		return text.replace( /<\/figure>/i, '<figcaption class="wp-element-caption">' + escText( value ) + '</figcaption></figure>' );
+	}
+
+	let imgEditEl = null;
+	function closeImgEdit() {
+		if ( imgEditEl && imgEditEl._minimalEsc ) document.removeEventListener( 'keydown', imgEditEl._minimalEsc, true );
+		if ( imgEditEl ) imgEditEl.remove();
+		imgEditEl = null;
+	}
+
+	function openImagesEditor( idx, islandEl, baseRaw, info, opts = {} ) {
+		closeImgEdit();
+		// Working list: existing entries reference their verbatim unit; added
+		// entries carry the picked attachment until Apply clones them in;
+		// replaced entries get their unit text rewritten in place (caption
+		// kept) and carry the new attachment id.
+		const list = info.units.map( ( u, i ) => ( {
+			unit: u,
+			orig: i,
+			id: info.ids ? info.ids[ i ] : u.id,
+			thumb: u.src,
+			attachment: null,
+			caption: unitCaption( u.text ),
+			// The parent's mirror entry for this picture, moved verbatim with
+			// its tile (rewritten in place when the tile is replaced).
+			mirror: info.mirror ? info.mirror.entries[ i ] : null,
+		} ) );
+		const canCaption = info.units.some( unitCanCaption );
+		// A fixed layout has a set number of openings — offering × or Add would
+		// promise something the block cannot keep. Unless its own plugin can
+		// lay it out again: an image-block adapter takes the images a writer
+		// chose and hands back new markup (Minimal_Admin::image_blocks).
+		const rebuilder = ( B.imageBlocks || {} )[ String( islandEl && islandEl.dataset.block || '' ) ];
+		const fixed = !! info.fixedSlots && ! rebuilder;
+		const canUpload = !! ( B.caps && B.caps.upload );
+		const overlay = document.createElement( 'div' );
+		overlay.className = 'minimal-imgedit-overlay';
+		// While this modal is open it owns EVERY window drop (rule of the
+		// install modals): a photo aimed at the tile grid must join THIS block,
+		// not land in the media library with the editor navigated away from
+		// under the writer (Austin's repro).
+		if ( canUpload && ! fixed ) overlay.id = 'minimal-imgedit-drop';
+		overlay.innerHTML = `
+			<div class="minimal-imgedit" role="dialog" aria-modal="true" aria-label="Edit images">
+				<div class="minimal-imgedit-head">
+					<strong>Edit images</strong>
+					<span class="minimal-imgedit-hint">${ fixed
+						? 'Drag to reorder · click a tile to replace · this block\'s layout has a fixed number of images'
+						: ( canUpload
+							? 'Drag to reorder · click a tile to replace · × removes · drop images to add'
+							: 'Drag to reorder · click a tile to replace · × removes' ) }</span>
+					<button type="button" class="minimal-x-btn" id="minimal-imgedit-close">×</button>
+				</div>
+				<div class="minimal-imgedit-grid" id="minimal-imgedit-grid"></div>
+				<div class="minimal-imgedit-drop-veil" aria-hidden="true">Drop images to add them here</div>
+				<div class="minimal-imgedit-foot">
+					${ fixed ? '' : '<button type="button" class="minimal-btn-soft" id="minimal-imgedit-add">Add images…</button>' }
+					<span style="flex:1"></span>
+					<button type="button" class="minimal-btn-soft" id="minimal-imgedit-cancel">Cancel</button>
+					<button type="button" class="minimal-btn-primary" id="minimal-imgedit-apply">Apply</button>
+				</div>
+			</div>`;
+		document.body.appendChild( overlay );
+		imgEditEl = overlay;
+		const grid = $( '#minimal-imgedit-grid', overlay );
+		let dragIdx = -1;
+
+		const renderGrid = () => {
+			grid.innerHTML = list.map( ( it, i ) => `
+				<div class="minimal-imgedit-cell">
+				<div class="minimal-imgedit-tile" draggable="true" data-i="${ i }" title="Click to replace this image">
+					<img src="${ esc( it.thumb || '' ) }" alt="" loading="lazy">
+					${ it.attachment ? '<span class="minimal-imgedit-new">new</span>' : '' }
+					${ fixed ? '' : `<button type="button" class="minimal-imgedit-x" data-x="${ i }" title="Remove" aria-label="Remove image">×</button>
+					<button type="button" class="minimal-imgedit-dup" data-dup="${ i }" title="Duplicate" aria-label="Duplicate image">${ icon( 'copy' ) }</button>` }
+					<span class="minimal-imgedit-moves">
+						<button type="button" data-mv="${ i }:-1" title="Move earlier" aria-label="Move image earlier"${ i === 0 ? ' disabled' : '' }>‹</button>
+						<button type="button" data-mv="${ i }:1" title="Move later" aria-label="Move image later"${ i === list.length - 1 ? ' disabled' : '' }>›</button>
+					</span>
+				</div>${ canCaption ? `<input class="minimal-imgedit-cap" type="text" data-cap="${ i }" value="${ esc( it.caption || '' ) }" placeholder="${ esc( __( 'Caption' ) ) }" aria-label="${ esc( __( 'Caption' ) ) }" spellcheck="true">` : '' }
+				</div>` ).join( '' ) || '<div class="minimal-imgedit-empty">No images left. Add some, or Cancel and remove the whole block from its ⚙ popover instead.</div>';
+			const apply = $( '#minimal-imgedit-apply', overlay );
+			if ( apply ) apply.disabled = ! list.length;
+			// Tiles for images that no longer exist say so instead of sitting
+			// blank — the tile is still clickable, which is how you fix it.
+			requestAnimationFrame( () => markMissingImages( grid ) );
+		};
+		renderGrid();
+
+		// Dropped image FILES upload and join the grid as new entries — the
+		// same shape the media picker hands back, so Apply clones them in
+		// through the one code path. Non-images are refused rather than
+		// silently uploaded.
+		const addDroppedFiles = async ( files ) => {
+			const imgs = files.filter( ( f ) => /^image\//.test( f.type || '' ) );
+			if ( ! imgs.length ) {
+				toast( 'Only image files can be dropped here.', true );
+				return;
+			}
+			toast( imgs.length === 1 ? 'Uploading image…' : `Uploading ${ imgs.length } images…` );
+			let added = 0;
+			for ( const file of imgs ) {
+				try {
+					const fd = new FormData();
+					fd.append( 'file', file, file.name || 'image.png' );
+					const m = await api( 'wp/v2/media', { method: 'POST', body: fd } );
+					const sizes = ( m.media_details && m.media_details.sizes ) || {};
+					const it = {
+						id: m.id,
+						url: m.source_url,
+						alt: m.alt_text || '',
+						width: ( m.media_details && m.media_details.width ) || 0,
+						height: ( m.media_details && m.media_details.height ) || 0,
+						thumb: ( sizes.medium && sizes.medium.source_url ) || m.source_url,
+					};
+					// The modal can be closed mid-upload; the attachment is
+					// still in the library, so say so rather than losing it.
+					if ( imgEditEl !== overlay ) { toast( `${ it.url.split( '/' ).pop() } uploaded to the media library.` ); continue; }
+					list.push( { unit: null, orig: -1, id: it.id, thumb: it.thumb, attachment: it } );
+					added++;
+					renderGrid();
+				} catch ( err ) {
+					toast( `${ file.name }: ${ err.message }`, true );
+				}
+			}
+			if ( added ) {
+				state.cache.media = null;
+				toast( added === 1 ? 'Image added — Apply to save it into the block.' : `${ added } images added — Apply to save them into the block.` );
+			}
+		};
+		if ( canUpload && ! fixed ) {
+			overlay._accept = ( file ) => addDroppedFiles( [ file ] );
+			overlay._acceptAll = ( files ) => addDroppedFiles( files );
+			const hasFiles = ( e ) => !! ( e.dataTransfer && Array.from( e.dataTransfer.types || [] ).includes( 'Files' ) );
+			let overDepth = 0;
+			overlay.addEventListener( 'dragenter', ( e ) => {
+				if ( ! hasFiles( e ) ) return;
+				overDepth++;
+				overlay.classList.add( 'dropping' );
+			} );
+			overlay.addEventListener( 'dragleave', () => {
+				overDepth = Math.max( 0, overDepth - 1 );
+				if ( ! overDepth ) overlay.classList.remove( 'dropping' );
+			} );
+			overlay.addEventListener( 'dragover', ( e ) => { if ( hasFiles( e ) ) e.preventDefault(); } );
+			// The window handler routes drops here too (including ones that
+			// land a few pixels outside the modal); this one just wins first
+			// and must stop the propagation so nothing uploads twice.
+			overlay.addEventListener( 'drop', ( e ) => {
+				if ( ! hasFiles( e ) ) return;
+				e.preventDefault();
+				e.stopPropagation();
+				overDepth = 0;
+				overlay.classList.remove( 'dropping' );
+				addDroppedFiles( Array.from( e.dataTransfer.files || [] ) );
+			} );
+		}
+
+		// Entered by clicking an image in the preview: show which tile that
+		// was. Manual scrollTop, never scrollIntoView (rule-31 page yank).
+		if ( opts.focus != null && opts.focus >= 0 ) {
+			const tile = grid.querySelector( `.minimal-imgedit-tile[data-i="${ opts.focus }"]` );
+			if ( tile ) {
+				grid.scrollTop = Math.max( 0, tile.offsetTop - grid.clientHeight / 2 );
+				tile.classList.add( 'flash' );
+				setTimeout( () => tile.classList.remove( 'flash' ), 1600 );
+			}
+		}
+
+		overlay.addEventListener( 'input', ( e ) => {
+			const cap = e.target.closest( '[data-cap]' );
+			if ( ! cap ) return;
+			const entry = list[ parseInt( cap.dataset.cap, 10 ) ];
+			if ( entry ) entry.caption = cap.value;   // never re-render here: it would blur the field
+		} );
+		overlay.addEventListener( 'click', ( e ) => {
+			if ( e.target === overlay || e.target.closest( '#minimal-imgedit-close' ) || e.target.closest( '#minimal-imgedit-cancel' ) ) { closeImgEdit(); return; }
+			const x = e.target.closest( '[data-x]' );
+			if ( x ) { list.splice( parseInt( x.dataset.x, 10 ), 1 ); renderGrid(); return; }
+			// Duplicate: the copy lands right after the original and re-emits
+			// that unit's exact bytes (an entry's unit object is replaced, not
+			// mutated, so sharing the reference stays safe).
+			const dup = e.target.closest( '[data-dup]' );
+			if ( dup ) {
+				const i = parseInt( dup.dataset.dup, 10 );
+				if ( list[ i ] ) list.splice( i + 1, 0, { ...list[ i ] } );
+				renderGrid();
+				return;
+			}
+			const mv = e.target.closest( '[data-mv]' );
+			if ( mv ) {
+				const [ i, dir ] = mv.dataset.mv.split( ':' ).map( Number );
+				const j = i + dir;
+				if ( j >= 0 && j < list.length ) { [ list[ i ], list[ j ] ] = [ list[ j ], list[ i ] ]; renderGrid(); }
+				return;
+			}
+			if ( e.target.closest( '#minimal-imgedit-add' ) ) {
+				openMediaPicker( ( picks ) => {
+					( picks || [] ).forEach( ( p ) => {
+						if ( p && p.url ) list.push( { unit: null, orig: -1, id: p.id, thumb: p.thumb || p.url, attachment: p } );
+					} );
+					renderGrid();
+				}, { multi: true, doneLabel: 'Add to block' } );
+				return;
+			}
+			// Clicking the tile itself (not its controls) replaces that image.
+			const tile = e.target.closest( '.minimal-imgedit-tile' );
+			if ( tile ) {
+				const i = parseInt( tile.dataset.i, 10 );
+				openMediaPicker( ( it ) => {
+					if ( ! it || ! it.url ) return;
+					const entry = list[ i ];
+					if ( ! entry ) return;
+					if ( entry.attachment ) {
+						// Not yet materialized — just swap the pending pick.
+						entry.attachment = it;
+					} else {
+						if ( entry.mirror ) {
+							const was = ( islandImageRows( entry.mirror ) || [] )[ 0 ];
+							if ( was ) entry.mirror = swapIslandImage( entry.mirror, was, it );
+						}
+						entry.unit = {
+							text: cloneImageUnit( entry.unit, it, { keepCaption: true } ),
+							src: it.url,
+							id: it.id,
+							attrOnly: entry.unit.attrOnly,
+						};
+						entry.orig = -1;
+					}
+					entry.id = it.id;
+					entry.thumb = it.thumb || it.url;
+					renderGrid();
+				} );
+				return;
+			}
+			if ( e.target.closest( '#minimal-imgedit-apply' ) && list.length ) {
+				// Adapter-owned block: the layout is the plugin's to compute,
+				// so send the images in order and take back whole markup.
+				if ( rebuilder ) {
+					const ids = list.map( ( it ) => ( it.attachment ? it.attachment.id : it.id ) ).filter( Boolean );
+					if ( ids.length !== list.length ) { toast( 'Every image needs to be in the media library.', true ); return; }
+					const applyBtn = $( '#minimal-imgedit-apply', overlay );
+					if ( applyBtn ) { applyBtn.disabled = true; applyBtn.textContent = 'Applying…'; }
+					api( 'minimal-admin/v1/image-block', {
+						method: 'POST',
+						body: JSON.stringify( { block: islandEl.dataset.block, ids, raw: baseRaw } ),
+					} ).then( ( r ) => {
+						closeImgEdit();
+						if ( r && r.markup ) replaceIsland( idx, islandEl, r.markup );
+					} ).catch( ( err ) => {
+						if ( applyBtn ) { applyBtn.disabled = false; applyBtn.textContent = 'Apply'; }
+						toast( err.message, true );
+					} );
+					return;
+				}
+				const proto = info.units[ 0 ];
+				const parts = list.map( ( it ) => {
+					const text = it.attachment ? cloneImageUnit( proto, it.attachment ) : it.unit.text;
+					// Only a CHANGED caption rewrites its unit; everything else
+					// stays the bytes it arrived as.
+					return it.caption !== unitCaption( text ) ? setUnitCaption( text, it.caption || '' ) : text;
+				} );
+				const joiner = ( i ) => info.gaps.length ? info.gaps[ Math.min( i, info.gaps.length - 1 ) ] : '\n\n';
+				let bodyStr = '';
+				parts.forEach( ( p, i ) => { bodyStr += p; if ( i < parts.length - 1 ) bodyStr += joiner( i ); } );
+				let prefix = info.prefix;
+				if ( info.ids ) {
+					const newIds = list.map( ( it ) => it.attachment ? it.attachment.id : it.id );
+					prefix = prefix.replace( /"ids":\[[^\]]*\]/, '"ids":[' + newIds.join( ',' ) + ']' );
+				}
+				if ( info.mirror ) {
+					const protoEntry = info.mirror.entries[ 0 ];
+					const protoPic = ( islandImageRows( protoEntry ) || [] )[ 0 ];
+					const entries = list.map( ( it ) => {
+						if ( it.mirror ) return it.mirror;
+						// Added tiles clone the first entry onto their pick.
+						return it.attachment && protoPic
+							? swapIslandImage( protoEntry, protoPic, it.attachment )
+							: protoEntry;
+					} );
+					prefix = prefix.slice( 0, info.mirror.start ) + '[' + entries.join( ',' ) + ']' + prefix.slice( info.mirror.end );
+				}
+				const newRaw = prefix + bodyStr + info.suffix;
+				closeImgEdit();
+				if ( newRaw !== baseRaw ) replaceIsland( idx, islandEl, newRaw );
+			}
+		} );
+		// Drag reorder: drop before/after the target tile by horizontal midpoint.
+		overlay.addEventListener( 'dragstart', ( e ) => {
+			if ( e.target.closest( '[data-cap]' ) ) { e.preventDefault(); return; }
+			const t = e.target.closest( '.minimal-imgedit-tile' );
+			if ( ! t ) return;
+			dragIdx = parseInt( t.dataset.i, 10 );
+			t.classList.add( 'drag' );
+		} );
+		overlay.addEventListener( 'dragover', ( e ) => { if ( dragIdx >= 0 ) e.preventDefault(); } );
+		overlay.addEventListener( 'drop', ( e ) => {
+			if ( dragIdx < 0 ) return;
+			e.preventDefault();
+			const t = e.target.closest( '.minimal-imgedit-tile' );
+			if ( t ) {
+				const to = parseInt( t.dataset.i, 10 );
+				if ( to !== dragIdx ) {
+					const rect = t.getBoundingClientRect();
+					const before = e.clientX < rect.left + rect.width / 2;
+					const [ moved ] = list.splice( dragIdx, 1 );
+					let target = before ? to : to + 1;
+					if ( dragIdx < target ) target--;
+					list.splice( target, 0, moved );
+				}
+			}
+			dragIdx = -1;
+			renderGrid();
+		} );
+		overlay.addEventListener( 'dragend', () => { dragIdx = -1; renderGrid(); } );
+		const escKey = ( e ) => {
+			// The media picker stacks above this modal — its own Escape wins.
+			if ( e.key === 'Escape' && ! state.modal ) { e.stopPropagation(); closeImgEdit(); }
+		};
+		overlay._minimalEsc = escKey;
+		document.addEventListener( 'keydown', escKey, true );
+	}
+
+	// ===== Content editor (nested blocks) =====================================
+	// The nested-content sibling of the images editor (GitHub #12): a Group of
+	// styled paragraphs used to unroll in the 320px ⚙ popover as text plus a
+	// dozen schema inputs PER CHILD — fixing a typo meant scrolling the wall.
+	// The modal puts text first, one card per child, with the schema form
+	// tucked behind a per-card Settings disclosure; reorder/remove/add ride
+	// the same model ops as the popover. Writes go through the popover's own
+	// collect/build pipeline, so untouched children stay byte-identical.
+	let ctedEl = null;
+	function closeContentEditor() {
+		if ( ctedEl && ctedEl._minimalEsc ) document.removeEventListener( 'keydown', ctedEl._minimalEsc, true );
+		if ( ctedEl ) ctedEl.remove();
+		ctedEl = null;
+	}
+
+	async function openContentEditor( idx, islandEl, baseRaw, opts = {} ) {
+		closeContentEditor();
+		const model = inspectorModel( baseRaw );
+		if ( ! model || ! model.children.length ) {
+			toast( __( 'This block’s content can’t be edited here.' ), true );
+			return;
+		}
+		const structural = model.mode === 'structural';
+		const overlay = document.createElement( 'div' );
+		overlay.className = 'minimal-cted-overlay';
+		overlay.innerHTML = `
+			<div class="minimal-cted" role="dialog" aria-modal="true" aria-label="${ esc( __( 'Edit content' ) ) }">
+				<div class="minimal-cted-head">
+					<strong>${ esc( __( 'Edit content' ) ) }</strong>
+					<span class="minimal-cted-hint">${ esc( structural
+						? __( 'Text first; each block’s other settings are tucked below it.' )
+						: __( 'Text first; each block’s other settings are tucked below it. This block’s structure is locked.' ) ) }</span>
+					<button type="button" class="minimal-x-btn" id="minimal-cted-close">×</button>
+				</div>
+				<div class="minimal-cted-body" id="minimal-cted-body">
+					<div class="minimal-loading" style="padding:24px;">${ esc( __( 'Loading block schema…' ) ) }</div>
+				</div>
+				<div class="minimal-cted-foot">
+					<span class="minimal-cted-addslot" id="minimal-cted-addslot"></span>
+					<span style="flex:1"></span>
+					<button type="button" class="minimal-btn-soft" id="minimal-cted-cancel">${ esc( __( 'Cancel' ) ) }</button>
+					<button type="button" class="minimal-btn-primary" id="minimal-cted-apply" disabled>${ esc( __( 'Apply' ) ) }</button>
+				</div>
+			</div>`;
+		document.body.appendChild( overlay );
+		ctedEl = overlay;
+		const escKey2 = ( e ) => {
+			if ( e.key === 'Escape' && ! state.modal ) { e.stopPropagation(); closeContentEditor(); }
+		};
+		overlay._minimalEsc = escKey2;
+		document.addEventListener( 'keydown', escKey2, true );
+
+		const names = [ model.parts.name, ...model.children.map( ( c ) => c.name ) ];
+		const types = {};
+		await Promise.all( [ ...new Set( names ) ].map( async ( n ) => { types[ n ] = await blockTypeFor( n ); } ) );
+		if ( ctedEl !== overlay ) return; // closed while loading
+		const insp = { idx, model, types, islandEl };
+		const bodyEl = $( '#minimal-cted-body', overlay );
+
+		const cardHtml = ( c, i ) => {
+			const t = types[ c.name ];
+			const fields = t && t.attributes ? inspectorFields( t.attributes, c.attrs, String( i ), c.name ) : '';
+			// Seed from __text when a structure op re-rendered mid-edit
+			// (collect stored the live value; the pristine tail would
+			// silently revert it).
+			const ct = childTextOf( c );
+			const textRow = ct ? `<textarea class="minimal-input minimal-insp-textarea minimal-cted-text" data-insptext="${ i }" spellcheck="true">${ esc( c.__text != null ? c.__text : ct.inner ) }</textarea>` : '';
+			const runRowsC = ! textRow && c.runs && c.runs.length ? runFieldRows( 'c' + i, c.runs ) : '';
+			const nf = fields ? ( fields.match( /data-insp="/g ) || [] ).length : 0;
+			/* translators: %d: number of settings fields */
+			const setLabel = sprintf( __( 'Settings (%d)' ), nf );
+			const setBlock = fields ? `
+				<button type="button" class="minimal-cted-setbtn" data-ctset="${ i }" aria-expanded="false">${ icon( 'chevron-down' ) }${ esc( setLabel ) }</button>
+				<div class="minimal-cted-set" data-ctset-panel="${ i }" hidden>${ fields }</div>` : '';
+			const title = ( t && t.title ) || c.name.replace( /^core\//, '' );
+			const content = textRow || runRowsC;
+			return `<div class="minimal-cted-card" data-ci="${ i }">
+				<div class="minimal-cted-card-head">
+					<span class="minimal-cted-card-title">${ i + 1 }. ${ esc( title ) }</span>
+					${ structural ? `<span class="minimal-insp-ctl">
+						<button type="button" data-cmove="${ i }:-1" title="${ esc( __( 'Move up' ) ) }"${ i === 0 ? ' disabled' : '' }>↑</button>
+						<button type="button" data-cmove="${ i }:1" title="${ esc( __( 'Move down' ) ) }"${ i === model.children.length - 1 ? ' disabled' : '' }>↓</button>
+						<button type="button" data-cdel="${ i }" title="${ esc( __( 'Remove' ) ) }">×</button>
+					</span>` : '' }
+				</div>
+				${ content }${ setBlock }
+				${ content || setBlock ? '' : `<div class="minimal-insp-note">${ esc( __( 'No editable settings.' ) ) }</div>` }
+			</div>`;
+		};
+
+		const renderCards = () => {
+			bodyEl.innerHTML = model.children.map( cardHtml ).join( '' )
+				|| `<div class="minimal-cted-empty">${ esc( __( 'No blocks left. Add one, or Cancel and remove the whole block from its ⚙ popover instead.' ) ) }</div>`;
+			const addSlot = $( '#minimal-cted-addslot', overlay );
+			// "+ Add" only for types whose schema we can form-edit (the
+			// popover's own rule).
+			const addable = structural ? ( model.addTypes || [] ).filter( ( n ) => types[ n ] && types[ n ].attributes ) : [];
+			if ( addSlot ) addSlot.innerHTML = addable.length ? `
+				${ addable.length > 1 ? `<select class="minimal-input" id="minimal-cted-add-type">${ addable.map( ( n ) => `<option value="${ esc( n ) }">${ esc( n.replace( /^core\//, '' ) ) }</option>` ).join( '' ) }</select>` : '' }
+				<button class="minimal-btn-soft" type="button" id="minimal-cted-add"${ addable.length === 1 ? ` data-add-type="${ esc( addable[ 0 ] ) }"` : '' }>+ ${ esc( __( 'Add' ) ) } ${ esc( addable.length === 1 ? addable[ 0 ].split( '/' ).pop() : __( 'block' ) ) }</button>` : '';
+			const apply = $( '#minimal-cted-apply', overlay );
+			if ( apply ) apply.disabled = ! model.children.length;
+		};
+		renderCards();
+
+		// Entered by clicking a child in the preview: show which card that was.
+		// Manual scrollTop, never scrollIntoView (rule-31 page yank).
+		if ( opts.focus != null && opts.focus >= 0 ) {
+			const card = bodyEl.querySelector( `.minimal-cted-card[data-ci="${ opts.focus }"]` );
+			if ( card ) {
+				bodyEl.scrollTop = Math.max( 0, card.offsetTop - bodyEl.clientHeight / 2 + card.offsetHeight / 2 );
+				card.classList.add( 'flash' );
+				setTimeout( () => card.classList.remove( 'flash' ), 1600 );
+			}
+		}
+		// Land in a text field — fixing words is what the modal is for.
+		const firstField = ( opts.focus != null && opts.focus >= 0
+			? bodyEl.querySelector( `.minimal-cted-card[data-ci="${ opts.focus }"] [data-insptext], .minimal-cted-card[data-ci="${ opts.focus }"] [data-insprun]` )
+			: null ) || bodyEl.querySelector( '[data-insptext], [data-insprun]' );
+		if ( firstField ) setTimeout( () => firstField.focus( { preventScroll: true } ), 0 );
+
+		// Filter box inside a nested "More settings" panel (huge schemas).
+		overlay.addEventListener( 'input', ( e ) => {
+			const f = e.target.closest( '[data-inspmore-filter]' );
+			if ( ! f ) return;
+			const q = f.value.trim().toLowerCase();
+			$$( '.minimal-insp-row', f.closest( '.minimal-insp-more' ) ).forEach( ( row ) => {
+				row.style.display = ! q || row.dataset.fkey.includes( q ) ? '' : 'none';
+			} );
+		} );
+
+		overlay.addEventListener( 'click', ( e ) => {
+			if ( e.target === overlay || e.target.closest( '#minimal-cted-close' ) || e.target.closest( '#minimal-cted-cancel' ) ) { closeContentEditor(); return; }
+			const set = e.target.closest( '[data-ctset]' );
+			if ( set ) {
+				const panel = bodyEl.querySelector( `[data-ctset-panel="${ set.dataset.ctset }"]` );
+				if ( panel ) {
+					panel.hidden = ! panel.hidden;
+					set.setAttribute( 'aria-expanded', panel.hidden ? 'false' : 'true' );
+				}
+				return;
+			}
+			const moreBtn = e.target.closest( '[data-inspmore]' );
+			if ( moreBtn ) {
+				const panel = bodyEl.querySelector( `[data-inspmore-panel="${ moreBtn.dataset.inspmore }"]` );
+				if ( panel ) {
+					panel.hidden = ! panel.hidden;
+					/* translators: %d: number of collapsed settings fields */
+					moreBtn.textContent = panel.hidden ? sprintf( __( 'More settings (%d)' ), panel.querySelectorAll( '.minimal-insp-row' ).length ) : __( 'Fewer settings' );
+				}
+				return;
+			}
+			if ( e.target.closest( '#minimal-cted-apply' ) ) {
+				collectInspectorForms( bodyEl, insp );
+				const newRaw = buildInspectorRaw( insp );
+				const isSlotIsland = islandEl && islandEl.classList && islandEl.classList.contains( 'minimal-slot-island' );
+				closeContentEditor();
+				if ( newRaw != null && newRaw !== baseRaw ) {
+					if ( isSlotIsland ) {
+						const ok = rebuildIslandFromRaw( islandEl, idx, newRaw );
+						toast( ok ? __( 'Block updated' ) : __( 'This block could not be updated.' ), ! ok );
+					} else {
+						replaceIsland( idx, islandEl, newRaw );
+					}
+				}
+				return;
+			}
+			const move = e.target.closest( '[data-cmove]' );
+			const del = e.target.closest( '[data-cdel]' );
+			const add = e.target.closest( '#minimal-cted-add' );
+			if ( ! move && ! del && ! add ) return;
+			collectInspectorForms( bodyEl, insp ); // typed values survive the re-render
+			if ( move ) {
+				const [ i, dir ] = move.dataset.cmove.split( ':' ).map( Number );
+				const j = i + dir;
+				const kids = model.children;
+				if ( j >= 0 && j < kids.length ) [ kids[ i ], kids[ j ] ] = [ kids[ j ], kids[ i ] ];
+			} else if ( del ) {
+				model.children.splice( parseInt( del.dataset.cdel, 10 ), 1 );
+			} else if ( add ) {
+				const typeSel = $( '#minimal-cted-add-type', overlay );
+				const name = add.dataset.addType || ( typeSel && typeSel.value );
+				const proto = name && model.addProto && model.addProto[ name ];
+				if ( proto && ! proto.selfClosing ) {
+					// Static child: clone the sibling prototype verbatim (the
+					// popover's hybrid-block rule — an empty self-closing
+					// comment would render nothing).
+					const clone = { name, attrs: JSON.parse( JSON.stringify( proto.attrs ) ), selfClosing: false, tail: proto.tail };
+					if ( ! childTextOf( clone ) ) clone.runs = textRunsOf( clone.tail );
+					model.children.push( clone );
+				} else if ( name ) {
+					model.children.push( { name, attrs: {}, selfClosing: true, tail: '' } );
+				}
+			}
+			renderCards();
+			if ( add ) bodyEl.scrollTop = bodyEl.scrollHeight;
+		} );
+	}
+
+	// Post-insert tooling: content-shaped islands (data-cted) open the roomy
+	// content editor — replacing a design's placeholder copy is exactly its
+	// job — and everything else keeps the ⚙ popover.
+	function openIslandTooling( islandEl ) {
+		const ed = state.editor;
+		const idx = parseInt( islandEl.dataset.island, 10 );
+		if ( ed && ed.islands && islandEl.dataset.cted && ed.islands[ idx ] != null ) {
+			openContentEditor( idx, islandEl, ed.islands[ idx ] );
+			return;
+		}
+		openInspector( islandEl );
 	}
 
 	// Form rows for one block's editable attributes. `prefix` namespaces the
@@ -21367,6 +22994,10 @@
 	let inspectorScrollFn = null;
 
 	function closeInspector() {
+		// Nested containers stack their ⚙ chips in the same corner, so two
+		// popovers can read as one changing its mind (Austin's 2-vs-14-blocks
+		// repro) — the open popover's island wears a highlight instead.
+		$$( '.minimal-insp-target' ).forEach( ( el ) => el.classList.remove( 'minimal-insp-target' ) );
 		if ( inspectorEl && inspectorEl._minimalA11yEsc ) {
 			document.removeEventListener( 'keydown', inspectorEl._minimalA11yEsc, true );
 		}
@@ -21455,7 +23086,7 @@
 	function inspectorModel( raw ) {
 		const parts = blockParts( raw );
 		if ( ! parts ) return null;
-		const model = { parts, ownAttrs: { ...parts.attrs }, head: '', tail: '', children: [], mode: 'none', segments: null };
+		const model = { parts, ownAttrs: { ...parts.attrs }, head: '', tail: '', children: [], mode: 'none', segments: null, sep: null };
 		if ( ! parts.inner ) return model;
 		const segments = tokenizeBlocks( parts.inner );
 		if ( ! segments ) return model;
@@ -21478,6 +23109,12 @@
 				model.tail = seg.raw;
 			} else if ( seg.raw.trim() !== '' ) {
 				structural = false; // real HTML between children — don't reflow it
+			} else if ( model.sep == null ) {
+				// The block's OWN child separator. Gutenberg writes a blank
+				// line; slider markup usually writes a single newline, and
+				// reflowing it would rewrite bytes nobody edited (the images
+				// editor reorders through this rebuild).
+				model.sep = seg.raw;
 			}
 		} );
 		if ( model.children.length ) {
@@ -21549,11 +23186,14 @@
 	// default are omitted ONLY if the attribute wasn't explicitly in the block
 	// already — an untouched "color":"blue" survives an Apply byte-for-byte
 	// even when blue is the default (nothing silently drops).
-	function collectInspectorForms() {
-		const insp = inspectorState;
-		if ( ! insp || ! inspectorEl ) return;
+	// Defaults to the popover's globals; the content-editor modal passes its
+	// own root + state so both surfaces share one fold pipeline.
+	function collectInspectorForms( rootEl, inspIn ) {
+		const root = rootEl || inspectorEl;
+		const insp = inspIn || inspectorState;
+		if ( ! insp || ! root ) return;
 		const fold = ( attrs, defs, target ) => {
-			$$( '[data-insp]', inspectorEl ).forEach( ( input ) => {
+			$$( '[data-insp]', root ).forEach( ( input ) => {
 				const [ t, key ] = input.dataset.insp.split( ':' );
 				if ( t !== target ) return;
 				// Engine read; fold's contract is undefined = cleared (remove
@@ -21582,15 +23222,15 @@
 		insp.model.children.forEach( ( c, i ) => {
 			const t = insp.types[ c.name ];
 			fold( c.attrs, t && t.attributes, String( i ) );
-			const ta = inspectorEl.querySelector( `[data-insptext="${ i }"]` );
+			const ta = root.querySelector( `[data-insptext="${ i }"]` );
 			if ( ta ) c.__text = ta.value;
 		} );
 		( insp.model.wt || [] ).forEach( ( w, i ) => {
-			const input = inspectorEl.querySelector( `[data-insp="wt:${ i }"]` );
+			const input = root.querySelector( `[data-insp="wt:${ i }"]` );
 			if ( input ) w.value = input.value;
 		} );
 		// Generic text-run fields (head/inner/tail groups + per-child cN groups).
-		$$( '[data-insprun]', inspectorEl ).forEach( ( input ) => {
+		$$( '[data-insprun]', root ).forEach( ( input ) => {
 			const [ group, j ] = input.dataset.insprun.split( ':' );
 			const runs = group === 'head' ? insp.model.headRuns
 				: group === 'inner' ? insp.model.innerRuns
@@ -21599,6 +23239,14 @@
 			if ( runs && runs[ Number( j ) ] ) runs[ Number( j ) ].value = input.value;
 		} );
 	}
+
+	// Generic text-run fields (saved-HTML text nodes, offset-addressed) —
+	// shared by the inspector popover and the content-editor modal so the
+	// data-insprun contract can never drift between the two surfaces.
+	const runFieldRows = ( group, runs ) => ( runs || [] ).map( ( r, j ) => r.text.length > 40
+		? `<textarea class="minimal-input minimal-insp-textarea" data-insprun="${ group }:${ j }">${ esc( r.value ) }</textarea>`
+		: `<input class="minimal-input" data-insprun="${ group }:${ j }" value="${ esc( r.value ) }">`
+	).join( '' );
 
 	function renderInspectorBody() {
 		const insp = inspectorState;
@@ -21609,34 +23257,66 @@
 		// desync from it (a url field that "doesn't work"). Those blocks get
 		// ONLY the rebuild actions below, never the generic form.
 		const mediaRebuild = [ 'embed', 'gallery' ].includes( model.parts.name.replace( /^core\//, '' ) );
-		// Generic text-run fields (saved-HTML text nodes, offset-addressed).
-		const runRows = ( group, runs ) => ( runs || [] ).map( ( r, j ) => r.text.length > 40
-			? `<textarea class="minimal-input minimal-insp-textarea" data-insprun="${ group }:${ j }">${ esc( r.value ) }</textarea>`
-			: `<input class="minimal-input" data-insprun="${ group }:${ j }" value="${ esc( r.value ) }">`
-		).join( '' );
+		const runRows = runFieldRows;
 		const ownRunRows = mediaRebuild ? ''
 			: runRows( 'head', model.headRuns ) + runRows( 'inner', model.innerRuns ) + runRows( 'tail', model.tailRuns );
 		// Images anywhere in the island's markup — replaced via the media
 		// picker (embed/gallery keep their dedicated rebuild flows instead).
-		const imgSection = mediaRebuild || ! ( insp.images || [] ).length ? ''
-			: `<div class="minimal-field-label">Images</div>` + insp.images.map( ( u, i ) => `
+		const imgEditBtn = insp.units ? `<button class="minimal-btn-soft" type="button" id="minimal-insp-imgedit">Edit images…</button>` : '';
+		// Containers (slot islands) never list nested images — each nested
+		// block manages its own set from its own ⚙ chip. Gallery-shaped
+		// blocks get a count plus the Edit images… doorway only (replace,
+		// reorder, remove and add all live in the modal). Per-image Replace
+		// rows remain only for plain blocks that carry a few images with no
+		// unit structure — there the row IS the management surface.
+		const isSlot = insp.islandEl && insp.islandEl.classList && insp.islandEl.classList.contains( 'minimal-slot-island' );
+		const imgSection = mediaRebuild || isSlot || ! ( insp.images || [] ).length ? ''
+			: insp.units
+				? `<div class="minimal-field-label minimal-insp-imghead">Images · ${ insp.units.units.length }${ imgEditBtn }</div>`
+				: `<div class="minimal-field-label">Images</div>` + insp.images.map( ( u, i ) => `
 				<div class="minimal-insp-img-row">
 					<img src="${ esc( u ) }" alt="" loading="lazy">
 					<button class="minimal-btn-soft" type="button" data-inspimg="${ i }">Replace…</button>
 				</div>` ).join( '' );
-		const ownFields = mediaRebuild ? '' : ( ownType && ownType.attributes ? inspectorFields( ownType.attributes, model.ownAttrs, 'own', model.parts.name ) : '' )
+		// Gallery settings that are SAFE without a rebuild (James's ask):
+		// columns and crop live in the comment attrs plus figure class tokens
+		// Minimal regenerates on Apply; randomOrder is a render-time shuffle with
+		// no saved-HTML mirror. linkTo/sizeSlug/lightbox rewrite every child
+		// image's saved HTML — those stay with Edit images / the block editor.
+		const gallerySafe = [ 'columns', 'imageCrop', 'randomOrder' ];
+		const galleryFields = mediaRebuild && 'gallery' === model.parts.name.replace( /^core\//, '' ) && ownType && ownType.attributes
+			? inspectorFields( Object.fromEntries( gallerySafe.filter( ( k ) => ownType.attributes[ k ] ).map( ( k ) => [ k, ownType.attributes[ k ] ] ) ), model.ownAttrs, 'own', model.parts.name )
+			+ `<div class="minimal-insp-note">${ esc( __( 'Link, size and lightbox options live in the block editor.' ) ) }</div>`
+			: '';
+		const ownFields = mediaRebuild ? galleryFields : ( ownType && ownType.attributes ? inspectorFields( ownType.attributes, model.ownAttrs, 'own', model.parts.name ) : '' )
 			+ ( model.wt || [] ).map( ( w, i ) => `<div class="minimal-field-label">${ esc( w.label ) }</div>
 			<input class="minimal-input" data-insp="wt:${ i }" value="${ esc( w.value ) }">` ).join( '' )
 			+ ( ownRunRows ? `<div class="minimal-field-label">Text</div>${ ownRunRows }` : '' );
 		const structural = model.mode === 'structural' && ! mediaRebuild;
-		const childSections = mediaRebuild ? '' : model.children.map( ( c, i ) => {
+		// Multi-child islands hand their children to the content-editor modal
+		// (GitHub #12): unrolled in this popover they read as text plus a dozen
+		// schema inputs PER CHILD, and a typo fix meant scrolling the wall. The
+		// popover keeps the block's own settings; the summary row is the
+		// doorway — rendered FIRST, above the block's own attr fields, or a
+		// container's schema (Group alone is a dozen rows) buries it below the
+		// fold and the doorway reads as missing (Austin's mmonroe repro).
+		// Structural add/reorder live in the modal too.
+		const manyKids = ! mediaRebuild && model.children.length >= 2;
+		/* translators: %d: number of nested blocks */
+		const kidsLabel = manyKids ? sprintf( _n( 'Content · %d block', 'Content · %d blocks', model.children.length ), model.children.length ) : '';
+		const kidsSummary = manyKids
+			? `<div class="minimal-field-label minimal-insp-imghead">${ esc( kidsLabel ) }<button class="minimal-btn-soft" type="button" id="minimal-insp-cted">${ esc( __( 'Edit content…' ) ) }</button></div>`
+			: '';
+		const childSections = mediaRebuild || manyKids ? '' : model.children.map( ( c, i ) => {
 			const t = types[ c.name ];
 			const fields = t && t.attributes ? inspectorFields( t.attributes, c.attrs, String( i ), c.name ) : '';
 			// The child's text (from its saved HTML) leads the section — it's
-			// what a writer came to change; schema attrs follow.
+			// what a writer came to change; schema attrs follow. Seed from
+			// __text when a structure op re-rendered mid-edit (collect stored
+			// the live value; the pristine tail would silently revert it).
 			const ct = childTextOf( c );
 			const textRow = ct ? `<div class="minimal-field-label">text</div>
-				<textarea class="minimal-input minimal-insp-textarea" data-insptext="${ i }">${ esc( ct.inner ) }</textarea>` : '';
+				<textarea class="minimal-input minimal-insp-textarea" data-insptext="${ i }">${ esc( c.__text != null ? c.__text : ct.inner ) }</textarea>` : '';
 			// Deep text runs for schema-less children (the Stackable case) —
 			// mutually exclusive with the single-element text editor above.
 			const runRowsC = ! textRow && c.runs && c.runs.length
@@ -21654,8 +23334,9 @@
 				${ textRow + runRowsC + fields || '<div class="minimal-insp-note">No editable settings.</div>' }
 			</div>`;
 		} ).join( '' );
-		// "+ Add" only for types whose schema we can form-edit.
-		const addable = structural ? ( model.addTypes || [] ).filter( ( n ) => types[ n ] && types[ n ].attributes ) : [];
+		// "+ Add" only for types whose schema we can form-edit. Multi-child
+		// islands add through the content-editor modal instead.
+		const addable = structural && ! manyKids ? ( model.addTypes || [] ).filter( ( n ) => types[ n ] && types[ n ].attributes ) : [];
 		const addRow = addable.length ? `<div class="minimal-insp-add-row">
 			${ addable.length > 1 ? `<select class="minimal-input" id="minimal-insp-add-type">${ addable.map( ( n ) => `<option value="${ esc( n ) }">${ esc( n.replace( /^core\//, '' ) ) }</option>` ).join( '' ) }</select>` : '' }
 			<button class="minimal-btn-soft" type="button" id="minimal-insp-add"${ addable.length === 1 ? ` data-add-type="${ esc( addable[ 0 ] ) }"` : '' }>+ Add ${ addable.length === 1 ? esc( addable[ 0 ].split( '/' ).pop() ) : 'block' }</button>
@@ -21669,6 +23350,8 @@
 			<button class="minimal-btn-soft" type="button" id="minimal-insp-embed-url" style="width:100%; justify-content:center;">Change URL…</button>
 			<div class="minimal-insp-note">Rebuilds the embed for the new URL.</div>`
 		: short === 'gallery' ? `
+			${ insp.units ? `<button class="minimal-btn-soft" type="button" id="minimal-insp-imgedit" style="width:100%; justify-content:center;">Edit images…</button>
+			<div class="minimal-insp-note">Reorder, remove or add images; captions and layout stay.</div>` : '' }
 			<button class="minimal-btn-soft" type="button" id="minimal-insp-gallery" style="width:100%; justify-content:center;">Replace images…</button>
 			<div class="minimal-insp-note">Re-picks the gallery images; per-image captions and layout tweaks reset.</div>`
 		: '';
@@ -21682,10 +23365,11 @@
 			<div class="minimal-insp-body">
 				${ special }
 				${ imgSection }
+				${ kidsSummary }
 				${ ownFields }
 				${ childSections }
 				${ addRow }
-				${ editable || special || imgSection ? '' : `<div class="minimal-insp-note">${ ownType
+				${ editable || special || imgSection || kidsSummary ? '' : `<div class="minimal-insp-note">${ ownType
 					? 'This block has no attributes a form can edit — its content lives in saved HTML. It stays preserved exactly as-is.'
 					: 'This block type isn’t registered on this site, so its settings can’t be read. It stays preserved exactly as-is.' }</div>` }
 			</div>
@@ -21764,6 +23448,11 @@
 		const ed = state.editor;
 		if ( ! ed || ! ed.islands || ed.islands[ idx ] == null ) return;
 		ed.islands[ idx ] = template;
+		// Armed in-place text runs describe the PREVIOUS markup. Leaving them
+		// armed lets their splice write the old bytes back over this change at
+		// save time (a replaced image silently reverted); the new preview
+		// re-arms below against the new raw.
+		if ( islandEl ) islandEl._minimalRuns = null;
 		// A nested island's stored raw just changed via popover buttons (no
 		// input event) — ancestor slot islands must re-splice on save or
 		// their stale stored raw would emit the OLD child bytes.
@@ -21771,18 +23460,55 @@
 		const prev = islandEl && islandEl.querySelector( '.minimal-island-preview' );
 		if ( prev ) {
 			const inner = stripBlockComments( template ).trim();
-			if ( inner ) prev.innerHTML = inner;
+			if ( inner ) setPreviewHtml( prev, inner );
 		}
 		api( 'minimal-admin/v1/render-blocks', { method: 'POST', body: JSON.stringify( { blocks: [ template ], post: ( state.editor && state.editor.id ) || 0 } ) } )
 			.then( ( r ) => {
 				injectPreviewStyles( r && r.styles );
 				const html = r && r.rendered && r.rendered[ 0 ];
-				if ( prev && html && html.trim() ) prev.innerHTML = html;
+				if ( prev && html && html.trim() ) setPreviewHtml( prev, html );
+				schedulePreviewReveal();
+				// Re-arm in-place text editing against the new markup.
+				const body = islandEl && islandEl.closest( '.minimal-editor-body' );
+				if ( body ) armIslandTextRuns( body, ed );
 				updateEditorStats();
 			} )
 			.catch( () => {} );
 		toast( 'Block updated' );
 		scheduleAutosave();
+	}
+
+	// Rebuild a SLOT island's DOM from new raw markup. Slot containers keep
+	// their children as live DOM plus per-child ed.islands entries, so a
+	// stored-raw patch alone desyncs: the next flush would re-emit the old
+	// child bytes over the edit. Re-running islandHtml re-registers nested
+	// islands against the new bytes; the old children's entries are nulled
+	// first (serialize is DOM-driven — orphaned indexes must not linger as
+	// live raw). Returns true when the swap happened.
+	function rebuildIslandFromRaw( islandEl, idx, newRaw ) {
+		const ed = state.editor;
+		if ( ! ed || ! ed.islands || ed.islands[ idx ] == null || ! islandEl ) return false;
+		$$( '.minimal-block-island', islandEl ).forEach( ( n ) => {
+			const i = parseInt( n.dataset.island, 10 );
+			if ( Number.isFinite( i ) && i !== idx ) ed.islands[ i ] = null;
+		} );
+		ed.islands[ idx ] = newRaw;
+		const tmp = document.createElement( 'div' );
+		tmp.innerHTML = islandHtml( idx, String( islandEl.dataset.block || '' ), newRaw, ed );
+		const fresh = tmp.firstElementChild;
+		if ( ! fresh ) return false;
+		islandEl.replaceWith( fresh );
+		// An ancestor container's stored raw still carries the old child bytes
+		// — stamp it dirty so serialize re-splices from the (now current) DOM.
+		stampSlotDirtyFor( fresh.parentElement );
+		const body = fresh.closest( '.minimal-editor-body' );
+		if ( body ) {
+			renderIslandPreviews( body, ed );
+			armIslandTextRuns( body, ed );
+		}
+		updateEditorStats();
+		scheduleAutosave();
+		return true;
 	}
 
 	async function openInspector( islandEl ) {
@@ -21799,6 +23525,7 @@
 		if ( ! model ) { toast( 'This block’s markup can’t be parsed safely.', true ); return; }
 
 		// Placeholder while schemas load.
+		islandEl.classList.add( 'minimal-insp-target' );
 		inspectorEl = document.createElement( 'div' );
 		inspectorEl.className = 'minimal-inspector';
 		inspectorEl.innerHTML = '<div class="minimal-loading" style="padding:24px;">Loading block schema…</div>';
@@ -21816,7 +23543,7 @@
 		await Promise.all( [ ...new Set( names ) ].map( async ( n ) => { types[ n ] = await blockTypeFor( n ); } ) );
 		if ( ! inspectorEl ) return; // closed while loading
 
-		inspectorState = { idx, model, types, islandEl, images: islandImageUrls( raw ) };
+		inspectorState = { idx, model, types, islandEl, images: islandImageRows( raw ), units: imageUnitsOf( raw ) };
 		renderInspectorBody();
 		// Re-apply dialog attrs after the body swap (innerHTML rebuild).
 		armBlockPopA11y( inspectorEl, {
@@ -21894,6 +23621,31 @@
 				openMediaPicker( ( picks ) => {
 					if ( picks && picks.length ) replaceIsland( idx, el, galleryTemplate( picks ) );
 				}, { multi: true } );
+				return;
+			}
+			const ce = e.target.closest( '#minimal-insp-cted' );
+			if ( ce ) {
+				// Fold pending own-attr edits first — the modal re-models the
+				// raw, and typed values must not be lost with the popover.
+				collectInspectorForms();
+				const base = buildInspectorRaw( insp );
+				const { idx, islandEl: el } = insp;
+				closeInspector();
+				openContentEditor( idx, el, base );
+				return;
+			}
+			const ie = e.target.closest( '#minimal-insp-imgedit' );
+			if ( ie ) {
+				// Same discipline as image replace: fold pending field edits
+				// first, then re-detect units on the FOLDED raw (field edits
+				// shift offsets).
+				collectInspectorForms();
+				const base = buildInspectorRaw( insp );
+				const info = imageUnitsOf( base );
+				const { idx, islandEl: el } = insp;
+				if ( ! info ) { toast( 'These images can’t be edited safely here.', true ); return; }
+				closeInspector();
+				openImagesEditor( idx, el, base, info );
 				return;
 			}
 			const rep = e.target.closest( '[data-inspimg]' );
@@ -21993,10 +23745,11 @@
 			else inner = rep( inner );
 		} );
 		if ( model.mode === 'structural' ) {
-			// Reassemble: wrapper head + children (Gutenberg's blank-line
-			// separator) + wrapper tail. Interior whitespace was verified
-			// insignificant when the model was built.
-			inner = model.head + model.children.map( childRaw ).join( '\n\n' ) + model.tail;
+			// Reassemble: wrapper head + children + wrapper tail, rejoined with
+			// the separator this block already used (Gutenberg's blank line by
+			// default). Interior whitespace was verified insignificant when the
+			// model was built.
+			inner = model.head + model.children.map( childRaw ).join( model.sep == null ? '\n\n' : model.sep ) + model.tail;
 		} else if ( model.mode === 'inplace' && model.segments ) {
 			model.children.forEach( ( c ) => {
 				model.segments[ c.segIdx ] = { ...model.segments[ c.segIdx ], raw: childRaw( c ) };
@@ -22019,6 +23772,21 @@
 			sa.height = h;
 			newRaw = `<!-- wp:spacer${ serializeBlockAttrs( sa ) } -->\n<div style="height:${ h }" aria-hidden="true" class="wp-block-spacer"></div>\n<!-- /wp:spacer -->`;
 		}
+		// Gallery columns/crop live in BOTH the comment attrs and the figure's
+		// class tokens — regenerate the classes when those attrs changed so
+		// the edit actually renders (the spacer lesson, at gallery scale).
+		// Replacement is a FUNCTION (never a string: $-pattern hazard) and
+		// only the first <figure> — the wrapper — is touched.
+		if ( 'gallery' === model.parts.name.replace( /^core\//, '' ) && ! model.parts.selfClosing
+			&& ( model.ownAttrs.columns !== model.parts.attrs.columns || model.ownAttrs.imageCrop !== model.parts.attrs.imageCrop ) ) {
+			newRaw = newRaw.replace( /(<figure\b[^>]*\bclass=")([^"]*)(")/, ( m, a, cls, z ) => {
+				const toks = cls.split( /\s+/ ).filter( ( t ) => t && ! /^columns-(?:\d+|default)$/.test( t ) && 'is-cropped' !== t );
+				const n = parseInt( model.ownAttrs.columns, 10 );
+				toks.push( n >= 1 ? 'columns-' + Math.min( n, 8 ) : 'columns-default' );
+				if ( false !== model.ownAttrs.imageCrop ) toks.push( 'is-cropped' );
+				return a + toks.join( ' ' ) + z;
+			} );
+		}
 		return newRaw;
 	}
 
@@ -22028,6 +23796,18 @@
 		if ( ! insp || ! ed || ! inspectorEl ) return;
 		collectInspectorForms();
 		const newRaw = buildInspectorRaw( insp );
+
+		// Slot containers keep their children as live DOM plus per-child
+		// ed.islands entries — patching only the stored raw lets the next slot
+		// flush re-emit the OLD child bytes over this edit (the DOM wins for
+		// dirty slots). Rebuild the container's DOM from the new raw instead.
+		if ( insp.islandEl && insp.islandEl.classList.contains( 'minimal-slot-island' ) ) {
+			const { idx, islandEl: el } = insp;
+			closeInspector();
+			const ok = rebuildIslandFromRaw( el, idx, newRaw );
+			toast( ok ? __( 'Block updated' ) : __( 'This block could not be updated.' ), ! ok );
+			return;
+		}
 
 		btn.disabled = true;
 		btn.textContent = 'Applying…';
@@ -22091,7 +23871,7 @@
 					// Shortcode/details host live fields — never clobber them.
 					if ( isLiveFieldIsland( island ) ) return;
 					const el = body.querySelector( `.minimal-island-preview[data-preview="${ i }"]` );
-					if ( el && html && html.trim() ) el.innerHTML = html;
+					if ( el && html && html.trim() ) setPreviewHtml( el, html );
 				} );
 				// Rendered previews are the arming surface for in-place island
 				// text editing — align text nodes against the raw's text runs.
@@ -22125,6 +23905,40 @@
 		if ( tablePop ) tablePop.remove();
 		tablePop = null;
 		document.removeEventListener( 'mousedown', tablePopAway, true );
+	}
+
+	/* Chips are revealed one at a time by the pointer. HYSTERESIS IS LOAD-
+	 * BEARING: a chip floats just outside its block, so the pointer crosses
+	 * a gap of neither-block-nor-chip on the way there — hiding immediately
+	 * makes the chip vanish under the cursor (the old hover-chip flicker
+	 * this system replaced). A short delay before hiding covers the gap. */
+	let chipHideTimer = 0;
+	function showChipFor( target ) {
+		if ( chipHideTimer ) { clearTimeout( chipHideTimer ); chipHideTimer = 0; }
+		if ( ! tableChipsBox ) return;
+		$$( '.minimal-code-chip', tableChipsBox ).forEach( ( c ) => {
+			c.classList.toggle( 'shown', !! target && c._target === target );
+		} );
+	}
+	function scheduleChipHide() {
+		if ( chipHideTimer ) clearTimeout( chipHideTimer );
+		chipHideTimer = setTimeout( () => {
+			chipHideTimer = 0;
+			if ( tableChipsBox ) $$( '.minimal-code-chip', tableChipsBox ).forEach( ( c ) => c.classList.remove( 'shown' ) );
+		}, 260 );
+	}
+	// One delegated listener on the body rather than per-target binding: the
+	// chip list is rebuilt constantly (scroll, edit, resize) and targets are
+	// reassigned in place, so per-node listeners would leak or go stale.
+	function bindChipHover( body ) {
+		body.addEventListener( 'mousemove', ( e ) => {
+			if ( ! tableChipsBox || ! tableChipsBox.children.length ) return;
+			const chips = $$( '.minimal-code-chip', tableChipsBox );
+			const hit = chips.find( ( c ) => c._target && c._target.isConnected && c._target.contains( e.target ) );
+			if ( hit ) showChipFor( hit._target );
+			else if ( chips.some( ( c ) => c.classList.contains( 'shown' ) ) ) scheduleChipHide();
+		} );
+		body.addEventListener( 'mouseleave', () => scheduleChipHide() );
 	}
 
 	function clearTableChips() {
@@ -22209,14 +24023,26 @@
 				chip.type = 'button';
 				chip.className = 'minimal-code-chip';
 				chip.addEventListener( 'mousedown', ( ev ) => ev.preventDefault() ); // keep the editor caret
-				chip.addEventListener( 'click', () => {
+				chip.addEventListener( 'click', ( ev ) => {
 					if ( ! chip._target || ! chip._target.isConnected ) return;
+					// ⌥-click duplicates the block instead of opening its
+					// settings — the same modifier grammar as ⌥-clicking the
+					// WordPress button, and it keeps the card chrome quiet.
+					if ( ev.altKey ) {
+						const node = chip._kind === 'image' ? ( chip._target.closest( 'figure' ) || chip._target ) : chip._target;
+						if ( ev.shiftKey ) {
+							if ( removeEditableNode( node ) ) toast( 'Block removed — ⌘Z restores it' );
+						} else if ( duplicateEditableNode( node ) ) {
+							toast( 'Block duplicated' );
+						}
+						return;
+					}
 					if ( chip._kind === 'table' ) openTablePop( chip._target );
 					else if ( chip._kind === 'code' ) openCodePop( chip._target );
 					else openImgPop( chip._target );
 				} );
-				chip.addEventListener( 'mouseenter', () => setTableHot( chip._target, true ) );
-				chip.addEventListener( 'mouseleave', () => setTableHot( chip._target, false ) );
+				chip.addEventListener( 'mouseenter', () => { showChipFor( chip._target ); setTableHot( chip._target, true ); } );
+				chip.addEventListener( 'mouseleave', () => { setTableHot( chip._target, false ); scheduleChipHide(); } );
 				tableChipsBox.appendChild( chip );
 			}
 			chip._target = t.el;
@@ -22659,6 +24485,46 @@
 	 * attributes honest: the {"id":…} attr and wp-image-N class follow the
 	 * new attachment, and stale srcset/sizes/width/height are dropped. */
 
+	// Duplicate an editable block node (figure, table, pre) in place: the copy
+	// is that node's own markup cloned verbatim, inserted right after it, so
+	// caption/classes/attachment id all travel and serialization just re-reads
+	// the DOM. Shared by the ⚙ popovers and the ⌥-click shortcut on chips.
+	function duplicateEditableNode( target ) {
+		const editorBody = $( '#minimal-editor-body' );
+		if ( ! target || ! editorBody || ! editorBody.contains( target ) ) return false;
+		const copy = target.cloneNode( true );
+		copy.removeAttribute( 'data-minimal-upload' );
+		target.insertAdjacentElement( 'afterend', copy );
+		stampSlotDirtyFor( copy );
+		queueTableChips();
+		updateEditorStats();
+		scheduleAutosave();
+		return true;
+	}
+
+	// Remove an editable block node through the EDITING COMMAND STACK (never
+	// element.remove()), so ⌘Z brings it back — the same discipline as the
+	// image popover's Remove.
+	function removeEditableNode( target ) {
+		const editorBody = $( '#minimal-editor-body' );
+		if ( ! target || ! editorBody || ! editorBody.contains( target ) ) return false;
+		editorBody.focus( { preventScroll: true } );
+		const sel = window.getSelection();
+		const r = document.createRange();
+		// Contents-only for figures: a whole-block selection makes Chrome
+		// merge the next paragraph into the husk (the serializer drops
+		// media-less husks anyway).
+		if ( target.tagName === 'FIGURE' ) r.selectNodeContents( target );
+		else r.selectNode( target );
+		sel.removeAllRanges();
+		sel.addRange( r );
+		document.execCommand( 'delete', false, null );
+		queueTableChips();
+		updateEditorStats();
+		scheduleAutosave();
+		return true;
+	}
+
 	let imgPop = null;
 	let imgPopTarget = null;
 
@@ -22892,6 +24758,7 @@
 			<div class="minimal-insp-actions">
 				<button class="minimal-btn-primary" data-img-apply type="button">Apply</button>
 				<button class="minimal-btn-soft" data-img-replace type="button">${ icon( 'img' ) } Replace</button>
+				<button class="minimal-btn-soft" data-img-dup type="button" title="Duplicate image">${ icon( 'copy' ) }</button>
 				<button class="minimal-btn-soft danger" data-img-remove type="button" title="Remove image">${ icon( 'trash' ) }</button>
 			</div>`;
 		document.body.appendChild( imgPop );
@@ -23010,6 +24877,16 @@
 				scheduleAutosave();
 				toast( 'Image replaced' );
 			} );
+		} );
+
+		// Duplicate an editable image (inside a container or at top level).
+		// The copy is the figure's own markup cloned verbatim and inserted
+		// right after it, so caption, classes and the attachment id all
+		// travel — serialization re-reads the DOM, so nothing else to do
+		// beyond stamping the slot dirty.
+		imgPop.querySelector( '[data-img-dup]' ).addEventListener( 'click', () => {
+			if ( duplicateEditableNode( img.closest( 'figure' ) || img ) ) toast( 'Image duplicated' );
+			hideImgPop();
 		} );
 
 		imgPop.querySelector( '[data-img-remove]' ).addEventListener( 'click', () => {
@@ -24253,6 +26130,12 @@
 	// The curated quick-insert set — shared by the inline slash menu and the
 	// full block picker. Embeds and galleries insert as islands, blocks mode
 	// only (classic content already auto-embeds lone URLs server-side).
+	// An empty Columns row. No widths: the columns share the space evenly and
+	// stay that way as more are added.
+	const columnsTemplate = ( n ) => '<!-- wp:columns -->\n<div class="wp-block-columns">'
+		+ Array.from( { length: n }, () => '\n<!-- wp:column -->\n<div class="wp-block-column">\n<!-- wp:paragraph -->\n<p></p>\n<!-- /wp:paragraph -->\n</div>\n<!-- /wp:column -->' ).join( '' )
+		+ '</div>\n<!-- /wp:columns -->';
+
 	function basicSlashItems( blocksMode ) {
 		// Always list the full Basics set. Island inserts (embed/gallery/spacer/
 		// file/shortcode) used to hide in classic mode, which made them look
@@ -24281,6 +26164,9 @@
 			// Buttons: live island with label/URL rows (not free HTML — nested
 			// core/button markup must stay in the island raw store).
 			[ icon( 'send' ), 'Buttons', { block: 'core/buttons', template: buttonsTemplate( 'Button', '' ) } ],
+			// A row of columns: two to start, /column adds more. Inserted as a
+			// real container, so you can type in it straight away.
+			[ icon( 'columns' ), 'Columns', { block: 'core/columns', template: columnsTemplate( 2 ) }, false, '', [ 'row', 'columns' ] ],
 		];
 	}
 
@@ -24584,6 +26470,38 @@
 	// full block picker. `target` is the block to insert before/replace
 	// (the emptied "/" block, or a fresh paragraph the picker created).
 	function runSlashAction( action, target, body, insertImage ) {
+		// An image block built by its own plugin: pick the photos first, then
+		// ask the block's owner for markup. Nothing is inserted until it
+		// answers, so a cancelled picker leaves the line as it was.
+		if ( action && action.imageBlock ) {
+			openMediaPicker( ( picks ) => {
+				const ids = ( picks || [] ).map( ( p ) => p && p.id ).filter( Boolean );
+				if ( ! ids.length ) return;
+				ensureBlocksMode();
+				toast( 'Building the gallery…' );
+				api( 'minimal-admin/v1/image-block', {
+					method: 'POST',
+					body: JSON.stringify( { block: action.imageBlock, ids, raw: '' } ),
+				} ).then( ( r ) => {
+					if ( ! r || ! r.markup ) return;
+					insertIsland( target, action.imageBlock, r.markup );
+				} ).catch( ( err ) => toast( err.message, true ) );
+			}, { multi: true, doneLabel: 'Build gallery' } );
+			return;
+		}
+		// A new column joins the Columns block the caret is in (the menu only
+		// offers this there). The "/column" line stays as that column's first
+		// empty paragraph; the caret moves into the new one.
+		if ( action && action.addColumn ) {
+			const cols = target && target.closest && target.closest( '.minimal-cols-island' );
+			if ( ! cols ) return;
+			target.innerHTML = '<br>';
+			const here = target.closest( '.minimal-slot' );
+			if ( ! columnOp( cols, 'after', here ? here.parentElement : null ) ) {
+				toast( 'This block’s columns can’t be edited here.', true );
+			}
+			return;
+		}
 		// Plugin command with a REST route: async insert (html or template).
 		// Same placeholder dance as design/pattern inserts so the "/" block
 		// is never left half-typed while the network is in flight.
@@ -24608,7 +26526,7 @@
 					if ( r && r.template ) {
 						if ( ! ensureBlocksMode() ) return;
 						const islandEl = insertIsland( p, r.block || 'core/group', r.template );
-						if ( islandEl ) openInspector( islandEl );
+						if ( islandEl ) openIslandTooling( islandEl );
 					} else if ( r && r.html ) {
 						if ( /wp-block-(pullquote|table)/.test( r.html ) ) ensureBlocksMode();
 						p.insertAdjacentHTML( 'beforebegin', r.html );
@@ -24646,9 +26564,10 @@
 					if ( ! r || ! r.template ) throw new Error( 'Design unavailable' );
 					if ( ! p.isConnected || ! state.editor ) return;
 					const islandEl = insertIsland( p, r.block || 'core/group', r.template );
-					// The inspector's text-run fields are how the design's
-					// placeholder copy gets replaced — open it right away.
-					if ( islandEl ) openInspector( islandEl );
+					// The text fields are how the design's placeholder copy
+					// gets replaced — open the right tooling right away
+					// (content editor for multi-child designs).
+					if ( islandEl ) openIslandTooling( islandEl );
 				} )
 				.catch( ( e ) => toast( 'Design insert failed: ' + e.message, true ) );
 			return;
@@ -24729,7 +26648,7 @@
 					injectPreviewStyles( r && r.styles );
 					const html = r && r.rendered && r.rendered[ 0 ];
 					const prev = islandEl && islandEl.querySelector( '.minimal-island-preview' );
-					if ( prev && html && html.trim() ) prev.innerHTML = html;
+					if ( prev && html && html.trim() ) setPreviewHtml( prev, html );
 					updateEditorStats();
 				} )
 				.catch( () => {} );
@@ -24746,7 +26665,7 @@
 					islandEl.dataset.btnStamped = '1';
 					focusButtonsIsland( islandEl );
 				}
-				else openInspector( islandEl );
+				else openIslandTooling( islandEl );
 			}
 			scheduleAutosave();
 			return;
@@ -24824,6 +26743,20 @@
 		let filtered = [];
 		let query = '';
 		const items = basicSlashItems( state.editor && state.editor.mode === 'blocks' );
+		// Blocks whose owner builds them from a set of images (a tiled gallery):
+		// pick the photos, the plugin lays them out. Blocks mode only — the
+		// result is an island.
+		if ( state.editor && state.editor.mode === 'blocks' ) {
+			Object.keys( B.imageBlocks || {} ).forEach( ( name ) => {
+				const desc = B.imageBlocks[ name ];
+				if ( ! desc || ! desc.insert ) return;
+				items.push( [ icon( 'gallery' ), desc.label, { imageBlock: name }, false, name.split( '/' )[ 0 ], [ 'gallery', 'images' ] ] );
+			} );
+		}
+		// Only inside a Columns block, where it is the one structural thing the
+		// slash menu could not do: item[6] is a predicate over the caret block.
+		items.unshift( [ icon( 'columns' ), 'Column', { addColumn: true }, false, '', [ 'columns', 'add column' ],
+			( el ) => !! ( el && el.closest && el.closest( '.minimal-cols-island' ) ) ] );
 		liveSlashItems = items; // per-user hide prunes this array in place
 		// Attention budget (v1.0 gate G3): a namespace holds at most 3 slots
 		// in the DEFAULT slash menu (commands first, insert templates after —
@@ -24961,6 +26894,7 @@
 				.map( ( it, i ) => i )
 				.filter( ( i ) => {
 					const it = items[ i ];
+					if ( typeof it[ 6 ] === 'function' && ! it[ 6 ]( block ) ) return false;
 					if ( it[ 3 ] && ! q ) return false;
 					if ( it[ 1 ].toLowerCase().includes( q ) || ( it[ 4 ] && it[ 4 ].toLowerCase().includes( q ) ) ) return true;
 					const kws = it[ 5 ];
@@ -25501,6 +27435,11 @@
 			if ( state.editor.mode !== 'locked' ) cmds.push( { label: 'Find & replace (⌘⇧F)', kind: 'view', icon: '⌕', run: () => openFindBar() } );
 			cmds.push( { label: 'Toggle focus mode (⌘⇧D)', kind: 'view', icon: '◎', run: () => toggleFocusMode() } );
 			cmds.push( { label: 'Toggle outline mode (⌘⇧O)', kind: 'view', icon: '☰', run: () => toggleOutlineMode() } );
+			// The escape hatch without new chrome: this post in wp-admin's own
+			// editor. Saves first (openInBlockEditor), so unsaved islands are
+			// there when it opens. ⌥-clicking the sidebar's WordPress button
+			// does the same thing.
+			cmds.push( { label: 'Edit in the block editor ↗', kind: 'action', icon: '↗', run: () => openInBlockEditor() } );
 		}
 		cmds.push(
 			{ label: 'Go to Overview', kind: 'nav', icon: '▦', run: () => go( 'overview' ) },
@@ -26957,6 +28896,10 @@
 							<span class="minimal-kbd">⌘⇧D</span><span>Focus mode: fade all but the current paragraph</span>
 							<span class="minimal-kbd">⌘⇧O</span><span>Outline mode: just the writing and the outline</span>
 							<span class="minimal-kbd">⌘.</span><span>Show or hide the navigation</span>
+							<span class="minimal-kbd">⌥click</span><span>A block's ⚙ handle: duplicate that block in place</span>
+							<span class="minimal-kbd">⇧⌥click</span><span>A block's ⚙ handle: remove that block (⌘Z restores it)</span>
+							<span class="minimal-kbd">⌥click</span><span>The WordPress button (bottom left) while editing: open this post in the block editor</span>
+							<span class="minimal-kbd">click</span><span>An image in a protected block: edit, reorder or replace its images</span>
 							<span class="minimal-kbd">← →</span><span>Previous / next item in a media or entry detail</span>
 							<span class="minimal-kbd">Esc</span><span>Close menus and dialogs</span>
 						</div>
@@ -27115,7 +29058,7 @@
 					</div>` }
 					${ m.multi ? `
 					<div class="minimal-modal-actions">
-						<button class="minimal-btn-primary" id="minimal-picker-done" disabled>Insert gallery</button>
+						<button class="minimal-btn-primary" id="minimal-picker-done" disabled>${ esc( m.doneLabel || 'Insert gallery' ) }</button>
 					</div>` : '' }
 				</div>
 			</div>`;
@@ -30578,7 +32521,7 @@
 	}
 
 	function openMediaPicker( callback, opts = {} ) {
-		state.modal = { type: 'picker', items: null, callback, multi: !! opts.multi, picked: [], any: !! opts.any };
+		state.modal = { type: 'picker', items: null, callback, multi: !! opts.multi, picked: [], any: !! opts.any, doneLabel: opts.doneLabel || '' };
 		renderOverlays();
 		// File block needs any attachment type; image/gallery stay image-only.
 		const typeQ = opts.any ? '' : ( opts.mediaType ? '&media_type=' + encodeURIComponent( opts.mediaType ) : '&media_type=image' );
@@ -30593,6 +32536,8 @@
 						name: decodeEntities( it.title.rendered ),
 						url: it.source_url,
 						alt: it.alt_text || '',
+						width: ( it.media_details && it.media_details.width ) || 0,
+						height: ( it.media_details && it.media_details.height ) || 0,
 						thumb: isImg
 							? ( ( sizes && sizes.medium && sizes.medium.source_url ) || it.source_url )
 							: '',
@@ -30875,6 +32820,8 @@
 		announceRoute();
 		closeInspector();
 		closeBlockPicker();
+		closeImgEdit();
+		closeContentEditor();
 		hideCodePop();
 		hideTableMenu();
 		hideDatePicker();
@@ -31262,17 +33209,19 @@
 		// Warm the content cache so the sidebar count appears.
 		if ( state.route !== 'content' ) loadContent().catch( () => {} );
 
-		// Drag & drop upload from anywhere in the app. When an install modal
-		// (Add plugin / Add theme) is open, its dropzone owns EVERY drop: a
-		// zip aimed at the modal but landing a few pixels outside it must
-		// never end up in the media library (Austin's wp-rocket_3.23 repro),
-		// and the "Drop files to upload" veil stays hidden so the modal's own
-		// zone is the only affordance. The zones expose their upload path as
-		// zone._accept (the chips' _target/_kind convention).
+		// Drag & drop upload from anywhere in the app. When a modal with its own
+		// file target is open (Add plugin / Add theme / Edit images), that
+		// dropzone owns EVERY drop: a file aimed at the modal but landing a few
+		// pixels outside it must never end up in the media library with the app
+		// navigated away (Austin's wp-rocket_3.23 zip and his slider-image
+		// repros), and the "Drop files to upload" veil stays hidden so the
+		// modal's own affordance is the only one. Zones expose their upload
+		// path as zone._accept (one file) / zone._acceptAll (the whole drop) —
+		// the chips' _target/_kind convention.
 		if ( B.caps.upload ) {
 			const installDropZone = () => {
-				const z = $( '#minimal-pi-dropzone' ) || $( '#minimal-ti-dropzone' );
-				return z && z._accept ? z : null;
+				const z = $( '#minimal-pi-dropzone' ) || $( '#minimal-ti-dropzone' ) || $( '#minimal-imgedit-drop' );
+				return z && ( z._accept || z._acceptAll ) ? z : null;
 			};
 			let dragDepth = 0;
 			window.addEventListener( 'dragenter', ( e ) => {
@@ -31295,7 +33244,8 @@
 				if ( ! files.length ) return;
 				const zone = installDropZone();
 				if ( zone ) {
-					zone._accept( files[ 0 ] );
+					if ( zone._acceptAll ) zone._acceptAll( files );
+					else zone._accept( files[ 0 ] );
 					return;
 				}
 				if ( state.route !== 'media' ) go( 'media' );
