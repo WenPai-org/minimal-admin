@@ -13,11 +13,12 @@ Before publishing assets, the release workflow boots WordPress Playground,
 installs the locally built ZIP, verifies that `minimal-admin` is active, and
 checks that the runtime version matches the release tag.
 
-Before a synchronized upstream release is built, the workflow also downloads
-the latest reviewed Simplified and Traditional Chinese catalogs from WenPai
-GlotPress. The separate scheduled translation workflow refreshes those catalogs
-between upstream releases. See `docs/TRANSLATIONS.md` for project paths,
-approval rules, dependencies, and rollback.
+Upstream synchronization does not contact GlotPress. It packages the latest
+translation catalogs already committed to the repository, if any. Translation
+synchronization runs independently; unavailable or incomplete translations
+produce an English fallback and never block an upstream release. See
+`docs/TRANSLATIONS.md` for project paths, approval rules, dependencies, and
+rollback.
 
 The upstream source is treated as untrusted: upstream workflows are excluded,
 and no upstream scripts or tests execute in the job. Only trusted local tooling,
