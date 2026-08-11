@@ -71,9 +71,23 @@ patterns 已存在於核心 pattern registry 中。
   標記；儲存時 materialize 至 `uploads/eb-style/eb-style-{post}.min.css`，並
   以真正的 `$post` enqueue。
 
-render-block **style-queue diff**（本週期已發布）涵蓋 lazy-register
-class（Stackable、Kadence base styles）。每篇文章產生的 class 需要每個 suite
-shims——候選項目已依 roadmap 排序。
+- **Gutenslider**（添加于 2026-08-10）：第六个模型，也是唯一一个没有服务器端
+  收集器可以访问。其基础布局样式表（`build/vendor/gs-base.css`，即
+  幻灯片所基于的内容由前端脚本作为 webpack 异步区块获取，因此它
+  完全不会经过 `wp_styles()`。插件自身的
+  `wp_enqueue_style('eedee-gutenslider-block-editor')` 指向一个仅注册为
+  *script* 的句柄，因此即使如此也不会执行任何操作。没有该样式表，背景 div 和幻灯片
+  内容堆栈按正常流排列，内容则被固定高度框架裁剪掉。
+
+render-blocks 的 **style-queue diff** 覆盖延迟注册类（Stackable、Kadence
+基础样式）。每篇文章生成的类需要每个套件的垫片——候选项按排名列于
+路线图。**运行时加载**类（Gutenslider）由运行时 CSS
+采集：`harvestRuntimeStyles()` 在隐藏的同源
+iframe 中加载文章前端（Otter 预热已使用该 iframe），读取页面自身脚本的 `<link>` 样式表
+被引入，并通过相同的作用域处理器发送新增内容。触发条件是几何关系，而不是
+特定于库：预览内容在自身底部边缘处或超出该边缘。运行时 `<style>`
+元素会被有意跳过（页面的内联 CSS 大多已经由服务器
+已报告）。套件：`tests/runtime-css.test.js`，装置：`minimal-test/runtime-css`。
 
 ## Image attribute conventions（用於 `swapIslandImage` coverage）
 

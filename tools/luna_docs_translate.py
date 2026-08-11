@@ -203,7 +203,12 @@ def load_checkpoint(path: Path, digest: str, locale: str) -> dict[str, str]:
     if data.get("model") != MODEL or data.get("locale") != locale:
         raise RuntimeError(f"checkpoint metadata does not match: {path}")
     if data.get("source_sha256") != digest:
-        raise RuntimeError(f"checkpoint source digest is stale: {path}")
+        # Source docs can advance between a resumable run and the next release.
+        # IDs are assigned from the complete sorted catalog, so reusing a stale
+        # ID map could translate the wrong source string.  Ignore it; callers
+        # may still seed safely by exact context/msgid from the generated PO.
+        print(f"{locale}: ignoring stale checkpoint {path}", flush=True)
+        return {}
     return {str(key): str(value) for key, value in data["translations"].items()}
 
 
@@ -246,6 +251,9 @@ def write_po(
         'msgstr ""',
         docs_i18n.po_quote(f"Project-Id-Version: Minimal Admin Docs {version}\n"),
         docs_i18n.po_quote(f"Language: {locale}\n"),
+        docs_i18n.po_quote("PO-Revision-Date: 2026-08-11 00:00+0000\n"),
+        docs_i18n.po_quote(f"Last-Translator: Minimal Admin Luna ({locale})\n"),
+        docs_i18n.po_quote(f"Language-Team: Minimal Admin {locale}\n"),
         docs_i18n.po_quote("MIME-Version: 1.0\n"),
         docs_i18n.po_quote("Content-Type: text/plain; charset=UTF-8\n"),
         docs_i18n.po_quote("Content-Transfer-Encoding: 8bit\n"),

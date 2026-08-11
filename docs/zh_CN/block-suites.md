@@ -71,9 +71,23 @@ suite 已启用）。通用机制——islands、渲染探针、文本运行、�
   标记；保存时物化为 `uploads/eb-style/eb-style-{post}.min.css`，并且
   使用真实的 `$post` 入队。
 
-渲染区块的**样式队列差异**（本周期已发布）覆盖延迟注册
-类（Stackable、Kadence 基础样式）。每篇文章生成的类需要按 suite
-shim——路线图中已对候选项排序。
+- **Gutenslider**（添加于 2026-08-10）：第六个模型，也是唯一一个没有服务端
+  collector 可以访问。其基础布局样式表（`build/vendor/gs-base.css`，即
+  幻灯片所基于的内容）由前端脚本作为 webpack 异步分块获取，因此它
+  完全不会经过 `wp_styles()`。插件自身
+  `wp_enqueue_style('eedee-gutenslider-block-editor')` 将一个仅注册为
+  *script* 的句柄命名出来，因此即使这样也不会产生任何作用。没有该样式表，背景 div 和幻灯片
+  正常流中的内容堆栈，而内容会被固定高度的框架裁剪掉。
+
+render-blocks **style-queue diff** 涵盖延迟注册类（Stackable、Kadence
+基础样式）。每篇文章生成的类需要按套件提供 shim——候选项排名为
+路线图。**运行时加载**类（Gutenslider）由运行时 CSS
+采集：`harvestRuntimeStyles()` 在隐藏的同源
+iframe 中加载文章前端（Otter 预热流程已使用该 iframe），读取页面自身脚本的 `<link>` 样式表
+被引入，并通过同一个作用域处理器发送新增内容。触发条件是几何关系，而不是
+特定于库：预览内容在自身底部边缘处或超出该边缘。运行时 `<style>`
+元素会被有意跳过（页面的内联 CSS 大多是服务器已经
+已报告）。套件：`tests/runtime-css.test.js`，fixture `minimal-test/runtime-css`。
 
 ## 图像属性约定（用于 `swapIslandImage` 覆盖范围）
 

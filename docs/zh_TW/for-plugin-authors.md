@@ -716,6 +716,8 @@ hooks，每個 hook 都有自己的下方區段或契約備註：
 | `minimal_admin_spam_providers` | filter | 將提供者卡片新增至 Settings → Spam |
 | `minimal_admin_license_providers` | filter | 在授權卡片上回報您的授權狀態，可選擇啟用／停用／重新驗證 |
 | `minimal_admin_comments_enabled` | filter | 覆寫留言偵測（導覽、選用區、徽章） |
+| `minimal_admin_respect_removed_menus` | filter | 回傳 false 以停止 Minimal 導覽鏡像的 `remove_menu_page()` 移除（自 0.26.0 起） |
+| `minimal_admin_watched_admin_menus` | filter | 調整哪些管理選單 slug 對應到哪些 Minimal 導覽項目，以進行移除鏡像（自 0.26.0 起） |
 | `minimal_admin_visibility_providers` | filter | 回報作用中的維護／即將推出／密碼模式（概覽橫幅、頂端列標籤、系統檢查） |
 | `minimal_admin_media_folders` | filter | 從您的資料夾外掛程式提供 Media 檢視的資料夾篩選器（自 0.18.0 起） |
 | `minimal_admin_log_sources` | filter | 將日誌新增至 System 的日誌檢視器（自 0.19.0 起） |
