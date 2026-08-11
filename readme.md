@@ -276,6 +276,12 @@ Pretty permalinks recommended (clean routes like `/minimal-admin/content`); with
 falls back to `/?minimal_admin=1` with hash routing. Updates are delivered through the normal
 WordPress updates UI via GitHub Releases.
 
+## Languages
+
+Version 0.27.0.2 bundles complete Simplified Chinese (`zh_CN`) and Traditional Chinese (`zh_TW`)
+interface catalogs. All 340 current plugin UI messages are translated in both locales, with MO
+catalogs for PHP and Jed JSON catalogs for the JavaScript app.
+
 ## Extending
 
 Any plugin can add a view to Minimal with one filter: a declarative descriptor, no JavaScript

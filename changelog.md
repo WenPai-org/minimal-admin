@@ -1,5 +1,9 @@
 # Changelog
 
+## **v0.27.0.2** - August 11, 2026
+
+This localization-only release completes the Minimal Admin interface in Simplified Chinese (`zh_CN`) and Traditional Chinese (`zh_TW`). Both catalogs translate all 340 current plugin UI messages, including the 12 plural entries, with compiled MO files for PHP and Jed JSON catalogs for the JavaScript app. No application behavior changes are included.
+
 ## **v0.27.0** - August 10, 2026
 
 The images release. Every gallery-shaped block gets one images editor: a tile grid to reorder, replace, add, remove, duplicate and caption photos, covering sliders, fixed layouts and blocks that keep their pictures in settings. Each image moves as an exact unit, so captions and per-image tweaks travel with it. Columns, crop and random order sit on the gallery's ⚙ popover, dropped photos upload straight into the block, and Jetpack's tiled gallery can be built and edited outright. Groups of styled paragraphs open in an Edit content window, text first, with each block's other settings behind a toggle. Previews match the front end, and a security audit of v0.26.0 is complete with every finding fixed.
