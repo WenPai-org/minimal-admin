@@ -30,9 +30,10 @@ used.
 3. `.forgejo/workflows/translations.yml` downloads only `current` translations
    every six hours, validates the PO catalogs, compiles MO and JavaScript JSON
    catalogs, verifies the release package, and commits changed catalogs.
-4. Upstream release synchronization repeats the download before building and
-   tagging a release, so a new upstream version includes the latest approved
-   catalogs. Missing translations fall back to the source English strings.
+4. Upstream release synchronization does not contact GlotPress. It packages the
+   latest committed catalogs, if any. A failed translation synchronization or
+   incomplete locale never blocks an upstream release; missing strings fall back
+   to the source English strings.
 
 The `readme` child contains the Markdown documentation extracted from
 `docs/*.md`. Inline code, links, URLs, HTML tags, printf placeholders, and code
@@ -80,12 +81,13 @@ for deployment paths and diagnostics.
 
 ## Release and rollback
 
-The release ZIP must contain the PO/MO catalogs and any generated Jed JSON
-catalogs. The WordPress Playground release smoke test installs that exact ZIP
-twice and verifies plugin activation under `zh_CN` and `zh_TW`. This is a
-runtime and locale-loading gate, not a linguistic review. A reviewer must
-separately check an approved marker string in each locale before declaring
-translation coverage complete.
+The release ZIP includes available PO/MO catalogs and generated Jed JSON
+catalogs, but their absence or incomplete coverage is not a release gate. The
+WordPress Playground release smoke test installs that exact ZIP twice and
+verifies plugin activation under `zh_CN` and `zh_TW`; untranslated strings use
+the source English text. This is a runtime gate, not a linguistic review. A
+reviewer must separately check an approved marker string in each locale before
+declaring translation coverage complete.
 
 To stop synchronization, disable the translation workflow and the production
 cron independently. Previously committed catalogs and release ZIPs remain

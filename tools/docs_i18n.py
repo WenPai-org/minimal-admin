@@ -140,6 +140,7 @@ def render(docs_root: Path, mo_path: Path, output_root: Path) -> None:
     with mo_path.open("rb") as stream:
         catalog = gettext.GNUTranslations(stream)
     translated = 0
+    rejected = 0
     total = 0
     status: dict[str, dict[str, int | str]] = {}
     output_root.mkdir(parents=True, exist_ok=True)
@@ -171,9 +172,14 @@ def render(docs_root: Path, mo_path: Path, output_root: Path) -> None:
             total += 1
             file_total += 1
             if value != segment.protected:
-                value = restore(value, segment.tokens)
-                translated += 1
-                file_translated += 1
+                try:
+                    value = restore(value, segment.tokens)
+                except ValueError:
+                    value = segment.original
+                    rejected += 1
+                else:
+                    translated += 1
+                    file_translated += 1
             else:
                 value = segment.original
             output_lines.append(prefix + value + suffix + newline)
@@ -190,7 +196,10 @@ def render(docs_root: Path, mo_path: Path, output_root: Path) -> None:
     (output_root / "translation-status.json").write_text(
         json.dumps({"translated": translated, "total": total, "files": status}, indent=2) + "\n"
     )
-    print(f"Rendered {translated}/{total} reviewed documentation strings to {output_root}")
+    print(
+        f"Rendered {translated}/{total} reviewed documentation strings to {output_root}; "
+        f"rejected {rejected} translations with invalid protected tokens"
+    )
 
 
 def po_value(line: str, directive: str) -> str:
@@ -216,6 +225,7 @@ def normalize_exported_po(pot_path: Path, po_path: Path) -> None:
 
     normalized: list[str] = []
     changed = 0
+    dropped = 0
     for block in po_path.read_text().split("\n\n"):
         lines = block.splitlines()
         reference_line = next((line for line in lines if line.startswith("#: ")), None)
@@ -225,9 +235,17 @@ def normalize_exported_po(pot_path: Path, po_path: Path) -> None:
         if reference_line and context_index is not None and message_index is not None:
             references = reference_line.removeprefix("#: ").split()
             sources = {by_reference[reference] for reference in references if reference in by_reference}
-            if len(sources) != 1:
+            if not sources:
+                dropped += 1
+                continue
+            if len(sources) > 1:
                 raise ValueError(f"exported PO references do not identify one source: {references}")
             context, message = sources.pop()
+            if translation_index is not None:
+                translation = html.unescape(po_value(lines[translation_index], "msgstr"))
+                if translation and set(TOKEN_RE.findall(translation)) != set(TOKEN_RE.findall(message)):
+                    dropped += 1
+                    continue
             replacement_context = "msgctxt " + po_quote(context)
             replacement_message = "msgid " + po_quote(message)
             if lines[context_index] != replacement_context or lines[message_index] != replacement_message:
@@ -242,7 +260,10 @@ def normalize_exported_po(pot_path: Path, po_path: Path) -> None:
                 lines[translation_index] = "msgstr " + po_quote(decoded)
         normalized.append("\n".join(lines))
     po_path.write_text("\n\n".join(normalized))
-    print(f"Normalized {changed} GlotPress punctuation changes in {po_path}")
+    print(
+        f"Normalized {changed} GlotPress punctuation changes and "
+        f"dropped {dropped} obsolete or incompatible entries in {po_path}"
+    )
 
 
 def main() -> int:

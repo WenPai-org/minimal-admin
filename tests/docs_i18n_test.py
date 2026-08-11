@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 import tempfile
 import unittest
@@ -57,6 +58,30 @@ class DocsI18nTest(unittest.TestCase):
             self.assertFalse((output / "guide.md").exists())
             self.assertTrue((output / "translation-status.json").exists())
 
+    def test_invalid_translation_tokens_fall_back_without_failing(self) -> None:
+        class InvalidTokenTranslations:
+            def pgettext(self, _context: str, _message: str) -> str:
+                return "使用 __MA_DOC_TOKEN_2__"
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            docs = root / "docs"
+            output = root / "zh_CN"
+            docs.mkdir()
+            (docs / "guide.md").write_text("Use `code` here\n")
+            catalog = root / "catalog.mo"
+            catalog.write_bytes(b"placeholder")
+            original = gettext.GNUTranslations
+            try:
+                gettext.GNUTranslations = lambda _stream: InvalidTokenTranslations()  # type: ignore[assignment]
+                DOCS_I18N.render(docs, catalog, output)
+            finally:
+                gettext.GNUTranslations = original
+            self.assertFalse((output / "guide.md").exists())
+            status = json.loads((output / "translation-status.json").read_text())
+            self.assertEqual(0, status["translated"])
+            self.assertEqual(1, status["total"])
+
     def test_glotpress_export_normalization_restores_source_punctuation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -75,6 +100,49 @@ class DocsI18nTest(unittest.TestCase):
             result = po.read_text()
             self.assertIn('msgid "Same “Label” and plugin’s."', result)
             self.assertIn('msgstr "相同的「标签」。"', result)
+
+    def test_glotpress_export_normalization_drops_obsolete_references(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            pot = root / "docs.pot"
+            po = root / "docs.po"
+            pot.write_text(
+                '#: docs/guide.md:2\nmsgctxt "docs/guide.md"\n'
+                'msgid "Current text"\nmsgstr ""\n'
+            )
+            po.write_text(
+                'msgid ""\nmsgstr "Project-Id-Version: Minimal Admin\\n"\n\n'
+                '#: docs/guide.md:1\nmsgctxt "docs/guide.md"\n'
+                'msgid "Removed text"\nmsgstr "旧翻译"\n\n'
+                '#: docs/guide.md:2\nmsgctxt "docs/guide.md"\n'
+                'msgid "Current text"\nmsgstr "当前翻译"\n'
+            )
+            DOCS_I18N.normalize_exported_po(pot, po)
+            result = po.read_text()
+            self.assertIn('Project-Id-Version: Minimal Admin', result)
+            self.assertNotIn('Removed text', result)
+            self.assertNotIn('旧翻译', result)
+            self.assertIn('Current text', result)
+            self.assertIn('当前翻译', result)
+
+    def test_glotpress_export_normalization_drops_invalid_token_translation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            pot = root / "docs.pot"
+            po = root / "docs.po"
+            pot.write_text(
+                '#: docs/guide.md:1\nmsgctxt "docs/guide.md"\n'
+                'msgid "Use __MA_DOC_TOKEN_1__"\nmsgstr ""\n'
+            )
+            po.write_text(
+                'msgid ""\nmsgstr "Project-Id-Version: Minimal Admin\\n"\n\n'
+                '#: docs/guide.md:1\nmsgctxt "docs/guide.md"\n'
+                'msgid "Old source"\nmsgstr "使用 __MA_DOC_TOKEN_2__"\n'
+            )
+            DOCS_I18N.normalize_exported_po(pot, po)
+            result = po.read_text()
+            self.assertIn('Project-Id-Version: Minimal Admin', result)
+            self.assertNotIn('使用 __MA_DOC_TOKEN_2__', result)
 
 
 if __name__ == "__main__":

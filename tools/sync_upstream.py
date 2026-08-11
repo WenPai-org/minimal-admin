@@ -14,6 +14,7 @@ from pathlib import Path
 EXCLUDED_TOP = {".git", ".github", ".forgejo", ".gitignore", ".wp-playground", "tools", "CLAUDE.md"}
 MANAGED_INDEX = ".upstream-files.json"
 PROTECTED = {".gitignore", "NOTICE", "UPSTREAM.md", MANAGED_INDEX, "upstream-lock.json"}
+BRANDED_ASSETS = ("assets/images/screenshot-dark.png",)
 
 LITERAL_REPLACEMENTS = (
     ("https://raw.githubusercontent.com/austinginder/minn-admin/main/manifest.json", "https://feicode.com/WenPai-org/minimal-admin/raw/branch/main/manifest.json"),
@@ -159,6 +160,11 @@ def main() -> int:
     if not re.fullmatch(r"[0-9a-f]{40}", args.upstream_commit):
         raise SystemExit("upstream commit must be a full SHA-1")
 
+    preserved_assets = {
+        relative: ((output / relative).read_bytes(), (output / relative).stat().st_mode)
+        for relative in BRANDED_ASSETS
+        if (output / relative).is_file()
+    }
     source_files = sorted(
         p for p in source.rglob("*")
         if p.is_file()
@@ -193,6 +199,11 @@ def main() -> int:
     customize_manifest(output / "manifest.json", args.version)
     customize_readme(output / "readme.md")
     customize_updater(output / "includes/class-minimal-admin-updater.php")
+    for relative, (content, mode) in preserved_assets.items():
+        target = output / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+        os.chmod(target, mode)
 
     transform_sha = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     lock = {
