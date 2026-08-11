@@ -716,6 +716,8 @@ $surfaces['driftwood'] = array(
 | `minimal_admin_spam_providers` | filter | 向 Settings → Spam 添加提供方卡片 |
 | `minimal_admin_license_providers` | filter | 在许可证卡片上报告许可证状态，可选择激活／停用／重新验证 |
 | `minimal_admin_comments_enabled` | filter | 覆盖评论检测（导航、调色板、徽章） |
+| `minimal_admin_respect_removed_menus` | filter | 返回 false 以阻止 Minimal 的导航镜像 `remove_menu_page()` 移除操作（自 0.26.0 起） |
+| `minimal_admin_watched_admin_menus` | filter | 调整哪些管理菜单 slug 映射到哪些 Minimal 导航项，以便镜像移除操作（自 0.26.0 起） |
 | `minimal_admin_visibility_providers` | filter | 报告活跃的维护／即将上线／密码模式（概览横幅、顶栏标签、系统检查） |
 | `minimal_admin_media_folders` | filter | 使用你的文件夹插件为 Media 视图的文件夹筛选器提供数据（自 0.18.0 起） |
 | `minimal_admin_log_sources` | filter | 向 System 的日志查看器添加日志（自 0.19.0 起） |

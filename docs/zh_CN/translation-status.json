@@ -1,20 +1,20 @@
 {
-  "translated": 4338,
-  "total": 4338,
+  "translated": 4640,
+  "total": 4640,
   "files": {
     "RELEASE.md": {
-      "translated": 24,
-      "total": 24,
+      "translated": 25,
+      "total": 25,
       "state": "partial"
     },
     "TRANSLATIONS.md": {
-      "translated": 66,
-      "total": 66,
+      "translated": 68,
+      "total": 68,
       "state": "partial"
     },
     "adapter-coverage.md": {
-      "translated": 216,
-      "total": 216,
+      "translated": 218,
+      "total": 218,
       "state": "partial"
     },
     "block-inspector.md": {
@@ -23,8 +23,8 @@
       "state": "partial"
     },
     "block-suites.md": {
-      "translated": 125,
-      "total": 125,
+      "translated": 138,
+      "total": 138,
       "state": "partial"
     },
     "code-snippets.md": {
@@ -48,18 +48,18 @@
       "state": "partial"
     },
     "editor-direction.md": {
-      "translated": 130,
-      "total": 130,
+      "translated": 407,
+      "total": 407,
       "state": "partial"
     },
     "editor-roadmap.md": {
-      "translated": 228,
-      "total": 228,
+      "translated": 123,
+      "total": 123,
       "state": "partial"
     },
     "for-plugin-authors.md": {
-      "translated": 790,
-      "total": 790,
+      "translated": 792,
+      "total": 792,
       "state": "partial"
     },
     "form-plugins.md": {
@@ -73,8 +73,8 @@
       "state": "partial"
     },
     "goals.md": {
-      "translated": 38,
-      "total": 38,
+      "translated": 40,
+      "total": 40,
       "state": "partial"
     },
     "license-manager.md": {
@@ -102,14 +102,19 @@
       "total": 296,
       "state": "partial"
     },
+    "roadmap.md": {
+      "translated": 73,
+      "total": 73,
+      "state": "partial"
+    },
     "shim-tutorial.md": {
       "translated": 133,
       "total": 133,
       "state": "partial"
     },
     "user-guide.md": {
-      "translated": 244,
-      "total": 244,
+      "translated": 279,
+      "total": 279,
       "state": "partial"
     },
     "v1-readiness.md": {
