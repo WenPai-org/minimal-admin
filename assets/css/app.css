@@ -216,6 +216,25 @@ a { color: var(--accent2); text-decoration: none; }
 
 /* Changelog modal — the mini markdown renderer's vocabulary. */
 .minimal-changelog { padding: 4px 18px 18px; max-height: 64vh; overflow-y: auto; font-size: 13.5px; line-height: 1.65; color: var(--text2); }
+/* Sectioned changelog modal (the FeiCode repository pattern in-app): version rail
+   beside one release at a time; the rail becomes a horizontal chip strip on
+   small screens, scrolling in its OWN overflow so the modal never widens. */
+.minimal-cl-layout { display: grid; grid-template-columns: 172px minmax(0, 1fr); min-height: 0; }
+.minimal-cl-rail { border-right: 1px solid var(--border); max-height: 64vh; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+.minimal-cl-ver { text-align: left; background: none; border: 1px solid transparent; border-radius: 8px; padding: 7px 10px; cursor: pointer; font-family: inherit; flex-shrink: 0; }
+.minimal-cl-ver-v { display: block; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--text); }
+.minimal-cl-ver-d { display: block; font-size: 11.5px; color: var(--text3); margin-top: 1px; }
+.minimal-cl-ver:hover { background: var(--hover); }
+.minimal-cl-ver.sel { background: var(--accent-soft, rgba(110,98,245,0.14)); border-color: var(--accent); }
+.minimal-cl-ver.sel .minimal-cl-ver-v { color: var(--accent2); }
+@media (max-width: 640px) {
+  .minimal-cl-layout { display: flex; flex-direction: column; }
+  .minimal-cl-rail { flex-direction: row; overflow-x: auto; overflow-y: hidden; max-height: none; border-right: 0; border-bottom: 1px solid var(--border); padding: 8px 10px; gap: 6px; }
+  .minimal-cl-ver { padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px; }
+  .minimal-cl-ver.sel { border-color: var(--accent); }
+  .minimal-cl-ver-d { display: none; }
+  .minimal-changelog { max-height: 56vh; }
+}
 .minimal-changelog h3 { font-size: 15px; color: var(--text); margin: 18px 0 6px; padding-top: 14px; border-top: 1px solid var(--border); }
 .minimal-changelog h3:first-child { margin-top: 6px; padding-top: 0; border-top: 0; }
 /* The user-guide modal shares the changelog reader shell, plus the guide's
@@ -381,7 +400,11 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-switchback + .minimal-user { margin-top: 8px; }
 .minimal-user { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid var(--border); cursor: pointer; border-radius: 9px; }
 .minimal-user:hover { background: var(--hover); }
-.minimal-user-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--pink), var(--amber)); flex-shrink: 0; object-fit: cover; }
+.minimal-user-avatar {
+  width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--pink), var(--amber));
+  flex-shrink: 0; object-fit: cover; display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 13px;
+}
 .minimal-user-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .minimal-user-role { font-size: 12px; color: var(--text3); }
 /* Account actions: WordPress admin (a quiet, discoverable exit — the
@@ -1537,29 +1560,37 @@ select.minimal-input {
 .minimal-editor-body { color: var(--text); line-height: 1.75; font-size: 16px; min-height: 40vh; outline: none; overflow-x: clip; overflow-wrap: break-word; }
 .minimal-editor-body table { display: block; max-width: 100%; overflow-x: auto; }
 /* Editable tables get the same cutout treatment as block islands — the dashed
-   outline marks "this is a structured block", top-level only so tables inside
-   island previews aren't double-framed. Cell gridlines are an editor-only
-   affordance (the front end styles its own tables). */
-.minimal-editor-body > figure.wp-block-table, .minimal-editor-body > table {
+   outline marks "this is a structured block". Direct children of the body OR
+   of a container slot (slots are mini-bodies; chips reach both since the
+   per-root chip pass), so tables inside island PREVIEWS aren't double-framed.
+   Cell gridlines are an editor-only affordance (the front end styles its own
+   tables). */
+.minimal-editor-body > figure.wp-block-table, .minimal-editor-body > table,
+.minimal-slot > figure.wp-block-table, .minimal-slot > table {
   border: 1px dashed var(--border2); border-radius: 11px; padding: 14px 16px; margin: 0 0 18px;
 }
-.minimal-editor-body > figure.wp-block-table:hover, .minimal-editor-body > table:hover { border-color: var(--accent); }
-.minimal-editor-body > figure.wp-block-table { display: block; overflow-x: auto; }
+.minimal-editor-body > figure.wp-block-table:hover, .minimal-editor-body > table:hover,
+.minimal-slot > figure.wp-block-table:hover, .minimal-slot > table:hover { border-color: var(--accent); }
+.minimal-editor-body > figure.wp-block-table, .minimal-slot > figure.wp-block-table { display: block; overflow-x: auto; }
 /* The figure handles overflow, so the inner table can be a real full-width table. */
-.minimal-editor-body > figure.wp-block-table table { display: table; margin: 0; border-collapse: collapse; width: 100%; }
-.minimal-editor-body > table { border-collapse: separate; }
+.minimal-editor-body > figure.wp-block-table table, .minimal-slot > figure.wp-block-table table { display: table; margin: 0; border-collapse: collapse; width: 100%; }
+.minimal-editor-body > table, .minimal-slot > table { border-collapse: separate; }
 .minimal-editor-body > figure.wp-block-table td, .minimal-editor-body > figure.wp-block-table th,
-.minimal-editor-body > table td, .minimal-editor-body > table th {
+.minimal-editor-body > table td, .minimal-editor-body > table th,
+.minimal-slot > figure.wp-block-table td, .minimal-slot > figure.wp-block-table th,
+.minimal-slot > table td, .minimal-slot > table th {
   border: 1px solid var(--border); padding: 6px 12px; min-width: 40px;
 }
-.minimal-editor-body > figure.wp-block-table th, .minimal-editor-body > table th { background: var(--panel); }
+.minimal-editor-body > figure.wp-block-table th, .minimal-editor-body > table th,
+.minimal-slot > figure.wp-block-table th, .minimal-slot > table th { background: var(--panel); }
 /* Images get the same cutout as tables and islands. :has(img) keeps the empty
    husk figures (undoable deletes) from showing a hollow frame. */
-.minimal-editor-body > figure.wp-block-image:has(img), .minimal-editor-body > img {
+.minimal-editor-body > figure.wp-block-image:has(img), .minimal-editor-body > img,
+.minimal-slot > figure.wp-block-image:has(img), .minimal-slot > img {
   border: 1px dashed var(--border2); border-radius: 11px; padding: 14px 16px; margin: 0 0 18px; display: block;
 }
-.minimal-editor-body > figure.wp-block-image img { max-width: 100%; height: auto; display: block; border-radius: 6px; }
-.minimal-editor-body > figure.wp-block-image figcaption { color: var(--text3); font-size: 13px; margin-top: 8px; }
+.minimal-editor-body > figure.wp-block-image img, .minimal-slot > figure.wp-block-image img { max-width: 100%; height: auto; display: block; border-radius: 6px; }
+.minimal-editor-body > figure.wp-block-image figcaption, .minimal-slot > figure.wp-block-image figcaption { color: var(--text3); font-size: 13px; margin-top: 8px; }
 .minimal-editor-body iframe, .minimal-editor-body video { max-width: 100%; }
 .minimal-editor-body p { margin: 0 0 16px; }
 .minimal-editor-body h1, .minimal-editor-body h2 { letter-spacing: -0.4px; }
@@ -1568,6 +1599,10 @@ select.minimal-input {
 .minimal-editor-body pre { padding: 12px 14px; overflow-x: auto; }
 .minimal-editor-body code { padding: 1px 6px; }
 .minimal-editor-body:empty::before { content: 'Keep writing…'; color: var(--text3); }
+/* Locked bodies are read-only, so "Keep writing…" would be a lie. A builder
+   page whose canvas is fully dynamic (a WooCommerce My Account page, say)
+   previews as empty (GH #10): say what is actually happening instead. */
+.minimal-editor-body.locked:empty::before { content: 'Nothing to preview here. This content renders dynamically on the site.'; }
 /* Gutenberg alignment classes — the serializer emits them, the front end
    styles them; the editor must preview them too. */
 .minimal-editor-body .has-text-align-left { text-align: left; }
@@ -1842,9 +1877,16 @@ body.minimal-dragging.minimal-drag-editor::after { content: 'Drop images to inse
   background: var(--panel2); color: var(--text3);
   font-size: 11px; font-weight: 600; white-space: nowrap;
 }
+/* The whole banner is the link (Austin: one big obvious target). The inner
+   "Edit in X" pill is a SPAN — a nested anchor was how the old hover bug
+   happened: the note's generic link rules recolored the pill's text to the
+   accent while btn-primary:hover painted the accent behind it. */
 .minimal-builder-note { display: flex; align-items: center; gap: 14px; }
-.minimal-builder-note > span { flex: 1; }
-.minimal-builder-note .minimal-builder-open { flex-shrink: 0; text-decoration: none; }
+.minimal-builder-note > span:first-child { flex: 1; }
+a.minimal-builder-note { text-decoration: none; color: var(--text2); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+a.minimal-builder-note:hover { border-color: rgba(224, 164, 88, 0.6); background: rgba(224, 164, 88, 0.16); }
+.minimal-builder-note .minimal-builder-open { flex-shrink: 0; text-decoration: none; color: var(--accent-fg); }
+a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2); color: var(--accent-fg); }
 
 /* ===== Editor locked mode ===== */
 .minimal-editor-locked-note {
@@ -2388,7 +2430,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-profile-fields { display: flex; flex-direction: column; gap: 13px; margin-top: 12px; }
 .minimal-pf-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .minimal-pf-avatar { display: flex; align-items: center; gap: 12px; }
-.minimal-pf-avatar img { width: 38px; height: 38px; }
+.minimal-pf-avatar .minimal-user-row-avatar { width: 38px; height: 38px; font-size: 15px; }
 .minimal-profile-grid .minimal-session-row:first-of-type { margin-top: 6px; }
 @media (max-width: 900px) {
   .minimal-profile-grid { grid-template-columns: 1fr; }
@@ -2400,7 +2442,13 @@ button.minimal-ac-item:hover { background: var(--hover); }
 /* Structure-modal toggle rows: whole row is the click target. */
 .minimal-cpt-toggle { display: flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 500; padding: 5px 0; cursor: pointer; user-select: none; }
 .minimal-cpt-toggle:has(.minimal-switch:disabled) { cursor: default; }
-.minimal-user-row-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--panel2); object-fit: cover; }
+/* Letter tile; the real avatar covers it and broken/absent URLs reveal it. */
+.minimal-user-row-avatar {
+  position: relative; width: 30px; height: 30px; border-radius: 50%; background: var(--panel2); object-fit: cover;
+  display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 13px;
+  overflow: hidden; flex-shrink: 0;
+}
+.minimal-user-row-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 /* ===== Editor extras ===== */
 .minimal-tool-hint { margin-left: auto; align-self: center; font-size: 12px; color: var(--text3); }
@@ -2512,6 +2560,39 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-block-island:hover .minimal-island-hint,
 .minimal-block-island.minimal-island-selected .minimal-island-hint { opacity: 1; }
 .minimal-block-island.minimal-island-armed .minimal-island-hint { opacity: 0; }
+
+/* ===== Nesting quiets down (the chip-density pass) =====
+   Nested cards multiplied the chrome: every level wore a resident chip,
+   hovering an outer group lit the whole ancestry purple, and every card
+   offered its own hint. The model now is DEEPEST WINS: chips and the
+   hover highlight follow the innermost container under the pointer (or
+   holding the caret); ancestors stay at rest. Top-level chips remain
+   resident — one per block is the established look, the multiplication
+   was the noise. Armed (red) and selected states stay loud at any depth. */
+.minimal-slot .minimal-block-island:not(.minimal-island-armed):not(.minimal-island-selected) {
+  border-color: color-mix( in srgb, var(--border2) 55%, transparent );
+}
+.minimal-slot .minimal-block-island > .minimal-island-chip { opacity: 0; pointer-events: none; transition: opacity 0.12s; }
+.minimal-slot .minimal-block-island:is(:hover, :focus-within, .minimal-island-armed, .minimal-island-selected) > .minimal-island-chip { opacity: 1; pointer-events: auto; }
+/* Deepest wins: a container holding the hovered/focused island keeps its
+   own chip hidden and its border resting. The ancestor marker class is set
+   by cheap pointer/focus handlers — the :has() form of these rules bound
+   style invalidation to every DOM mutation and cost ~300ms PER KEYSTROKE
+   on nested pages (perf-editor.bench.js; never reintroduce :has() inside
+   the editor surface). The covered ancestor is ALSO hovered (the pointer
+   is physically inside it), so these must out-specify the hover-reveal
+   above — hence the :hover in the selector, matching its weight, winning
+   on source order. */
+.minimal-block-island.minimal-island-covered:hover > .minimal-island-chip,
+.minimal-slot .minimal-block-island.minimal-island-covered:hover > .minimal-island-chip { opacity: 0; pointer-events: none; transition: opacity 0.12s; }
+.minimal-block-island:hover.minimal-island-covered:not(.minimal-island-armed):not(.minimal-island-selected) { border-color: var(--border2); }
+.minimal-slot .minimal-block-island:hover.minimal-island-covered:not(.minimal-island-armed):not(.minimal-island-selected) {
+  border-color: color-mix( in srgb, var(--border2) 55%, transparent );
+}
+/* Hints teach the concept once: top-level containers only, and never
+   while the writer is down inside a nested card. */
+.minimal-slot .minimal-block-island .minimal-island-hint { display: none; }
+.minimal-block-island.minimal-island-covered > .minimal-island-hint { opacity: 0; }
 /* No max-height: a hard cap (was 420px) clipped multi-card grids and tall
    design-library inserts mid-block while the front end looked fine. overflow
    stays hidden so child border-radii don't paint outside the island.
@@ -2521,6 +2602,51 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-island-preview { pointer-events: none; opacity: 0.85; overflow: hidden; background: transparent !important; }
 .minimal-island-preview > :last-child { margin-bottom: 0; }
 .minimal-island-empty { color: var(--text3); font-size: 13.5px; font-style: italic; }
+/* In-place island text runs: aligned preview text nodes wrapped in nested
+   contenteditable spans. pointer-events:auto punches through the preview's
+   pointer-events:none so the text is clickable; the dotted underline on
+   island hover advertises which text is editable, and focus swaps it for a
+   soft accent wash. Full opacity: editable text should not look dimmed. */
+.minimal-island-run { pointer-events: auto; cursor: text; border-radius: 3px; opacity: 1; }
+.minimal-block-island:hover .minimal-island-run,
+.minimal-block-island.minimal-island-selected .minimal-island-run {
+  text-decoration: underline dotted color-mix(in srgb, var(--accent) 45%, transparent);
+  text-underline-offset: 3px;
+}
+.minimal-island-run:focus {
+  outline: none;
+  text-decoration: none;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent);
+}
+/* An emptied run keeps a caret target instead of collapsing to zero width. */
+.minimal-island-run:empty { display: inline-block; min-width: 10px; min-height: 1em; vertical-align: baseline; }
+/* Container slots (phase 3): a group renders as a shell with its children
+   directly editable inside. Full-strength text — an editable interior must
+   not look dimmed like a preview — and the island frame stays as the
+   grouping signal. */
+.minimal-slot-island { cursor: default; }
+.minimal-slot { outline: none; cursor: text; min-height: 1.5em; caret-color: var(--accent); }
+.minimal-slot > :first-child { margin-top: 0; }
+.minimal-slot > :last-child { margin-bottom: 0; }
+/* Cover and media-text slot islands: approximate the front-end SHAPE so the
+   preserved background/media bytes don't stack above the writing surface.
+   The typing surface still keeps Minimal typography (the slots convention). */
+.minimal-media-slot-island .wp-block-cover { position: relative; overflow: hidden; border-radius: 8px; }
+.minimal-media-slot-island .wp-block-cover__background { position: absolute; inset: 0; opacity: 0.35; }
+.minimal-media-slot-island img.wp-block-cover__image-background,
+.minimal-media-slot-island video.wp-block-cover__video-background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.minimal-media-slot-island .wp-block-cover > .minimal-slot { position: relative; z-index: 1; padding: 26px; }
+.minimal-media-slot-island .wp-block-media-text { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center; }
+.minimal-media-slot-island .wp-block-media-text__media img,
+.minimal-media-slot-island .wp-block-media-text__media video { max-width: 100%; height: auto; display: block; border-radius: 6px; }
+/* Columns slots: the typing surface keeps Minimal typography, but the columns
+   SHAPE is the point of the block — basic flex mirrors core's front-end
+   layout, and a column's own flex-basis (inline style, preserved bytes)
+   still applies. A faint divider marks each column's editable region. */
+.minimal-cols-island .wp-block-columns { display: flex; gap: 22px; align-items: flex-start; }
+.minimal-cols-island .wp-block-column { flex: 1; min-width: 0; }
+.minimal-cols-island .wp-block-column + .wp-block-column { border-left: 1px dashed var(--line); padding-left: 22px; }
 /* Shortcode island — type the shortcode in place (no browser prompt). */
 .minimal-shortcode-island {
   user-select: text;
@@ -2856,7 +2982,11 @@ button.minimal-ac-item:hover { background: var(--hover); }
   border: 1px solid var(--border2); background: var(--panel2); flex-shrink: 0;
 }
 .minimal-insp-img-row button { margin-left: auto; }
-.minimal-insp-actions { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+.minimal-insp-actions { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; }
+/* Compact move cluster: tight icon buttons reading as one control. */
+.minimal-insp-move { display: inline-flex; gap: 3px; }
+.minimal-insp-move .minimal-btn-soft { padding-left: 8px; padding-right: 8px; }
+.minimal-insp-move .minimal-btn-soft svg { width: 14px; height: 14px; }
 .minimal-insp-actions .minimal-btn-primary { flex: 1; justify-content: center; }
 .minimal-insp-actions .minimal-btn-soft.danger:only-child { flex: 1; justify-content: center; }
 
@@ -3191,9 +3321,38 @@ button.minimal-ac-item:hover { background: var(--hover); }
   .minimal-cpt-cols { grid-template-columns: 1fr 100px; }
   .minimal-cpt-cols > :nth-child(2), .minimal-cpt-cols > :nth-child(4),
   .minimal-cpt-cols > :nth-child(5), .minimal-cpt-cols > :nth-child(6) { display: none; }
-  /* Surface tables set their columns inline (unknown shape) — scroll those instead. */
+  /* Surface tables set their columns inline (unknown shape). A squeezed
+     grid garbles headers and ellipses every cell to nothing (the 2026-08-08
+     mobile round), so rows become stacked cards instead: header hidden
+     (cards self-describe), the primary cell is the full-width title line
+     with the checkbox and the ⋯/› pinned beside it, and the remaining
+     cells wrap below as a quiet meta row. */
   .minimal-table { overflow-x: auto; }
-  .minimal-table-head[style], .minimal-table-row[style] { min-width: 520px; }
+  .minimal-table-head[style] { display: none !important; }
+  .minimal-table-row[style] {
+    display: flex !important; flex-wrap: wrap; align-items: center;
+    gap: 3px 12px; min-width: 0; padding: 12px 14px;
+  }
+  .minimal-table-row[style] > div { min-width: 0; width: auto; }
+  .minimal-table-row[style] > div:has(.minimal-cb) { order: -3; flex: none; }
+  /* Basis 60%, not 0: with basis 0 the wrap algorithm packs meta cells onto
+     the title line first and the title ellipses to a few characters. A big
+     basis claims the line (checkbox + ⋯ still fit beside it) and pushes
+     every meta cell to the next line. Titles may wrap to two lines here —
+     cards read better than ellipses on a phone. */
+  .minimal-table-row[style] > [data-primary] { order: -2; flex: 1 1 60%; font-size: 14.5px; white-space: normal; overflow: visible; }
+  .minimal-table-row[style] > .minimal-row-end,
+  .minimal-table-row[style] > .minimal-row-arrow { order: -1; flex: none; }
+  .minimal-table-row[style] .minimal-row-more { opacity: 1; }
+  .minimal-table-row[style] > .minimal-row-meta { font-size: 12.5px; color: var(--text3); max-width: 100%; }
+  .minimal-table-row[style] > .minimal-row-meta.minimal-num { text-align: left; padding-right: 0; }
+  /* A primary cell that is itself a pill/meta column keeps its own look. */
+  .minimal-table-row[style] > [data-primary].minimal-row-meta { color: var(--text); font-weight: 600; }
+  /* Status cards: stats go 2-up instead of one tall column, and the chart
+     takes the full card width instead of hugging the right edge. */
+  .minimal-sstat-rows { gap: 10px 20px; }
+  .minimal-sstat { min-width: 96px; }
+  .minimal-sstat-chart { flex: 1 1 100%; }
 
   /* Dashboard, editor, modals. */
   .minimal-dash-head { flex-wrap: wrap; gap: 10px; }

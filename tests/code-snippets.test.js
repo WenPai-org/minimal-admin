@@ -10,25 +10,38 @@
  * leftover Minimal fixtures via WP-CLI before seeding.
  */
 const { execSync } = require( 'child_process' );
+const fs = require( 'fs' );
+const os = require( 'os' );
+const path = require( 'path' );
 const { BASE, launch, login, reporter } = require( './helpers' );
 
 const WP = process.env.MINIMAL_TEST_WP
 	|| '/Users/austin/Cove/Sites/minimaladmin.localhost/public';
 
 function purgeMinimalSnippets() {
+	// eval-file, never inline `wp eval`: the shell expands $wpdb/$t inside
+	// the double-quoted command to EMPTY, silently breaking the query — this
+	// purge never actually ran, which is how crash-leftover ACTIVE snippets
+	// accumulated (one carrying a the_content kill switch blanked the whole
+	// front end). Same class as the deploy script's transient lines.
 	const php = [
-		'if ( ! function_exists( "Code_Snippets\\\\delete_snippet" ) ) { return; }',
+		'<?php',
+		"if ( ! function_exists( 'Code_Snippets\\\\delete_snippet' ) ) { return; }",
 		'global $wpdb;',
-		'$t = $wpdb->prefix . "snippets";',
-		'$ids = $wpdb->get_col( "SELECT id FROM `$t` WHERE name LIKE \'Minimal suite%\' OR name LIKE \'probe%\' OR tags LIKE \'%minimal-test%\'" );',
+		"$t = $wpdb->prefix . 'snippets';",
+		'$ids = $wpdb->get_col( "SELECT id FROM `{$t}` WHERE name LIKE \'Minimal suite%\' OR name LIKE \'probe%\' OR tags LIKE \'%minimal-test%\'" );',
 		'foreach ( (array) $ids as $id ) { \\Code_Snippets\\delete_snippet( (int) $id ); }',
-	].join( ' ' );
+	].join( '\n' );
+	const tmp = path.join( os.tmpdir(), 'minimal-purge-snippets-' + process.pid + '.php' );
 	try {
-		execSync( `wp --path=${ WP } eval ${ JSON.stringify( php ) }`, {
+		fs.writeFileSync( tmp, php );
+		execSync( `wp --path=${ WP } eval-file ${ tmp }`, {
 			stdio: 'ignore',
 			timeout: 60000,
 		} );
-	} catch ( e ) { /* best-effort */ }
+	} catch ( e ) { /* best-effort */ } finally {
+		try { fs.unlinkSync( tmp ); } catch ( e ) { /* already gone */ }
+	}
 }
 
 ( async () => {
@@ -166,7 +179,11 @@ function purgeMinimalSnippets() {
 		/* ===== In-place save — rewrite code + name ===== */
 		const nameRenamed = `Minimal suite renamed ${ uid }`;
 		await page.fill( '#minimal-modal-overlay [data-editfield="name"]', nameRenamed );
-		await page.fill( '#minimal-modal-overlay [data-editfield="code"]', '// minimal test EDITED\nadd_filter( "the_content", "__return_false" );\n' );
+		// INERT code only: a crash-aborted run leaves its snippet ACTIVE, and
+		// this string executes on every request until someone cleans it up.
+		// An earlier version used the_content + __return_false — a stray
+		// active copy blanked every page and post on the site's front end.
+		await page.fill( '#minimal-modal-overlay [data-editfield="code"]', '// minimal test EDITED\nadd_filter( "minimal_test_snippet_noop", "__return_false" );\n' );
 		await page.click( '#minimal-surface-save' );
 		await page.waitForFunction( () => ! document.querySelector( '#minimal-modal-overlay' ), { timeout: 10000 } );
 

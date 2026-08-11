@@ -591,6 +591,15 @@
 		return PALETTE_COLORS[ h % PALETTE_COLORS.length ];
 	};
 
+	// Letter tile with the avatar covering it (plugin-icon pattern). The REST
+	// avatar_urls field is absent entirely when Show Avatars is off, and
+	// privacy plugins can empty the URL — either way the tile is what shows.
+	const avatarTileHtml = ( name, url ) => {
+		const letter = ( name || '?' ).replace( /[^A-Za-z0-9]/g, '' ).charAt( 0 ).toUpperCase() || '?';
+		return `<div class="minimal-user-row-avatar" style="background:${ colorFor( name || '?' ) }">${ esc( letter ) }${
+			url ? `<img src="${ esc( url ) }" alt="" loading="lazy">` : '' }</div>`;
+	};
+
 	const GRADS = {
 		VID: 'linear-gradient(135deg,#1b1b1f,#5b9be0)',
 		AUD: 'linear-gradient(135deg,#e46b6b,#e0a458)',
@@ -1436,6 +1445,10 @@
 			power: '<path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/>',
 			shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/>',
 			'arrow-up-right': '<line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>',
+			'chevron-up': '<polyline points="18 15 12 9 6 15"/>',
+			'chevron-down': '<polyline points="6 9 12 15 18 9"/>',
+			'chevron-left': '<polyline points="15 18 9 12 15 6"/>',
+			'chevron-right': '<polyline points="9 18 15 12 9 6"/>',
 			undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11"/>',
 			gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>',
 			search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
@@ -1610,11 +1623,16 @@
 	// user edit page.
 	const CORE_HIDEABLE_NAV = [ 'content', 'media', 'comments', 'orders', 'subscriptions', 'products', 'coupons', 'customers', 'users', 'terms', 'menus', 'widgets', 'posttypes', 'extensions', 'database', 'system', 'settings' ];
 	const isCoreHidden = ( id ) => ( B.hidden || [] ).some( ( h ) => h.id === 'core:' + id );
+	// Sites commonly hide wp-admin menus for clients (remove_menu_page on
+	// admin_menu — Comments is the classic). The notices capture pageload
+	// sees the final admin menu and reports removals; Minimal's nav mirrors
+	// them. Cosmetic like the original: routes stay reachable by URL + ⌘K.
+	const isMenuRemoved = ( id ) => ( B.menuRemoved || [] ).includes( id );
 	// Applied inside the item BUILDERS (not the group renderer): renderShell
 	// goes through navGroupHtml but renderNavWorkspace maps items straight to
 	// buttons — filtering at the source covers both render paths.
 	const filterHiddenNavItems = ( items ) =>
-		items.filter( ( it ) => ! ( CORE_HIDEABLE_NAV.includes( it.id ) && isCoreHidden( it.id ) ) );
+		items.filter( ( it ) => ! ( CORE_HIDEABLE_NAV.includes( it.id ) && isCoreHidden( it.id ) ) && ! isMenuRemoved( it.id ) );
 
 	function bindNavClicks( root ) {
 		$$( '.minimal-nav-btn', root || document ).forEach( ( btn ) => {
@@ -1864,7 +1882,8 @@
 					esc( sprintf( __( 'Switch back to %s' ), B.switchBack.name ) ) }
 			</a>` : '' }
 			<div class="minimal-user" id="minimal-user-area" title="${ esc( __( 'Your account' ) ) }">
-					<img class="minimal-user-avatar" src="${ esc( B.user.avatar ) }" alt="">
+					${ B.user.avatar ? `<img class="minimal-user-avatar" src="${ esc( B.user.avatar ) }" alt="">`
+						: `<div class="minimal-user-avatar">${ esc( ( B.user.name || '?' ).charAt( 0 ).toUpperCase() ) }</div>` }
 					<div style="min-width:0;">
 						<div class="minimal-user-name">${ esc( B.user.name ) }</div>
 						<div class="minimal-user-role">${ esc( B.user.role ) }</div>
@@ -2845,11 +2864,13 @@
 	// past the viewable gate (not publicly queryable, but daily-manageable
 	// content; their markup opens natively in the editor).
 	function slimContentTypes( list ) {
+		// Type labels are HTML-context strings (translations legitimately
+		// carry &#039;/&amp;) — decode once here; every consumer re-escapes.
 		const kept = list
 			.filter( ( t ) => t.viewable && t.rest_base && ! HIDDEN_TYPES.includes( t.slug ) )
-			.map( ( t ) => ( { slug: t.slug, restBase: t.rest_base, name: t.name } ) );
+			.map( ( t ) => ( { slug: t.slug, restBase: t.rest_base, name: decodeEntities( t.name ) } ) );
 		const wpb = list.find( ( t ) => t.slug === 'wp_block' && t.rest_base );
-		if ( wpb ) kept.push( { slug: 'wp_block', restBase: wpb.rest_base, name: wpb.name || __( 'Patterns' ) } );
+		if ( wpb ) kept.push( { slug: 'wp_block', restBase: wpb.rest_base, name: decodeEntities( wpb.name ) || __( 'Patterns' ) } );
 		return kept;
 	}
 	let typesPromise = null;
@@ -7899,7 +7920,7 @@
 			${ c.items.length ? c.items.map( ( u ) => `
 				<div class="minimal-table-row minimal-user-cols${ bulkUsers ? ' has-cb' : '' }${ userSel.has( u.id ) ? ' sel' : '' }" data-user="${ u.id }" data-uname="${ esc( u.name || '' ) }" data-uemail="${ esc( u.email || '' ) }" data-uroles="${ esc( ( u.roles || [] ).join( ',' ) ) }">
 					${ bulkUsers ? `<div class="minimal-cbcell"><input type="checkbox" class="minimal-cb minimal-user-cb" data-cbid="${ u.id }" aria-label="${ esc( sprintf( __( 'Select %s' ), u.name ) ) }"${ userSel.has( u.id ) ? ' checked' : '' }></div>` : '' }
-					<img class="minimal-user-row-avatar" src="${ esc( ( u.avatar_urls && ( u.avatar_urls[ '48' ] || Object.values( u.avatar_urls )[ 0 ] ) ) || '' ) }" alt="">
+					${ avatarTileHtml( u.name, u.avatar_urls && ( u.avatar_urls[ '48' ] || Object.values( u.avatar_urls )[ 0 ] ) ) }
 					<div class="minimal-row-meta minimal-user-id">#${ esc( String( u.id ) ) }</div>
 					<div class="minimal-row-title minimal-cell-clip">${ esc( u.name ) }</div>
 					<div class="minimal-row-meta minimal-cell-clip">${ esc( u.email || '—' ) }</div>
@@ -7914,6 +7935,11 @@
 					: 'No users found.' }</div>` }
 		</div>
 		${ pagerHtml( c.page, c.totalPages, c.total, 'user' ) }`;
+
+		// Broken avatar URLs fall back to the letter tile underneath.
+		$$( '.minimal-user-row-avatar img', view ).forEach( ( img ) =>
+			img.addEventListener( 'error', () => img.remove() )
+		);
 
 		// Column sort: same column flips order; new column uses that field's default.
 		$$( '[data-usort]', view ).forEach( ( btn ) =>
@@ -9132,7 +9158,14 @@
 		return formControlValue( el );
 	}
 
-	function surfaceCell( item, colDef ) {
+	// `primary` marks the first data column — the mobile stacked-card CSS
+	// promotes it to the full-width title line (data-primary hook).
+	function surfaceCell( item, colDef, primary ) {
+		const html = surfaceCellRender( item, colDef );
+		return primary ? html.replace( '<div', '<div data-primary=""' ) : html;
+	}
+
+	function surfaceCellRender( item, colDef ) {
 		let v = surfaceValue( item, colDef.key );
 		if ( ( v == null || v === '' ) && colDef.altKey ) v = surfaceValue( item, colDef.altKey );
 		// Booleans (Code Snippets' `active`) and string arrays (tags) need a
@@ -9414,7 +9447,7 @@
 			${ c.items.length ? c.items.map( ( item, i ) => `
 				<div class="minimal-table-row" style="grid-template-columns:${ gridCols };" data-sitem="${ i }">
 					${ hasBulk ? `<div><input type="checkbox" class="minimal-cb" data-scheck="${ i }" aria-label="${ esc( __( 'Select row' ) ) }"${ ss.sel.has( item.id ) ? ' checked' : '' }></div>` : '' }
-					${ cols.map( ( col ) => surfaceCell( item, col ) ).join( '' ) }
+					${ cols.map( ( col, ci ) => surfaceCell( item, col, ci === 0 ) ).join( '' ) }
 					${ hasRowMenu
 						? `<div class="minimal-row-end"><button type="button" class="minimal-row-more" title="Actions" aria-label="Actions">⋯</button></div>`
 						: `<div class="minimal-row-arrow">›</div>` }
@@ -14957,6 +14990,22 @@
 	// becoming islands.
 	const PASSTHROUGH_BLOCKS = [ 'image', 'table', 'quote', 'pullquote', 'separator', 'verse', 'preformatted', 'video', 'audio' ];
 
+	// Text-flow blocks whose attributes ALSO carry verbatim (nested-content
+	// plan, phase 1): a styled paragraph/heading/list — fontSize, style,
+	// className, textColor and friends — stays editable prose instead of
+	// islanding, with the comment JSON parked on the element. The old
+	// duplication fear is settled: Enter-splitting copies element attributes
+	// to both halves in Blink (probed 2026-08-08), which is exactly
+	// Gutenberg's own split semantics, so duplication is correct — and a
+	// merge keeps the first block's attrs, also matching. The serializer
+	// merges the few DOM-editable attrs (alignment, list numbering) into the
+	// carried JSON; everything else re-emits untouched. Block-TYPE
+	// conversions (markdown prefixes, toolbar block buttons) are refused on
+	// marker blocks: formatBlock rebuilds the element and drops class +
+	// marker while half-keeping inline style (probed) — partial survival is
+	// worse than an honest "convert it in the block editor".
+	const TEXTFLOW_CARRY_BLOCKS = [ 'paragraph', 'heading', 'list' ];
+
 	// Attributes JSON from a segment's opening block comment ({} when absent/invalid;
 	// null distinguishes "invalid JSON" for segmentEditable's bail-out).
 	function segmentAttrs( seg ) {
@@ -14975,6 +15024,7 @@
 		const attrs = segmentAttrs( seg );
 		if ( attrs === null ) return false;
 		if ( PASSTHROUGH_BLOCKS.includes( name ) ) return true; // attrs re-emitted verbatim
+		if ( TEXTFLOW_CARRY_BLOCKS.includes( name ) ) return true; // attrs carried on the element
 		const allowed = EDITABLE_ATTRS[ name ] || [];
 		return Object.keys( attrs ).every( ( k ) => allowed.includes( k ) );
 	}
@@ -14994,31 +15044,362 @@
 		if ( ! ed.islands ) ed.islands = [];
 		return segments.map( ( seg ) => {
 			if ( seg.type === 'html' ) return seg.raw;
-			if ( segmentEditable( seg ) ) {
-				let html = stripBlockComments( seg.raw );
-				const name = seg.name.replace( /^core\//, '' );
-				// Code blocks that keep their language in the comment attr (the
-				// {"language":"sql"} dialect): surface it as a language-* class so the
-				// picker and highlighter see it, and mark the pre so serialization
-				// restores the attr dialect instead of persisting the class.
-				if ( name === 'code' ) {
-					const lang = String( ( segmentAttrs( seg ) || {} ).language || '' ).toLowerCase();
-					if ( /^[a-z0-9-]+$/.test( lang ) ) {
-						html = html.replace( '<pre class="wp-block-code"', '<pre data-lang-attr="1" class="wp-block-code"' );
-						if ( ! /language-/.test( html ) ) html = html.replace( /<code(\s|>)/, `<code class="language-${ lang }"$1` );
-					}
-				} else if ( PASSTHROUGH_BLOCKS.includes( name ) ) {
-					// Park the comment attrs on the element; serialization re-emits them.
-					const attrs = segmentAttrs( seg );
-					if ( attrs && Object.keys( attrs ).length ) {
-						html = html.replace( /<([a-z][a-z0-9]*)/i, `<$1 data-minimal-attrs="${ esc( JSON.stringify( attrs ) ) }"` );
-					}
-				}
-				return html;
-			}
+			if ( segmentEditable( seg ) ) return editableSegmentHtml( seg );
 			const idx = ed.islands.push( seg.raw ) - 1;
-			return islandHtml( idx, seg.name, seg.raw );
+			return islandHtml( idx, seg.name, seg.raw, ed );
 		} ).join( '\n' );
+	}
+
+	// One editable segment → its contenteditable HTML (comments stripped,
+	// attrs parked where the block carries them). Shared by the top-level
+	// load path and container-slot children, so a paragraph inside a group
+	// gets the exact same treatment as a top-level one.
+	function editableSegmentHtml( seg ) {
+		const name = seg.name.replace( /^core\//, '' );
+		let pre = seg.raw;
+		// Park each list item's own comment attrs on its <li> BEFORE the
+		// comments are stripped — list-item blocks nest inside the list
+		// segment, and their className/style used to vanish silently on
+		// the next save (the list looked editable, the item attrs were
+		// never re-emitted).
+		if ( name === 'list' ) {
+			pre = pre.replace( /<!--\s*wp:list-item\s+(\{(?:(?!-->)[\s\S])*?\})\s*-->\s*(<li)([\s>])/g, ( m0, json, li, tail ) => {
+				try {
+					const a = JSON.parse( json );
+					if ( a && Object.keys( a ).length ) return `${ li } data-minimal-attrs="${ esc( JSON.stringify( a ) ) }"${ tail }`;
+				} catch ( e ) { /* invalid JSON — stripped, as before */ }
+				return li + tail;
+			} );
+		}
+		let html = stripBlockComments( pre );
+		// Code blocks that keep their language in the comment attr (the
+		// {"language":"sql"} dialect): surface it as a language-* class so the
+		// picker and highlighter see it, and mark the pre so serialization
+		// restores the attr dialect instead of persisting the class.
+		if ( name === 'code' ) {
+			const lang = String( ( segmentAttrs( seg ) || {} ).language || '' ).toLowerCase();
+			if ( /^[a-z0-9-]+$/.test( lang ) ) {
+				html = html.replace( '<pre class="wp-block-code"', '<pre data-lang-attr="1" class="wp-block-code"' );
+				if ( ! /language-/.test( html ) ) html = html.replace( /<code(\s|>)/, `<code class="language-${ lang }"$1` );
+			}
+		} else if ( PASSTHROUGH_BLOCKS.includes( name ) ) {
+			// Park the comment attrs on the element; serialization re-emits them.
+			const attrs = segmentAttrs( seg );
+			if ( attrs && Object.keys( attrs ).length ) {
+				html = html.replace( /<([a-z][a-z0-9]*)/i, `<$1 data-minimal-attrs="${ esc( JSON.stringify( attrs ) ) }"` );
+			}
+		} else if ( TEXTFLOW_CARRY_BLOCKS.includes( name ) ) {
+			// Attrs the serializer derives from the DOM need no marker; a
+			// styled block parks its FULL attrs JSON for verbatim re-emit
+			// (the serializer merges the DOM-derived keys back in).
+			const attrs = segmentAttrs( seg );
+			const allowed = EDITABLE_ATTRS[ name ] || [];
+			if ( attrs && Object.keys( attrs ).length && ! Object.keys( attrs ).every( ( k ) => allowed.includes( k ) ) ) {
+				html = html.replace( /<([a-z][a-z0-9]*)/i, `<$1 data-minimal-attrs="${ esc( JSON.stringify( attrs ) ) }"` );
+			}
+		}
+		return html;
+	}
+
+	/* ===== Container slots (nested-content plan, phase 3, slice 1) =====
+	 * A core/group whose children are ALL simple blocks renders as a SLOT
+	 * island: the wrapper — opening comment + open tag, close tag + closing
+	 * comment — is preserved byte-verbatim from the raw, and the children
+	 * live inside a nested contenteditable region as ordinary editable
+	 * blocks. Typing, Enter-splitting, inline marks and phase-1 attribute
+	 * carry work exactly like the top level (children render through the
+	 * same editableSegmentHtml). Serialize splices the slot's serialized
+	 * children back between the wrapper's bytes ONLY when the slot was
+	 * edited; an untouched group emits its stored raw unchanged. A container
+	 * with any complex child (nested group, embed, image…) stays a phase-2
+	 * island with in-place text runs. Columns/cover are the next slices. */
+	const SLOT_BLOCKS = [ 'group', 'columns', 'cover', 'media-text' ];
+
+	// Split a container's raw into { head, open, tag, inner, tail } where
+	// head = opening comment + whitespace, open = the wrapper's own open tag
+	// and tail = wrapper close tag + closing comment. Byte-identity is the
+	// gate: head + open + inner + tail must reassemble the raw, and nothing
+	// but the closing block comment may follow the wrapper — otherwise null
+	// and the container stays an island. The depth scan skips block comments
+	// (Gutenberg escapes < > in comment JSON, but skipping is the safe read).
+	function slotParseContainer( raw ) {
+		const str = String( raw || '' );
+		const m = str.match( /^(<!--\s*wp:[a-z0-9\/_-]+(?:\s+\{[\s\S]*?\})?\s*-->\s*)(<([a-z][a-z0-9]*)((?:[^>"']|"[^"]*"|'[^']*')*)>)/ );
+		if ( ! m ) return null;
+		const head = m[ 1 ];
+		const open = m[ 2 ];
+		const tag = m[ 3 ].toLowerCase();
+		const lower = str.toLowerCase();
+		let depth = 1;
+		let i = head.length + open.length;
+		let close = -1;
+		while ( i < str.length ) {
+			if ( str.startsWith( '<!--', i ) ) {
+				const end = str.indexOf( '-->', i );
+				i = end === -1 ? str.length : end + 3;
+				continue;
+			}
+			if ( str[ i ] === '<' ) {
+				const end = str.indexOf( '>', i );
+				if ( end === -1 ) return null;
+				if ( lower.startsWith( '</' + tag, i ) ) {
+					depth--;
+					if ( depth === 0 ) { close = i; break; }
+				} else if ( lower.startsWith( '<' + tag, i ) && /[\s>\/]/.test( lower[ i + 1 + tag.length ] || '' ) ) {
+					depth++;
+				}
+				i = end + 1;
+				continue;
+			}
+			i++;
+		}
+		if ( close === -1 ) return null;
+		const closeEnd = str.indexOf( '>', close ) + 1;
+		if ( ! /^\s*<!--\s*\/wp:[a-z0-9\/_-]+\s*-->\s*$/.test( str.slice( closeEnd ) ) ) return null;
+		const inner = str.slice( head.length + open.length, close );
+		const tail = str.slice( close );
+		if ( head + open + inner + tail !== str ) return null;
+		return { head, open, tag, inner, tail, preamble: '' };
+	}
+
+	// Blocks whose children live in a CONTENT CONTAINER below the wrapper,
+	// with static media/background bytes before it. The preamble (everything
+	// from the wrapper's open tag through the content container's open tag)
+	// is preserved verbatim like the wrapper bytes.
+	const SLOT_CONTENT = { cover: 'wp-block-cover__inner-container', 'media-text': 'wp-block-media-text__content' };
+
+	// slotParseContainer, extended per block: for SLOT_CONTENT blocks the
+	// slot region is the content container's interior and everything before
+	// it folds into `preamble` (after it must be whitespace — the content
+	// container is the last child in core's markup; anything else fails the
+	// gate and the block stays an island). Reassembly identity still rules:
+	// head + open + preamble + inner + tail === raw.
+	function slotParseContent( raw, short ) {
+		const base = slotParseContainer( raw );
+		if ( ! base ) return null;
+		const cls = SLOT_CONTENT[ short ];
+		if ( ! cls ) return base;
+		const str = base.inner;
+		// [^>]* is honest enough for a class-carrying open tag; the
+		// reassembly identity below catches anything it misreads.
+		const om = str.match( new RegExp( '<div[^>]*\\b' + cls.replace( /-/g, '[-]' ) + '\\b[^>]*>' ) );
+		if ( ! om ) return null;
+		const openEnd = om.index + om[ 0 ].length;
+		// Depth-scan the content div's close within the wrapper's inner.
+		let depth = 1;
+		let i = openEnd;
+		let close = -1;
+		const lower = str.toLowerCase();
+		while ( i < str.length ) {
+			if ( str.startsWith( '<!--', i ) ) {
+				const end = str.indexOf( '-->', i );
+				i = end === -1 ? str.length : end + 3;
+				continue;
+			}
+			if ( str[ i ] === '<' ) {
+				const end = str.indexOf( '>', i );
+				if ( end === -1 ) return null;
+				if ( lower.startsWith( '</div', i ) ) {
+					depth--;
+					if ( depth === 0 ) { close = i; break; }
+				} else if ( lower.startsWith( '<div', i ) && /[\s>\/]/.test( lower[ i + 4 ] || '' ) ) {
+					depth++;
+				}
+				i = end + 1;
+				continue;
+			}
+			i++;
+		}
+		if ( close === -1 ) return null;
+		const closeEnd = str.indexOf( '>', close ) + 1;
+		if ( str.slice( closeEnd ).trim() !== '' ) return null;
+		const preamble = str.slice( 0, openEnd );
+		const inner = str.slice( openEnd, close );
+		const tail = str.slice( close ) + base.tail;
+		if ( base.head + base.open + preamble + inner + tail !== String( raw || '' ) ) return null;
+		return { head: base.head, open: base.open, tag: base.tag, preamble, inner, tail };
+	}
+
+	// A freeform chunk that is only plain HTML comments (+ whitespace) —
+	// AI-generated markup labels sections that way (<!-- Testimonial 1 -->).
+	// Preservable in a slot: comments become DOM comment nodes and the
+	// serializer re-emits them.
+	const slotIgnorableHtml = ( raw ) => String( raw ).replace( /<!--[\s\S]*?-->/g, '' ).trim() === '';
+
+	// A slot candidate's children: editable segments render as prose,
+	// complex segments become NESTED islands (or nested slot containers),
+	// comment-only freeform rides along verbatim. Only unparseable inner
+	// markup or freeform with real content disqualify — those keep the
+	// whole container a phase-2 island.
+	function slotChildSegments( inner ) {
+		const segs = tokenizeBlocks( inner );
+		if ( ! segs ) return null;
+		const out = [];
+		for ( const seg of segs ) {
+			if ( seg.type === 'html' ) {
+				if ( ! seg.raw.trim() ) continue;
+				if ( ! slotIgnorableHtml( seg.raw ) ) return null;
+				out.push( seg );
+				continue;
+			}
+			out.push( seg );
+		}
+		// An EMPTY container is a legal slot (the trailing-affordance seed
+		// makes it typeable); null is reserved for unparseable.
+		return out;
+	}
+
+	function slotIslandHtml( idx, name, raw, ed ) {
+		const short = String( name || '' ).replace( /^core\//, '' );
+		const parts = slotParseContent( raw, short );
+		if ( ! parts ) return null;
+		const chip = `<button class="minimal-island-chip" data-inspect="${ idx }" title="Configure block" type="button" aria-label="Configure ${ esc( short ) } block">⚙ ${ esc( short ) }</button>`;
+		// One slot child → its editable HTML, or a NESTED island registered
+		// in ed.islands (a complex leaf keeps its protected card, a nested
+		// container recurses into its own slot island). Without ed to
+		// register into, a complex child sinks the whole slot: the container
+		// renders as a plain island and upgrades on the next load (the
+		// insert-path asymmetry convention).
+		const childHtml = ( seg ) => {
+			if ( seg.type === 'html' ) return seg.raw.trim(); // comment-only freeform → DOM comment nodes
+			if ( segmentEditable( seg ) ) return editableSegmentHtml( seg );
+			if ( ! ed || ! ed.islands ) return null;
+			const ci = ed.islands.push( seg.raw ) - 1;
+			return islandHtml( ci, seg.name, seg.raw, ed );
+		};
+		const joinKids = ( kids ) => {
+			const parts2 = [];
+			for ( const k of kids ) {
+				const h = childHtml( k );
+				if ( h == null ) return null;
+				parts2.push( h );
+			}
+			return parts2.join( '\n' );
+		};
+		if ( 'columns' === short ) {
+			// Multi-slot: every direct child must be a core/column — one
+			// editable slot per column, all the wrapper bytes (columns AND
+			// columns' columns) preserved verbatim.
+			const segs = tokenizeBlocks( parts.inner );
+			if ( ! segs ) return null;
+			const cols = [];
+			let colCount = 0;
+			for ( const seg of segs ) {
+				if ( seg.type === 'html' ) {
+					if ( ! seg.raw.trim() ) continue;
+					// Comment-only freeform between columns (cosmetic in the
+					// DOM; the flush re-emits it from the stored raw).
+					if ( ! slotIgnorableHtml( seg.raw ) ) return null;
+					cols.push( seg.raw.trim() );
+					continue;
+				}
+				if ( seg.name.replace( /^core\//, '' ) !== 'column' ) return null;
+				const cp = slotParseContainer( seg.raw );
+				if ( ! cp ) return null;
+				const kids = slotChildSegments( cp.inner );
+				if ( ! kids ) return null;
+				const inner = joinKids( kids );
+				if ( inner == null ) return null;
+				cols.push( `${ cp.open }<div class="minimal-slot" contenteditable="true">${ inner }</div></${ cp.tag }>` );
+				colCount++;
+			}
+			if ( ! colCount ) return null;
+			/* translators: island hover hint on an editable columns container */
+			const colHint = __( 'Columns — write inside · layout via ⚙' );
+			return `<div class="minimal-block-island minimal-slot-island minimal-cols-island" contenteditable="false" data-island="${ idx }" data-block="${ esc( name ) }">
+			${ chip }
+			<span class="minimal-island-hint" aria-hidden="true">${ esc( colHint ) }</span>
+			${ parts.open }${ cols.join( '' ) }</${ parts.tag }>
+		</div>`;
+		}
+		const kids = slotChildSegments( parts.inner );
+		if ( ! kids ) return null;
+		const childrenHtml = joinKids( kids );
+		if ( childrenHtml == null ) return null;
+		/* translators: island hover hint on an editable group container */
+		const hint = __( 'Grouped content — write inside · layout via ⚙' );
+		// SLOT_CONTENT blocks (cover, media-text): the preamble carries the
+		// background/media bytes plus the content container's OPEN tag, so
+		// the slot nests inside the content container; the tail closes it.
+		const closers = parts.preamble ? '</div></' + parts.tag + '>' : '</' + parts.tag + '>';
+		return `<div class="minimal-block-island minimal-slot-island${ parts.preamble ? ' minimal-media-slot-island' : '' }" contenteditable="false" data-island="${ idx }" data-block="${ esc( name ) }">
+			${ chip }
+			<span class="minimal-island-hint" aria-hidden="true">${ esc( hint ) }</span>
+			${ parts.open }${ parts.preamble }<div class="minimal-slot" contenteditable="true">${ childrenHtml }</div>${ closers }
+		</div>`;
+	}
+
+	// THE canonical block-root resolver for editing code: the container slot
+	// the node lives in, else the editor body. Every "walk to the top-level
+	// block" that should treat slots as mini-bodies goes through here — so
+	// "what is the writing context?" has exactly one answer in the codebase
+	// when a new context arrives. Walks that MUST stay body-anchored (island
+	// inserts, whole-block copy semantics, the island guards' caret math)
+	// say so at the call site with a "body-root by design" comment.
+	function blockRootOf( node, body ) {
+		const el = node && ( node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement );
+		return ( el && el.closest && el.closest( '.minimal-slot' ) ) || body;
+	}
+
+	// The node's top-level block WITHIN its root (body or slot): the element
+	// that is a direct child of that root, or null.
+	function topBlockIn( node, body ) {
+		const root = blockRootOf( node, body );
+		let n = node;
+		while ( n && n.parentNode && n.parentNode !== root ) n = n.parentNode;
+		return n && n.nodeType === Node.ELEMENT_NODE && n.parentNode === root ? n : null;
+	}
+
+	// Direct-DOM edits inside a container slot never fire `input`, so the
+	// slot's dirty stamp (which gates flushSlotIsland) must be set by hand.
+	// execCommand paths need no call — Blink fires `input` on the slot host
+	// (probed) and the body's input handler stamps it. Stamps EVERY ancestor
+	// slot island: an outer container gated on its own stamp would otherwise
+	// emit stale raw and silently drop a nested edit. No-op outside slots.
+	function stampSlotDirtyFor( el ) {
+		let slot = el && el.closest && el.closest( '.minimal-slot' );
+		while ( slot ) {
+			const isl = slot.closest( '.minimal-block-island' );
+			if ( ! isl ) return;
+			isl.dataset.minimalSlotDirty = '1';
+			slot = isl.parentElement && isl.parentElement.closest( '.minimal-slot' );
+		}
+	}
+
+	// Splice a dirty slot's serialized children back between the container's
+	// verbatim wrapper bytes and store the result as the island's raw. Used
+	// by the serializer and by the inspector (which must see current text
+	// before it builds its model). No-op while the slot is clean.
+	function flushSlotIsland( el, islands ) {
+		if ( ! el || ! el.dataset || ! el.dataset.minimalSlotDirty || ! islands ) return;
+		const idx = parseInt( el.dataset.island, 10 );
+		if ( ! Number.isFinite( idx ) || islands[ idx ] == null ) return;
+		const shortName = String( el.dataset.block || '' ).replace( /^core\//, '' );
+		const parts = slotParseContent( String( islands[ idx ] ), shortName );
+		if ( ! parts ) return;
+		// OWN slots only — with nesting, a descendant query would also grab
+		// the slots of nested containers (and misalign the columns walk).
+		// Nested slot islands flush through serializeToBlocks' recursion.
+		const slots = $$( '.minimal-slot', el ).filter( ( s ) => s.closest( '.minimal-slot-island' ) === el );
+		if ( ! slots.length ) return;
+		if ( el.classList.contains( 'minimal-cols-island' ) ) {
+			// Column-by-column: each column's serialized children splice back
+			// between ITS wrapper bytes; inter-column whitespace segments and
+			// every comment/open-tag byte re-emit verbatim from the stored raw.
+			const segs = tokenizeBlocks( parts.inner );
+			if ( ! segs ) return;
+			let ci = 0;
+			const innerOut = segs.map( ( seg ) => {
+				if ( seg.type === 'html' ) return seg.raw;
+				const cp = slotParseContainer( seg.raw );
+				const slot = slots[ ci++ ];
+				if ( ! cp || ! slot ) return seg.raw;
+				return cp.head + cp.open + serializeToBlocks( slot, islands ) + cp.tail;
+			} ).join( '' );
+			islands[ idx ] = parts.head + parts.open + innerOut + parts.tail;
+			return;
+		}
+		islands[ idx ] = parts.head + parts.open + parts.preamble + serializeToBlocks( slots[ 0 ], islands ) + parts.tail;
 	}
 
 	// The contenteditable=false card an island renders as. Shared by content
@@ -15026,8 +15407,16 @@
 	// Special interactive islands (shortcode, details, buttons) host live
 	// fields and commit into ed.islands[idx] on every edit — serialize never
 	// reads the fields themselves, and renderIslandPreviews must not overwrite them.
-	function islandHtml( idx, name, raw ) {
+	function islandHtml( idx, name, raw, ed ) {
 		const short = String( name || '' ).replace( /^core\//, '' );
+		if ( SLOT_BLOCKS.includes( short ) ) {
+			// Editable container: children get a real typing slot; complex
+			// children become nested islands (ed registers them) and nested
+			// containers recurse. Unparseable inner markup falls through to
+			// the standard island below.
+			const slotted = slotIslandHtml( idx, name, raw, ed );
+			if ( slotted ) return slotted;
+		}
 		if ( short === 'shortcode' ) {
 			const code = stripBlockComments( raw || '' ).trim();
 			return `<div class="minimal-block-island minimal-shortcode-island" contenteditable="false" data-island="${ idx }" data-block="${ esc( name ) }">
@@ -15097,6 +15486,9 @@
 			let n = node;
 			if ( ! n ) return null;
 			if ( n === body ) return null;
+			// body-root by design: block-level copy/cut works in whole
+			// top-level blocks (islands are the atoms); slot/run-interior
+			// selections bail to native copy before this runs.
 			while ( n && n.parentNode !== body ) n = n.parentNode;
 			return n && n.parentNode === body ? n : null;
 		};
@@ -15176,6 +15568,11 @@
 		if ( preview ) {
 			const clone = preview.cloneNode( true );
 			$$( 'script, style, .minimal-island-chip', clone ).forEach( ( n ) => n.remove() );
+			// Run spans are editor chrome — unwrap so copied HTML stays clean.
+			$$( '.minimal-island-run', clone ).forEach( ( s ) => {
+				while ( s.firstChild ) s.parentNode.insertBefore( s.firstChild, s );
+				s.remove();
+			} );
 			const html = clone.innerHTML.trim() || ( rawStr ? stripBlockComments( rawStr ).trim() : '' );
 			// innerText off the LIVE node, not the clone: a detached clone has
 			// no layout, so Chrome runs block children together
@@ -15274,6 +15671,15 @@
 		const endField = nodeEl( range.endContainer ) && nodeEl( range.endContainer ).closest
 			? nodeEl( range.endContainer ).closest( fieldSel ) : null;
 		if ( startField && startField === endField ) return;
+		// A selection contained in ONE container slot or ONE island text run
+		// is a plain text copy — native handling is right. Without this bail
+		// the top-level walk resolves to the island and copies the WHOLE
+		// block for a two-word selection (found in the block-root audit).
+		const startBox = nodeEl( range.startContainer ) && nodeEl( range.startContainer ).closest
+			? nodeEl( range.startContainer ).closest( '.minimal-slot, .minimal-island-run' ) : null;
+		const endBox = nodeEl( range.endContainer ) && nodeEl( range.endContainer ).closest
+			? nodeEl( range.endContainer ).closest( '.minimal-slot, .minimal-island-run' ) : null;
+		if ( startBox && startBox === endBox ) return;
 
 		const blocks = editorSelectionBlocks( body, range );
 		if ( ! blocks.length ) return;
@@ -15421,6 +15827,8 @@
 		const next = shortcodeTemplate( input.value );
 		if ( ed.islands[ idx ] === next ) return;
 		ed.islands[ idx ] = next;
+		// Nested in a slot: ancestors must re-splice (idempotent elsewhere).
+		stampSlotDirtyFor( input );
 		if ( ! ( opts && opts.silent ) ) scheduleAutosave();
 	}
 
@@ -15436,6 +15844,7 @@
 		const next = buildDetailsRaw( sum.value, body.innerHTML, prev.attrs );
 		if ( ed.islands[ idx ] === next ) return;
 		ed.islands[ idx ] = next;
+		stampSlotDirtyFor( islandEl );
 		if ( ! ( opts && opts.silent ) ) scheduleAutosave();
 	}
 
@@ -15627,6 +16036,7 @@
 		const next = buildButtonsRaw( collectButtonsFromIsland( islandEl ), wrapAttrs );
 		if ( ed.islands[ idx ] === next ) return;
 		ed.islands[ idx ] = next;
+		stampSlotDirtyFor( islandEl );
 		if ( ! ( opts && opts.silent ) ) scheduleAutosave();
 	}
 
@@ -15679,6 +16089,114 @@
 		}
 		row.remove();
 		commitButtonsIsland( island );
+	}
+
+	/* ===== In-place island text editing (nested-content plan, phase 2) =====
+	 * The text-runs machinery already edits island text through inspector
+	 * textareas by byte-offset splice; this moves that editing in place. After
+	 * a preview renders, each preview TEXT NODE that aligns exactly with a raw
+	 * text run gets wrapped in a small contenteditable=true span (the details-
+	 * island precedent: Blink respects the editable-inside-non-editable
+	 * boundary — probed 2026-08-08: edge Backspace/Delete are native no-ops,
+	 * ⌘Z tracks in-span typing, arrows flow between runs). Edits splice back
+	 * into ed.islands[idx] from the ORIGINAL base via spliceTextRuns, so the
+	 * raw markup outside the edited text stays byte-identical and serialize
+	 * needs no changes. Alignment is strict — every run must match its text
+	 * node exactly (pre + text + post) — and any mismatch (dynamic renders
+	 * that rewrite text, filters, unexpected splits) leaves the island
+	 * read-only with the ⚙ inspector as before. Text-only by design: Enter,
+	 * formatting shortcuts, toolbar marks and rich paste are blocked inside
+	 * runs (the splice reads textContent; markup would be silently lost). */
+
+	const ISLAND_RUN_SKIP_BLOCKS = [ 'embed', 'gallery' ]; // mediaRebuild — the URL is itself a text node
+
+	function armIslandTextRuns( body, ed ) {
+		if ( ! body || ! ed || ! ed.islands || ed.mode === 'locked' ) return;
+		$$( '.minimal-block-island', body ).forEach( ( island ) => {
+			const idx = parseInt( island.dataset.island, 10 );
+			if ( ! Number.isFinite( idx ) || ed.islands[ idx ] == null ) return;
+			if ( isLiveFieldIsland( island ) ) return;
+			// Slot islands hold live editable DOM, not a preview — and a
+			// descendant query here would find a NESTED island's preview and
+			// walk the wrong raw. Nested islands arm themselves in this loop.
+			if ( island.classList.contains( 'minimal-slot-island' ) ) return;
+			const short = String( island.dataset.block || '' ).replace( /^core\//, '' );
+			if ( ISLAND_RUN_SKIP_BLOCKS.includes( short ) ) return;
+			const preview = island.querySelector( '.minimal-island-preview' );
+			if ( ! preview ) return;
+			island._minimalRuns = null;
+			// A re-render that adopted the live DOM (rule-18 path) can carry
+			// stale run spans whose arm state is gone — unwrap before walking
+			// so re-arming never nests spans inside old spans.
+			$$( '.minimal-island-run', preview ).forEach( ( s ) => {
+				while ( s.firstChild ) s.parentNode.insertBefore( s.firstChild, s );
+				s.remove();
+			} );
+			preview.normalize();
+			const base = String( ed.islands[ idx ] );
+			const runs = textRunsOf( base );
+			if ( ! runs.length ) return;
+			const walker = document.createTreeWalker( preview, NodeFilter.SHOW_TEXT, {
+				acceptNode( n ) {
+					if ( ! n.textContent.trim() ) return NodeFilter.FILTER_REJECT;
+					const p = n.parentElement;
+					if ( ! p || p.closest( 'script, style, svg, textarea, noscript' ) ) return NodeFilter.FILTER_REJECT;
+					return NodeFilter.FILTER_ACCEPT;
+				},
+			} );
+			const nodes = [];
+			while ( walker.nextNode() ) nodes.push( walker.currentNode );
+			// Strict alignment: same count, and every node's content is exactly
+			// the run's whitespace-padded text. Anything else → stay read-only.
+			if ( nodes.length !== runs.length ) return;
+			for ( let i = 0; i < runs.length; i++ ) {
+				if ( nodes[ i ].textContent !== runs[ i ].pre + runs[ i ].text + runs[ i ].post ) return;
+			}
+			const spans = nodes.map( ( n, i ) => {
+				const span = document.createElement( 'span' );
+				span.className = 'minimal-island-run';
+				span.setAttribute( 'contenteditable', 'true' );
+				span.setAttribute( 'spellcheck', 'true' );
+				span.dataset.run = String( i );
+				n.parentNode.replaceChild( span, n );
+				span.appendChild( n );
+				return span;
+			} );
+			island._minimalRuns = { base, runs, spans };
+			const hint = island.querySelector( '.minimal-island-hint' );
+			if ( hint ) hint.textContent = __( 'Text is editable in place · structure via ⚙' );
+		} );
+	}
+
+	// Splice the current span texts back into the island's raw markup. Reads
+	// EVERY span (not just the event target) so a missed input event can never
+	// desync; untouched runs never rewrite (byte-identity by construction).
+	function commitIslandRuns( island, opts ) {
+		const ed = state.editor;
+		if ( ! ed || ! ed.islands || ! island || ! island._minimalRuns ) return;
+		if ( ed.lockState === 'taken' || ed.lockState === 'blocked' ) return;
+		const idx = parseInt( island.dataset.island, 10 );
+		if ( ! Number.isFinite( idx ) || ed.islands[ idx ] == null ) return;
+		const arm = island._minimalRuns;
+		arm.spans.forEach( ( span, i ) => {
+			if ( ! span || ! span.isConnected ) return;
+			const r = arm.runs[ i ];
+			let v = span.textContent;
+			// Chrome inserts nbsp when typing spaces at editable edges; convert
+			// them back — but only when the ORIGINAL text had none, so a run
+			// that legitimately carries nbsp never rewrites untouched.
+			if ( ! /\u00a0/.test( r.text ) ) v = v.replace( /\u00a0/g, ' ' );
+			// The span wraps the node's whitespace padding too — strip the
+			// run's own pre/post so the splice doesn't double it.
+			if ( r.pre && v.startsWith( r.pre ) ) v = v.slice( r.pre.length );
+			if ( r.post && v.length >= r.post.length && v.endsWith( r.post ) ) v = v.slice( 0, v.length - r.post.length );
+			r.value = v;
+		} );
+		const next = spliceTextRuns( arm.base, arm.runs );
+		if ( ed.islands[ idx ] === next ) return;
+		ed.islands[ idx ] = next;
+		ed.dirty = true;
+		if ( ! ( opts && opts.silent ) ) scheduleAutosave();
 	}
 
 	// Live-field islands (shortcode/details/buttons) — never overwrite with a
@@ -15786,15 +16304,20 @@
 		if ( ! anchor || ! anchor.isConnected ) {
 			const sel = window.getSelection();
 			let node = sel && sel.anchorNode;
-			while ( node && node.parentNode !== body ) node = node.parentNode;
-			anchor = node && node.parentNode === body ? node : null;
+			// Root-aware since nested islands: a caret inside a container
+			// slot inserts within THAT slot, not the top level.
+			const root = blockRootOf( node, body );
+			while ( node && node.parentNode !== root ) node = node.parentNode;
+			anchor = node && node.parentNode === root ? node : null;
 		}
 		if ( ! ed.islands ) ed.islands = [];
 		const idx = ed.islands.push( template ) - 1;
-		const html = islandHtml( idx, blockName, template );
+		const html = islandHtml( idx, blockName, template, ed );
 		if ( anchor ) anchor.insertAdjacentHTML( 'beforebegin', html );
 		else body.insertAdjacentHTML( 'beforeend', html );
 		const islandEl = body.querySelector( `.minimal-block-island[data-island="${ idx }"]` );
+		// insertAdjacentHTML fires no input — a slot ancestor must re-splice.
+		stampSlotDirtyFor( islandEl || anchor );
 		api( 'minimal-admin/v1/render-blocks', { method: 'POST', body: JSON.stringify( { blocks: [ template ], post: ( state.editor && state.editor.id ) || 0 } ) } )
 			.then( ( r ) => {
 				injectPreviewStyles( r && r.styles );
@@ -15822,15 +16345,87 @@
 		const next = island.nextSibling;
 		if ( ed && ed.islands && ed.islands[ idx ] != null ) ed.islands[ idx ] = null;
 		island.remove();
+		// Nested island: direct-DOM removal fires no input — stamp the
+		// ancestor slots dirty by hand (and again on restore).
+		stampSlotDirtyFor( parent );
 		updateEditorStats();
 		if ( ed && ed.id ) scheduleAutosave();
 		toastAction( 'Block removed · ⌘Z', 'Undo', () => {
 			if ( ! parent.isConnected ) return;
 			if ( ed && ed.islands && template != null ) ed.islands[ idx ] = template;
 			parent.insertBefore( island, next && next.isConnected && next.parentNode === parent ? next : null );
+			stampSlotDirtyFor( parent );
 			updateEditorStats();
 			scheduleAutosave();
 		} );
+	}
+
+	// Duplicate an island in place (Austin's testimonial ask): a fresh copy
+	// of the stored raw lands right after the original, in the same root —
+	// nested islands duplicate inside their slot. A dirty slot island
+	// flushes first so the copy carries the writer's current text.
+	function duplicateIsland( islandEl ) {
+		const ed = state.editor;
+		if ( ! ed || ! ed.islands || ! islandEl || ! islandEl.parentNode ) return;
+		const idx = parseInt( islandEl.dataset.island, 10 );
+		if ( ! Number.isFinite( idx ) || ed.islands[ idx ] == null ) return;
+		if ( islandEl.classList.contains( 'minimal-slot-island' ) ) flushSlotIsland( islandEl, ed.islands );
+		const raw = ed.islands[ idx ];
+		const ni = ed.islands.push( raw ) - 1;
+		islandEl.insertAdjacentHTML( 'afterend', islandHtml( ni, islandEl.dataset.block || 'block', raw, ed ) );
+		// Direct-DOM insertion fires no input — ancestor slots must re-splice.
+		stampSlotDirtyFor( islandEl );
+		const body = $( '#minimal-editor-body' );
+		if ( body ) renderIslandPreviews( body, ed );
+		updateEditorStats();
+		scheduleAutosave();
+		/* translators: toast after duplicating a block */
+		toast( __( 'Block duplicated' ) );
+		return islandEl.nextElementSibling;
+	}
+
+	// The island's sibling slots when its root is a COLUMN slot: the other
+	// columns of the same columns island, in document order. Empty otherwise.
+	function islandSiblingSlots( islandEl ) {
+		const slot = islandEl.parentElement && islandEl.parentElement.closest( '.minimal-slot' );
+		const colsIsland = slot && slot.closest( '.minimal-cols-island' );
+		if ( ! colsIsland || slot.closest( '.minimal-slot-island' ) !== colsIsland ) return { slot: null, slots: [] };
+		return { slot, slots: $$( '.minimal-slot', colsIsland ).filter( ( s ) => s.closest( '.minimal-slot-island' ) === colsIsland ) };
+	}
+
+	// Move an island: up/down swap with the previous/next sibling in its
+	// root; prev/next hop to the neighboring COLUMN slot (Austin's
+	// duplicated-testimonial ask — the copy lands in column one, the empty
+	// spot is column two). Direct-DOM, so both roots stamp dirty by hand.
+	function moveIsland( islandEl, dir ) {
+		if ( ! islandEl || ! islandEl.parentNode ) return false;
+		const from = islandEl.parentElement;
+		let moved = false;
+		if ( 'up' === dir || 'down' === dir ) {
+			const sib = 'up' === dir ? islandEl.previousElementSibling : islandEl.nextElementSibling;
+			if ( sib ) {
+				if ( 'up' === dir ) sib.before( islandEl );
+				else sib.after( islandEl );
+				moved = true;
+			}
+		} else {
+			const { slot, slots } = islandSiblingSlots( islandEl );
+			if ( slot ) {
+				const i = slots.indexOf( slot );
+				const target = 'prev' === dir ? slots[ i - 1 ] : slots[ i + 1 ];
+				if ( target ) {
+					target.appendChild( islandEl );
+					ensureTrailingParagraph( target );
+					moved = true;
+				}
+			}
+		}
+		if ( ! moved ) return false;
+		stampSlotDirtyFor( from );
+		stampSlotDirtyFor( islandEl );
+		updateEditorStats();
+		scheduleAutosave();
+		return true;
 	}
 
 	// Same undo toast for non-island atomic blocks (empty code <pre>, HR,
@@ -15845,11 +16440,13 @@
 		const next = el.nextSibling;
 		el.classList.remove( 'minimal-island-armed' );
 		el.remove();
+		stampSlotDirtyFor( parent );
 		updateEditorStats();
 		scheduleAutosave();
 		toastAction( 'Block removed · ⌘Z', 'Undo', () => {
 			if ( ! parent.isConnected ) return;
 			parent.insertBefore( el, next && next.isConnected && next.parentNode === parent ? next : null );
+			stampSlotDirtyFor( parent );
 			updateEditorStats();
 			scheduleAutosave();
 		} );
@@ -16087,9 +16684,13 @@
 	// emit <p><ul>… (invalid markup). Shared by the toolbar, the slash menu
 	// and the markdown "- " prefix.
 	function liftNestedLists( body ) {
-		$$( ':scope > p > ul, :scope > p > ol', body ).forEach( ( l ) => {
-			const p = l.parentNode;
-			if ( p.textContent === l.textContent ) p.replaceWith( l );
+		// Container slots are mini-bodies — lift within each slot too, or a
+		// markdown "- " inside a group would serialize as <p><ul>.
+		[ body, ...$$( '.minimal-slot', body ) ].forEach( ( root ) => {
+			$$( ':scope > p > ul, :scope > p > ol', root ).forEach( ( l ) => {
+				const p = l.parentNode;
+				if ( p.textContent === l.textContent ) p.replaceWith( l );
+			} );
 		} );
 	}
 
@@ -16110,6 +16711,7 @@
 			$$( '.minimal-shortcode-input', root ).forEach( ( el ) => commitShortcodeInput( el, { silent: true } ) );
 			$$( '.minimal-details-island', root ).forEach( ( el ) => commitDetailsIsland( el, { silent: true } ) );
 			$$( '.minimal-buttons-island', root ).forEach( ( el ) => commitButtonsIsland( el, { silent: true } ) );
+			$$( '.minimal-block-island', root ).forEach( ( el ) => { if ( el._minimalRuns ) commitIslandRuns( el, { silent: true } ); } );
 		}
 		const out = [];
 		// serializeBlockAttrs applies Gutenberg's comment-safe escaping ("--", <, >, &).
@@ -16134,9 +16736,20 @@
 				if ( t ) pushBlock( 'paragraph', null, `<p>${ esc( t ) }</p>` );
 				return;
 			}
+			// Plain HTML comments (AI-generated markup labels its sections
+			// with them) are legal freeform between blocks — re-emit so a
+			// slot flush can't drop them. Never wp: comments: blocks live as
+			// island elements or prose here, so a stray one would corrupt.
+			if ( n.nodeType === Node.COMMENT_NODE ) {
+				if ( n.data && ! /^\s*\/?wp:/.test( n.data ) ) out.push( '<!--' + n.data + '-->' );
+				return;
+			}
 			if ( n.nodeType !== Node.ELEMENT_NODE ) return;
-			// Islands pass through byte-for-byte from the original markup.
+			// Islands pass through byte-for-byte from the original markup —
+			// except an edited container slot, whose children re-serialize
+			// between the wrapper's verbatim bytes first.
 			if ( n.classList.contains( 'minimal-block-island' ) ) {
+				if ( n.classList.contains( 'minimal-slot-island' ) ) flushSlotIsland( n, islands );
 				const raw = islands && islands[ parseInt( n.dataset.island, 10 ) ];
 				if ( raw != null ) out.push( raw.trim() );
 				return;
@@ -16147,7 +16760,10 @@
 			if ( n.nodeType === Node.ELEMENT_NODE && n.dataset && n.dataset.minimalUpload ) return;
 			const tag = n.tagName.toLowerCase();
 			const el = n.cloneNode( true );
-			el.removeAttribute( 'style' );
+			// Editor chrome styles (table hot-border) are stripped — but a
+			// marker element's inline style is SAVED content (Gutenberg style
+			// attrs paint through it) and must survive.
+			if ( ! ( el.dataset && el.dataset.minimalAttrs ) ) el.removeAttribute( 'style' );
 			// A redo can resurrect an empty paste-bracket paragraph (see
 			// pasteBlocksInsert) — typed-into, it must not leak its marker.
 			el.removeAttribute( 'data-minimal-bkt' );
@@ -16164,15 +16780,40 @@
 				return m ? m[ 1 ] : null;
 			};
 			if ( tag === 'p' ) {
-				if ( ! el.textContent.trim() && ! el.querySelector( 'img' ) ) return;
+				const pa = takeMinimalAttrs( el );
+				// An empty marker paragraph is a real block (styled spacer from
+				// the original content) — emptying the affordance <br> keeps
+				// Gutenberg's empty-paragraph shape. Plain empties still drop.
+				if ( ! el.textContent.trim() && ! el.querySelector( 'img' ) ) {
+					if ( ! pa ) return;
+					el.innerHTML = '';
+				}
 				const align = alignOf( el );
-				pushBlock( 'paragraph', align ? { align } : null, el.outerHTML );
+				if ( pa ) {
+					// Alignment is Minimal-editable — merge the DOM truth into the
+					// carried JSON; everything else re-emits untouched.
+					if ( align ) pa.align = align;
+					else delete pa.align;
+					pushBlock( 'paragraph', pa, el.outerHTML );
+				} else {
+					pushBlock( 'paragraph', align ? { align } : null, el.outerHTML );
+				}
 			} else if ( /^h[1-6]$/.test( tag ) ) {
+				const pa = takeMinimalAttrs( el );
 				el.classList.add( 'wp-block-heading' );
 				const textAlign = alignOf( el );
-				const hAttrs = { level: parseInt( tag[ 1 ], 10 ) };
-				if ( textAlign ) hAttrs.textAlign = textAlign;
-				pushBlock( 'heading', hAttrs, el.outerHTML );
+				if ( pa ) {
+					// The tag can't change on a marker heading (conversions are
+					// refused), so the carried `level` stays truthful — only
+					// alignment merges from the DOM.
+					if ( textAlign ) pa.textAlign = textAlign;
+					else delete pa.textAlign;
+					pushBlock( 'heading', pa, el.outerHTML );
+				} else {
+					const hAttrs = { level: parseInt( tag[ 1 ], 10 ) };
+					if ( textAlign ) hAttrs.textAlign = textAlign;
+					pushBlock( 'heading', hAttrs, el.outerHTML );
+				}
 			} else if ( tag === 'blockquote' ) {
 				const pa = takeMinimalAttrs( el );
 				el.classList.add( 'wp-block-quote' );
@@ -16250,19 +16891,36 @@
 					`<figure class="${ figClass }"><table${ table.className ? ` class="${ table.className }"` : '' }>${ table.innerHTML }</table>${ caption ? caption.outerHTML : '' }</figure>`
 				);
 			} else if ( tag === 'ul' || tag === 'ol' ) {
+				const carried = takeMinimalAttrs( el );
 				el.classList.add( 'wp-block-list' );
-				const la = tag === 'ol' ? { ordered: true } : null;
+				// Numbering attrs are Minimal-editable (list popover) — the DOM is
+				// their truth and overwrites the carried copies; a carried list
+				// keeps its other attrs (fontSize, className, style…) verbatim.
+				const la = carried || ( tag === 'ol' ? {} : null );
 				let listHtmlAttrs = '';
 				if ( tag === 'ol' ) {
+					la.ordered = true;
 					const start = parseInt( el.getAttribute( 'start' ), 10 );
 					const type = el.getAttribute( 'type' );
-					if ( start ) { la.start = start; listHtmlAttrs += ` start="${ start }"`; }
-					if ( el.hasAttribute( 'reversed' ) ) { la.reversed = true; listHtmlAttrs += ' reversed'; }
-					if ( type ) { la.type = type; listHtmlAttrs += ` type="${ esc( type ) }"`; }
+					if ( start ) { la.start = start; listHtmlAttrs += ` start="${ start }"`; } else { delete la.start; }
+					if ( el.hasAttribute( 'reversed' ) ) { la.reversed = true; listHtmlAttrs += ' reversed'; } else { delete la.reversed; }
+					if ( type ) { la.type = type; listHtmlAttrs += ` type="${ esc( type ) }"`; } else { delete la.type; }
+				} else if ( carried ) {
+					delete la.ordered;
+					delete la.start;
+					delete la.reversed;
+					delete la.type;
 				}
 				const items = Array.from( el.querySelectorAll( ':scope > li' ) )
-					.map( ( li ) => `<!-- wp:list-item -->\n${ li.outerHTML }\n<!-- /wp:list-item -->` ).join( '' );
-				pushBlock( 'list', la, `<${ tag }${ listHtmlAttrs } class="${ el.className }">${ items }</${ tag }>` );
+					.map( ( li ) => {
+						const liAttrs = takeMinimalAttrs( li );
+						return `<!-- wp:list-item${ serializeBlockAttrs( liAttrs && Object.keys( liAttrs ).length ? liAttrs : null ) } -->\n${ li.outerHTML }\n<!-- /wp:list-item -->`;
+					} ).join( '' );
+				// The open tag is rebuilt — a carried list's inline style is
+				// saved content and must ride along (attribute order may
+				// normalize on first save; the established fixed-point rule).
+				const listStyle = carried && el.getAttribute( 'style' ) ? ` style="${ esc( el.getAttribute( 'style' ) ) }"` : '';
+				pushBlock( 'list', la, `<${ tag }${ listHtmlAttrs } class="${ el.className }"${ listStyle }>${ items }</${ tag }>` );
 			} else if ( tag === 'figure' && ! el.querySelector( 'img, video, audio, table, iframe' ) && ! el.textContent.trim() ) {
 				return; // husk left behind by an undoable image delete
 			} else if ( tag === 'figure' && el.querySelector( 'video' ) ) {
@@ -16601,9 +17259,14 @@
 				tagIds: new Set(), tags: [],
 				revisions: null, panels: null,
 				// Discussion switches start from the SITE defaults, matching what
-				// WP stores when the create payload omits them (GH #6).
-				commentStatus: ( B.discussion && B.discussion.comments ) || 'open',
-				pingStatus: ( B.discussion && B.discussion.pings ) || 'open',
+				// WP stores when the create payload omits them (GH #6). Only a
+				// literal 'open' means open (the stored option is '' when the
+				// wp-admin checkbox was unchecked), and core hardcodes new
+				// pages to closed regardless of the option.
+				commentStatus: newType === 'pages' ? 'closed'
+					: ( B.discussion && B.discussion.comments ) === 'open' ? 'open' : 'closed',
+				pingStatus: newType === 'pages' ? 'closed'
+					: ( B.discussion && B.discussion.pings ) === 'open' ? 'open' : 'closed',
 				password: '', visibility: 'public',
 				sticky: false, serverSticky: false, supportsSticky: newType === 'posts', supportsDiscussion: ! isPattern,
 				supportsThumb: ! isPattern, featuredMedia: 0, featuredThumb: null,
@@ -17198,6 +17861,9 @@
 		const body = $( '#minimal-editor-body' );
 		if ( ! el || ! body ) return;
 		ensureTrailingParagraph( body );
+		// Container slots need the same terminal affordance as the body — a
+		// slot ending in a table/figure/quote is otherwise untypeable-below.
+		$$( '.minimal-slot', body ).forEach( ensureTrailingParagraph );
 		const words = countEditorWords( body );
 		const ed = state.editor;
 		// While clean, keep re-basing so late island previews don't count as
@@ -17292,9 +17958,7 @@
 		// or quote; falls back to the top-level block for anything exotic.
 		const c = n.closest( 'p, h1, h2, h3, h4, h5, h6, li, pre, figcaption, td, th, figure' );
 		if ( c && body.contains( c ) && c !== body ) return c;
-		let t = n;
-		while ( t.parentNode && t.parentNode !== body ) t = t.parentNode;
-		return t.parentNode === body ? t : null;
+		return topBlockIn( n, body );
 	}
 
 	function removeFocusDim() {
@@ -19556,14 +20220,14 @@
 					${ __( 'This is a synced pattern — saving changes here updates every post and page that uses it.' ) }
 				</div>` : '' }
 				${ ed.builder && ed.builder.edit_url ? `
-				<div class="minimal-editor-locked-note minimal-builder-note">
+				<a class="minimal-editor-locked-note minimal-builder-note" href="${ esc( ed.builder.edit_url ) }" aria-label="Edit in ${ esc( ed.builder.name ) }">
 					<span>${ ed.builder.owns_content
 		? `This ${ ed.type === 'pages' ? 'page' : 'post' }'s canvas is managed by <b>${ esc( ed.builder.name ) }</b> —
 						its content lives in the builder, so the body below is a read-only preview.
 						Title, status, URL and the side panel still save from here.`
 		: `Built with <b>${ esc( ed.builder.name ) }</b> — its blocks are preserved exactly; the text around them is editable here.` }</span>
-					<a class="minimal-btn-primary minimal-builder-open" href="${ esc( ed.builder.edit_url ) }">Edit in ${ esc( ed.builder.name ) }</a>
-				</div>` : '' }
+					<span class="minimal-btn-primary minimal-builder-open">Edit in ${ esc( ed.builder.name ) } ↗</span>
+				</a>` : '' }
 				${ locked && ! ( ed.builder && ed.builder.owns_content ) ? `
 				<div class="minimal-editor-locked-note">
 					Minimal couldn't safely parse this ${ ed.type === 'pages' ? 'page' : 'post' }'s block structure,
@@ -19672,8 +20336,21 @@
 				island.dataset.btnStamped = '1';
 			} );
 			body.addEventListener( 'input', ( e ) => {
+				// Container-slot edits: stamp the island (and every ancestor
+				// slot island) dirty so serialize splices the slot instead of
+				// emitting the stale stored raw. No return — the main input
+				// handlers still run for it.
+				if ( e.target.closest && e.target.closest( '.minimal-slot' ) ) {
+					stampSlotDirtyFor( e.target );
+				}
 				const sc = e.target.closest && e.target.closest( '.minimal-shortcode-input' );
 				if ( sc ) { commitShortcodeInput( sc ); return; }
+				const runEl = e.target.closest && e.target.closest( '.minimal-island-run' );
+				if ( runEl ) {
+					const island = runEl.closest( '.minimal-block-island' );
+					if ( island ) commitIslandRuns( island );
+					return;
+				}
 				const detField = e.target.closest && e.target.closest( '.minimal-details-summary, .minimal-details-body' );
 				if ( detField ) {
 					const island = detField.closest( '.minimal-details-island' );
@@ -19714,6 +20391,47 @@
 					if ( e.key === 'Enter' && ! appShortcut ) {
 						e.preventDefault();
 						e.target.blur();
+					}
+					if ( ! appShortcut ) e.stopPropagation();
+					return;
+				}
+				const runEl = e.target.closest && e.target.closest( '.minimal-island-run' );
+				if ( runEl ) {
+					// Text-only edits: the splice reads textContent, so anything
+					// that would insert markup is blocked here. IME composition
+					// keys pass through untouched (isComposing rule).
+					if ( e.isComposing || e.keyCode === 229 ) return;
+					// stopPropagation is NOT enough here: bindMarkdown and the
+					// slash menu listen on this same body node, and same-node
+					// listeners still run after stopPropagation — markdown
+					// wraps fired inside runs (found in verification). This
+					// delegation is registered first, so immediate stops them.
+					if ( ! ( e.metaKey || e.ctrlKey ) ) e.stopImmediatePropagation();
+					// Enter would insert <br><br> inside the run (probed) — and
+					// splitting into new blocks is out of scope by design.
+					if ( e.key === 'Enter' && ! appShortcut ) {
+						e.preventDefault();
+						e.stopPropagation();
+						return;
+					}
+					// ⌘A escapes the nested editable (probed: selects the whole
+					// outer body) — clamp it to this run's contents.
+					if ( appShortcut && e.key.toLowerCase() === 'a' && ! e.shiftKey && ! e.altKey ) {
+						e.preventDefault();
+						e.stopPropagation();
+						const r = document.createRange();
+						r.selectNodeContents( runEl );
+						const sel = window.getSelection();
+						sel.removeAllRanges();
+						sel.addRange( r );
+						return;
+					}
+					// Formatting/link shortcuts would insert markup the splice
+					// drops — block them rather than silently losing the marks.
+					if ( appShortcut && [ 'b', 'i', 'u', 'k' ].includes( e.key.toLowerCase() ) && ! e.altKey ) {
+						e.preventDefault();
+						e.stopPropagation();
+						return;
 					}
 					if ( ! appShortcut ) e.stopPropagation();
 					return;
@@ -19766,12 +20484,82 @@
 						}
 					}
 					if ( ! appShortcut ) e.stopPropagation();
+					return;
+				}
+				// ⌘A inside a container slot escapes to the whole outer body
+				// (probed for runs; same nested-editable behavior) — clamp the
+				// first press to the slot's own content, like Gutenberg's
+				// select-block-first convention.
+				const slotKd = e.target.closest && e.target.closest( '.minimal-slot' );
+				if ( slotKd && appShortcut && e.key.toLowerCase() === 'a' && ! e.shiftKey && ! e.altKey ) {
+					e.preventDefault();
+					e.stopPropagation();
+					const r = document.createRange();
+					r.selectNodeContents( slotKd );
+					const sel = window.getSelection();
+					sel.removeAllRanges();
+					sel.addRange( r );
+					return;
+				}
+				// Marker-block end-split (attribute carry, phase 1): Blink
+				// copies element attributes to BOTH halves of an Enter split —
+				// right for mid-splits (Gutenberg's own semantics), but an
+				// end-of-block Enter should yield a DEFAULT paragraph like
+				// Gutenberg's, not an empty styled clone. Observe the split and
+				// strip marker + class + style from an empty half that carries
+				// the same marker. Out-of-stack ATTR mutations are undo-safe
+				// (probed 2026-08-08; text mutations are not — rule 25b).
+				if ( e.key === 'Enter' && ! appShortcut && ! e.isComposing && e.keyCode !== 229 ) {
+					const sel = window.getSelection();
+					const anchorEl = sel && sel.rangeCount
+						? ( sel.anchorNode.nodeType === Node.ELEMENT_NODE ? sel.anchorNode : sel.anchorNode.parentElement )
+						: null;
+					const carrier = anchorEl && anchorEl.closest ? anchorEl.closest( '[data-minimal-attrs]' ) : null;
+					// Preview interiors are excluded (their text edits ride the
+					// run splice, not element splits) — container SLOTS are real
+					// typing surface and get the same end-split normalization
+					// as the top level.
+					if ( carrier && ! carrier.closest( '.minimal-island-preview' ) && body.contains( carrier ) ) {
+						const stamp = carrier.dataset.minimalAttrs;
+						requestAnimationFrame( () => {
+							// End-split leaves the empty clone AFTER the carrier;
+							// start-split leaves it BEFORE. Strip whichever empty
+							// sibling shares the marker (mid-split halves both
+							// hold text, so they never match).
+							[ carrier.nextElementSibling, carrier.previousElementSibling ].forEach( ( sib ) => {
+								if ( sib && sib.dataset && sib.dataset.minimalAttrs === stamp
+									&& ! sib.textContent.trim() && ! sib.querySelector( 'img' ) ) {
+									sib.removeAttribute( 'data-minimal-attrs' );
+									sib.removeAttribute( 'class' );
+									sib.removeAttribute( 'style' );
+								}
+							} );
+						} );
+					}
 				}
 			} );
 			body.addEventListener( 'mousedown', ( e ) => {
-				if ( e.target.closest && e.target.closest( '.minimal-shortcode-input, .minimal-details-summary, .minimal-details-body, .minimal-btn-label, .minimal-btn-url, .minimal-btn-opt, .minimal-buttons-add, .minimal-btn-row-del' ) ) {
+				if ( e.target.closest && e.target.closest( '.minimal-shortcode-input, .minimal-details-summary, .minimal-details-body, .minimal-btn-label, .minimal-btn-url, .minimal-btn-opt, .minimal-buttons-add, .minimal-btn-row-del, .minimal-island-run' ) ) {
 					e.stopPropagation();
 				}
+			}, true );
+			// Paste inside a run: plain text only — the sanitized rich-paste
+			// pipeline targets the outer body, and markup inside a run would be
+			// dropped by the splice anyway. Capture phase so it runs before the
+			// body's own paste handler regardless of registration order.
+			body.addEventListener( 'paste', ( e ) => {
+				const runEl = e.target.closest && e.target.closest( '.minimal-island-run' );
+				if ( runEl ) {
+					e.preventDefault();
+					e.stopPropagation();
+					const text = ( e.clipboardData && e.clipboardData.getData( 'text/plain' ) || '' )
+						.replace( /\s+/g, ' ' );
+					if ( text ) document.execCommand( 'insertText', false, text );
+					return;
+				}
+				// Container slots ride the MAIN paste pipeline now (root-aware
+				// pasteInsert/pasteBlocksInsert; island-producing paths guard
+				// on the caret's slot) — no capture-phase intercept.
 			}, true );
 			// Clicking the summary text field must not toggle <details> closed.
 			body.addEventListener( 'click', ( e ) => {
@@ -19791,27 +20579,37 @@
 				}
 			}, true );
 		}
-		// Clicking an editable image opens its controls popover.
+		// Clicking an editable image opens its controls popover. Nearest
+		// wrapper decides editability: a slot is writing surface, an island
+		// is preview chrome.
 		body.addEventListener( 'click', ( e ) => {
 			const img = e.target.closest( 'img' );
-			if ( img && body.contains( img ) && ! img.closest( '.minimal-block-island' ) ) {
-				openImgPop( img );
-			}
+			if ( ! img || ! body.contains( img ) ) return;
+			const wrap = img.closest( '.minimal-block-island, .minimal-slot' );
+			if ( wrap && ! wrap.classList.contains( 'minimal-slot' ) ) return;
+			openImgPop( img );
 		} );
 		// Clicking a link opens its edit popover (links never navigate
-		// inside contenteditable anyway).
+		// inside contenteditable anyway). Same nearest-wrapper rule.
 		body.addEventListener( 'click', ( e ) => {
 			const a = e.target.closest( 'a' );
-			if ( a && body.contains( a ) && ! a.closest( '.minimal-block-island' ) ) {
-				e.preventDefault();
-				openLinkPop( a );
-			}
+			if ( ! a || ! body.contains( a ) ) return;
+			const wrap = a.closest( '.minimal-block-island, .minimal-slot' );
+			if ( wrap && ! wrap.classList.contains( 'minimal-slot' ) ) return;
+			e.preventDefault();
+			openLinkPop( a );
 		} );
 		// Right-click in a table cell → targeted row/column ops on THAT cell.
 		body.addEventListener( 'contextmenu', ( e ) => {
 			const cell = e.target.closest ? e.target.closest( 'td, th' ) : null;
 			const table = cell ? cell.closest( 'table' ) : null;
-			if ( ! cell || ! table || ! body.contains( table ) || table.closest( '.minimal-block-island' ) ) return;
+			if ( ! cell || ! table || ! body.contains( table ) ) return;
+			// Editable tables live at the top level or inside a container
+			// slot; tables inside island PREVIEWS stay read-only. Nearest
+			// wrapper decides: a slot means editable surface, an island
+			// means preview chrome (a preview inside a slot still bails).
+			const wrap = table.closest( '.minimal-block-island, .minimal-slot' );
+			if ( wrap && ! wrap.classList.contains( 'minimal-slot' ) ) return;
 			e.preventDefault();
 			openTableMenu( e.clientX, e.clientY, table, cell );
 		} );
@@ -19820,7 +20618,9 @@
 		// AND its chip — tables, images and code blocks all behave alike.
 		let hotTable = null;
 		body.addEventListener( 'mouseover', ( e ) => {
-			const box = e.target.closest ? e.target.closest( '#minimal-editor-body > figure.wp-block-table, #minimal-editor-body > table, #minimal-editor-body > figure.wp-block-image, #minimal-editor-body > img, #minimal-editor-body > pre:not(.wp-block-verse):not(.wp-block-preformatted)' ) : null;
+			// Direct children of the body OR of a container slot — the same
+			// per-root set the chip pass collects.
+			const box = e.target.closest ? e.target.closest( '#minimal-editor-body > figure.wp-block-table, #minimal-editor-body > table, #minimal-editor-body > figure.wp-block-image, #minimal-editor-body > img, #minimal-editor-body > pre:not(.wp-block-verse):not(.wp-block-preformatted), .minimal-slot > figure.wp-block-table, .minimal-slot > table, .minimal-slot > figure.wp-block-image, .minimal-slot > img, .minimal-slot > pre:not(.wp-block-verse):not(.wp-block-preformatted)' ) : null;
 			let t = null;
 			if ( box ) t = box.tagName === 'TABLE' || box.tagName === 'IMG' || box.tagName === 'PRE' ? box : box.querySelector( 'table, img' );
 			if ( t === hotTable ) return;
@@ -19902,6 +20702,26 @@
 			$$( '.minimal-tool', view ).forEach( ( btn ) =>
 				btn.addEventListener( 'mousedown', ( e ) => {
 					e.preventDefault(); // keep the selection in the editable region
+					// In-place island text is TEXT-only: formatting marks would
+					// be dropped by the run splice, so refuse loudly instead.
+					const runSel = window.getSelection();
+					const runAnchor = runSel && runSel.rangeCount ? runSel.anchorNode : null;
+					const runAnchorEl = runAnchor && ( runAnchor.nodeType === Node.ELEMENT_NODE ? runAnchor : runAnchor.parentElement );
+					if ( runAnchorEl && runAnchorEl.closest && runAnchorEl.closest( '.minimal-island-run' ) ) {
+						toast( __( 'Island text is plain-text only — use ⚙ or the block editor for formatting' ) );
+						return;
+					}
+					// Block-TYPE conversions are refused on attr-carrying blocks:
+					// formatBlock rebuilds the element and half-drops the styling
+					// (class + marker gone, inline style kept — probed), so the
+					// honest answer is the block editor. Inline marks stay fine.
+					if ( btn.dataset.block || btn.dataset.cmd === 'insertUnorderedList' || btn.dataset.cmd === 'insertOrderedList' ) {
+						const mk = runAnchorEl && runAnchorEl.closest ? runAnchorEl.closest( '[data-minimal-attrs]' ) : null;
+						if ( mk && body.contains( mk ) ) {
+							toast( __( 'This block keeps custom styling — change its type in the block editor' ) );
+							return;
+						}
+					}
 					if ( btn.dataset.cmd === 'link' ) {
 						const sel2 = window.getSelection();
 						let n = sel2.rangeCount ? sel2.anchorNode : null;
@@ -19919,7 +20739,8 @@
 						// headings only. Pressing the active alignment clears it.
 						const sel3 = window.getSelection();
 						let blk = sel3.rangeCount ? sel3.anchorNode : null;
-						while ( blk && blk.parentNode && blk.parentNode !== body ) blk = blk.parentNode;
+						// Canonical root resolution (slots are mini-bodies).
+						blk = topBlockIn( blk, body );
 						if ( blk && blk.nodeType === Node.ELEMENT_NODE && /^(P|H[1-6])$/.test( blk.tagName ) ) {
 							const had = blk.classList.contains( 'has-text-align-' + btn.dataset.align );
 							blk.classList.remove( 'has-text-align-left', 'has-text-align-center', 'has-text-align-right' );
@@ -19956,6 +20777,34 @@
 				} )
 			);
 
+			// Blink's default block for insertParagraph/list-exit is <div>;
+			// the serializer papered over stray divs, but the markdown prefix
+			// handlers (and everything else block-shaped) expect <p> — inside
+			// container slots AND the main body. One document-wide setting.
+			try { document.execCommand( 'defaultParagraphSeparator', false, 'p' ); } catch ( e ) { /* non-Blink */ }
+			// Deepest-wins chrome: ancestors of the hovered/focused island
+			// wear .minimal-island-covered so their chip/hint/highlight rest.
+			// Event-driven ON PURPOSE — the :has() selector form bound style
+			// invalidation to every DOM mutation and benched at ~300ms per
+			// keystroke on nested pages (tests/perf-editor.bench.js).
+			let coveredMarks = [];
+			const markCovered = ( innermost ) => {
+				coveredMarks.forEach( ( el ) => el.classList.remove( 'minimal-island-covered' ) );
+				coveredMarks = [];
+				let a = innermost && innermost.parentElement && innermost.parentElement.closest( '.minimal-block-island' );
+				while ( a ) {
+					a.classList.add( 'minimal-island-covered' );
+					coveredMarks.push( a );
+					a = a.parentElement && a.parentElement.closest( '.minimal-block-island' );
+				}
+			};
+			const coveredFrom = ( e ) => {
+				const isl = e.target.closest && e.target.closest( '.minimal-block-island' );
+				markCovered( isl && body.contains( isl ) ? isl : null );
+			};
+			body.addEventListener( 'mouseover', coveredFrom );
+			body.addEventListener( 'focusin', coveredFrom );
+			body.addEventListener( 'mouseleave', () => markCovered( null ) );
 			bindIslandGuards( body );
 			bindMarkdown( body );
 			bindSlashMenu( body, insertImage );
@@ -20060,6 +20909,15 @@
 				if ( ! ed2 || ! cd ) return;
 				const text = cd.getData( 'text/plain' ) || '';
 				const trimmed = text.trim();
+				// The caret's container slot (selection-based, not e.target —
+				// synthetic ClipboardEvents dispatch on the body). Prose paste
+				// works in slots; island-producing paths guard on this.
+				const selSlot = ( () => {
+					const s = window.getSelection();
+					const n = s && s.rangeCount ? s.anchorNode : null;
+					const el2 = n && ( n.nodeType === Node.ELEMENT_NODE ? n : n.parentElement );
+					return el2 && el2.closest ? el2.closest( '.minimal-slot' ) : null;
+				} )();
 				// Paste a URL over selected text → wrap as <a>, don't replace.
 				// Runs before the HTML flavor path so browser-copied links
 				// (plain + <a href> HTML) still keep the selected words.
@@ -20082,8 +20940,11 @@
 				if ( ed2.mode === 'blocks' && /^https?:\/\/\S+$/.test( trimmed ) && embedProviderFor( trimmed ) ) {
 					const sel = window.getSelection();
 					let node = sel && sel.anchorNode;
-					while ( node && node.parentNode !== body ) node = node.parentNode;
-					if ( node && node.parentNode === body ) {
+					// Root-aware since nested islands: a URL pasted into an
+					// empty slot block becomes an embed island in that slot.
+					const eroot = selSlot || body;
+					while ( node && node.parentNode !== eroot ) node = node.parentNode;
+					if ( node && node.parentNode === eroot ) {
 						const existing = node.nodeType === 1 ? node.innerHTML : node.textContent;
 						if ( stripTags( existing || '' ).trim() === '' ) {
 							e.preventDefault();
@@ -20117,11 +20978,13 @@
 				if ( minimalBlocks && ed2.mode !== 'locked'
 					&& ! anchorEl.closest( 'li,h1,h2,h3,h4,h5,h6,td,th,figcaption,blockquote' )
 					&& tokenizeBlocks( minimalBlocks.trim() ) ) {
+					// Island payloads splice inside slots too since nested
+					// islands — the same editable-vs-island split as load.
 					e.preventDefault();
 					ensureBlocksMode();
 					const built = appendEditableContent( ed2, minimalBlocks.trim() );
 					if ( built.trim() ) {
-						pasteBlocksInsert( body, built );
+						pasteBlocksInsert( selSlot || body, built );
 						renderIslandPreviews( body, ed2 );
 						updateEditorStats();
 					}
@@ -20140,6 +21003,33 @@
 					document.execCommand( 'insertHTML', false, esc( literal ) );
 					scheduleAutosave();
 					return;
+				}
+				// Plain text that IS Gutenberg block markup (copied from an AI
+				// tool, a tutorial, a theme's pattern file): rebuild it as real
+				// blocks through the load pipeline's editable-vs-island split —
+				// the block editor does the same via its raw handler.
+				// Conservative sniff: the paste must START with a block comment
+				// (prose that merely mentions markup stays prose), and code
+				// contexts already took the literal paste above. Any html
+				// flavor is ignored on purpose — a ChatGPT/code-viewer copy
+				// wraps the markup in code-styled html that would paste as
+				// styled TEXT, while the text flavor holds the real thing.
+				if ( ed2.mode !== 'locked' && /^<!--\s*wp:/.test( trimmed )
+					&& ! anchorEl.closest( 'li,h1,h2,h3,h4,h5,h6,td,th,figcaption,blockquote' ) ) {
+					const healed = healPastedGroupTags( trimmed );
+					const rawSegs = tokenizeBlocks( healed );
+					if ( rawSegs && rawSegs.some( ( s ) => s.type === 'block' ) ) {
+						e.preventDefault();
+						ensureBlocksMode();
+						const built = appendEditableContent( ed2, healed );
+						if ( built.trim() ) {
+							pasteBlocksInsert( selSlot || body, built );
+							renderIslandPreviews( body, ed2 );
+							updateEditorStats();
+						}
+						scheduleAutosave();
+						return;
+					}
 				}
 				if ( html ) {
 					// Rich flavor present: always ours from here — falling back
@@ -20220,6 +21110,30 @@
 
 	// Gutenberg's serializeAttributes escaping — keeps "-->" (and HTML-ish
 	// chars) out of the comment so the block can't break the document.
+	// AI-generated markup often uses a semantic wrapper (<section>, <aside>)
+	// WITHOUT the matching "tagName" attr. That LOOKS fine, but on classic
+	// themes core's legacy group wrap (wp_restore_group_inner_container)
+	// trusts the attr, assumes <div>, anchors its multiline regex on the
+	// first INNER div at a line start and mis-nests the whole section — the
+	// stacked-columns front-end report. Paste is a conversion boundary (the
+	// block editor normalizes there too): heal the comment to match the
+	// element. Load paths never call this — stored bytes stay verbatim.
+	function healPastedGroupTags( raw ) {
+		return String( raw ).replace(
+			/(<!--\s*wp:group)(\s+\{[\s\S]*?\})?(\s*-->)(\s*<)([a-z][a-z0-9]*)/g,
+			( m, head, json, close, ws, tag ) => {
+				let attrs = {};
+				if ( json ) {
+					try { attrs = JSON.parse( json.trim() ) || {}; } catch ( err ) { return m; }
+				}
+				const expected = attrs.tagName || 'div';
+				if ( tag.toLowerCase() === expected.toLowerCase() ) return m;
+				attrs.tagName = tag.toLowerCase();
+				return head + serializeBlockAttrs( attrs ) + ' -->' + ws + tag;
+			}
+		);
+	}
+
 	function serializeBlockAttrs( attrs ) {
 		if ( ! attrs || ! Object.keys( attrs ).length ) return '';
 		return ' ' + JSON.stringify( attrs )
@@ -20778,6 +21692,14 @@
 			<div class="minimal-insp-actions">
 				${ editable ? '<button class="minimal-btn-primary" id="minimal-insp-apply" type="button">Apply</button>' : '' }
 				${ state.editor ? `<button type="button" class="minimal-btn-soft" id="minimal-insp-gutenberg" title="Design controls — layout, spacing, colors — live in the block editor. Saves this post first so unsaved blocks appear there.">Block editor&nbsp;↗</button>` : '' }
+				<span class="minimal-insp-move" role="group" aria-label="Move block">
+					<button class="minimal-btn-soft" id="minimal-insp-move-up" type="button" title="Move up" aria-label="Move block up">${ icon( 'chevron-up' ) }</button>
+					<button class="minimal-btn-soft" id="minimal-insp-move-down" type="button" title="Move down" aria-label="Move block down">${ icon( 'chevron-down' ) }</button>
+					${ insp.islandEl && islandSiblingSlots( insp.islandEl ).slot ? `
+					<button class="minimal-btn-soft" id="minimal-insp-move-prev" type="button" title="Move to the previous column" aria-label="Move block to the previous column">${ icon( 'chevron-left' ) }</button>
+					<button class="minimal-btn-soft" id="minimal-insp-move-next" type="button" title="Move to the next column" aria-label="Move block to the next column">${ icon( 'chevron-right' ) }</button>` : '' }
+				</span>
+				<button class="minimal-btn-soft" id="minimal-insp-duplicate" type="button" title="Duplicate this block" aria-label="Duplicate this block">${ icon( 'copy' ) }</button>
 				<button class="minimal-btn-soft danger" id="minimal-insp-remove" type="button" title="Remove this block">${ icon( 'trash' ) }${ editable ? '' : ' Remove block' }</button>
 			</div>`;
 		positionInspector( insp.islandEl );
@@ -20842,6 +21764,10 @@
 		const ed = state.editor;
 		if ( ! ed || ! ed.islands || ed.islands[ idx ] == null ) return;
 		ed.islands[ idx ] = template;
+		// A nested island's stored raw just changed via popover buttons (no
+		// input event) — ancestor slot islands must re-splice on save or
+		// their stale stored raw would emit the OLD child bytes.
+		stampSlotDirtyFor( islandEl && islandEl.parentElement );
 		const prev = islandEl && islandEl.querySelector( '.minimal-island-preview' );
 		if ( prev ) {
 			const inner = stripBlockComments( template ).trim();
@@ -20864,6 +21790,9 @@
 		if ( ! ed ) return;
 		closeInspector();
 		const idx = parseInt( islandEl.dataset.island, 10 );
+		// A dirty container slot's stored raw lags the DOM — flush first so
+		// the inspector models what the writer actually sees.
+		if ( islandEl.classList.contains( 'minimal-slot-island' ) ) flushSlotIsland( islandEl, ed.islands );
 		const raw = ed.islands && ed.islands[ idx ];
 		if ( raw == null ) return;
 		const model = inspectorModel( raw );
@@ -20932,6 +21861,19 @@
 				const el = insp.islandEl;
 				closeInspector();
 				removeIslandWithUndo( el );
+				return;
+			}
+			if ( e.target.closest( '#minimal-insp-duplicate' ) ) {
+				const el = insp.islandEl;
+				closeInspector();
+				duplicateIsland( el );
+				return;
+			}
+			const mv = e.target.closest( '#minimal-insp-move-up, #minimal-insp-move-down, #minimal-insp-move-prev, #minimal-insp-move-next' );
+			if ( mv ) {
+				// Stays open so repeated presses walk the block into place.
+				const dir = mv.id.replace( 'minimal-insp-move-', '' );
+				if ( moveIsland( insp.islandEl, dir ) ) positionInspector( insp.islandEl );
 				return;
 			}
 			if ( e.target.closest( '#minimal-insp-embed-url' ) ) {
@@ -21096,6 +22038,9 @@
 		// Live-field islands (shortcode/details) use in-card editors instead of
 		// a preview slot — sync those fields so an inspector Apply is visible.
 		const islandEl = insp.islandEl || document.querySelector( `.minimal-block-island[data-island="${ insp.idx }"]` );
+		// A nested island's raw changed via popover buttons (no input event)
+		// — ancestor slot islands must re-splice on save.
+		stampSlotDirtyFor( islandEl );
 		const scInput = islandEl && islandEl.querySelector( '.minimal-shortcode-input' );
 		if ( scInput ) scInput.value = stripBlockComments( newRaw ).trim();
 		if ( islandEl && islandEl.classList.contains( 'minimal-details-island' ) ) {
@@ -21131,7 +22076,12 @@
 		// response aligned by index and satisfy the endpoint's string schema.
 		// Shortcode islands host a live input (not a preview slot) — still
 		// request a render for index alignment, but never overwrite the field.
-		const blocks = ed.islands.map( ( r ) => ( r == null ? '' : r ) );
+		// SLOT islands have no preview element at all (their content is live
+		// editable DOM) — rendering them server-side is pure waste that grows
+		// with exactly the grouped content slots exist for, so send '' too.
+		const slotIdx = new Set( $$( '.minimal-slot-island', body ).map( ( el ) => parseInt( el.dataset.island, 10 ) ) );
+		const blocks = ed.islands.map( ( r, i ) => ( r == null || slotIdx.has( i ) ? '' : r ) );
+		if ( ! blocks.some( ( b ) => b !== '' ) ) return;
 		api( 'minimal-admin/v1/render-blocks', { method: 'POST', body: JSON.stringify( { blocks, post: ( state.editor && state.editor.id ) || 0 } ) } )
 			.then( ( r ) => {
 				injectPreviewStyles( r && r.styles );
@@ -21143,6 +22093,9 @@
 					const el = body.querySelector( `.minimal-island-preview[data-preview="${ i }"]` );
 					if ( el && html && html.trim() ) el.innerHTML = html;
 				} );
+				// Rendered previews are the arming surface for in-place island
+				// text editing — align text nodes against the raw's text runs.
+				armIslandTextRuns( body, ed );
 				// Preview text counts toward the word-count pill — recount now
 				// that the real rendered content replaced the placeholders.
 				updateEditorStats();
@@ -21217,12 +22170,17 @@
 		const ed = state.editor;
 		if ( ! body || ! ed || ed.mode === 'locked' || state.route !== 'editor' ) return clearTableChips();
 		const targets = [];
-		$$( ':scope > table, :scope > figure.wp-block-table table', body ).forEach( ( t ) => targets.push( { el: t, kind: 'table' } ) );
-		$$( ':scope > figure.wp-block-image img, :scope > img', body ).forEach( ( i ) => targets.push( { el: i, kind: 'image' } ) );
-		// Code blocks ride the same persistent chips as tables/images — the
-		// old hover-shown chip flickered and only the chip itself was a hover
-		// target. Verse/preformatted pres have no language to configure.
-		$$( ':scope > pre:not(.wp-block-verse):not(.wp-block-preformatted)', body ).forEach( ( p ) => targets.push( { el: p, kind: 'code' } ) );
+		// Per block root (body + every container slot), the liftNestedLists
+		// shape — a table/image/code block inside a group or column is a
+		// direct child of its slot, not the body, and earns the same chip.
+		[ body, ...$$( '.minimal-slot', body ) ].forEach( ( root ) => {
+			$$( ':scope > table, :scope > figure.wp-block-table table', root ).forEach( ( t ) => targets.push( { el: t, kind: 'table' } ) );
+			$$( ':scope > figure.wp-block-image img, :scope > img', root ).forEach( ( i ) => targets.push( { el: i, kind: 'image' } ) );
+			// Code blocks ride the same persistent chips as tables/images — the
+			// old hover-shown chip flickered and only the chip itself was a hover
+			// target. Verse/preformatted pres have no language to configure.
+			$$( ':scope > pre:not(.wp-block-verse):not(.wp-block-preformatted)', root ).forEach( ( p ) => targets.push( { el: p, kind: 'code' } ) );
+		} );
 		if ( ! targets.length ) return clearTableChips();
 		// The chips live INSIDE the scroller at content coordinates and ride
 		// scrolling natively — fixed-on-body chips chased per scroll frame
@@ -21531,6 +22489,8 @@
 		const fig = table.closest( 'figure' ) || table;
 		const editorBody = $( '#minimal-editor-body' );
 		if ( ! editorBody || ! editorBody.contains( fig ) ) return;
+		// Captured before any mutation — the fig may be gone by landing time.
+		const tableRoot = blockRootOf( fig, editorBody );
 
 		// Mutate a detached clone, then swap via the browser command stack so
 		// every row/col/header/delete change is a real ⌘Z step (see
@@ -21563,9 +22523,10 @@
 				: commandOnBlock( fig, { contentsOnly: false, html: '<p><br></p>' } );
 			if ( ! ok ) return;
 			hideTablePop();
-			// Seat the caret in a real block if one remains (or the empty p).
-			const landing = editorBody.querySelector( 'p, h1, h2, h3, h4, h5, h6, td, th' )
-				|| editorBody.firstElementChild;
+			// Seat the caret in a real block if one remains (or the empty p) —
+			// within the table's own root, so a slot table lands in its slot.
+			const landing = tableRoot.querySelector( 'p, h1, h2, h3, h4, h5, h6, td, th' )
+				|| tableRoot.firstElementChild || editorBody.firstElementChild;
 			if ( landing ) setCaret( landing, 0 );
 			toast( 'Table deleted. ⌘Z restores it' );
 		} else {
@@ -21644,10 +22605,13 @@
 				<button class="minimal-x-btn" data-close type="button">×</button>
 			</div>
 			<div class="minimal-insp-body">
-				<div class="minimal-field-label">Syntax highlighting</div>
+				<div class="minimal-field-label">${ esc( __( 'Syntax highlighting' ) ) }</div>
 				<select class="minimal-input" data-lang>
 					${ CODE_LANGS.map( ( l ) => `<option value="${ l }"${ l === codeLangOf( pre ) ? ' selected' : '' }>${ l === 'auto' ? 'Auto detect' : l }</option>` ).join( '' ) }
 				</select>
+			</div>
+			<div class="minimal-insp-actions">
+				<button class="minimal-btn-soft danger" data-code-remove type="button" title="${ esc( __( 'Remove this code block' ) ) }">${ icon( 'trash' ) } ${ esc( __( 'Remove' ) ) }</button>
 			</div>`;
 		document.body.appendChild( codePop );
 		positionBlockPop( codePop, pre );
@@ -21656,6 +22620,16 @@
 		codePop.querySelector( '[data-lang]' ).addEventListener( 'change', ( e ) => {
 			setCodeLang( pre, e.target.value );
 			syncTableChips(); // refresh the chip's language label
+		} );
+		// The island removal pattern, not a command-stack swap: insertHTML
+		// over a selected <pre> empties it but leaves the shell behind (the
+		// figure-husk Blink family), so the honest path is direct removal
+		// with the Undo toast — ⌘Z runs the restore while the toast is live,
+		// and ancestor slots stamp for a code block inside a group.
+		codePop.querySelector( '[data-code-remove]' ).addEventListener( 'click', () => {
+			hideCodePop();
+			removeAtomicBlockWithUndo( pre );
+			syncTableChips();
 		} );
 		document.addEventListener( 'mousedown', codePopAway, true );
 	}
@@ -21672,6 +22646,7 @@
 		}
 		code.className = lang === 'auto' ? '' : 'language-' + lang;
 		delete pre.dataset.hl;
+		stampSlotDirtyFor( pre );
 		const body = $( '#minimal-editor-body' );
 		if ( body ) highlightCodeBlocks( body, true );
 		scheduleAutosave();
@@ -22008,6 +22983,7 @@
 				if ( Object.keys( attrs ).length ) fig.dataset.minimalAttrs = JSON.stringify( attrs );
 				else fig.removeAttribute( 'data-minimal-attrs' );
 			}
+			stampSlotDirtyFor( img );
 			scheduleAutosave();
 			toast( 'Image updated' );
 			hideImgPop();
@@ -22030,6 +23006,7 @@
 						host.dataset.minimalAttrs = JSON.stringify( a );
 					} catch ( e ) {}
 				}
+				stampSlotDirtyFor( img );
 				scheduleAutosave();
 				toast( 'Image replaced' );
 			} );
@@ -22078,10 +23055,17 @@
 			armed = null;
 		};
 		const isIsland = ( el ) => !!( el && el.classList && el.classList.contains( 'minimal-block-island' ) );
-		// Top-level blocks that arm/delete like islands when empty (or always
+		// The guards run PER BLOCK ROOT: islands live at the top level AND
+		// inside container slots (nested islands), so "root child" means a
+		// direct child of the body or of a .minimal-slot. The keydown handler
+		// resolves the caret's root via blockRootOf and every walk below uses
+		// it; only .minimal-island-run interiors still bail (runs are text-only).
+		const isRootChild = ( el ) => !! ( el && el.parentNode && ( el.parentNode === body
+			|| ( el.parentNode.classList && el.parentNode.classList.contains( 'minimal-slot' ) ) ) );
+		// Root-child blocks that arm/delete like islands when empty (or always
 		// for HR). Not list/heading — those stay normal prose.
 		const isAtomicEl = ( el ) => {
-			if ( ! el || el.nodeType !== Node.ELEMENT_NODE || el.parentNode !== body ) return false;
+			if ( ! el || el.nodeType !== Node.ELEMENT_NODE || ! isRootChild( el ) ) return false;
 			if ( isIsland( el ) ) return true;
 			const t = el.tagName;
 			if ( t === 'HR' ) return true;
@@ -22108,7 +23092,7 @@
 			const field = el.closest( '.minimal-shortcode-input, .minimal-details-summary, .minimal-details-body, .minimal-btn-label, .minimal-btn-url' );
 			if ( ! field ) return null;
 			const island = field.closest( '.minimal-block-island' );
-			if ( ! island || island.parentNode !== body ) return null;
+			if ( ! island || ! isRootChild( island ) ) return null;
 			if ( field.matches( '.minimal-details-body' ) ) {
 				if ( field.textContent.replace( /\u00a0/g, ' ' ).trim() ) return null;
 				return island;
@@ -22174,16 +23158,29 @@
 				disarm();
 				return;
 			}
+			// In-place island text runs: Backspace/Delete inside a run is real
+			// editing, natively contained by the editable boundary (probed) —
+			// without this bail the caret walks up to the island itself and
+			// the arm/remove path deletes the whole block out from under the
+			// writer (found in the island-runs suite).
+			if ( e.target.closest && e.target.closest( '.minimal-island-run' ) ) {
+				disarm();
+				return;
+			}
 
+			// Container slots are mini-bodies: the same arm/delete model runs
+			// inside them (nested islands need the protection there too). The
+			// caret's root — body or its nearest slot — anchors every walk.
 			const sel = window.getSelection();
 			if ( ! sel.rangeCount || ! sel.isCollapsed ) return;
+			const root = blockRootOf( sel.anchorNode, body );
 			let block = sel.anchorNode;
 			// Caret can land inside an island's chrome (rare) — walk out.
 			if ( block && block.nodeType === Node.ELEMENT_NODE && block.closest ) {
 				const inIsland = block.closest( '.minimal-block-island' );
-				if ( inIsland && inIsland.parentNode === body ) block = inIsland;
+				if ( inIsland && inIsland.parentNode === root ) block = inIsland;
 			}
-			while ( block && block.parentNode !== body ) block = block.parentNode;
+			while ( block && block.parentNode !== root ) block = block.parentNode;
 			if ( ! block || block.nodeType !== Node.ELEMENT_NODE ) return;
 
 			// 2) Caret inside an empty atomic block (code <pre>, empty figure…):
@@ -22317,11 +23314,10 @@
 			return;
 		}
 		if ( range.collapsed ) return;
-		// Only wrap within one top-level block — cross-block inline code isn't a thing.
-		const blockOf = ( n ) => {
-			while ( n && n.parentNode && n.parentNode !== body ) n = n.parentNode;
-			return n;
-		};
+		// Only wrap within one top-level block — cross-block inline code isn't
+		// a thing. Canonical root resolution: a cross-paragraph selection
+		// inside a slot is refused too (not flattened).
+		const blockOf = ( n ) => topBlockIn( n, body );
 		if ( blockOf( range.startContainer ) !== blockOf( range.endContainer ) ) return;
 		// Clone selection HTML (may include bold/etc.), wrap as code. Trailing
 		// ZWSP keeps Blink from rewriting CODE → styled SPAN at block end.
@@ -22369,10 +23365,9 @@
 		// boundary escapes outside once, then normal typing rules apply.
 		let mdEscape = null;
 
-		const topBlockOf = ( n ) => {
-			while ( n && n.parentNode && n.parentNode !== body ) n = n.parentNode;
-			return n && n.nodeType === Node.ELEMENT_NODE ? n : null;
-		};
+		// Canonical block-root resolution: slots are mini-bodies, so markdown
+		// block prefixes work inside groups/columns like at the top level.
+		const topBlockOf = ( n ) => topBlockIn( n, body );
 
 		// The element insertHTML just created, located from the collapsed caret.
 		const justInserted = ( tag ) => {
@@ -22407,8 +23402,7 @@
 			// destructively. Use nbsp there (as Chrome's own typing does);
 			// against a non-space character a clean regular space is fine.
 			const spaceFor = ( codeEl, side ) => {
-				let blockEl = codeEl;
-				while ( blockEl.parentNode && blockEl.parentNode !== body ) blockEl = blockEl.parentNode;
+				const blockEl = topBlockIn( codeEl, body ) || codeEl;
 				const r = document.createRange();
 				r.selectNodeContents( blockEl );
 				if ( side === 'start' ) r.setEndBefore( codeEl );
@@ -22536,9 +23530,10 @@
 
 			let m;
 			if ( e.key === '`' ) {
-				// ``` alone in a paragraph → code block.
+				// ``` alone in a paragraph → code block. (Not on attr-carrying
+				// paragraphs: formatBlock drops the carried styling — probed.)
 				const blockEl = topBlockOf( node );
-				if ( blockEl && blockEl.tagName === 'P' && blockEl.textContent.trim() === '``' && upto.endsWith( '``' ) ) {
+				if ( blockEl && blockEl.tagName === 'P' && ! blockEl.dataset.minimalAttrs && blockEl.textContent.trim() === '``' && upto.endsWith( '``' ) ) {
 					e.preventDefault();
 					const r = document.createRange();
 					r.selectNodeContents( blockEl );
@@ -22566,9 +23561,11 @@
 				m = /\[([^\[\]]+)\]\(((?:https?:\/\/|\/|#|mailto:)[^)\s]*)$/.exec( upto );
 				if ( m ) wrapInline( m.index, 'a', m[ 1 ], ` href="${ esc( m[ 2 ] ) }"` );
 			} else if ( e.key === ' ' ) {
-				// Block prefixes at the start of a paragraph.
+				// Block prefixes at the start of a paragraph. Attr-carrying
+				// paragraphs keep their type: the conversion would drop the
+				// carried styling (probed), so the prefix stays literal text.
 				const blockEl = topBlockOf( node );
-				if ( ! blockEl || blockEl.tagName !== 'P' ) return;
+				if ( ! blockEl || blockEl.tagName !== 'P' || blockEl.dataset.minimalAttrs ) return;
 				const r = document.createRange();
 				r.selectNodeContents( blockEl );
 				r.setEnd( node, sel.anchorOffset );
@@ -22593,9 +23590,10 @@
 				scheduleAutosave();
 			} else if ( e.key === '-' ) {
 				// --- alone in a paragraph → divider, caret stays in the
-				// (emptied) paragraph below it.
+				// (emptied) paragraph below it. (Not on attr-carrying
+				// paragraphs — an emptied styled p would linger as a spacer.)
 				const blockEl = topBlockOf( node );
-				if ( blockEl && blockEl.tagName === 'P' && blockEl.textContent.trim() === '--' && upto.endsWith( '--' ) ) {
+				if ( blockEl && blockEl.tagName === 'P' && ! blockEl.dataset.minimalAttrs && blockEl.textContent.trim() === '--' && upto.endsWith( '--' ) ) {
 					e.preventDefault();
 					blockEl.insertAdjacentHTML( 'beforebegin', '<hr>' );
 					blockEl.textContent = '';
@@ -22992,11 +23990,14 @@
 	// brackets are removed after (outside the undo stack, like the markdown
 	// nbsp fix — ⌘Z still reverts the whole paste in one step, and a redo's
 	// resurrected empty bracket serializes to nothing).
-	function pasteBlocksInsert( body, blocksHtml ) {
+	// root: the block root receiving the paste — the body, or a container
+	// slot (slots are mini-bodies; the bracket markers and list lift scan
+	// within the root so a slot paste can't touch its neighbors).
+	function pasteBlocksInsert( root, blocksHtml ) {
 		const BKT = '<p data-minimal-bkt="1"><br></p>';
 		document.execCommand( 'insertHTML', false, BKT + blocksHtml + BKT );
 		const sel = window.getSelection();
-		$$( 'p[data-minimal-bkt]', body ).forEach( ( p ) => {
+		$$( 'p[data-minimal-bkt]', root ).forEach( ( p ) => {
 			p.removeAttribute( 'data-minimal-bkt' );
 			if ( p.textContent.trim() ) return; // absorbed real text — it's a paragraph now
 			const holdsCaret = sel.rangeCount && p.contains( sel.anchorNode );
@@ -23012,7 +24013,7 @@
 			// is handled at serialize instead (cleanLeadingNbsp).
 			p.remove();
 		} );
-		liftNestedLists( body );
+		liftNestedLists( root );
 	}
 
 	// Route a sanitized payload to the right insertion for the caret context.
@@ -23020,6 +24021,8 @@
 	// pasted into headings/list items — probed): lists merge into lists
 	// natively, paragraphs merge into quotes, anything else flattens to text.
 	function pasteInsert( body, payload, anchorEl ) {
+		// Slots are mini-bodies: block splices land within the caret's root.
+		const root = blockRootOf( anchorEl, body );
 		if ( payload.kind === 'inline' ) {
 			document.execCommand( 'insertHTML', false, payload.html );
 			return;
@@ -23027,7 +24030,7 @@
 		if ( anchorEl.closest( 'li' ) ) {
 			if ( payload.list ) {
 				document.execCommand( 'insertHTML', false, payload.list );
-				liftNestedLists( body );
+				liftNestedLists( root );
 			} else {
 				document.execCommand( 'insertHTML', false, pasteFlatHtml( payload ) );
 			}
@@ -23041,7 +24044,7 @@
 			document.execCommand( 'insertHTML', false, payload.allParagraphs ? payload.html : pasteFlatHtml( payload ) );
 			return;
 		}
-		pasteBlocksInsert( body, payload.html );
+		pasteBlocksInsert( root, payload.html );
 	}
 
 	/* ===== Inline media flow (paste/drop image files → library at caret) ===== */
@@ -23079,7 +24082,10 @@
 		const el = node.nodeType === Node.ELEMENT_NODE ? node : node.parentNode;
 		if ( el.closest( 'li, td, th, h1, h2, h3, h4, h5, h6, pre, figcaption' ) ) {
 			let top = node;
-			while ( top.parentNode && top.parentNode !== body ) top = top.parentNode;
+			// Root-aware since nested islands: a caret in a slot's list/cell
+			// hops to a landing paragraph inside that slot.
+			const hopRoot = blockRootOf( node, body );
+			while ( top.parentNode && top.parentNode !== hopRoot ) top = top.parentNode;
 			const landing = document.createElement( 'p' );
 			landing.appendChild( document.createElement( 'br' ) );
 			top.after( landing );
@@ -23234,10 +24240,11 @@
 		segs.forEach( ( seg ) => {
 			if ( seg.type !== 'block' ) return;
 			const idx = ed.islands.push( seg.raw ) - 1;
-			anchor.insertAdjacentHTML( 'beforebegin', islandHtml( idx, seg.name.includes( '/' ) ? seg.name : 'core/' + seg.name, seg.raw ) );
+			anchor.insertAdjacentHTML( 'beforebegin', islandHtml( idx, seg.name.includes( '/' ) ? seg.name : 'core/' + seg.name, seg.raw, ed ) );
 			count++;
 		} );
 		if ( ! count ) { toast( 'Nothing insertable in this pattern', true ); return; }
+		stampSlotDirtyFor( anchor );
 		renderIslandPreviews( body, ed );
 		updateEditorStats();
 		scheduleAutosave();
@@ -23365,8 +24372,11 @@
 		{
 			const sel = window.getSelection();
 			let n = sel.rangeCount ? sel.anchorNode : null;
-			while ( n && n.parentNode && n.parentNode !== body ) n = n.parentNode;
-			caretBlock = n && n.parentNode === body ? n : null;
+			// Root-aware since nested islands: a caret inside a container
+			// slot inserts within that slot.
+			const root = n ? blockRootOf( n, body ) : body;
+			while ( n && n.parentNode && n.parentNode !== root ) n = n.parentNode;
+			caretBlock = n && n.parentNode === root ? n : null;
 		}
 
 		pickerEl = document.createElement( 'div' );
@@ -23545,8 +24555,11 @@
 			const b = $( '#minimal-editor-body' );
 			if ( ! b || ! state.editor ) return;
 			b.focus( { preventScroll: true } );
+			// A root child = direct child of the body or of a container slot.
+			const rootChild = ( el ) => !! ( el && el.isConnected && el.parentNode && ( el.parentNode === b
+				|| ( el.parentNode.classList && el.parentNode.classList.contains( 'minimal-slot' ) ) ) );
 			let target;
-			if ( targetBlock && targetBlock.isConnected && targetBlock.parentNode === b ) {
+			if ( targetBlock && rootChild( targetBlock ) ) {
 				// The slash menu's "/" block — replaceable by design.
 				target = targetBlock;
 			} else {
@@ -23554,7 +24567,7 @@
 				// replace real content the caret happened to sit in).
 				target = document.createElement( 'p' );
 				target.appendChild( document.createElement( 'br' ) );
-				if ( caretBlock && caretBlock.isConnected && caretBlock.parentNode === b ) caretBlock.after( target );
+				if ( rootChild( caretBlock ) ) caretBlock.after( target );
 				else b.appendChild( target );
 			}
 			const range = document.createRange();
@@ -23599,6 +24612,7 @@
 					} else if ( r && r.html ) {
 						if ( /wp-block-(pullquote|table)/.test( r.html ) ) ensureBlocksMode();
 						p.insertAdjacentHTML( 'beforebegin', r.html );
+						stampSlotDirtyFor( p );
 						// Leave the empty p as the caret landing (already focused).
 						scheduleAutosave();
 					} else {
@@ -23698,10 +24712,11 @@
 			if ( ! ed ) return;
 			if ( ! ed.islands ) ed.islands = [];
 			const idx = ed.islands.push( action.template ) - 1;
-			target.insertAdjacentHTML( 'beforebegin', islandHtml( idx, action.block, action.template ) );
+			target.insertAdjacentHTML( 'beforebegin', islandHtml( idx, action.block, action.template, ed ) );
 			const p = document.createElement( 'p' );
 			p.appendChild( document.createElement( 'br' ) );
 			target.replaceWith( p );
+			stampSlotDirtyFor( p );
 			const range = document.createRange();
 			range.selectNodeContents( p );
 			range.collapse( true );
@@ -23741,12 +24756,13 @@
 			// save re-emits <!-- wp:… --> comments (not freeform HTML). Details
 			// always inserts as an island via action.block (never free HTML).
 			if ( /wp-block-(pullquote|table)/.test( action.html ) ) ensureBlocksMode();
-			// Replace the "/" block outright so the inserted markup lands at
-			// the top level (never wrapped inside the block's div).
+			// Replace the "/" block outright so the inserted markup lands
+			// beside it in its root (never wrapped inside the block's div).
 			target.insertAdjacentHTML( 'beforebegin', action.html );
 			const p = document.createElement( 'p' );
 			p.appendChild( document.createElement( 'br' ) );
 			target.replaceWith( p );
+			stampSlotDirtyFor( p );
 			const range = document.createRange();
 			range.selectNodeContents( p );
 			range.collapse( true );
@@ -23912,6 +24928,8 @@
 			// until typed for — the Browse row is both the hint and the door
 			// to the full picker.
 			const hidden = query ? 0 : items.filter( ( it ) => it[ 3 ] ).length;
+			// Browse-all opens the picker, which inserts islands — not offered
+			// inside container slots (the filtered basics ARE the slot set).
 			menu.innerHTML = filtered.map( ( idx, i ) => `
 				<div class="minimal-slash-item${ i === selIdx ? ' selected' : '' }" role="option" id="minimal-slash-opt-${ i }" data-slash="${ idx }" aria-selected="${ i === selIdx ? 'true' : 'false' }">
 					<span class="minimal-slash-icon" aria-hidden="true">${ items[ idx ][ 0 ] }</span>${ esc( items[ idx ][ 1 ] ) }${ items[ idx ][ 4 ] ? `<span class="minimal-slash-ns">${ esc( items[ idx ][ 4 ] ) }</span>` : '' }
@@ -23937,6 +24955,8 @@
 		const applyQuery = ( q ) => {
 			q = q.toLowerCase();
 			query = q;
+			// Slots take the full menu since nested islands — island inserts,
+			// media flows and search-only entries all land inside the slot.
 			filtered = items
 				.map( ( it, i ) => i )
 				.filter( ( i ) => {
@@ -23976,14 +24996,18 @@
 			if ( ! sel.rangeCount ) return close();
 			let node = sel.anchorNode;
 			if ( ! node || ! body.contains( node ) ) return close();
-			while ( node.parentNode && node.parentNode !== body ) node = node.parentNode;
+			// Container slots are mini-bodies: the menu opens on the slot's own
+			// paragraphs too (offering the prose-safe basics only — applyQuery
+			// filters on the block's slot ancestry).
+			const slashRoot = blockRootOf( node, body );
+			while ( node.parentNode && node.parentNode !== slashRoot ) node = node.parentNode;
 			let blockEl = node.nodeType === Node.ELEMENT_NODE ? node : null;
 			// Empty editor / after select-all+delete: Chrome parks a bare text
 			// node as a direct child of the contenteditable. Promote it to a
 			// <p> so slash detection, insert-as-replace, and serialize agree.
-			if ( ! blockEl && node.nodeType === Node.TEXT_NODE && node.parentNode === body ) {
+			if ( ! blockEl && node.nodeType === Node.TEXT_NODE && node.parentNode === slashRoot ) {
 				const p = document.createElement( 'p' );
-				body.insertBefore( p, node );
+				slashRoot.insertBefore( p, node );
 				p.appendChild( node );
 				blockEl = p;
 			}
@@ -25745,15 +26769,28 @@
 		}
 
 		if ( m.type === 'changelog' ) {
+			// One release at a time with a clickable version rail (chips on
+			// small screens) — the FeiCode repository sectioned-changelog pattern.
+			const secs = m.sections || [];
+			const cur = secs[ m.sec ] || null;
 			return `
 			<div class="minimal-modal-overlay" id="minimal-modal-overlay">
-				<div class="minimal-modal wide">
+				<div class="minimal-modal wide minimal-cl-modal">
 					<div class="minimal-modal-head">
 						<div class="minimal-modal-title">What's new · v${ esc( B.version ) }</div>
 						<button class="minimal-x-btn" id="minimal-modal-close">×</button>
 					</div>
 					${ m.md === null ? '<div class="minimal-loading">Loading changelog…</div>'
-						: `<div class="minimal-changelog">${ changelogHtml( m.md ) }</div>
+						: `<div class="minimal-cl-layout">
+						<nav class="minimal-cl-rail" id="minimal-cl-rail" aria-label="${ esc( __( 'Versions' ) ) }">
+							${ secs.map( ( s, i ) => `
+							<button type="button" class="minimal-cl-ver${ i === m.sec ? ' sel' : '' }" data-clver="${ i }" aria-current="${ i === m.sec ? 'true' : 'false' }">
+								<span class="minimal-cl-ver-v">${ esc( s.version ) }</span>
+								${ s.date ? `<span class="minimal-cl-ver-d">${ esc( s.date ) }</span>` : '' }
+							</button>` ).join( '' ) }
+						</nav>
+						<div class="minimal-changelog" id="minimal-cl-body">${ cur ? changelogHtml( cur.md ) : changelogHtml( m.md ) }</div>
+					</div>
 					<div class="minimal-changelog-foot"><a href="https://feicode.com/WenPai-org/minimal-admin/docs/changelog/" target="_blank" rel="noopener">${ esc( __( 'View the full changelog with screenshots on FeiCode repository' ) ) } ↗</a></div>` }
 				</div>
 			</div>`;
@@ -26103,6 +27140,31 @@
 			const meta = editorSideDoorMeta( m.id );
 			const body = $( '.minimal-editor-door-body' );
 			if ( meta && meta.bind && body && state.editor ) meta.bind( body );
+		}
+
+		if ( m.type === 'changelog' && m.sections ) {
+			$$( '[data-clver]' ).forEach( ( btn ) =>
+				btn.addEventListener( 'click', () => {
+					const i = parseInt( btn.dataset.clver, 10 );
+					if ( i === m.sec ) return;
+					m.sec = i;
+					renderOverlays();
+				} )
+			);
+			// Keep the selected version visible in the rail — scrollLeft /
+			// scrollTop math only, never scrollIntoView (it propagates to
+			// scroll ancestors and yanks the page behind the modal).
+			const rail = $( '#minimal-cl-rail' );
+			const sel = rail && rail.querySelector( '.minimal-cl-ver.sel' );
+			if ( rail && sel ) {
+				if ( rail.scrollWidth > rail.clientWidth + 4 ) {
+					const t = sel.offsetLeft - ( rail.clientWidth - sel.offsetWidth ) / 2;
+					rail.scrollLeft = Math.max( 0, Math.min( t, rail.scrollWidth - rail.clientWidth ) );
+				} else if ( rail.scrollHeight > rail.clientHeight + 4 ) {
+					const t = sel.offsetTop - ( rail.clientHeight - sel.offsetHeight ) / 2;
+					rail.scrollTop = Math.max( 0, Math.min( t, rail.scrollHeight - rail.clientHeight ) );
+				}
+			}
 		}
 
 		if ( m.type === 'db-row' ) {
@@ -28088,13 +29150,39 @@
 		return out.join( '' ) || '<div class="minimal-empty">No changelog found.</div>';
 	}
 
+	// Split the raw changelog into releases for the modal's version rail
+	// (the FeiCode repository sectioned-changelog pattern, in-app). Each `## `
+	// heading opens a release; the heading itself stays in the section's
+	// markdown so changelogHtml renders it as the body's h3.
+	function changelogSections( md ) {
+		const sections = [];
+		let cur = null;
+		String( md ).split( /\r?\n/ ).forEach( ( line ) => {
+			const m = line.match( /^## (.*)$/ );
+			if ( m ) {
+				const head = m[ 1 ].match( /^\*\*(v[\d.]+)\*\*\s*-\s*(.+)$/ );
+				cur = {
+					version: head ? head[ 1 ] : m[ 1 ].replace( /\*/g, '' ).trim(),
+					date: head ? head[ 2 ].trim() : '',
+					lines: [ line ],
+				};
+				sections.push( cur );
+				return;
+			}
+			if ( cur ) cur.lines.push( line );
+		} );
+		return sections.map( ( s ) => ( { version: s.version, date: s.date, md: s.lines.join( '\n' ) } ) );
+	}
+
 	function openChangelog() {
-		state.modal = { type: 'changelog', md: null };
+		state.modal = { type: 'changelog', md: null, sections: null, sec: 0 };
 		renderOverlays();
 		api( 'minimal-admin/v1/changelog' )
 			.then( ( r ) => {
 				if ( state.modal && state.modal.type === 'changelog' ) {
 					state.modal.md = r.markdown || '';
+					state.modal.sections = changelogSections( state.modal.md );
+					state.modal.sec = 0;
 					renderOverlays();
 				}
 			} )
@@ -29199,7 +30287,7 @@
 							<textarea class="minimal-input" id="minimal-pf-bio" rows="4" placeholder="A couple of sentences about you — themes show this in author boxes.">${ esc( u.description || '' ) }</textarea>
 						</div>
 						<div class="minimal-pf-avatar">
-							${ u.avatar_urls && u.avatar_urls[ '48' ] ? `<img class="minimal-user-row-avatar" src="${ esc( u.avatar_urls[ '48' ] ) }" alt="">` : '' }
+							${ avatarTileHtml( u.name, u.avatar_urls && u.avatar_urls[ '48' ] ) }
 							<div class="minimal-toggle-desc">Your profile picture comes from <a href="https://gravatar.com/" target="_blank" rel="noopener">Gravatar ↗</a>, matched to your email.</div>
 						</div>
 						<div><button class="minimal-btn-primary" data-pf-save>Save changes</button></div>
@@ -30160,6 +31248,14 @@
 					if ( ! d || ! d.ok ) return;
 					state.cache.notifications = null;
 					loadNotifications().then( () => state.notifOpen && renderOverlays() );
+					// The capture also reports admin-menu removals — apply a
+					// changed set to the nav right away rather than waiting
+					// for the next boot.
+					if ( Array.isArray( d.menu_removed )
+						&& JSON.stringify( d.menu_removed ) !== JSON.stringify( B.menuRemoved || [] ) ) {
+						B.menuRemoved = d.menu_removed;
+						renderNavWorkspace();
+					}
 				} )
 				.catch( () => {} );
 		}

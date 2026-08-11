@@ -63,18 +63,20 @@ const { BASE, launch, login, createPost, deletePost, reporter } = require( './he
 	t.check( 'header shows the site-icon-or-m mark + site name; version in the topbar',
 		markOk && brand.name === ( brand.bootName || 'minimal' ) && brand.verShown && ! brand.verInLogo, JSON.stringify( brand ) );
 
-	/* ===== Version badge → changelog modal ===== */
+	/* ===== Version badge → changelog modal (sectioned: rail + one release) ===== */
 	await page.click( '#minimal-ver-btn' );
 	await page.waitForSelector( '.minimal-changelog h3', { timeout: 10000 } );
 	const log = await page.evaluate( () => ( {
 		title: document.querySelector( '.minimal-modal-title' ).textContent,
+		rail: document.querySelectorAll( '.minimal-cl-ver' ).length,
 		heads: document.querySelectorAll( '.minimal-changelog h3' ).length,
 		bullets: document.querySelectorAll( '.minimal-changelog li' ).length,
 		// "**v…" would mean the version headings failed to render; a bare
 		// "##" can legitimately appear inside code spans, so don't match it.
 		raw: /\*\*v\d/.test( document.querySelector( '.minimal-changelog' ).textContent ),
 	} ) );
-	t.check( 'changelog modal renders versions + bullets, no raw markdown', /What's new/.test( log.title ) && log.heads >= 3 && log.bullets > 10 && ! log.raw, JSON.stringify( log ) );
+	t.check( 'changelog modal renders the version rail + one release, no raw markdown',
+		/What's new/.test( log.title ) && log.rail >= 3 && log.heads === 1 && log.bullets > 3 && ! log.raw, JSON.stringify( log ) );
 	await page.keyboard.press( 'Escape' );
 	await page.waitForTimeout( 300 );
 
@@ -94,18 +96,18 @@ const { BASE, launch, login, createPost, deletePost, reporter } = require( './he
 	await page.waitForTimeout( 400 );
 	t.check( 'nav tab restores the sidebar', await page.evaluate( () => ! document.body.classList.contains( 'minimal-nav-hidden' ) && document.querySelector( '.minimal-sidebar' ).offsetWidth > 100 ), '' );
 
-	/* ===== Role combobox in the user modal (real save round-trip) ===== */
+	/* ===== Role combobox on the user edit page (real save round-trip) ===== */
 	await page.goto( `${ BASE }/minimal-admin/users`, { waitUntil: 'domcontentloaded' } );
 	await page.waitForSelector( '.minimal-user-cols.minimal-table-row', { timeout: 15000 } );
 	await page.locator( '.minimal-user-cols.minimal-table-row', { hasText: 'minimal-editor' } ).first().click();
-	await page.waitForSelector( '#minimal-uf-role', { timeout: 10000 } );
-	t.check( 'role field is the strict combobox showing the label', await page.$eval( '#minimal-uf-role', ( i ) => i.classList.contains( 'minimal-ac-input' ) && i.value === 'Editor' ), '' );
-	await page.click( '#minimal-uf-role' );
+	await page.waitForSelector( '#minimal-ue-role', { timeout: 10000 } );
+	t.check( 'role field is the strict combobox showing the label', await page.$eval( '#minimal-ue-role', ( i ) => i.classList.contains( 'minimal-ac-input' ) && i.value === 'Editor' ), '' );
+	await page.click( '#minimal-ue-role' );
 	await page.keyboard.type( 'auth' );
 	await page.waitForTimeout( 250 );
 	await page.keyboard.press( 'Enter' );
-	await page.click( '#minimal-uf-save' );
-	await page.waitForTimeout( 1500 );
+	await page.click( '[data-ue-save]' );
+	await page.waitForTimeout( 1800 );
 	const savedRole = await page.evaluate( async () => {
 		const r = await fetch( window.MINIMAL.restUrl + 'wp/v2/users?context=edit&search=minimal-editor&_fields=id,roles', { headers: { 'X-WP-Nonce': window.MINIMAL.nonce } } );
 		return ( await r.json() )[ 0 ];

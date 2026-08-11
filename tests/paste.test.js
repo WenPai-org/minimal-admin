@@ -241,6 +241,81 @@ console.log(x);</code></pre><blockquote><p>Quoted wisdom.</p></blockquote><figur
 	raw = await save( plainId );
 	t.check( 'non-URL paste leaves the words unlinked in saved markup', /Replace WORD here\./.test( raw ) && ! /<a /.test( raw ), raw );
 
-	for ( const id of [ docsId, wordId, webId, undoId, ctxId, textId, classicId, e2eId, linkId, plainId ] ) await deletePost( page, id );
+	/* ===== Plain text that IS block markup → real blocks (GH #4 follow-up:
+	 * AI tools and tutorials hand over raw Gutenberg markup as text; the
+	 * block editor converts it via its raw handler, so Minimal does too) ===== */
+	const MARKUP = [
+		'<!-- wp:group {"layout":{"type":"constrained"}} -->',
+		'<div class="wp-block-group"><!-- wp:heading {"textAlign":"center","level":2} -->',
+		'<h2 class="wp-block-heading has-text-align-center">Pasted markup heading</h2>',
+		'<!-- /wp:heading -->',
+		'',
+		'<!-- wp:paragraph -->',
+		'<p>Pasted markup body.</p>',
+		'<!-- /wp:paragraph --></div>',
+		'<!-- /wp:group -->',
+	].join( '\n' );
+	const markupId = await createPost( page, { title: 'Paste: Block markup', content: '<!-- wp:paragraph -->\n<p>Start.</p>\n<!-- /wp:paragraph -->' } );
+	await openEditor( page, markupId );
+	await freshParagraph( page );
+	const markupPrevented = await paste( { 'text/plain': MARKUP } );
+	await page.waitForTimeout( 600 );
+	const markupShape = await page.evaluate( () => {
+		const body = document.querySelector( '#minimal-editor-body' );
+		const group = body.querySelector( '.minimal-block-island[data-block="group"], .minimal-block-island[data-block="core/group"]' );
+		return {
+			slot: !! ( group && group.classList.contains( 'minimal-slot-island' ) ),
+			h2: group ? ( group.querySelector( '.minimal-slot > h2' ) || {} ).textContent || '' : '',
+			literal: body.textContent.includes( '<!-- wp:group' ),
+		};
+	} );
+	t.check( 'block-markup text converts to real blocks (group slots, no literal text)',
+		markupPrevented && markupShape.slot && markupShape.h2.includes( 'Pasted markup heading' ) && ! markupShape.literal,
+		JSON.stringify( markupShape ) );
+	raw = await save( markupId );
+	t.check( 'converted markup saves as blocks',
+		raw.includes( '<!-- wp:group {"layout":{"type":"constrained"}} -->' ) && raw.includes( 'Pasted markup body.' ), raw.slice( 0, 300 ) );
+
+	// A section-tagged group MISSING its "tagName" attr (the AI-markup
+	// idiom) heals on paste — without the attr, core's classic-theme group
+	// wrap assumes <div> and mis-nests the whole section on the front end.
+	await freshParagraph( page );
+	await paste( { 'text/plain': [
+		'<!-- wp:group {"style":{"spacing":{"padding":{"top":"10px"}}}} -->',
+		'<section class="wp-block-group" style="padding-top:10px"><!-- wp:paragraph -->',
+		'<p>Sectioned content.</p>',
+		'<!-- /wp:paragraph --></section>',
+		'<!-- /wp:group -->',
+	].join( '\n' ) } );
+	await page.waitForTimeout( 500 );
+	raw = await save( markupId );
+	const healedGroup = raw.slice( raw.lastIndexOf( '<!-- wp:group' ) );
+	t.check( 'section group heals its tagName attr on paste',
+		healedGroup.includes( '"tagName":"section"' ) && healedGroup.includes( '<section class="wp-block-group"' )
+		&& healedGroup.includes( 'Sectioned content.' ), healedGroup.slice( 0, 200 ) );
+
+	// Into a code block the same text stays LITERAL — pasting markup into
+	// code to talk ABOUT it must never convert.
+	const codeId = await createPost( page, { title: 'Paste: Markup into code', content: '<!-- wp:code -->\n<pre class="wp-block-code"><code>start</code></pre>\n<!-- /wp:code -->' } );
+	await openEditor( page, codeId );
+	await page.evaluate( () => {
+		const code = document.querySelector( '#minimal-editor-body pre code' );
+		const r = document.createRange();
+		r.selectNodeContents( code );
+		r.collapse( false );
+		const s = getSelection();
+		s.removeAllRanges();
+		s.addRange( r );
+		document.querySelector( '#minimal-editor-body' ).focus();
+	} );
+	await paste( { 'text/plain': MARKUP } );
+	await page.waitForTimeout( 400 );
+	const codeShape = await page.evaluate( () => ( {
+		literal: document.querySelector( '#minimal-editor-body pre' ).textContent.includes( '<!-- wp:group' ),
+		islands: document.querySelectorAll( '#minimal-editor-body .minimal-block-island' ).length,
+	} ) );
+	t.check( 'markup pasted into a code block stays literal', codeShape.literal && codeShape.islands === 0, JSON.stringify( codeShape ) );
+
+	for ( const id of [ docsId, wordId, webId, undoId, ctxId, textId, classicId, e2eId, linkId, plainId, markupId, codeId ] ) await deletePost( page, id );
 	await t.done( browser, errors );
 } )().catch( ( e ) => { console.error( e ); process.exit( 1 ); } );

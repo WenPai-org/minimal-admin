@@ -23,6 +23,14 @@ class Minimal_Admin_REST {
 		// next lock refresh notices. Requests without the header (Gutenberg,
 		// third parties) are untouched.
 		add_filter( 'rest_request_before_callbacks', array( __CLASS__, 'guard_locked_save' ), 10, 3 );
+		// Core's WP_Locale swaps a space thousands separator for the literal
+		// string `&nbsp;` (wp-admin prints numbers as HTML, where the entity
+		// renders invisibly). Minimal renders REST values as plain text, so on
+		// space-separated locales (pl, cs, fr, ru…) every
+		// number_format_i18n() value — size_format() included — would show
+		// the raw entity. Scoped to Minimal routes; decoding to U+00A0 keeps
+		// core's no-wrap intent.
+		add_filter( 'rest_request_before_callbacks', array( __CLASS__, 'arm_plain_numbers' ), 10, 3 );
 	}
 
 	public static function register_routes() {
@@ -2713,6 +2721,24 @@ class Minimal_Admin_REST {
 	 * by failing the save itself with a 409 the client turns into the
 	 * taken-over UI. Only fires when the request carries our header.
 	 */
+	/**
+	 * See init(): number_format_i18n output carries a literal `&nbsp;` on
+	 * space-separated locales. One filter here fixes every call site (the
+	 * overview stats, the DB browser, every adapter status card) at once.
+	 */
+	public static function arm_plain_numbers( $response, $handler, $request ) {
+		if ( 0 === strpos( $request->get_route(), '/' . self::NS . '/' ) ) {
+			add_filter( 'number_format_i18n', array( __CLASS__, 'decode_formatted_number' ) );
+		}
+		return $response;
+	}
+
+	public static function decode_formatted_number( $formatted ) {
+		return false === strpos( (string) $formatted, '&' )
+			? $formatted
+			: html_entity_decode( (string) $formatted, ENT_QUOTES, 'UTF-8' );
+	}
+
 	public static function guard_locked_save( $response, $handler, $request ) {
 		if ( null !== $response ) {
 			return $response;
@@ -2984,9 +3010,12 @@ class Minimal_Admin_REST {
 		if ( current_user_can( 'update_plugins' ) ) {
 			$updates = get_site_transient( 'update_plugins' );
 			$checked = $updates && ! empty( $updates->last_checked ) ? (int) $updates->last_checked : time();
-			if ( $updates && ! empty( $updates->response ) ) {
+			// real_plugin_updates: the transient's stale already-installed
+			// offers never become notification rows.
+			$real = self::real_plugin_updates();
+			if ( $real ) {
 				$all_plugins = get_plugins();
-				foreach ( $updates->response as $file => $data ) {
+				foreach ( $real as $file => $data ) {
 					$name    = isset( $all_plugins[ $file ]['Name'] ) ? $all_plugins[ $file ]['Name'] : $file;
 					$items[] = array(
 						'id'     => 'plugin-' . $file . '-' . $data->new_version,
@@ -3009,8 +3038,9 @@ class Minimal_Admin_REST {
 		if ( current_user_can( 'update_themes' ) ) {
 			$tupdates = get_site_transient( 'update_themes' );
 			$tchecked = $tupdates && ! empty( $tupdates->last_checked ) ? (int) $tupdates->last_checked : time();
-			if ( $tupdates && ! empty( $tupdates->response ) ) {
-				foreach ( $tupdates->response as $stylesheet => $data ) {
+			$treal    = self::real_theme_updates();
+			if ( $treal ) {
+				foreach ( $treal as $stylesheet => $data ) {
 					$theme   = wp_get_theme( $stylesheet );
 					$ver     = is_array( $data ) ? ( $data['new_version'] ?? '' ) : '';
 					$tname   = $theme->exists() ? $theme->get( 'Name' ) : $stylesheet;
@@ -3128,18 +3158,69 @@ class Minimal_Admin_REST {
 	/**
 	 * Map of plugin_file => new_version for available updates.
 	 */
-	public static function plugin_updates() {
+	/**
+	 * The update_plugins transient serves STALE offers routinely — an update
+	 * installed elsewhere (WP-CLI, wp-admin, an auto-update) leaves the old
+	 * offer in `response` until the next refresh, and wp-admin's screens
+	 * paper over it by refreshing on load. Validate every offer against the
+	 * LIVE plugin headers — never the transient's own `checked` map, which
+	 * is exactly the part that goes stale — and drop satisfied offers plus
+	 * rows for plugins that no longer exist.
+	 */
+	private static function real_plugin_updates() {
 		$updates = get_site_transient( 'update_plugins' );
-		$map     = array();
-		if ( $updates && ! empty( $updates->response ) ) {
-			foreach ( $updates->response as $file => $data ) {
-				$map[ $file ] = $data->new_version;
-			}
+		$out     = array();
+		if ( ! $updates || empty( $updates->response ) ) {
+			return $out;
 		}
-		$themes    = current_user_can( 'update_themes' ) ? get_site_transient( 'update_themes' ) : null;
+		$all = self::all_plugins();
+		foreach ( $updates->response as $file => $data ) {
+			$new = isset( $data->new_version ) ? (string) $data->new_version : '';
+			if ( '' === $new || ! isset( $all[ $file ] ) ) {
+				continue;
+			}
+			$installed = (string) ( $all[ $file ]['Version'] ?? '' );
+			if ( '' !== $installed && version_compare( $installed, $new, '>=' ) ) {
+				continue;
+			}
+			$out[ $file ] = $data;
+		}
+		return $out;
+	}
+
+	/** Same staleness gate for themes, against the live stylesheet headers. */
+	private static function real_theme_updates() {
+		$updates = get_site_transient( 'update_themes' );
+		$out     = array();
+		if ( ! $updates || empty( $updates->response ) ) {
+			return $out;
+		}
+		foreach ( $updates->response as $stylesheet => $data ) {
+			$new = is_array( $data ) ? (string) ( $data['new_version'] ?? '' ) : '';
+			if ( '' === $new ) {
+				continue;
+			}
+			$theme = wp_get_theme( $stylesheet );
+			if ( ! $theme->exists() ) {
+				continue;
+			}
+			$installed = (string) $theme->get( 'Version' );
+			if ( '' !== $installed && version_compare( $installed, $new, '>=' ) ) {
+				continue;
+			}
+			$out[ $stylesheet ] = $data;
+		}
+		return $out;
+	}
+
+	public static function plugin_updates() {
+		$map = array();
+		foreach ( self::real_plugin_updates() as $file => $data ) {
+			$map[ $file ] = $data->new_version;
+		}
 		$theme_map = array();
-		if ( $themes && ! empty( $themes->response ) ) {
-			foreach ( $themes->response as $stylesheet => $data ) {
+		if ( current_user_can( 'update_themes' ) ) {
+			foreach ( self::real_theme_updates() as $stylesheet => $data ) {
 				$theme_map[ $stylesheet ] = is_array( $data ) ? ( $data['new_version'] ?? '' ) : '';
 			}
 		}
@@ -4262,8 +4343,8 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			$out[] = array(
 				'slug'         => $tax->name,
 				'rest'         => $tax->rest_base ? $tax->rest_base : $tax->name,
-				'label'        => $tax->labels->name,
-				'item'         => strtolower( $tax->labels->singular_name ),
+				'label'        => Minimal_Admin::plain_text( $tax->labels->name ),
+				'item'         => strtolower( Minimal_Admin::plain_text( $tax->labels->singular_name ) ),
 				'hierarchical' => (bool) $tax->hierarchical,
 				'canDelete'    => current_user_can( $tax->cap->delete_terms ),
 				'canEdit'      => current_user_can( $tax->cap->edit_terms ),
@@ -5145,13 +5226,13 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		require_once ABSPATH . 'wp-admin/includes/misc.php';
 
 		wp_update_plugins();
-		$updates = get_site_transient( 'update_plugins' );
-		if ( ! $updates || empty( $updates->response ) ) {
+		// real_plugin_updates: even freshly refreshed, never reinstall a
+		// plugin whose installed version already satisfies the offer.
+		$pending_before = self::real_plugin_updates();
+		if ( ! $pending_before ) {
 			return rest_ensure_response( array( 'updated' => array() ) );
 		}
-
-		$pending_before = is_array( $updates->response ) ? $updates->response : array();
-		$files          = array_keys( $pending_before );
+		$files = array_keys( $pending_before );
 		$skin           = new WP_Ajax_Upgrader_Skin();
 		$upgrader       = new Plugin_Upgrader( $skin );
 		$results        = $upgrader->bulk_upgrade( $files );

@@ -534,6 +534,16 @@ class Minimal_Admin {
 		return add_query_arg( self::QUERY_VAR, '1', home_url( '/' ) );
 	}
 
+	/**
+	 * A display string as plain text. Labels and names are HTML-context by
+	 * WordPress convention — translators and plugins legitimately put
+	 * &#039;, &amp; or &nbsp; in them because wp-admin prints them as HTML.
+	 * Minimal renders text, so decode before sending; the client re-escapes.
+	 */
+	public static function plain_text( $s ) {
+		return html_entity_decode( wp_strip_all_tags( (string) $s ), ENT_QUOTES, 'UTF-8' );
+	}
+
 	public static function admin_bar_link( $bar ) {
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			return;
@@ -776,9 +786,12 @@ class Minimal_Admin {
 			// Site discussion defaults — new-post editor state starts from
 			// these so the sidebar switches match what WP will actually store
 			// (GH #6: they were hardcoded open).
+			// Normalized to open/closed: wp-admin's unchecked Discussion
+			// checkbox stores '' (null write bypasses sanitize_option), and
+			// core treats anything other than 'open' as closed.
 			'discussion' => array(
-				'comments' => get_option( 'default_comment_status', 'open' ),
-				'pings'    => get_option( 'default_ping_status', 'open' ),
+				'comments' => ( 'open' === get_option( 'default_comment_status', 'open' ) ) ? 'open' : 'closed',
+				'pings'    => ( 'open' === get_option( 'default_ping_status', 'open' ) ) ? 'open' : 'closed',
 			),
 			'roles'    => current_user_can( 'list_users' ) ? wp_roles()->get_names() : new \stdClass(),
 			'surfaces' => Minimal_Admin_Surfaces::for_current_user(),
@@ -794,6 +807,10 @@ class Minimal_Admin {
 				'nonce' => Minimal_Admin_Notices::nonce(),
 				'stale' => Minimal_Admin_Notices::is_stale(),
 			),
+			// Admin-menu items a developer hid with remove_menu_page(),
+			// mirrored into Minimal's nav (last capture's view; a fresh capture
+			// updates it in-session). Cosmetic, like the wp-admin original.
+			'menuRemoved' => Minimal_Admin_Notices::menu_removed(),
 			// Ungated admin-ajax URL: core's `rest-nonce` action lives there,
 			// and the client uses it to mint a fresh REST nonce in place when
 			// the boot nonce expires (a tab left open past nonce lifetime).
