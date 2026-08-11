@@ -11,7 +11,7 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Minimal Admin translation pass\n"
 "Language: zh_CN\n"
-"Project-Id-Version: Minimal Admin 0.27.0.1\n"
+"Project-Id-Version: Minimal Admin 0.27.0.2\n"
 
 #: assets/js/app.js:29017
 msgid "Item"

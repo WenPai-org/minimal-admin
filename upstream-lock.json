@@ -5,7 +5,7 @@
   "upstream_tag": "v0.27.0",
   "upstream_commit": "38c8869e3410daf4d4dcd94bdf165ea30702c5c3",
   "upstream_source_sha256": "d39b80835115123a82fe5f64ed6449ccf48b102904900a25c6b0628df60c169e",
-  "downstream_version": "0.27.0.1",
+  "downstream_version": "0.27.0.2",
   "transformation_sha256": "04221eb89199e8ad0aa16b573ff74c7fc8957463445566825da85c176b1688a4",
   "synced_at": "2026-08-11T02:47:10+00:00"
 }
