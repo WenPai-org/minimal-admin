@@ -223,7 +223,7 @@ slot 和运行段意味着编辑器现在拥有 FOUR 个编辑上下文——正
 
 - **一个规范解析器。** `blockRootOf( node, body )` 返回节点的
   内容容器，否则为正文；`topBlockIn( node, body )` 返回其顶层
-  该根节点内的区块。所有应该将其视为顶层区块的“遍历到顶层区块”操作
+  该根节点内的区块。所有应该将其视为顶层区块的「遍历到顶层区块」操作
   插槽作为迷你正文会经过这些流程（Markdown 前缀、工具栏的区块
   以及对齐按钮、行内代码、斜杠菜单、焦点模式分带、
   代码块间距启发式）。使用它们的新功能会继承插槽支持
@@ -292,7 +292,7 @@ slot 和运行段意味着编辑器现在拥有 FOUR 个编辑上下文——正
    子元素直接位于包装器的开始标签内：`cover` 是
    `wrapper → background span/img → inner-container div → children`，`media-text` 是
    `wrapper → figure → div.wp-block-media-text__content → children`。为每个区块添加一个
-   “content container” 定位器，因此解析结果为 head/open/**preamble**/inner/tail，其中
+   「content container」 定位器，因此解析结果为 head/open/**preamble**/inner/tail，其中
    背景/媒体字节逐字保留，就像其他所有内容一样。重新组装门
    仍由它决定：无法实现字节级相同的解析，就没有插槽。保持相同的脏刷新契约。
 
@@ -319,7 +319,7 @@ slot 和运行段意味着编辑器现在拥有 FOUR 个编辑上下文——正
 
    ✅ *已于 2026-08-09 完成测量*（`scratchpad/probe-container-mix.php` + `-names.php`，TT4+TT5
    patterns、155 个 patterns / 494 个容器单元）。**混合是常态，而非例外——
-   “保持未构建”的退出条件并不成立。** 在 494 个单元中（列按其
+   「保持未构建」的退出条件并不成立。** 在 494 个单元中（列按其
    列作为一个单元）：20% 全部为简单结构，39% 仅因嵌套容器而混合，41% 携带一个
    复杂叶节点。在顶层，当前 131 个容器中有 3 个支持插槽（2%）；仅嵌套
    （第 4 项）将其提升到 26（20%）；其余 105 个需要嵌套岛（第 5 项）——因此
@@ -354,7 +354,7 @@ slot 和运行段意味着编辑器现在拥有 FOUR 个编辑上下文——正
    限定于根（SELECTION 中的 `blockRootOf`；`isRootChild` = body 的直接子项
    或 slot），而不是针对 slot 直接退出——Backspace 会启动/移除嵌套 island，并带有
    相同的两次按键 + 撤销提示模型；`.minimal-island-run` 退出仍然保留；
-   （e）可编辑性检查的“最近包装器”规则（图像点击、链接点击、表格
+   （e）可编辑性检查的「最近包装器」规则（图像点击、链接点击、表格
    上下文菜单）：`.minimal-block-island, .minimal-slot` 中距离最近的一个——插槽意味着写入
    表面，一个岛意味着预览界面；(f) 针对插槽的 CSS 双胞胎用于
    表格/图像切块和单元格网格线（`.minimal-slot > …` 位于
@@ -376,7 +376,7 @@ slot 和运行段意味着编辑器现在拥有 FOUR 个编辑上下文——正
    媒体流（粘贴/拖放图像文件、选择器插入）会落入插入点所在的 slot。
    机制：`insertIsland`/`insertPatternIslands` 具备根感知能力，会传递 `ed`（一个
    立即插入组 slot），并标记祖先 slot（insertAdjacentHTML 会触发
-   无输入——⌘/ 路径从不输入“/”，因此不能依赖输入标记）；
+   无输入——⌘/ 路径从不输入「/」，因此不能依赖输入标记）；
    `runSlashAction` 的 direct-DOM 分支（action.html、action.block、command r.html）
    标记其落点段落；`insertImageFiles` 的受限光标跳转会落在
    在 slot 内。套件：nested-islands 20（斜杠表格插入 + embed 粘贴往返
@@ -384,7 +384,7 @@ slot 和运行段意味着编辑器现在拥有 FOUR 个编辑上下文——正
    patterns 9、block-picker 10、stackable-designs 19/20。两个套件延迟幽灵
    顺手修复：patterns 和 stackable-designs 都使用了扁平的 ⌘S 后等待
    （rule-77 类）并读取过期的原始内容——现在两者都会轮询预期内容。
-   可堆叠项剩余的失败（“添加会克隆静态列”，2 列中出现 1
+   可堆叠项剩余的失败（「添加会克隆静态列」，2 列中出现 1
    预期）是预先存在的（已二分确认：在嵌套前的 adec8ba 中完全相同），看起来像
    类似上游 CDN 设计漂移——在下一次设计套件巡检时重新固定，不要
    将其视为嵌套回归问题处理。
@@ -392,12 +392,12 @@ slot 和运行段意味着编辑器现在拥有 FOUR 个编辑上下文——正
    ✅ *插槽评论容错已于 2026-08-09 发布（Austin 的换行报告）。*
    AI 生成的标记使用普通 HTML 注释标记各个部分
    （`<!-- Testimonial 1 -->`）；这些自由格式块过去会将容器下沉到
-   阶段 2 运行岛——Enter 按设计被阻止，这会被理解为“我无法
-   生成换行符。”仅注释的自由格式（`slotIgnorableHtml`）现在通过了
+   阶段 2 运行岛——Enter 按设计被阻止，这会被理解为「我无法
+   生成换行符。」仅注释的自由格式（`slotIgnorableHtml`）现在通过了
    插槽门：它会以 DOM 注释节点的形式进入插槽，`serializeToBlocks`
    重新发出 COMMENT_NODE（仅普通注释——绝不包含 `wp:`），列
    刷新会从存储的原始内容中重新发出列间注释片段。修复方案是
-   “运行中 Enter 不起作用”始终表示 MORE SLOTTING，绝不是运行中的 Enter——
+   「运行中 Enter 不起作用」始终表示 MORE SLOTTING，绝不是运行中的 Enter——
    按字节偏移拼接文本，而结构键会导致损坏。套件：
    nested-islands 30（带注释标签的组 slot；在注释旁按 Enter；
    脏刷新会重新发出它）。
