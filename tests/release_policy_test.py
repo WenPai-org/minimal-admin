@@ -14,6 +14,8 @@ class ReleasePolicyTest(unittest.TestCase):
         self.assertNotIn("pull_translations.sh", workflow)
         self.assertIn("tools/sync_upstream.py", workflow)
         self.assertIn("tools/build_release.py", workflow)
+        self.assertIn("git add -A\n", workflow)
+        self.assertNotIn("git add -A ':!dist'", workflow)
         self.assertIn("git push --atomic", workflow)
 
     def test_incomplete_translations_do_not_block_release(self) -> None:

@@ -79,7 +79,9 @@ jobs:
           UPSTREAM_TAG="${{ steps.upstream.outputs.tag }}"
           git config user.name "FeiCode Release Bot"
           git config user.email "release-bot@wenpai.org"
-          git add -A ':!dist'
+          # dist/ is ignored, so the normal all-changes form stages only source.
+          # An exclude-only pathspec makes Git inspect the ignored directory and fail.
+          git add -A
           git commit -m "release: sync upstream $UPSTREAM_TAG as $VERSION"
           git tag -a "v$VERSION" -m "Minimal Admin $VERSION"
           ASKPASS=$(mktemp)
