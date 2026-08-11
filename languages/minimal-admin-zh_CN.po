@@ -2,1451 +2,1453 @@
 # This file is distributed under the same license as the 项目托管 - Minimal Admin - 插件主体 package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: +0000\n"
+"PO-Revision-Date: 2026-08-11 23:11+0800\n"
+"Last-Translator: WenPai.org\n"
+"Language-Team: Chinese (China)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: GlotPress/4.0.2\n"
+"X-Generator: Minimal Admin translation pass\n"
 "Language: zh_CN\n"
-"Project-Id-Version: 项目托管 - Minimal Admin - 插件主体\n"
+"Project-Id-Version: Minimal Admin 0.27.0.1\n"
 
 #: assets/js/app.js:29017
 msgid "Item"
-msgstr ""
+msgstr "项目"
 
 #. translators: %s: name of the restored item.
 #: assets/js/app.js:29017
 msgid "%s restored for them"
-msgstr ""
+msgstr "已为该用户恢复 %s"
 
 #: assets/js/app.js:28997
 msgid "Signed out everywhere"
-msgstr ""
+msgstr "已在所有设备上退出登录"
 
 #: assets/js/app.js:28993
 msgid "Sign this user out of all sessions?"
-msgstr ""
+msgstr "确定要让此用户退出所有会话吗？"
 
 #: assets/js/app.js:28982
 msgid "Session signed out"
-msgstr ""
+msgstr "会话已退出"
 
 #: assets/js/app.js:28947
 msgid "User updated"
-msgstr ""
+msgstr "用户已更新"
 
 #: assets/js/app.js:28945
 msgid "language pack installed"
-msgstr ""
+msgstr "语言包已安装"
 
 #: assets/js/app.js:28890
 msgid "Delete user"
-msgstr ""
+msgstr "删除用户"
 
 #: assets/js/app.js:28889
 msgid "Deleting a user asks what happens to their content first."
-msgstr ""
+msgstr "删除用户前需先选择如何处理其内容。"
 
 #: assets/js/app.js:28888
 msgid "Danger zone"
-msgstr ""
+msgstr "危险区域"
 
 #: assets/js/app.js:28884
 msgid "Sign out everywhere"
-msgstr ""
+msgstr "在所有设备上退出登录"
 
 #: assets/js/app.js:28882
 msgid "Sign out"
-msgstr ""
+msgstr "退出登录"
 
 #: assets/js/app.js:28880
 msgid "signed in"
-msgstr ""
+msgstr "已登录"
 
 #: assets/js/app.js:28875
 msgid "No active sessions."
-msgstr ""
+msgstr "没有活动会话。"
 
 #: assets/js/app.js:28874
 msgid "Sessions"
-msgstr ""
+msgstr "会话"
 
 #: assets/js/app.js:28870
 msgid "Restore"
-msgstr ""
+msgstr "恢复"
 
 #: assets/js/app.js:28863
 msgid "Items this user chose to hide from their own Minimal. Restoring brings one back for them."
-msgstr ""
+msgstr "此用户选择在自己的 Minimal 中隐藏的项目。恢复后，该项目将重新对其显示。"
 
 #: assets/js/app.js:28862
 msgid "Hidden for them"
-msgstr ""
+msgstr "已为该用户隐藏"
 
 #: assets/js/app.js:28853
 msgid "The WordPress admin bar on the front end while they are signed in."
-msgstr ""
+msgstr "该用户登录后在网站前端显示的 WordPress 管理工具栏。"
 
 #: assets/js/app.js:28850 assets/js/app.js:28852
 msgid "Show toolbar when viewing the site"
-msgstr ""
+msgstr "查看网站时显示工具栏"
 
 #: assets/js/app.js:28846
 msgid "After sign-in they land in Minimal. Full wp-admin stays available."
-msgstr ""
+msgstr "登录后进入 Minimal，完整的 wp-admin 仍然可用。"
 
 #: assets/js/app.js:28843 assets/js/app.js:28845
 msgid "Minimal is their default admin"
-msgstr ""
+msgstr "将 Minimal 设为其默认后台"
 
 #: assets/js/app.js:28837
 msgid "Color scheme"
-msgstr ""
+msgstr "配色方案"
 
 #: assets/js/app.js:28834
 msgid "Set their Minimal palette now so it looks right before their first sign-in. Light or dark mode stays a device preference each person controls themselves."
-msgstr ""
+msgstr "立即设置该用户的 Minimal 调色板，使其首次登录前即可正确显示。浅色或深色模式仍是每个人自行控制的设备偏好。"
 
 #: assets/js/app.js:28833
 msgid "what this user sees"
-msgstr ""
+msgstr "该用户看到的内容"
 
 #: assets/js/app.js:28833
 msgid "Appearance"
-msgstr ""
+msgstr "外观"
 
 #: assets/js/app.js:28824
 msgid "Bio"
-msgstr ""
+msgstr "个人简介"
 
 #: assets/js/app.js:28820
 msgid "Website"
-msgstr ""
+msgstr "网站"
 
 #: assets/js/app.js:28815
 msgid "Last name"
-msgstr ""
+msgstr "姓氏"
 
 #: assets/js/app.js:28811
 msgid "First name"
-msgstr ""
+msgstr "名字"
 
 #: assets/js/app.js:28807
 msgid "author boxes & archives"
-msgstr ""
+msgstr "作者信息框与归档"
 
 #: assets/js/app.js:28807
 msgid "Public profile"
-msgstr ""
+msgstr "公开资料"
 
 #: assets/js/app.js:28803 assets/js/app.js:28827
 msgid "Save changes"
-msgstr ""
+msgstr "保存更改"
 
 #: assets/js/app.js:28800
 msgid "Generate"
-msgstr ""
+msgstr "生成"
 
 #: assets/js/app.js:28797
 msgid "New password (leave blank to keep)"
-msgstr ""
+msgstr "新密码（留空则保持不变）"
 
 #: assets/js/app.js:28790
 msgid "Language"
-msgstr ""
+msgstr "语言"
 
 #: assets/js/app.js:28781
 msgid "Role"
-msgstr ""
+msgstr "角色"
 
 #: assets/js/app.js:28777
 msgid "Email"
-msgstr ""
+msgstr "电子邮箱"
 
 #: assets/js/app.js:28773
 msgid "Display name"
-msgstr ""
+msgstr "显示名称"
 
 #: assets/js/app.js:28753
 msgid "Loading user…"
-msgstr ""
+msgstr "正在加载用户…"
 
 #: assets/js/app.js:28726
 msgid "Could not load this user."
-msgstr ""
+msgstr "无法加载此用户。"
 
 #: assets/js/app.js:28171
 msgid "No guide found."
-msgstr ""
+msgstr "未找到指南。"
 
 #: assets/js/app.js:26115
 msgid "Value copied"
-msgstr ""
+msgstr "值已复制"
 
 #: assets/js/app.js:26115
 msgid "Copied (truncated value)"
-msgstr ""
+msgstr "已复制（值已截断）"
 
 #: assets/js/app.js:25931
 msgid "Everything Minimal writes is native WordPress: real block markup, core options, core users. Deactivate the plugin and nothing is lost. Plugins extend Minimal with one PHP filter, as plain data, which is why nothing here can nag you."
-msgstr ""
+msgstr "Minimal 写入的所有内容均为 WordPress 原生数据：真实的区块标记、核心选项和核心用户。停用插件不会丢失任何内容。插件仅通过一个 PHP 过滤器以纯数据扩展 Minimal，因此这里不会出现骚扰提示。"
 
 #: assets/js/app.js:25930
 msgid " and hand your AI agent a revocable credential to do the fiddly work over the REST API."
-msgstr ""
+msgstr "，并向你的 AI 智能体提供可撤销凭据，以便通过 REST API 完成繁琐工作。"
 
 #: assets/js/app.js:25930
 msgid "Your profile → AI Access"
-msgstr ""
+msgstr "你的资料 → AI 访问"
 
 #: assets/js/app.js:25930
 msgid "Minimal surfaces the settings people change day to day; the long tail stays in wp-admin on purpose. For plugin configuration Minimal doesn't rebuild, open"
-msgstr ""
+msgstr "Minimal 展示人们日常修改的设置；其他低频设置则有意保留在 wp-admin 中。对于 Minimal 未重建的插件配置，请打开"
 
 #: assets/js/app.js:25929
 msgid "Deliberately minimal"
-msgstr ""
+msgstr "刻意保持简洁"
 
 #: assets/js/app.js:25911
 msgid "Anything a plugin adds here can be hidden for you alone: right-click its sidebar entry or block-library heading and choose Hide. Everything hidden is listed on Your profile, where one click restores it."
-msgstr ""
+msgstr "插件在这里添加的任何内容都可仅对你隐藏：右键单击其侧边栏条目或区块库标题，然后选择“隐藏”。所有隐藏内容都会列在“你的资料”中，单击即可恢复。"
 
 #: assets/js/app.js:25910
 msgid "Make it yours"
-msgstr ""
+msgstr "打造你的专属体验"
 
 #: assets/js/app.js:25908
 msgid "The least discoverable thing in Minimal, so here it is in writing: rows in Content and Media, comments, the theme button, plugin entries in the sidebar and group headings in the block library all have right-click menus. When in doubt, try a right-click."
-msgstr ""
+msgstr "这是 Minimal 中最不易发现的功能，因此特此说明：“内容”和“媒体”中的行、评论、主题按钮、侧边栏中的插件条目，以及区块库中的分组标题，都有右键菜单。不确定时，就试试右键单击。"
 
 #: assets/js/app.js:25907
 msgid "Right-click almost anything"
-msgstr ""
+msgstr "几乎所有内容都可右键单击"
 
 #: assets/js/app.js:25905
 msgid ", then start typing a view, a post or a command."
-msgstr ""
+msgstr "，然后开始输入视图、文章或命令。"
 
 #: assets/js/app.js:25905
 msgid "The sidebar has three groups: Workspace (the daily material), Tools (what your plugins add) and Manage (the site itself). The fastest way anywhere is the command palette:"
-msgstr ""
+msgstr "侧边栏分为三组：工作区（日常内容）、工具（插件添加的功能）和管理（网站本身）。前往任何位置最快的方法是使用命令面板："
 
 #: assets/js/app.js:25904
 msgid "Getting around"
-msgstr ""
+msgstr "浏览导航"
 
 #: assets/js/app.js:25902
 msgid "A calm, fast surface for the work you do every day: writing, moderating, uploading, and keeping an eye on the site. Classic wp-admin stays fully available, one click away."
-msgstr ""
+msgstr "这是一个安静、快速的日常工作界面，可用于写作、审核、上传和了解网站状况。经典 wp-admin 仍然完全可用，一键即可打开。"
 
 #: assets/js/app.js:25902
 msgid "Minimal is a reimagined WordPress admin."
-msgstr ""
+msgstr "Minimal 是重新构想的 WordPress 管理后台。"
 
 #: assets/js/app.js:25770
 msgid "Loading the guide…"
-msgstr ""
+msgstr "正在加载指南…"
 
 #: assets/js/app.js:25767 assets/js/app.js:25934
 msgid "User guide"
-msgstr ""
+msgstr "用户指南"
 
 #: assets/js/app.js:25757
 msgid "View the full changelog with screenshots on FeiCode repository"
-msgstr ""
+msgstr "在 FeiCode 仓库中查看包含截图的完整更新日志"
 
 #: assets/js/app.js:24551
 msgid "Open the user guide"
-msgstr ""
+msgstr "打开用户指南"
 
 #: assets/js/app.js:24516
 msgid "Browse database (read-only)"
-msgstr ""
+msgstr "浏览数据库（只读）"
 
 #. translators: %s: number of plugins.
 #: assets/js/app.js:24160
 msgid "Updating %s plugin…"
 msgid_plural "Updating %s plugins…"
-msgstr[0] ""
+msgstr[0] "正在更新 %s 个插件…"
 
 #: assets/js/app.js:23669
 msgid "Pattern insert failed: "
-msgstr ""
+msgstr "插入区块样板失败："
 
 #: assets/js/app.js:23666
 msgid "Pattern unavailable"
-msgstr ""
+msgstr "区块样板不可用"
 
 #: assets/js/app.js:23470
 msgid "Synced"
-msgstr ""
+msgstr "已同步"
 
 #: assets/js/app.js:23469
 msgid "Your patterns"
-msgstr ""
+msgstr "你的区块样板"
 
 #: assets/js/app.js:23187
 msgid "(untitled pattern)"
-msgstr ""
+msgstr "（未命名区块样板）"
 
 #: assets/js/app.js:19556
 msgid "This is a synced pattern — saving changes here updates every post and page that uses it."
-msgstr ""
+msgstr "这是同步区块样板——在此保存更改会更新所有使用它的文章和页面。"
 
 #: assets/js/app.js:18394
 msgid "Status"
-msgstr ""
+msgstr "状态"
 
 #: assets/js/app.js:15079
 msgid "Edit via ⚙ or the block editor"
-msgstr ""
+msgstr "通过 ⚙ 或区块编辑器编辑"
 
 #: assets/js/app.js:15078
 msgid "Styled block: edit text via ⚙"
-msgstr ""
+msgstr "样式区块：通过 ⚙ 编辑文本"
 
 #: assets/js/app.js:14473
 msgid "Could not reach the server. Please try again."
-msgstr ""
+msgstr "无法连接服务器，请重试。"
 
 #: assets/js/app.js:14465
 msgid "The key was not accepted."
-msgstr ""
+msgstr "密钥未被接受。"
 
 #: assets/js/app.js:14458
 msgid "Key saved and verified"
-msgstr ""
+msgstr "密钥已保存并验证"
 
 #: assets/js/app.js:14137
 msgid "Turn off"
-msgstr ""
+msgstr "关闭"
 
 #. translators: 1: shown byte size, 2: total byte size of the value.
 #: assets/js/app.js:13715
 msgid "Showing the first %1$s of %2$s."
-msgstr ""
+msgstr "显示前 %1$s 项，共 %2$s 项。"
 
 #: assets/js/app.js:13710
 msgid "Copy"
-msgstr ""
+msgstr "复制"
 
 #: assets/js/app.js:13649
 msgid "This table has no indexes."
-msgstr ""
+msgstr "此数据表没有索引。"
 
 #: assets/js/app.js:13639
 msgid "Cardinality"
-msgstr ""
+msgstr "基数"
 
 #: assets/js/app.js:13637
 msgid "Unique"
-msgstr ""
+msgstr "唯一"
 
 #: assets/js/app.js:13635
 msgid "Index"
-msgstr ""
+msgstr "索引"
 
 #: assets/js/app.js:13631
 msgid "Indexes"
-msgstr ""
+msgstr "索引"
 
 #: assets/js/app.js:13626 assets/js/app.js:13645
 msgid "No"
-msgstr ""
+msgstr "否"
 
 #: assets/js/app.js:13626 assets/js/app.js:13645
 msgid "Yes"
-msgstr ""
+msgstr "是"
 
 #: assets/js/app.js:13617
 msgid "Extra"
-msgstr ""
+msgstr "附加信息"
 
 #: assets/js/app.js:13616
 msgid "Default"
-msgstr ""
+msgstr "默认值"
 
 #: assets/js/app.js:13615
 msgid "Null"
-msgstr ""
+msgstr "允许空值"
 
 #: assets/js/app.js:13614 assets/js/app.js:13638
 msgid "Type"
-msgstr ""
+msgstr "类型"
 
 #: assets/js/app.js:13613
 msgid "Column"
-msgstr ""
+msgstr "列"
 
 #: assets/js/app.js:13610 assets/js/app.js:13636
 msgid "Columns"
-msgstr ""
+msgstr "列"
 
 #. translators: %s: the next AUTO_INCREMENT value for this table.
 #: assets/js/app.js:13601
 msgid "next id %s"
-msgstr ""
+msgstr "下一个 ID %s"
 
 #. translators: %s: reclaimable space inside the table file (e.g. "2.4 MB").
 #: assets/js/app.js:13597
 msgid "%s free"
-msgstr ""
+msgstr "%s 可用空间"
 
 #. translators: %s: estimated row count.
 #: assets/js/app.js:13592
 msgid "~%s rows"
-msgstr ""
+msgstr "约 %s 行"
 
 #: assets/js/app.js:13585
 msgid "Loading structure…"
-msgstr ""
+msgstr "正在加载结构…"
 
 #: assets/js/app.js:13530
 msgid "This table is empty."
-msgstr ""
+msgstr "此数据表为空。"
 
 #: assets/js/app.js:13530
 msgid "No rows match this filter."
-msgstr ""
+msgstr "没有符合此筛选条件的行。"
 
 #. translators: %s: number of rows browsable per ordering (e.g. "10,000").
 #: assets/js/app.js:13516
 msgid "Browsing the first %s rows of this order; filter to reach the rest."
-msgstr ""
+msgstr "正在浏览当前排序的前 %s 行；请使用筛选访问其余行。"
 
 #: assets/js/app.js:13513
 msgid "Clear filter"
-msgstr ""
+msgstr "清除筛选"
 
 #: assets/js/app.js:13512
 msgid "Contains…"
-msgstr ""
+msgstr "包含…"
 
 #: assets/js/app.js:13509
 msgid "Filter column"
-msgstr ""
+msgstr "筛选列"
 
 #. translators: 1: row count, 2: table size, 3: storage engine.
 #: assets/js/app.js:13505
 msgid "%1$s rows · %2$s · %3$s"
-msgstr ""
+msgstr "%1$s 行 · %2$s · %3$s"
 
 #: assets/js/app.js:13489
 msgid "Loading rows…"
-msgstr ""
+msgstr "正在加载行…"
 
 #: assets/js/app.js:13475 assets/js/app.js:26117
 msgid "Copy failed"
-msgstr ""
+msgstr "复制失败"
 
 #: assets/js/app.js:13473
 msgid "Command copied"
-msgstr ""
+msgstr "命令已复制"
 
 #: assets/js/app.js:13425
 msgid "Running checks…"
-msgstr ""
+msgstr "正在运行检查…"
 
 #: assets/js/app.js:13421
 msgid "Refresh"
-msgstr ""
+msgstr "刷新"
 
 #: assets/js/app.js:13415
 msgid "Everything looks healthy"
-msgstr ""
+msgstr "一切正常"
 
 #: assets/js/app.js:13414
 msgid "%s check needs attention"
 msgid_plural "%s checks need attention"
-msgstr[0] ""
+msgstr[0] "%s 项检查需要处理"
 
 #: assets/js/app.js:13362
 msgid "No tables match."
-msgstr ""
+msgstr "没有匹配的数据表。"
 
 #: assets/js/app.js:13353
 msgid "Engine"
-msgstr ""
+msgstr "引擎"
 
 #: assets/js/app.js:13352
 msgid "Size"
-msgstr ""
+msgstr "大小"
 
 #: assets/js/app.js:13351
 msgid "Rows (est.)"
-msgstr ""
+msgstr "行数（估算）"
 
 #: assets/js/app.js:13350
 msgid "Table"
-msgstr ""
+msgstr "数据表"
 
 #: assets/js/app.js:13334 assets/js/app.js:13422 assets/js/app.js:13506
 #: assets/js/app.js:13608
 msgid "Read-only by design"
-msgstr ""
+msgstr "按设计只读"
 
 #: assets/js/app.js:13333
 msgid "Show %d other-prefix tables"
-msgstr ""
+msgstr "显示其他前缀的 %d 个数据表"
 
 #: assets/js/app.js:13332
 msgid "Hide %d other-prefix tables"
-msgstr ""
+msgstr "隐藏其他前缀的 %d 个数据表"
 
 #. translators: 1: number of database tables, 2: total size (e.g. "97.8 MB").
 #: assets/js/app.js:13329
 msgid "%1$s tables · %2$s"
-msgstr ""
+msgstr "%1$s 个数据表 · %2$s"
 
 #: assets/js/app.js:13326
 msgid "Search tables…"
-msgstr ""
+msgstr "搜索数据表…"
 
 #: assets/js/app.js:13319
 msgid "Loading tables…"
-msgstr ""
+msgstr "正在加载数据表…"
 
 #: assets/js/app.js:13309
 msgid "You need administrator permissions to view the database."
-msgstr ""
+msgstr "你需要管理员权限才能查看数据库。"
 
 #: assets/js/app.js:13291
 msgid "Rows"
-msgstr ""
+msgstr "行"
 
 #. translators: %s: human-readable byte size of a binary database value.
 #: assets/js/app.js:13252
 msgid "(%s binary)"
-msgstr ""
+msgstr "（%s 二进制）"
 
 #: assets/js/app.js:13207
 msgid "Health"
-msgstr ""
+msgstr "健康状况"
 
 #: assets/js/app.js:13206 assets/js/app.js:13482 assets/js/app.js:13577
 msgid "Tables"
-msgstr ""
+msgstr "数据表"
 
 #: assets/js/app.js:12675
 msgid "Open this table in the read-only database viewer"
-msgstr ""
+msgstr "在只读数据库查看器中打开此数据表"
 
 #: assets/js/app.js:12673
 msgid "browse all"
-msgstr ""
+msgstr "浏览全部"
 
 #: assets/js/app.js:12673
 msgid "Browse every table in the read-only database viewer"
-msgstr ""
+msgstr "在只读数据库查看器中浏览每个数据表"
 
 #: assets/js/app.js:12256
 msgid "Live preview"
-msgstr ""
+msgstr "实时预览"
 
 #: assets/js/app.js:12169
 msgid "Automatic updates off"
-msgstr ""
+msgstr "自动更新已关闭"
 
 #: assets/js/app.js:12169
 msgid "Automatic updates on"
-msgstr ""
+msgstr "自动更新已开启"
 
 #: assets/js/app.js:12144
 msgid "Auto"
-msgstr ""
+msgstr "自动"
 
 #. translators: %s: plugin or theme name.
 #: assets/js/app.js:12143
 msgid "Turn on automatic updates for %s."
-msgstr ""
+msgstr "为 %s 开启自动更新。"
 
 #. translators: %s: plugin or theme name.
 #: assets/js/app.js:12141
 msgid "Automatic updates are on for %s. Click to turn them off."
-msgstr ""
+msgstr "%s 已开启自动更新。单击可将其关闭。"
 
 #. translators: %s: theme name.
 #: assets/js/app.js:12136
 msgid "Preview the site in %s without switching"
-msgstr ""
+msgstr "不切换即可在 %s 中预览网站"
 
 #: assets/js/app.js:11605
 msgid "Undo"
-msgstr ""
+msgstr "撤销"
 
 #. translators: %s: plugin name
 #: assets/js/app.js:11605
 msgid "%s turned off"
-msgstr ""
+msgstr "已关闭 %s"
 
 #. translators: %s: plugin name
 #: assets/js/app.js:11602
 msgid "%s turned back on"
-msgstr ""
+msgstr "已重新开启 %s"
 
 #: assets/js/app.js:11155
 msgid "No licenses or connected services detected."
-msgstr ""
+msgstr "未检测到许可证或已连接的服务。"
 
 #: assets/js/app.js:11154
 msgid "Each state is the vendor's own last-recorded check, not a live lookup. Activate and deactivate run through the vendor's own code; a pasted key is used once and never stored."
-msgstr ""
+msgstr "每个状态都是供应商上次记录的检查结果，并非实时查询。激活和停用操作通过供应商自己的代码执行；粘贴的密钥只使用一次，绝不存储。"
 
 #: assets/js/app.js:11134
 msgid "Settings → Connectors"
-msgstr ""
+msgstr "设置 → 连接器"
 
 #. translators: %s: a button reading "Settings → Connectors".
 #: assets/js/app.js:11134
 msgid "Core connector keys (AI providers) are managed in %s."
-msgstr ""
+msgstr "核心连接器密钥（AI 提供商）在 %s 中管理。"
 
 #. translators: %s: how many rows need attention.
 #: assets/js/app.js:11132
 msgid "%s needs attention"
 msgid_plural "%s need attention"
-msgstr[0] ""
+msgstr[0] "%s 项需要处理"
 
 #. translators: %s: number of rows on the Licenses tab.
 #: assets/js/app.js:11130
 msgid "%s component"
 msgid_plural "%s components"
-msgstr[0] ""
+msgstr[0] "%s 个组件"
 
 #: assets/js/app.js:11124
 msgid "Not set up"
-msgstr ""
+msgstr "未设置"
 
 #: assets/js/app.js:11122
 msgid "Needs attention"
-msgstr ""
+msgstr "需要处理"
 
 #: assets/js/app.js:11074
 msgid "connection"
-msgstr ""
+msgstr "连接"
 
 #: assets/js/app.js:11074
 msgid "service key"
-msgstr ""
+msgstr "服务密钥"
 
 #: assets/js/app.js:11065
 msgid "Activate ↗"
-msgstr ""
+msgstr "激活 ↗"
 
 #: assets/js/app.js:11065
 msgid "Connect ↗"
-msgstr ""
+msgstr "连接 ↗"
 
 #: assets/js/app.js:11041
 msgid "Unknown"
-msgstr ""
+msgstr "未知"
 
 #: assets/js/app.js:11040
 msgid "No license"
-msgstr ""
+msgstr "无许可证"
 
 #: assets/js/app.js:11040
 msgid "No key"
-msgstr ""
+msgstr "无密钥"
 
 #: assets/js/app.js:11040
 msgid "Not connected"
-msgstr ""
+msgstr "未连接"
 
 #: assets/js/app.js:11039
 msgid "Invalid"
-msgstr ""
+msgstr "无效"
 
 #: assets/js/app.js:11038
 msgid "Expired"
-msgstr ""
+msgstr "已过期"
 
 #: assets/js/app.js:11037 assets/js/app.js:11123
 msgid "Valid"
-msgstr ""
+msgstr "有效"
 
 #: assets/js/app.js:11037
 msgid "Connected"
-msgstr ""
+msgstr "已连接"
 
 #: assets/js/app.js:9416
 msgid "Select row"
-msgstr ""
+msgstr "选择行"
 
 #: assets/js/app.js:9399
 msgid "Select page"
-msgstr ""
+msgstr "选择页面"
 
 #: assets/js/app.js:7890
 msgid "Select all users"
-msgstr ""
+msgstr "选择所有用户"
 
 #: assets/js/app.js:7837 assets/js/app.js:7882
 msgid "Session filter"
-msgstr ""
+msgstr "会话筛选"
 
 #: assets/js/app.js:7782
 msgid "sorted descending"
-msgstr ""
+msgstr "按降序排列"
 
 #: assets/js/app.js:7782
 msgid "sorted ascending"
-msgstr ""
+msgstr "按升序排列"
 
 #. translators: %s: column name.
 #: assets/js/app.js:7780
 msgid "Sort by %s"
-msgstr ""
+msgstr "按 %s 排序"
 
 #: assets/js/app.js:6594
 msgid "Select all products"
-msgstr ""
+msgstr "选择所有产品"
 
 #: assets/js/app.js:3118 assets/js/app.js:6599 assets/js/app.js:7901
 msgid "Select %s"
-msgstr ""
+msgstr "选择 %s"
 
 #: assets/js/app.js:3113
 msgid "Select all items"
-msgstr ""
+msgstr "选择所有项目"
 
 #: assets/js/app.js:2852
 msgid "Patterns"
-msgstr ""
+msgstr "区块样板"
 
 #: assets/js/app.js:2334
 msgid "Dark colors"
-msgstr ""
+msgstr "深色配色"
 
 #: assets/js/app.js:2334
 msgid "Light colors"
-msgstr ""
+msgstr "浅色配色"
 
 #: assets/js/app.js:1894
 msgid "New"
-msgstr ""
+msgstr "新建"
 
 #: assets/js/app.js:1894
 msgid "New post"
-msgstr ""
+msgstr "新建文章"
 
 #: assets/js/app.js:1891
 msgid "Notifications"
-msgstr ""
+msgstr "通知"
 
 #: assets/js/app.js:1890
 msgid "Color theme"
-msgstr ""
+msgstr "颜色主题"
 
 #: assets/js/app.js:1890
 msgid "Theme: System (click to cycle, right-click for options)"
-msgstr ""
+msgstr "主题：跟随系统（单击切换，右键查看选项）"
 
 #: assets/js/app.js:1889
 msgid "About Minimal"
-msgstr ""
+msgstr "关于 Minimal"
 
 #: assets/js/app.js:1888
 msgid "View site (opens in a new tab)"
-msgstr ""
+msgstr "查看网站（在新标签页中打开）"
 
 #: assets/js/app.js:1888
 msgid "View site"
-msgstr ""
+msgstr "查看网站"
 
 #: assets/js/app.js:1887
 msgid "What's new — full changelog"
-msgstr ""
+msgstr "新增内容——完整更新日志"
 
 #: assets/js/app.js:1886
 msgid "A WordPress update is available"
-msgstr ""
+msgstr "WordPress 有可用更新"
 
 #: assets/js/app.js:1885
 msgid "Your site is not fully public"
-msgstr ""
+msgstr "你的网站并非完全公开"
 
 #: assets/js/app.js:1884
 msgid "Updates are running — click for details"
-msgstr ""
+msgstr "正在运行更新——单击查看详情"
 
 #: assets/js/app.js:1880
 msgid "Show or hide the navigation sidebar"
-msgstr ""
+msgstr "显示或隐藏导航侧边栏"
 
 #: assets/js/app.js:1880
 msgid "Show / hide navigation"
-msgstr ""
+msgstr "显示/隐藏导航"
 
 #: assets/js/app.js:1874
 msgid "Log out"
-msgstr ""
+msgstr "退出登录"
 
 #: assets/js/app.js:1873
 msgid "WordPress admin (opens in a new tab)"
-msgstr ""
+msgstr "WordPress 后台（在新标签页中打开）"
 
 #: assets/js/app.js:1866
 msgid "Your account"
-msgstr ""
+msgstr "你的账户"
 
 #. translators: %s: display name of the user to switch back to.
 #: assets/js/app.js:1864
 msgid "Switch back to %s"
-msgstr ""
+msgstr "切换回 %s"
 
 #: assets/js/app.js:1862
 msgid "End this switched session"
-msgstr ""
+msgstr "结束此切换会话"
 
 #: assets/js/app.js:1859
 msgid "Manage"
-msgstr ""
+msgstr "管理"
 
 #: assets/js/app.js:1858
 msgid "Tools"
-msgstr ""
+msgstr "工具"
 
 #: assets/js/app.js:1857
 msgid "Workspace"
-msgstr ""
+msgstr "工作区"
 
 #: assets/js/app.js:1856
 msgid "Main navigation"
-msgstr ""
+msgstr "主导航"
 
 #: assets/js/app.js:1854
 msgid "Search…"
-msgstr ""
+msgstr "搜索…"
 
 #: assets/js/app.js:1824 assets/js/app.js:2046
 msgid "Click again to refresh"
-msgstr ""
+msgstr "再次单击以刷新"
 
 #: assets/js/app.js:1326
 msgid "Pattern"
-msgstr ""
+msgstr "区块样板"
 
 #. translators: %d: number of custom post types in the Content list.
 #: assets/js/app.js:722
 msgid "%d type"
 msgid_plural "%d types"
-msgstr[0] ""
+msgstr[0] "%d 种类型"
 
 #: assets/js/app.js:718
 msgid "pages"
-msgstr ""
+msgstr "页面"
 
 #: assets/js/app.js:711
 msgid "Pages"
-msgstr ""
+msgstr "页面"
 
 #: assets/js/app.js:710 assets/js/app.js:717
 msgid "Posts"
-msgstr ""
+msgstr "文章"
 
 #: assets/js/app.js:708
 msgid "Trash"
-msgstr ""
+msgstr "回收站"
 
 #: assets/js/app.js:700 assets/js/app.js:28770
 msgid "Account"
-msgstr ""
+msgstr "账户"
 
 #: assets/js/app.js:700
 msgid "Your profile"
-msgstr ""
+msgstr "你的资料"
 
 #: assets/js/app.js:699
 msgid "Draft"
-msgstr ""
+msgstr "草稿"
 
 #: assets/js/app.js:699
 msgid "Editor"
-msgstr ""
+msgstr "编辑器"
 
 #: assets/js/app.js:698
 msgid "Read-only viewer"
-msgstr ""
+msgstr "只读查看器"
 
 #: assets/js/app.js:697
 msgid "Diagnostics"
-msgstr ""
+msgstr "诊断"
 
 #: assets/js/app.js:696
 msgid "Site"
-msgstr ""
+msgstr "网站"
 
 #: assets/js/app.js:695
 msgid "Post types, taxonomies & terms"
-msgstr ""
+msgstr "文章类型、分类法与分类项"
 
 #: assets/js/app.js:694
 msgid "Installed"
-msgstr ""
+msgstr "已安装"
 
 #: assets/js/app.js:693
 msgid "Sidebars & footers"
-msgstr ""
+msgstr "侧边栏与页脚"
 
 #: assets/js/app.js:692
 msgid "Navigation"
-msgstr ""
+msgstr "导航"
 
 #: assets/js/app.js:691
 msgid "Categories & Tags"
-msgstr ""
+msgstr "分类与标签"
 
 #: assets/js/app.js:690
 msgid "Edit user"
-msgstr ""
+msgstr "编辑用户"
 
 #: assets/js/app.js:689 assets/js/app.js:690
 msgid "People"
-msgstr ""
+msgstr "用户"
 
 #: assets/js/app.js:684
 msgid "Order"
-msgstr ""
+msgstr "排序"
 
 #: assets/js/app.js:682
 msgid "Moderation"
-msgstr ""
+msgstr "审核"
 
 #: assets/js/app.js:681
 msgid "Library"
-msgstr ""
+msgstr "媒体库"
 
 #: assets/js/app.js:678
 msgid "Dashboard"
-msgstr ""
+msgstr "仪表盘"
 
 #: assets/js/app.js:678 assets/js/app.js:1538 assets/js/app.js:1846
 msgid "Overview"
-msgstr ""
+msgstr "概览"
 
 #: includes/class-minimal-admin.php:638
 msgid "Sorry, you are not allowed to access Minimal Admin."
-msgstr ""
+msgstr "抱歉，你无权访问 Minimal Admin。"
 
 #: includes/class-minimal-admin.php:103
 msgid "Site default"
-msgstr ""
+msgstr "网站默认值"
 
 #: includes/class-minimal-admin.php:43
 msgid "Sorry, you are not allowed to manage plugins for this site."
-msgstr ""
+msgstr "抱歉，你无权管理此网站的插件。"
 
 #: includes/class-minimal-admin-surfaces.php:256 assets/js/app.js:696
 #: assets/js/app.js:1601
 msgid "Settings"
-msgstr ""
+msgstr "设置"
 
 #: includes/class-minimal-admin-surfaces.php:255 assets/js/app.js:697
 #: assets/js/app.js:1600
 msgid "System"
-msgstr ""
+msgstr "系统"
 
 #: includes/class-minimal-admin-surfaces.php:254 assets/js/app.js:698
 msgid "Database"
-msgstr ""
+msgstr "数据库"
 
 #: includes/class-minimal-admin-surfaces.php:253 assets/js/app.js:694
 #: assets/js/app.js:1576
 msgid "Extensions"
-msgstr ""
+msgstr "扩展"
 
 #: includes/class-minimal-admin-surfaces.php:252 assets/js/app.js:695
 #: assets/js/app.js:1595 assets/js/app.js:13292
 msgid "Structure"
-msgstr ""
+msgstr "结构"
 
 #: includes/class-minimal-admin-surfaces.php:251 assets/js/app.js:693
 #: assets/js/app.js:1586
 msgid "Widgets"
-msgstr ""
+msgstr "小工具"
 
 #: includes/class-minimal-admin-surfaces.php:250 assets/js/app.js:692
 #: assets/js/app.js:1584
 msgid "Menus"
-msgstr ""
+msgstr "菜单"
 
 #: includes/class-minimal-admin-surfaces.php:249 assets/js/app.js:691
 #: assets/js/app.js:1597
 msgid "Terms"
-msgstr ""
+msgstr "分类项"
 
 #: includes/class-minimal-admin-surfaces.php:248 assets/js/app.js:689
 #: assets/js/app.js:1579 assets/js/app.js:28761
 msgid "Users"
-msgstr ""
+msgstr "用户"
 
 #: includes/class-minimal-admin-surfaces.php:247 assets/js/app.js:688
 #: assets/js/app.js:1558
 msgid "Customers"
-msgstr ""
+msgstr "客户"
 
 #: includes/class-minimal-admin-surfaces.php:246 assets/js/app.js:687
 #: assets/js/app.js:1555
 msgid "Coupons"
-msgstr ""
+msgstr "优惠券"
 
 #: includes/class-minimal-admin-surfaces.php:245 assets/js/app.js:686
 #: assets/js/app.js:1552
 msgid "Products"
-msgstr ""
+msgstr "产品"
 
 #: includes/class-minimal-admin-surfaces.php:244 assets/js/app.js:685
 #: assets/js/app.js:1549
 msgid "Subscriptions"
-msgstr ""
+msgstr "订阅"
 
 #: includes/class-minimal-admin-surfaces.php:243 assets/js/app.js:683
 #: assets/js/app.js:1546
 msgid "Orders"
-msgstr ""
+msgstr "订单"
 
 #: includes/class-minimal-admin-surfaces.php:242 assets/js/app.js:682
 #: assets/js/app.js:1543
 msgid "Comments"
-msgstr ""
+msgstr "评论"
 
 #: includes/class-minimal-admin-surfaces.php:241 assets/js/app.js:681
 #: assets/js/app.js:1540
 msgid "Media"
-msgstr ""
+msgstr "媒体"
 
 #: includes/class-minimal-admin-surfaces.php:240 assets/js/app.js:680
 #: assets/js/app.js:1539
 msgid "Content"
-msgstr ""
+msgstr "内容"
 
 #. translators: 1: email title, 2: admin name
 #: includes/class-minimal-admin-rest.php:3985
-msgid "&#12300;%1$s&#12301; email resent via Minimal Admin by %2$s."
-msgstr ""
+msgid "“%1$s” email resent via Minimal Admin by %2$s."
+msgstr "%2$s 已通过 Minimal Admin 重新发送“%1$s”电子邮件。"
 
 #. translators: 1: admin name, 2: subject
 #: includes/class-minimal-admin-rest.php:3776
 msgid "Minimal Admin email sent by %1$s: %2$s"
-msgstr ""
+msgstr "%1$s 通过 Minimal Admin 发送的电子邮件：%2$s"
 
 #: includes/class-minimal-admin-rest.php:3204
 msgid "Unknown theme."
-msgstr ""
+msgstr "未知主题。"
 
 #: includes/class-minimal-admin-rest.php:3204
 msgid "Unknown plugin."
-msgstr ""
+msgstr "未知插件。"
 
 #: includes/class-minimal-admin-rest.php:3195
 msgid "Automatic updates are turned off for this site."
-msgstr ""
+msgstr "此网站已关闭自动更新。"
 
 #: includes/class-minimal-admin-rest.php:2131
 msgid "Pattern not found."
-msgstr ""
+msgstr "未找到区块样板。"
 
 #: includes/class-minimal-admin-db.php:907
 msgid "Removes finished actions. Pending work is left alone."
-msgstr ""
+msgstr "移除已完成的操作，不影响待处理工作。"
 
 #: includes/class-minimal-admin-db.php:905
 msgid "Clean the queue"
-msgstr ""
+msgstr "清理队列"
 
 #: includes/class-minimal-admin-db.php:903
 msgid "No pending or failed background jobs."
-msgstr ""
+msgstr "没有待处理或失败的后台任务。"
 
 #: includes/class-minimal-admin-db.php:902
 msgid "Pending and failed background jobs. A steady backlog is normal on a busy store; a very large one suggests the queue is not draining."
-msgstr ""
+msgstr "待处理和失败的后台任务。繁忙商店出现稳定积压属正常现象；积压非常大则说明队列可能未在消化。"
 
 #: includes/class-minimal-admin-db.php:899
 msgid "Action Scheduler backlog"
-msgstr ""
+msgstr "Action Scheduler 积压"
 
 #: includes/class-minimal-admin-db.php:888
 msgid "Back up first. Shoppers with an expired cart lose it, which has already happened by definition."
-msgstr ""
+msgstr "请先备份。购物者会丢失过期购物车，而这些购物车按定义已经过期。"
 
 #: includes/class-minimal-admin-db.php:886
 msgid "Delete expired sessions"
-msgstr ""
+msgstr "删除过期会话"
 
 #: includes/class-minimal-admin-db.php:884
 msgid "No expired sessions are left behind."
-msgstr ""
+msgstr "没有遗留的过期会话。"
 
 #: includes/class-minimal-admin-db.php:883
 msgid "Expired cart sessions should be cleared by a scheduled WooCommerce job. A large backlog usually means that job has stopped running."
-msgstr ""
+msgstr "过期购物车会话应由计划任务中的 WooCommerce 作业清理。大量积压通常表示该作业已停止运行。"
 
 #: includes/class-minimal-admin-db.php:880
 msgid "Expired WooCommerce sessions"
-msgstr ""
+msgstr "过期的 WooCommerce 会话"
 
 #: includes/class-minimal-admin-db.php:869
 msgid "Back up first. This permanently deletes the comments."
-msgstr ""
+msgstr "请先备份。此操作会永久删除这些评论。"
 
 #: includes/class-minimal-admin-db.php:867
 msgid "Delete spam"
-msgstr ""
+msgstr "删除垃圾评论"
 
 #: includes/class-minimal-admin-db.php:865
 msgid "No spam or trashed comments are waiting."
-msgstr ""
+msgstr "没有待处理的垃圾评论或已移至回收站的评论。"
 
 #: includes/class-minimal-admin-db.php:864
 msgid "Spam and trashed comments stay in the database until they are emptied. WordPress clears them on its own after a while."
-msgstr ""
+msgstr "垃圾评论和已移至回收站的评论会一直保留在数据库中，直至被清空。WordPress 会在一段时间后自动清理。"
 
 #: includes/class-minimal-admin-db.php:861
 msgid "Spam and trashed comments"
-msgstr ""
+msgstr "垃圾评论和已移至回收站的评论"
 
 #: includes/class-minimal-admin-db.php:851
 msgid "Back up first. This removes every saved revision permanently."
-msgstr ""
+msgstr "请先备份。此操作会永久删除所有已保存的修订版本。"
 
 #: includes/class-minimal-admin-db.php:849
 msgid "Delete all revisions"
-msgstr ""
+msgstr "删除所有修订版本"
 
 #: includes/class-minimal-admin-db.php:847
 msgid "No revisions are stored."
-msgstr ""
+msgstr "未存储修订版本。"
 
 #: includes/class-minimal-admin-db.php:846
 msgid "Revisions are the editor safety net, so a large number is normal and not a fault. Trimming them is only worthwhile if the posts table has grown unwieldy."
-msgstr ""
+msgstr "修订版本是编辑器的安全保障，因此数量较多很正常，并非故障。只有当文章表过于庞大时，精简修订版本才有意义。"
 
 #: includes/class-minimal-admin-db.php:843
 msgid "Stored revisions"
-msgstr ""
+msgstr "已存储的修订版本"
 
 #: includes/class-minimal-admin-db.php:829
 msgid "Every relationship points at a term that still exists."
-msgstr ""
+msgstr "所有关系都指向仍然存在的分类项。"
 
 #: includes/class-minimal-admin-db.php:828
 msgid "These rows link content to categories or tags that no longer exist."
-msgstr ""
+msgstr "这些行将内容关联到已不存在的分类或标签。"
 
 #: includes/class-minimal-admin-db.php:825
 msgid "Orphaned term relationships"
-msgstr ""
+msgstr "孤立的分类项关系"
 
 #: includes/class-minimal-admin-db.php:811
 msgid "Every meta row belongs to a user who still exists."
-msgstr ""
+msgstr "所有元数据行都属于仍然存在的用户。"
 
 #: includes/class-minimal-admin-db.php:810
 msgid "These meta rows belong to users who no longer exist, usually left behind by a plugin that removed accounts directly."
-msgstr ""
+msgstr "这些元数据行属于已不存在的用户，通常是插件直接删除账户后留下的。"
 
 #: includes/class-minimal-admin-db.php:807
 msgid "Orphaned user meta"
-msgstr ""
+msgstr "孤立的用户元数据"
 
 #: includes/class-minimal-admin-db.php:797
 #: includes/class-minimal-admin-db.php:815
 #: includes/class-minimal-admin-db.php:833
 msgid "Back up first. This permanently deletes rows."
-msgstr ""
+msgstr "请先备份。此操作会永久删除这些行。"
 
 #: includes/class-minimal-admin-db.php:795
 #: includes/class-minimal-admin-db.php:813
 #: includes/class-minimal-admin-db.php:831
 msgid "Delete them"
-msgstr ""
+msgstr "删除这些行"
 
 #: includes/class-minimal-admin-db.php:793
 msgid "Every meta row belongs to a post that still exists."
-msgstr ""
+msgstr "所有元数据行都属于仍然存在的文章。"
 
 #: includes/class-minimal-admin-db.php:792
 msgid "These meta rows belong to posts that no longer exist. They are dead weight in every query that touches post meta."
-msgstr ""
+msgstr "这些元数据行属于已不存在的文章。任何涉及文章元数据的查询都会被这些无用数据拖累。"
 
 #: includes/class-minimal-admin-db.php:789
 msgid "Orphaned post meta"
-msgstr ""
+msgstr "孤立的文章元数据"
 
 #: includes/class-minimal-admin-db.php:781
 msgid "No table is close to exhausting its id column."
-msgstr ""
+msgstr "没有数据表接近耗尽其 ID 列容量。"
 
 #. translators: %s: comma-separated list of database table names.
 #: includes/class-minimal-admin-db.php:778
 msgid "These tables are within 20 percent of the largest id their column type can store. Once the ceiling is reached, new rows stop being written: %s"
-msgstr ""
+msgstr "以下数据表的 ID 列与其类型可容纳的最大值相差不到 20%。达到上限后，将无法写入新行：%s"
 
 #: includes/class-minimal-admin-db.php:773
 msgid "Healthy"
-msgstr ""
+msgstr "正常"
 
 #: includes/class-minimal-admin-db.php:771
 msgid "Auto-increment headroom"
-msgstr ""
+msgstr "自增 ID 剩余空间"
 
 #: includes/class-minimal-admin-db.php:732
 msgid "Back up first. Adding an index locks the table briefly."
-msgstr ""
+msgstr "请先备份。添加索引会短暂锁定数据表。"
 
 #: includes/class-minimal-admin-db.php:730
 msgid "Add the index"
-msgstr ""
+msgstr "添加索引"
 
 #: includes/class-minimal-admin-db.php:728
 msgid "Lookups by post and meta key fall back to two separate indexes. On sites with heavy meta use (WooCommerce, event and booking plugins) a combined index is a large, low-risk speed win."
-msgstr ""
+msgstr "按文章和元数据键查找时会回退到两个独立索引。对于大量使用元数据的网站（WooCommerce、活动和预订插件），组合索引可大幅提升速度且风险较低。"
 
 #: includes/class-minimal-admin-db.php:727
 msgid "A combined post_id and meta_key index is present, so meta lookups stay fast."
-msgstr ""
+msgstr "已存在 post_id 和 meta_key 组合索引，因此元数据查询可保持快速。"
 
 #: includes/class-minimal-admin-db.php:725
 msgid "Missing"
-msgstr ""
+msgstr "缺失"
 
 #: includes/class-minimal-admin-db.php:725
 msgid "Present"
-msgstr ""
+msgstr "存在"
 
 #: includes/class-minimal-admin-db.php:722
 msgid "Post meta lookup index"
-msgstr ""
+msgstr "文章元数据查询索引"
 
 #: includes/class-minimal-admin-db.php:704
 msgid "Back up first. Optimising locks each table while it runs."
-msgstr ""
+msgstr "请先备份。优化过程中会锁定每个数据表。"
 
 #: includes/class-minimal-admin-db.php:702
 msgid "Optimise tables"
-msgstr ""
+msgstr "优化数据表"
 
 #: includes/class-minimal-admin-db.php:700
 msgid "No table is holding a significant amount of reclaimable space."
-msgstr ""
+msgstr "没有数据表占用大量可回收空间。"
 
 #. translators: 1: table name, 2: reclaimable size (e.g. "82.0 MB").
 #: includes/class-minimal-admin-db.php:696
 msgid "%1$s alone is holding %2$s of free space inside its own file. Optimising rewrites the table and returns it to the disk."
-msgstr ""
+msgstr "仅 %1$s 的文件中就有 %2$s 可回收空闲空间。优化会重写该数据表并将空间返还给磁盘。"
 
 #: includes/class-minimal-admin-db.php:689
 msgid "Reclaimable space"
-msgstr ""
+msgstr "可回收空间"
 
 #: includes/class-minimal-admin-db.php:670
 msgid "Back up first. Converting locks the table while it runs."
-msgstr ""
+msgstr "请先备份。转换过程中会锁定数据表。"
 
 #: includes/class-minimal-admin-db.php:668
 msgid "Convert a table"
-msgstr ""
+msgstr "转换数据表"
 
 #: includes/class-minimal-admin-db.php:666
 msgid "Every table uses InnoDB."
-msgstr ""
+msgstr "所有数据表均使用 InnoDB。"
 
 #. translators: %s: comma-separated list of tables and their storage engines.
 #: includes/class-minimal-admin-db.php:663
 msgid "These tables do not use InnoDB, so they miss row-level locking and crash recovery: %s"
-msgstr ""
+msgstr "以下数据表未使用 InnoDB，因此不具备行级锁定和崩溃恢复：%s"
 
 #: includes/class-minimal-admin-db.php:657
 msgid "Storage engine"
-msgstr ""
+msgstr "存储引擎"
 
 #: includes/class-minimal-admin-db.php:645
 msgid "Every table has a primary key."
-msgstr ""
+msgstr "所有数据表都有主键。"
 
 #. translators: %s: comma-separated list of database table names.
 #: includes/class-minimal-admin-db.php:642
 msgid "These tables have no primary key, which breaks row-level replication and confuses backup and migration tools: %s"
-msgstr ""
+msgstr "以下数据表没有主键，这会破坏行级复制，并使备份和迁移工具无法正确处理：%s"
 
 #: includes/class-minimal-admin-db.php:636
 msgid "Tables without a primary key"
-msgstr ""
+msgstr "没有主键的数据表"
 
 #: includes/class-minimal-admin-db.php:572
 msgid "Orphaned rows, indexes and engines all look healthy"
-msgstr ""
+msgstr "孤立行、索引和存储引擎均正常"
 
 #. translators: %s: number of database checks needing attention.
 #: includes/class-minimal-admin-db.php:564
 msgid "%s storage check needs attention"
 msgid_plural "%s storage checks need attention"
-msgstr[0] ""
+msgstr[0] "%s 项存储检查需要处理"
 
 #: includes/class-minimal-admin-db.php:558
 msgid "Database hygiene"
-msgstr ""
+msgstr "数据库维护"
 
 #: includes/class-minimal-admin-db.php:508
 msgid "This table is too large to count cheaply, so Minimal does not scan it. Run the command below to check it yourself."
-msgstr ""
+msgstr "此数据表太大，无法低成本计数，因此 Minimal 不会扫描它。请运行以下命令自行检查。"
 
 #: includes/class-minimal-admin-db.php:507
 msgid "Not checked"
-msgstr ""
+msgstr "未检查"
 
 #: includes/class-minimal-admin-db.php:448
 msgid "Row not found."
-msgstr ""
+msgstr "未找到该行。"
 
 #: includes/class-minimal-admin-db.php:438
 msgid "This table has no usable primary key."
-msgstr ""
+msgstr "此数据表没有可用的主键。"
 
 #: includes/class-minimal-admin-db.php:299
 #: includes/class-minimal-admin-db.php:327
 msgid "Could not read the table structure."
-msgstr ""
+msgstr "无法读取数据表结构。"
 
 #: includes/class-minimal-admin-db.php:295
 #: includes/class-minimal-admin-db.php:323
 #: includes/class-minimal-admin-db.php:432
 msgid "Unknown table."
-msgstr ""
+msgstr "未知数据表。"
 
 #. translators: %s: cron hook name.
 #: includes/adapters/scrutoscope.php:568
-msgid "Profiled &#12300;%s&#12301;. Open Profiles to inspect it."
-msgstr ""
+msgid "Profiled “%s”. Open Profiles to inspect it."
+msgstr "已分析“%s”。请打开“性能分析”进行查看。"
 
 #: includes/adapters/scrutoscope.php:552
 msgid "Cron event not found. It may have already run."
-msgstr ""
+msgstr "未找到 Cron 事件。它可能已经运行。"
 
 #: includes/adapters/scrutoscope.php:542
 msgid "This version of Scrutoscope cannot profile cron hooks on demand."
-msgstr ""
+msgstr "此版本的 Scrutoscope 无法按需分析 Cron 钩子。"
 
 #. translators: %s: date and time of the oldest stored capture.
 #: includes/adapters/scrutoscope.php:453
 msgid "History since %s"
-msgstr ""
+msgstr "自 %s 起的历史记录"
 
 #: includes/adapters/scrutoscope.php:449
 msgid "Routes covered"
-msgstr ""
+msgstr "已覆盖路由"
 
 #. translators: %s: number of pinned profiles.
 #: includes/adapters/scrutoscope.php:418
 msgid "%s pinned"
-msgstr ""
+msgstr "已固定 %s"
 
 #. translators: %s: date and time of the most recent capture.
 #: includes/adapters/scrutoscope.php:415
 msgid "Latest %s"
-msgstr ""
+msgstr "最新 %s"
 
 #: includes/adapters/scrutoscope.php:72
 msgid "CLI"
-msgstr ""
+msgstr "命令行"
 
 #: includes/adapters/scrutoscope.php:71
 msgid "Cron"
-msgstr ""
+msgstr "Cron"
 
 #: includes/adapters/scrutoscope.php:70
 msgid "REST"
-msgstr ""
+msgstr "REST"
 
 #: includes/adapters/scrutoscope.php:69
 msgid "Ajax"
-msgstr ""
+msgstr "Ajax"
 
 #: includes/adapters/scrutoscope.php:68
 msgid "Admin"
-msgstr ""
+msgstr "后台"
 
 #: includes/adapters/scrutoscope.php:67
 msgid "Front end"
-msgstr ""
+msgstr "前端"
 
 #: includes/adapters/page-builders.php:285
 msgid "Untitled"
-msgstr ""
+msgstr "未命名"
 
 #: includes/adapters/generateblocks.php:156 includes/adapters/kadence.php:111
 #: includes/adapters/stackable.php:130
 msgid "Design not found."
-msgstr ""
+msgstr "未找到设计。"
 
 #: includes/adapters/fluent-smtp.php:740
 msgid "%s time"
 msgid_plural "%s times"
-msgstr[0] ""
+msgstr[0] "%s 次"
 
 #. translators: 1: failing count, 2: total count, 3: sender list.
 #: includes/adapters/fluent-smtp.php:198
 msgid "%1$s of %2$s connections failing the daily health check (%3$s)"
-msgstr ""
+msgstr "%2$s 个连接中有 %1$s 个未通过每日健康检查（%3$s）"
 
 #. translators: %s: number of email connections.
 #: includes/adapters/fluent-smtp.php:181
 msgid "%s connection passing its daily health check"
 msgid_plural "All %s connections passing their daily health check"
-msgstr[0] ""
+msgstr[0] "%s 个连接均通过每日健康检查"
 
 #. translators: %s: number of Disembark scan sessions.
 #: includes/adapters/disembark.php:141
 msgid "%s scan session on disk"
 msgid_plural "%s scan sessions on disk"
-msgstr[0] ""
+msgstr[0] "磁盘上有 %s 个扫描会话"
 
 #. translators: %s: number of permanent blocks.
 #: includes/adapters/all-in-one-security.php:148
 msgid "%s permanent block"
 msgid_plural "%s permanent blocks"
-msgstr[0] ""
+msgstr[0] "%s 个永久封禁"
 
 #: includes/adapters/all-in-one-security.php:145
 msgid "nobody locked out"
-msgstr ""
+msgstr "当前无人被锁定"
 
 #. translators: %s: number of locked IPs.
 #: includes/adapters/all-in-one-security.php:142
 msgid "%s locked out now"
 msgid_plural "%s locked out now"
-msgstr[0] ""
+msgstr[0] "当前锁定 %s 个 IP"
 
 #. translators: %s: number of failed logins.
 #: includes/adapters/all-in-one-security.php:136
 msgid "%s failed login in 24h"
 msgid_plural "%s failed logins in 24h"
-msgstr[0] ""
+msgstr[0] "24 小时内登录失败 %s 次"
 
 #. Author URI of the plugin
 #: minimal-admin.php
 msgid "https://wenpai.org"
-msgstr ""
+msgstr "https://wenpai.org"
 
 #. Author of the plugin
 #: minimal-admin.php
 msgid "WenPai.org"
-msgstr ""
+msgstr "WenPai.org"
 
 #. Description of the plugin
 #: minimal-admin.php
 msgid "A reimagined WordPress admin experience. Fast, focused and beautiful. Served at /minimal-admin/."
-msgstr ""
+msgstr "重新构想的 WordPress 管理体验，快速、专注而美观，通过 /minimal-admin/ 提供服务。"
 
 #. Plugin URI of the plugin
 #: minimal-admin.php
 msgid "https://feicode.com/WenPai-org/minimal-admin"
-msgstr ""
+msgstr "https://feicode.com/WenPai-org/minimal-admin"
 
 #. Plugin Name of the plugin
 #: minimal-admin.php
 msgid "Minimal Admin"
-msgstr ""
+msgstr "Minimal Admin"
