@@ -4,7 +4,7 @@
 checking on things, keeping plugins current. No code in here. If you build
 plugins, you want [for-plugin-authors.md](for-plugin-authors.md) instead.*
 
-*Current as of v0.27.0. This file ships inside the plugin, so the copy you
+*Current as of v0.28.0. This file ships inside the plugin, so the copy you
 are reading always matches the version you have installed.*
 
 ## What Minimal is (and is not)
@@ -61,6 +61,38 @@ editor's block library have one too. When in doubt, try a right-click.
 form plugins, two backup plugins), Minimal shows one sidebar entry with a
 switcher inside, instead of three lookalike menus. The view stays the same;
 the provider changes.
+
+**On a network**, a small chevron sits beside the site name at the top of
+the sidebar. It opens a short list of sites you can work on and takes you
+straight to Minimal on any other. Network
+administrators also get a link to Network Admin from there, since account
+creation and deletion, the long tail of network settings, restores, exports
+and network setup stay with WordPress. The palette knows the sites too: press
+⌘K and type "switch", or just start typing a site's name. The chevron does
+not appear when you belong to only one site. Its menu opens with search already
+focused, fuzzy-matches site names and addresses, and shows no more than five
+matches at once even on a large network.
+
+**If you run the network**, a fourth sidebar group appears: Network. Sites
+lists every site with its address, members and state, filters for archived
+and spam sites, and search; from a row you can open a site in Minimal, visit it,
+archive or restore it, mark it as spam, or delete it. Adding a site asks for
+an address, a title and the email of someone who already has an account.
+Network users lists every account on the network, shows how many sites each
+belongs to, and lets you promote someone to network administrator or take
+that away. Network settings covers registration, uploads, what site
+administrators may do, and where network mail goes. Two things Minimal will not
+do: it never offers to archive or delete the main site of the network or the
+site you are currently working in, and it never lets you remove your own
+network-administrator status or the last one on the network. Creating and
+deleting accounts stays in Network Admin, because deleting a network account
+removes that person's posts from every site and WordPress's own flow offers
+to reassign them first.
+
+Network-wide plugin and theme controls stay in Extensions. A network
+administrator can activate or deactivate a plugin for the whole network and
+enable or disable a theme for every site. Per-site activation stays separate,
+and Minimal will not offer to deactivate itself network-wide from inside Minimal.
 
 **The topbar** carries the page title, a button that shows or hides the
 sidebar (⌘. does the same), the version badge (click it for what's new),
@@ -171,7 +203,9 @@ stays visible on every screen, so you can close the panel or move around
 Minimal and still see that updates are working; click it to come back to the
 panel. Minimal updates itself the same way: each release is fetched from the
 project's GitHub releases and checked against a published checksum before
-it is allowed to install.
+it is allowed to install. After a WordPress core update on multisite, Minimal
+runs the required database upgrade across the network's sites. Very large
+networks are sent to WordPress's own Upgrade Network screen instead.
 
 **Traffic**: with a supported analytics plugin active (Koko Analytics,
 Matomo, Independent Analytics, Jetpack Stats, Site Kit and others), the
@@ -233,7 +267,10 @@ more of them.
   defaults there, so a client's Minimal looks right before their first
   sign-in, and restore anything that user hid from their own menus.
   Light or dark mode is the one thing that stays personal to each
-  person's device.
+  person's device. On a subsite, this page manages site membership rather
+  than network accounts: add an existing account by email or username,
+  change its role, or remove it from that site. Network administrators are
+  protected from per-site role and removal controls.
 - **Settings** — the settings people actually change: identity and logo,
   reading and discussion, permalinks, visibility (search engines,
   maintenance mode, and a switch that turns a detected coming-soon or
@@ -312,7 +349,11 @@ On Windows and Linux, use Ctrl wherever ⌘ appears.
 - **Who can open `/minimal-admin/`?** Only logged-in users your site already
   trusts to edit content, and each person sees only what their role
   allows. Everything is re-checked on the server on every action.
-- **Multisite?** Not yet supported; Minimal is built for single sites.
+- **Multisite?** Yes. Site members can switch among the sites they may use,
+  subsite administrators can manage local membership, and network
+  administrators get daily Sites, Users, Settings, plugin and theme controls.
+  Account creation and deletion, the long settings tail and very-large-network
+  database upgrades stay in Network Admin.
 - **Something looks wrong?** Hard-refresh first (a cached stylesheet
   after an update is the usual cause), check the System page's health
   strip second, and report bugs at

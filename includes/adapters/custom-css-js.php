@@ -25,6 +25,70 @@ function minimal_admin_ccj_can() {
 	return current_user_can( 'manage_options' ) || current_user_can( 'edit_custom_csss' );
 }
 
+/**
+ * Whether this caller may store code for the given snippet options.
+ *
+ * A snippet's bytes are written to CCJ_UPLOAD_DIR/<id>.<language> and, for
+ * internal linking, wrapped in a <script> tag in the page. So the sink is a
+ * JavaScript execution context, and wp_kses_post() is no protection there: it
+ * sanitizes HTML, and a payload carrying no HTML tags at all passes through
+ * byte for byte before the sink re-adds the <script> wrapper.
+ *
+ * Mirror the decision already made for HFCM: refuse the write rather than
+ * pretend to sanitize it. Scoped by language, because the edit_custom_csss
+ * designer role exists to edit CSS and CSS is not an execution context:
+ *
+ *   js, html  -> needs unfiltered_html (script)
+ *   css       -> allowed, unless it renders in wp-admin or on the login screen,
+ *                where injected CSS can overlay an administrator's session
+ *
+ * Who this affects: the designer role, every site administrator on multisite
+ * (only super admins hold unfiltered_html there), and any install using
+ * DISALLOW_UNFILTERED_HTML.
+ *
+ * @param array $opts Normalized options (language + side).
+ * @return bool
+ */
+function minimal_admin_ccj_can_write_code( $opts ) {
+	$language = isset( $opts['language'] ) ? (string) $opts['language'] : 'css';
+	$sides    = array_filter( array_map( 'trim', explode( ',', isset( $opts['side'] ) ? (string) $opts['side'] : '' ) ) );
+	$scripty  = in_array( $language, array( 'js', 'html' ), true );
+	$admin    = (bool) array_intersect( $sides, array( 'admin', 'login' ) );
+	if ( ! $scripty && ! $admin ) {
+		return true;
+	}
+	// Executable snippets are code, so a site that forbids dashboard code
+	// editing forbids these too. Plain front end CSS returned above already.
+	if ( $scripty && class_exists( 'Minimal_Admin' ) && ! Minimal_Admin::code_edits_allowed() ) {
+		return false;
+	}
+	if ( defined( 'DISALLOW_UNFILTERED_HTML' ) && DISALLOW_UNFILTERED_HTML ) {
+		return false;
+	}
+	return current_user_can( 'unfiltered_html' );
+}
+
+/**
+ * Whether this caller may make an EXISTING snippet run.
+ *
+ * Publishing is the same privilege as authoring: the stored bytes are written
+ * to CCJ_UPLOAD_DIR and, for a js snippet or an admin-side one, execute in a
+ * context this caller may not write to. Checked against the snippet's stored
+ * options rather than anything in the request.
+ */
+function minimal_admin_ccj_can_activate( $post_id ) {
+	return minimal_admin_ccj_can_write_code( minimal_admin_ccj_get_options( (int) $post_id ) );
+}
+
+/** WP_Error explaining why a snippet write was refused. */
+function minimal_admin_ccj_code_error( $opts ) {
+	$language = isset( $opts['language'] ) ? (string) $opts['language'] : 'css';
+	$message  = in_array( $language, array( 'js', 'html' ), true )
+		? 'JavaScript and HTML snippets run as code in the page, so editing them needs the unfiltered_html capability on this site.'
+		: 'Snippets that load in the admin or on the login screen need the unfiltered_html capability on this site.';
+	return new WP_Error( 'forbidden', $message, array( 'status' => 403 ) );
+}
+
 /** Options meta defaults (mirrors CustomCSSandJS_Admin::$default_options). */
 function minimal_admin_ccj_default_options( $language = 'css' ) {
 	$language = in_array( $language, array( 'css', 'js', 'html' ), true ) ? $language : 'css';
@@ -441,11 +505,10 @@ add_action( 'rest_api_init', function () {
 					return new WP_Error( 'missing_name', 'Name is required.', array( 'status' => 400 ) );
 				}
 				$code = isset( $body['code'] ) ? (string) $body['code'] : '';
-				// unfiltered_html for raw CSS/JS.
-				if ( ! current_user_can( 'unfiltered_html' ) ) {
-					$code = wp_kses_post( $code );
-				}
 				$opts = minimal_admin_ccj_normalize_options( $body );
+				if ( '' !== $code && ! minimal_admin_ccj_can_write_code( $opts ) ) {
+					return minimal_admin_ccj_code_error( $opts );
+				}
 				$id   = wp_insert_post( array(
 					'post_type'    => 'custom-css-js',
 					'post_title'   => $name,
@@ -489,23 +552,33 @@ add_action( 'rest_api_init', function () {
 				if ( ! is_array( $body ) ) {
 					$body = array();
 				}
+				$stored = minimal_admin_ccj_get_options( $id );
+				$opts   = minimal_admin_ccj_normalize_options( $body, $stored );
+				// Check the RESULTING snippet, not just the incoming code. Retyping
+				// an existing css/frontend snippet to js, or moving it onto the admin
+				// or login screen, makes its stored bytes execute in a context this
+				// caller may not write to, so an options-only edit is the same
+				// escalation as a code write.
+				$retargets = ( $opts['language'] !== ( isset( $stored['language'] ) ? (string) $stored['language'] : 'css' ) )
+					|| ( $opts['side'] !== ( isset( $stored['side'] ) ? (string) $stored['side'] : 'frontend' ) );
+				if ( ( array_key_exists( 'code', $body ) || $retargets ) && ! minimal_admin_ccj_can_write_code( $opts ) ) {
+					return minimal_admin_ccj_code_error( $opts );
+				}
 				$update = array( 'ID' => $id );
 				if ( isset( $body['name'] ) ) {
 					$update['post_title'] = sanitize_text_field( $body['name'] );
 				}
 				if ( array_key_exists( 'code', $body ) ) {
-					$code = (string) $body['code'];
-					if ( ! current_user_can( 'unfiltered_html' ) ) {
-						$code = wp_kses_post( $code );
-					}
-					$update['post_content'] = $code;
+					$update['post_content'] = (string) $body['code'];
 				}
 				if ( array_key_exists( 'active', $body ) ) {
+					if ( ! empty( $body['active'] ) && ! minimal_admin_ccj_can_write_code( $opts ) ) {
+						return minimal_admin_ccj_code_error( $opts );
+					}
 					$update['post_status'] = $body['active'] ? 'publish' : 'draft';
 					update_post_meta( $id, '_active', $body['active'] ? 'yes' : 'no' );
 				}
 				wp_update_post( $update );
-				$opts = minimal_admin_ccj_normalize_options( $body, minimal_admin_ccj_get_options( $id ) );
 				update_post_meta( $id, 'options', $opts );
 				minimal_admin_ccj_rebuild_tree();
 				return rest_ensure_response( minimal_admin_ccj_item( $id ) );
@@ -519,6 +592,11 @@ add_action( 'rest_api_init', function () {
 				$post = get_post( $id );
 				if ( ! $post || 'custom-css-js' !== $post->post_type ) {
 					return new WP_Error( 'not_found', 'Code not found.', array( 'status' => 404 ) );
+				}
+				// Deleting is a write to the same store, and it takes the file
+				// in CCJ_UPLOAD_DIR with it.
+				if ( ! minimal_admin_ccj_can_activate( $id ) ) {
+					return minimal_admin_ccj_code_error( minimal_admin_ccj_get_options( $id ) );
 				}
 				wp_delete_post( $id, true );
 				minimal_admin_ccj_rebuild_tree();
@@ -538,6 +616,10 @@ add_action( 'rest_api_init', function () {
 			}
 			$body   = $request->get_json_params();
 			$active = is_array( $body ) ? ! empty( $body['active'] ) : true;
+			// Turning a snippet ON runs it. Turning it OFF is always allowed.
+			if ( $active && ! minimal_admin_ccj_can_activate( $id ) ) {
+				return minimal_admin_ccj_code_error( minimal_admin_ccj_get_options( $id ) );
+			}
 			wp_update_post( array(
 				'ID'          => $id,
 				'post_status' => $active ? 'publish' : 'draft',

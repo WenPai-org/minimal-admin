@@ -14,6 +14,7 @@ class Minimal_Admin {
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
 		add_action( 'init', array( __CLASS__, 'register_route' ) );
+		add_action( 'wp_loaded', array( __CLASS__, 'maybe_heal_rewrites' ), 20 );
 		add_filter( 'query_vars', array( __CLASS__, 'query_vars' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'maybe_render_app' ), 0 );
 		add_action( 'template_redirect', array( __CLASS__, 'maybe_maintenance_mode' ), 1 );
@@ -219,6 +220,50 @@ class Minimal_Admin {
 	public static function register_route() {
 		// Catch-all so app routes like /minimal-admin/content resolve to the SPA.
 		add_rewrite_rule( '^minimal-admin(/.*)?$', 'index.php?' . self::QUERY_VAR . '=1', 'top' );
+	}
+
+	/**
+	 * Self-healing rewrites: any site where Minimal runs but the compiled rules
+	 * lack its route gets one soft flush. Covers the multisite cases the
+	 * activation hook cannot reach — network activation only flushes the site
+	 * it runs in, and subsites that existed before activation keep serving
+	 * 404 at /minimal-admin/ until their rules are rebuilt. An empty rules
+	 * option is left alone: core regenerates it lazily on this same request,
+	 * with the route included.
+	 */
+	public static function maybe_heal_rewrites() {
+		if ( ! get_option( 'permalink_structure' ) ) {
+			return; // Plain permalinks: the ?minimal_admin=1 fallback is the route.
+		}
+		$rules = get_option( 'rewrite_rules' );
+		if ( ! is_array( $rules ) || ! $rules || isset( $rules['^minimal-admin(/.*)?$'] ) ) {
+			return;
+		}
+		flush_rewrite_rules( false );
+	}
+
+	/**
+	 * Drop every site's compiled rewrite rules so each rebuilds them lazily
+	 * on its next request — with Minimal's route when the plugin is active
+	 * there, without it when not. Deleting the option (rather than flushing
+	 * under switch_to_blog) sidesteps WP_Rewrite's unreliability in switched
+	 * contexts and keeps network activation/deactivation O(sites) cheap.
+	 */
+	public static function invalidate_network_rewrites() {
+		if ( ! is_multisite() || wp_is_large_network() ) {
+			return;
+		}
+		$site_ids = get_sites(
+			array(
+				'fields' => 'ids',
+				'number' => 10000,
+			)
+		);
+		foreach ( $site_ids as $site_id ) {
+			switch_to_blog( $site_id );
+			delete_option( 'rewrite_rules' );
+			restore_current_blog();
+		}
 	}
 
 	public static function query_vars( $vars ) {
@@ -527,11 +572,162 @@ class Minimal_Admin {
 		return $norm;
 	}
 
+	/**
+	 * Whether the site permits dashboard-driven code editing.
+	 *
+	 * DISALLOW_FILE_EDIT is the directive a site owner sets to stop anyone,
+	 * administrators included, reaching PHP on disk from the dashboard; core
+	 * folds it into edit_files via map_meta_cap. DISALLOW_FILE_MODS is the
+	 * broader "no filesystem changes" switch. Minimal is presented as the whole
+	 * admin surface, so a hardened wp-config must describe what Minimal will do
+	 * too, not just what wp-admin will.
+	 *
+	 * Deliberately consulted only where code is written or executed: the
+	 * wp-config writer and PHP snippet authoring. Ordinary content and
+	 * stylesheet editing are not file editing.
+	 */
+	public static function code_edits_allowed() {
+		if ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ) {
+			return false;
+		}
+		if ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS ) {
+			return false;
+		}
+		return true;
+	}
+
 	public static function app_url() {
 		if ( get_option( 'permalink_structure' ) ) {
 			return home_url( '/minimal-admin/' );
 		}
 		return add_query_arg( self::QUERY_VAR, '1', home_url( '/' ) );
+	}
+
+	/**
+	 * Multisite: the sites this user can open Minimal on — the switcher's model
+	 * (core's own admin-bar "My Sites" membership, narrowed to sites where
+	 * the app would actually let them in).
+	 *
+	 * A site qualifies only when Minimal is active there (network-wide or on
+	 * that site) AND the user clears the same `edit_posts` gate the app's
+	 * route enforces, so every entry leads somewhere usable rather than to a
+	 * "not allowed" page or a 404. Each site's URL is read in ITS OWN
+	 * context, because permalink structure (and therefore whether the app
+	 * lives at /minimal-admin/ or ?minimal_admin=1) is per site.
+	 *
+	 * Returns [] off multisite, on large networks (get_blogs_of_user is not
+	 * a query to run there), and when only the current site qualifies — the
+	 * client hides the switcher on an empty list, so a one-site membership
+	 * never renders a menu with nothing to switch to.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	const SITES_MENU_LIMIT = 8;
+
+	/**
+	 * The blog ids this user belongs to, newest membership last, or an empty
+	 * array off multisite. One query; no per-site work.
+	 *
+	 * @return int[]
+	 */
+	public static function user_site_ids() {
+		if ( ! is_multisite() ) {
+			return array();
+		}
+		$uid = get_current_user_id();
+		if ( ! $uid ) {
+			return array();
+		}
+		$blogs = get_blogs_of_user( $uid );
+		if ( ! is_array( $blogs ) ) {
+			return array();
+		}
+		return array_map( 'intval', wp_list_pluck( $blogs, 'userblog_id' ) );
+	}
+
+	/**
+	 * Describe specific sites for the switcher: name, address, and the app
+	 * URL to jump to.
+	 *
+	 * Reading a site's name and permalink structure means entering its
+	 * context, so this is O(sites passed in) and callers MUST pass a bounded
+	 * page — never a whole network's worth of ids. That is why the boot
+	 * payload caps at SITES_MENU_LIMIT and search is paginated: a network can
+	 * have thousands of sites, and neither a page load nor a menu can carry
+	 * them.
+	 *
+	 * A site is included only when Minimal is active there and the user clears
+	 * the app's own `edit_posts` gate, so every entry leads somewhere usable.
+	 *
+	 * @param int[] $ids Bounded list of blog ids.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function describe_sites( $ids ) {
+		$uid = get_current_user_id();
+		if ( ! $uid || ! $ids ) {
+			return array();
+		}
+		$current = get_current_blog_id();
+		$plugin  = plugin_basename( MINIMAL_ADMIN_FILE );
+		$network = (array) get_site_option( 'active_sitewide_plugins', array() );
+		$net_on  = isset( $network[ $plugin ] );
+		$out     = array();
+		foreach ( $ids as $blog_id ) {
+			$blog_id = (int) $blog_id;
+			switch_to_blog( $blog_id );
+			$active = $net_on || in_array( $plugin, (array) get_option( 'active_plugins', array() ), true );
+			if ( $active && user_can( $uid, 'edit_posts' ) ) {
+				$out[] = array(
+					'id'      => $blog_id,
+					'name'    => self::plain_text( get_bloginfo( 'name' ) ),
+					'url'     => home_url( '/' ),
+					'app'     => self::app_url(),
+					'current' => $blog_id === $current,
+				);
+			}
+			restore_current_blog();
+		}
+		usort(
+			$out,
+			function ( $a, $b ) {
+				return strcasecmp( $a['name'], $b['name'] );
+			}
+		);
+		return $out;
+	}
+
+	/**
+	 * Multisite: the switcher's boot model — a CAPPED page of the sites this
+	 * user can open Minimal on, always including the one they are standing in,
+	 * plus the true total so the client knows when to offer search instead of
+	 * a longer menu.
+	 *
+	 * Returns an empty list when only one site qualifies (a menu with nothing
+	 * to switch to is worse than no control) and off multisite.
+	 *
+	 * @return array{sites: array, total: int}
+	 */
+	public static function user_sites_payload() {
+		$ids = self::user_site_ids();
+		if ( count( $ids ) < 2 ) {
+			return array( 'sites' => array(), 'total' => 0 );
+		}
+		$current = get_current_blog_id();
+		// The current site always earns a slot; the rest fill the cap in id
+		// order, and the describe pass sorts what survives by name.
+		$page = array_slice( array_values( array_diff( $ids, array( $current ) ) ), 0, self::SITES_MENU_LIMIT - 1 );
+		if ( in_array( $current, $ids, true ) ) {
+			array_unshift( $page, $current );
+		}
+		$sites = self::describe_sites( $page );
+		if ( count( $sites ) < 2 ) {
+			return array( 'sites' => array(), 'total' => 0 );
+		}
+		// `total` counts memberships, not qualifying sites: resolving that
+		// exactly would cost the per-site work the cap exists to avoid. It
+		// drives one decision only — whether to offer search — and erring
+		// toward offering it is the safe direction.
+		return array( 'sites' => $sites, 'total' => count( $ids ) );
 	}
 
 	/**
@@ -608,7 +804,10 @@ class Minimal_Admin {
 			function () {
 				printf(
 					'<script>window.location.href = %s;</script><p><a href="%s">Open Minimal Admin</a></p>',
-					wp_json_encode( self::app_url() ),
+					// JSON_HEX_TAG or a home_url containing </script> closes the
+					// element and everything after it parses as HTML. Same flag
+					// set the app shell uses in template.php.
+					wp_json_encode( self::app_url(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ),
 					esc_url( self::app_url() )
 				);
 			},
@@ -660,6 +859,7 @@ class Minimal_Admin {
 		// only the descriptor payload sent to the client. See insertable_blocks.
 		$raw_block_forms = apply_filters( 'minimal_admin_block_forms', array() );
 		$block_forms     = self::filter_block_forms( $raw_block_forms );
+		$sites_payload   = self::user_sites_payload();
 
 		$boot = array(
 			'restUrl'  => esc_url_raw( rest_url() ),
@@ -710,6 +910,10 @@ class Minimal_Admin {
 				'icon'       => get_site_icon_url( 64 ),
 				'url'        => home_url( '/' ),
 				'adminUrl'   => admin_url(),
+				// Multisite + super admin only: honest link-outs to the
+				// network screens Minimal does not cover (site/user deletion,
+				// network plugins). Absent otherwise — entries gate on it.
+				'networkAdminUrl' => is_multisite() && current_user_can( 'manage_network' ) ? network_admin_url() : '',
 				'logout'     => str_replace( '&amp;', '&', wp_logout_url( home_url( '/' ) ) ),
 				// Block themes manage navigation/widgets in the site editor, so
 				// Minimal (like wp-admin) only offers Menus/Widgets on classic themes.
@@ -733,6 +937,9 @@ class Minimal_Admin {
 				'themes'       => current_user_can( 'switch_themes' ),
 				'deleteThemes' => current_user_can( 'delete_themes' ),
 				'updateThemes' => current_user_can( 'update_themes' ),
+				// Core's own gate for the Update Translations button. On a
+				// network this maps to the super admin, the same as core.
+				'updateLanguages' => current_user_can( 'update_languages' ),
 				'installThemes' => current_user_can( 'install_themes' ),
 				'settings'     => current_user_can( 'manage_options' ),
 				'moderate'     => current_user_can( 'moderate_comments' ),
@@ -766,10 +973,26 @@ class Minimal_Admin {
 					&& current_user_can( 'edit_shop_orders' ),
 				'themeOptions' => current_user_can( 'edit_theme_options' ),
 				'core'         => current_user_can( 'update_core' ),
+				// Multisite-only: "Remove from this site" (per-site
+				// membership). Deletion stays a Network Admin job there.
+				'removeUsers'  => is_multisite() && current_user_can( 'remove_users' ),
+				// Network-wide activation of plugins and themes (super admin).
+				'networkPlugins' => is_multisite() && current_user_can( 'manage_network_plugins' ),
+				'networkThemes'  => is_multisite() && current_user_can( 'manage_network_themes' ),
 				// Drives Settings → Design (Additional CSS). Core maps this
 				// from unfiltered_html; multisite keeps it super-admin-only.
 				'editCss'      => current_user_can( 'edit_css' ),
 			),
+			// Multisite context: users are network-shared (delete becomes
+			// remove-from-site, profile edits need network caps), plugins can
+			// be network-activated. Client views branch on this.
+			'multisite' => is_multisite(),
+			// The sites this user can open Minimal on: a CAPPED page for the
+			// switcher plus the membership total, so a network with thousands
+			// of sites costs a page load nothing and offers search instead of
+			// an unusable menu. Empty off multisite and for single-site users.
+			'sites'     => $sites_payload['sites'],
+			'sitesTotal' => $sites_payload['total'],
 			'wc'       => class_exists( 'WooCommerce' ),
 			// WooCommerce Subscriptions extension (wc/v3/subscriptions REST).
 			'wcs'      => class_exists( 'WooCommerce' ) && class_exists( 'WC_Subscriptions' ),

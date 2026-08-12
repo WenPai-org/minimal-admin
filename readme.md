@@ -59,6 +59,14 @@ vanilla-JS file. It lives *alongside* the classic wp-admin, which stays fully av
   language, sessions, plus the user's **Minimal appearance set by an admin** (color scheme
   including custom palettes, default admin, toolbar) so a client's Minimal looks right before
   their first sign-in, and a **Hidden for them** card restoring anything they hid
+- **Multisite** — fuzzy-search the sites you can use from a compact sidebar switcher or
+  the command palette;
+  subsite administrators can add existing network accounts, change roles, and remove site
+  memberships. Network administrators get first-class **Sites**, **Network users**, and
+  **Network settings** surfaces, plus network-wide plugin activation, theme availability,
+  and post-core-update database migrations. Main/current-site, self-lockout, and last-admin
+  guards protect destructive actions; account creation/deletion, the long settings tail,
+  and very large network upgrades link to WordPress Network Admin
 - **Your profile** — a full page at `/minimal-admin/profile`: account, public profile (first/last
   name, website, bio, Gravatar), **per-user language** with automatic pack installs, the
   front-end toolbar preference, appearance, hidden integrations, and login sessions
@@ -275,12 +283,6 @@ vanilla-JS file. It lives *alongside* the classic wp-admin, which stays fully av
 Pretty permalinks recommended (clean routes like `/minimal-admin/content`); without them the app
 falls back to `/?minimal_admin=1` with hash routing. Updates are delivered through the normal
 WordPress updates UI via GitHub Releases.
-
-## Languages
-
-Version 0.27.0.2 bundles complete Simplified Chinese (`zh_CN`) and Traditional Chinese (`zh_TW`)
-interface catalogs. All 340 current plugin UI messages are translated in both locales, with MO
-catalogs for PHP and Jed JSON catalogs for the JavaScript app.
 
 ## Extending
 

@@ -208,6 +208,47 @@ a { color: var(--accent2); text-decoration: none; }
 /* The wordmark is the SITE NAME now (falls back to "minimal") — truncate so a
    long site title can't push the version pill off or wrap the logo row. */
 .minimal-logo-name { font-weight: 700; font-size: 17px; letter-spacing: -0.3px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Multisite site switcher: a quiet chevron beside the wordmark (absent off
+   multisite and when the user belongs to only one site). flex:none so a long
+   site name truncates rather than squeezing the control away. */
+.minimal-site-switch {
+  display: flex; align-items: center; justify-content: center; flex: none;
+  width: 24px; height: 24px; padding: 0; border: none; border-radius: 7px;
+  background: none; color: var(--text3); cursor: pointer;
+}
+.minimal-site-switch:hover { background: var(--panel2); color: var(--text); }
+.minimal-site-switch svg { width: 15px; height: 15px; }
+/* Inline multisite finder: menu-sized, one quiet field, five results max. */
+.minimal-site-switch-menu { width: 238px; }
+.minimal-site-switch-search {
+  display: flex; align-items: center; gap: 7px; margin: 4px; padding: 6px 8px;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--bg2);
+  color: var(--text3);
+}
+.minimal-site-switch-search:focus-within { border-color: var(--accent); color: var(--text2); }
+.minimal-site-switch-search svg { width: 14px; height: 14px; flex: none; }
+.minimal-site-switch-search input {
+  width: 100%; min-width: 0; padding: 0; border: 0; outline: 0; background: none;
+  color: var(--text); font: inherit; font-size: 13px;
+}
+.minimal-site-switch-search input::placeholder { color: var(--text3); }
+/* Chromium paints a bulky clear button into type=search by default. */
+.minimal-site-switch-search input::-webkit-search-cancel-button { display: none; }
+.minimal-site-switch-menu #minimal-site-switch-results button { padding-top: 7px; padding-bottom: 7px; }
+.minimal-site-switch-menu #minimal-site-switch-results button.is-keyboard { background: var(--hover); }
+.minimal-site-switch-empty { padding: 8px 11px; color: var(--text3); font-size: 12.5px; }
+/* Site picker (networks with more sites than the switcher menu holds). */
+.minimal-sp-list { max-height: 52vh; overflow-y: auto; padding: 0 10px 12px; }
+.minimal-sp-row {
+  display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left;
+  padding: 9px 11px; border: none; border-radius: 9px; background: none;
+  color: var(--text); cursor: pointer;
+}
+.minimal-sp-row:hover:not(:disabled) { background: var(--panel2); }
+.minimal-sp-row:disabled { cursor: default; }
+.minimal-sp-name { font-weight: 600; font-size: 14px; }
+.minimal-sp-url { color: var(--text3); font-size: 12px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.minimal-sp-here { margin-left: auto; color: var(--accent2); font-size: 11.5px; font-weight: 600; flex: none; }
 /* Version + changelog live in the topbar actions (GH #5: a badge beside the
    logo truncated longer site names; Austin moved it up by the view-site
    button). Sized to sit flush with the .minimal-icon-btn row. */
@@ -423,6 +464,9 @@ button.minimal-nav-label:hover { color: var(--text2); }
    page title) — margin reset kills the UA heading margins. */
 .minimal-topbar-title { font-weight: 700; font-size: 16px; letter-spacing: -0.2px; margin: 0; }
 .minimal-topbar-sub { font-size: 13px; color: var(--text3); background: var(--panel); border: 1px solid var(--border); padding: 3px 9px; border-radius: 20px; }
+/* The pill is its CONTENT's frame, so a route or surface with nothing to say
+   there must not leave an empty capsule floating beside the title. */
+.minimal-topbar-sub:empty { display: none; }
 /* Family provider switcher — sits where the static sub badge was; opens a
    combobox of installed adapters (Code Snippets / WPCode / Fluent…). */
 .minimal-topbar-sub:has(.minimal-surface-switch) {
@@ -488,6 +532,10 @@ button.minimal-nav-label:hover { color: var(--text2); }
   margin: 5px 4px 1px; padding: 4px 7px 2px; border-top: 1px solid var(--border);
   color: var(--text3); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
 }
+/* The rule is a SEPARATOR from the entries above, so a heading that opens a
+   menu must not draw one (a network-active plugin's menu starts at Links —
+   it has no activate/delete entries above it). */
+.minimal-new-menu-label:first-child { margin-top: 2px; border-top: 0; }
 .minimal-icon-btn.sm:disabled { opacity: 0.35; cursor: default; }
 .minimal-icon-btn.sm.danger { color: var(--red); }
 

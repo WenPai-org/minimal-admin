@@ -55,6 +55,19 @@
 		'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 	}[ c ] ) );
 
+	// Escape for a CSS url() STRING, which is one nesting level below HTML.
+	// esc() is the HTML escaper: it turns ' into &#39;, but the HTML parser
+	// decodes entity references in an attribute value BEFORE the CSS parser
+	// sees it, so the apostrophe comes back and closes the url() string. That
+	// let an attacker-shaped media URL append declarations to the element
+	// (a beacon background-image, or a full-viewport fixed overlay). encodeURI
+	// covers <>"' already; the extra class catches ( ) and backslash.
+	// NOTE: the map is explicit because encodeURIComponent leaves ' ( ) alone
+	// (they are unreserved), so using it as the replacer would be a no-op for
+	// exactly the characters that break out of url('…').
+	const CSS_URL_ESC = { "'": '%27', '"': '%22', '(': '%28', ')': '%29', '\\': '%5C' };
+	const escCssUrl = ( u ) => encodeURI( String( u == null ? '' : u ) ).replace( /['"()\\]/g, ( c ) => CSS_URL_ESC[ c ] );
+
 	// Parse in an INERT document. A div created from the live document still
 	// runs the resource-loading side of HTML parsing, so `<img src=x
 	// onerror=…>` fires its handler during the parse — before any escaping of
@@ -991,7 +1004,7 @@
 			const has = img && img.id;
 			const url = has ? ( img.url || '' ) : '';
 			return `<div class="minimal-field-image" ${ attr }="${ esc( id ) }" data-ftype="image" data-img-id="${ has ? esc( String( img.id ) ) : '' }" data-img-url="${ esc( url ) }">
-				${ has && url ? `<button type="button" class="minimal-field-image-thumb" data-img-pick style="background-image:url('${ esc( url ) }')" title="Replace image"></button>` : '' }
+				${ has && url ? `<button type="button" class="minimal-field-image-thumb" data-img-pick style="background-image:url('${ escCssUrl( url ) }')" title="Replace image"></button>` : '' }
 				<div class="minimal-field-image-actions">
 					<button type="button" class="minimal-btn-soft" data-img-pick>${ has ? 'Replace' : 'Set image' }</button>
 					${ has ? '<button type="button" class="minimal-btn-soft danger" data-img-clear>Remove</button>' : '' }
@@ -1203,6 +1216,12 @@
 	// `group` places the entry: 'workspace' for inbox-shaped surfaces the
 	// descriptor opts into (form entries), everything else defaults to the
 	// Tools group so the prime real estate stays curated.
+	// The nav groups a surface may claim. Anything else lands in Tools, which
+	// is the catch-all for site plumbing (the server separately demotes a
+	// workspace claim that is not inbox-shaped).
+	const NAV_GROUPS = [ 'workspace', 'network' ];
+	const navGroupOf = ( g ) => NAV_GROUPS.includes( g ) ? g : 'tools';
+
 	function surfaceNavItems() {
 		const out = [];
 		const seen = new Set();
@@ -1212,9 +1231,9 @@
 				seen.add( s.family );
 				const id = preferredSurfaceId( s.family );
 				const primary = surfaceById( id ) || s;
-				out.push( { id: primary.id, label: primary.label, icon: primary.icon || 'plug', family: s.family, group: ( primary.group || s.group ) === 'workspace' ? 'workspace' : 'tools' } );
+				out.push( { id: primary.id, label: primary.label, icon: primary.icon || 'plug', family: s.family, group: navGroupOf( primary.group || s.group ) } );
 			} else {
-				out.push( { id: s.id, label: s.label, icon: s.icon || 'plug', group: s.group === 'workspace' ? 'workspace' : 'tools' } );
+				out.push( { id: s.id, label: s.label, icon: s.icon || 'plug', group: navGroupOf( s.group ) } );
 			}
 		} );
 		return out;
@@ -1585,7 +1604,16 @@
 	// Tools nav items: site plumbing (logs, redirects, snippets, backups) —
 	// where surface families land unless their descriptor claims workspace.
 	function toolsNavItems() {
-		return surfaceNavItems().filter( ( s ) => s.group !== 'workspace' )
+		return surfaceNavItems().filter( ( s ) => s.group !== 'workspace' && s.group !== 'network' )
+			.map( ( s ) => ( { id: s.id, label: s.label, icon: s.icon || 'plug', family: s.family || '' } ) );
+	}
+
+	// Network nav items (multisite): surfaces that belong to the whole
+	// network rather than this site. The group is capability-gated on the
+	// server — its surfaces never reach a boot payload without the network
+	// capability — so an empty list here simply means "not a super admin".
+	function networkNavItems() {
+		return surfaceNavItems().filter( ( s ) => s.group === 'network' )
 			.map( ( s ) => ( { id: s.id, label: s.label, icon: s.icon || 'plug', family: s.family || '' } ) );
 	}
 
@@ -1769,6 +1797,227 @@
 		} );
 	}
 
+	/* ===== Site switcher (multisite) ===== */
+	// B.sites carries only the sites this user can actually open Minimal on, and
+	// is empty unless there are at least two — so every caller can treat a
+	// non-empty list as "worth offering" without re-checking multisite.
+	//
+	// Switching is a same-tab navigation to another site's app (each subsite
+	// serves its own Minimal at its own origin), which is what the admin bar's
+	// "My Sites" does. Network Admin rides along for super admins as the
+	// honest link-out to what Minimal does not cover.
+	// True when the user belongs to more sites than the boot payload carries;
+	// the inline finder then adds user-scoped server results to local matches.
+	function hasMoreSites() {
+		return ( B.sitesTotal || 0 ) > ( B.sites || [] ).length;
+	}
+
+	// Compact fuzzy scoring shared by the inline switcher and the full picker.
+	// Contiguous matches win, but punctuation-free and subsequence matches make
+	// "team1" find "Team 1" and "tm10" find "Team 10". Lower is better;
+	// null means no match.
+	function siteFuzzyScore( query, site ) {
+		const norm = ( value ) => String( value || '' ).normalize( 'NFKD' )
+			.replace( /[\u0300-\u036f]/g, '' ).toLowerCase().trim();
+		const q = norm( query );
+		if ( ! q ) return 0;
+		const qFlat = q.replace( /[^a-z0-9]+/g, '' );
+		const values = typeof site === 'string'
+			? [ site ]
+			: [ site && site.name, site && site.url ];
+		let best = null;
+		values.forEach( ( value ) => {
+			const text = norm( value );
+			if ( ! text ) return;
+			let score = null;
+			if ( text === q ) score = 0;
+			else if ( text.startsWith( q ) ) score = 2;
+			else {
+				const at = text.indexOf( q );
+				if ( at >= 0 ) score = 10 + at;
+			}
+			const flat = text.replace( /[^a-z0-9]+/g, '' );
+			if ( qFlat ) {
+				const flatAt = flat.indexOf( qFlat );
+				if ( flatAt >= 0 ) score = Math.min( score == null ? Infinity : score, 20 + flatAt );
+				let cursor = -1;
+				let gaps = 0;
+				let first = 0;
+				for ( let i = 0; i < qFlat.length; i++ ) {
+					const next = flat.indexOf( qFlat[ i ], cursor + 1 );
+					if ( next < 0 ) { cursor = -2; break; }
+					if ( i === 0 ) first = next;
+					else gaps += next - cursor - 1;
+					cursor = next;
+				}
+				if ( cursor >= 0 ) score = Math.min( score == null ? Infinity : score, 40 + first + gaps );
+			}
+			if ( score != null && Number.isFinite( score ) ) best = best == null ? score : Math.min( best, score );
+		} );
+		return best;
+	}
+
+	function siteSwitchMatches( sites, query ) {
+		const unique = new Map();
+		( sites || [] ).forEach( ( site ) => unique.set( String( site.id ), site ) );
+		return [ ...unique.values() ].map( ( site ) => ( {
+			site,
+			score: siteFuzzyScore( query, site ),
+		} ) ).filter( ( match ) => match.score != null ).sort( ( a, b ) =>
+			a.score - b.score || String( a.site.name || a.site.url ).localeCompare( String( b.site.name || b.site.url ) )
+		).slice( 0, 5 ).map( ( match ) => match.site );
+	}
+
+	// The switcher is intentionally a menu, not a modal: the search field is
+	// the first item beneath its heading, keeps focus while results update, and
+	// never shows more than five matches. The boot payload answers immediately;
+	// larger memberships add a debounced, user-scoped server search.
+	function openSiteSwitchMenu( x, y ) {
+		hideMinimalMenu();
+		const seed = B.sites || [];
+		let remote = [];
+		let query = '';
+		let loading = false;
+		let selected = -1;
+		let timer = null;
+		let request = 0;
+		const menu = document.createElement( 'div' );
+		minimalMenuEl = menu;
+		menu.className = 'minimal-new-menu minimal-ctx-menu minimal-site-switch-menu';
+		menu.innerHTML = `
+			<div class="minimal-new-menu-label">${ esc( __( 'Switch site' ) ) }</div>
+			<label class="minimal-site-switch-search" for="minimal-site-switch-q">
+				${ icon( 'search' ) }
+				<input id="minimal-site-switch-q" type="search" placeholder="${ esc( __( 'Search sites…' ) ) }" autocomplete="off" spellcheck="false" aria-controls="minimal-site-switch-results">
+			</label>
+			<div id="minimal-site-switch-results" role="listbox"></div>
+			<span class="minimal-sr-only" id="minimal-site-switch-status" aria-live="polite"></span>
+			${ B.site.networkAdminUrl ? `
+				<div class="minimal-new-menu-label">${ esc( __( 'Network' ) ) }</div>
+				<a href="${ esc( B.site.networkAdminUrl ) }" target="_blank" rel="noopener">${ esc( __( 'Network Admin ↗' ) ) }</a>` : '' }`;
+		document.body.appendChild( menu );
+		const input = menu.querySelector( '#minimal-site-switch-q' );
+		const results = menu.querySelector( '#minimal-site-switch-results' );
+		const status = menu.querySelector( '#minimal-site-switch-status' );
+		const place = () => {
+			menu.style.left = Math.max( 10, Math.min( x, window.innerWidth - menu.offsetWidth - 10 ) ) + 'px';
+			menu.style.top = Math.max( 10, Math.min( y, window.innerHeight - menu.offsetHeight - 10 ) ) + 'px';
+		};
+		const render = () => {
+			const pool = query ? seed.concat( remote ) : seed;
+			const matches = siteSwitchMatches( pool, query );
+			selected = -1;
+			results.innerHTML = matches.length ? matches.map( ( site ) => `
+				<button type="button" role="option" data-site-id="${ esc( site.id ) }" class="${ site.current ? 'is-on' : '' }"${ site.current ? ' aria-current="page"' : '' }>${ esc( site.name || site.url ) }</button>` ).join( '' )
+				: `<div class="minimal-site-switch-empty">${ esc( loading ? __( 'Searching…' ) : __( 'No matching sites' ) ) }</div>`;
+			const buttons = [ ...results.querySelectorAll( 'button' ) ];
+			buttons.forEach( ( button ) => button.addEventListener( 'click', () => {
+				const site = matches.find( ( item ) => String( item.id ) === button.dataset.siteId );
+				hideMinimalMenu();
+				if ( site && ! site.current ) window.location.href = site.app;
+			} ) );
+			/* translators: %s: number of matching sites. */
+			status.textContent = sprintf( _n( '%s matching site', '%s matching sites', matches.length ), matches.length );
+			place();
+		};
+		const searchRemote = () => {
+			const q = query.trim();
+			if ( ! q || ! hasMoreSites() || minimalMenuEl !== menu ) return;
+			const thisRequest = ++request;
+			loading = true;
+			render();
+			api( 'minimal-admin/v1/my-sites?per_page=20&search=' + encodeURIComponent( q ) ).then( ( response ) => {
+				if ( minimalMenuEl !== menu || thisRequest !== request || query.trim() !== q ) return;
+				remote = Array.isArray( response.items ) ? response.items : [];
+			} ).catch( () => {
+				if ( thisRequest === request ) remote = [];
+			} ).finally( () => {
+				if ( minimalMenuEl !== menu || thisRequest !== request ) return;
+				loading = false;
+				render();
+			} );
+		};
+		input.addEventListener( 'input', () => {
+			query = input.value;
+			remote = [];
+			request++;
+			loading = !! query.trim() && hasMoreSites();
+			render();
+			clearTimeout( timer );
+			timer = setTimeout( searchRemote, 180 );
+		} );
+		input.addEventListener( 'keydown', ( event ) => {
+			const buttons = [ ...results.querySelectorAll( 'button' ) ];
+			if ( event.key === 'Escape' ) {
+				event.preventDefault();
+				event.stopPropagation();
+				hideMinimalMenu();
+				return;
+			}
+			if ( ! buttons.length ) return;
+			if ( event.key === 'ArrowDown' || event.key === 'ArrowUp' ) {
+				event.preventDefault();
+				selected = event.key === 'ArrowDown'
+					? ( selected + 1 ) % buttons.length
+					: ( selected - 1 + buttons.length ) % buttons.length;
+				buttons.forEach( ( button, i ) => {
+					button.classList.toggle( 'is-keyboard', i === selected );
+					button.setAttribute( 'aria-selected', i === selected ? 'true' : 'false' );
+				} );
+			} else if ( event.key === 'Enter' ) {
+				event.preventDefault();
+				buttons[ selected >= 0 ? selected : 0 ].click();
+			}
+		} );
+		render();
+		document.addEventListener( 'mousedown', minimalMenuAway, true );
+		requestAnimationFrame( () => input.focus( { preventScroll: true } ) );
+	}
+
+	// Full searchable picker used by the command palette on larger networks.
+	// It shares the fuzzy name/address endpoint and scorer with the inline
+	// switcher, but shows a longer result page when someone asks for it.
+	function openSitePicker() {
+		state.modal = { type: 'site-picker', q: '', items: null, total: 0, loading: true };
+		renderOverlays();
+		loadSitePicker( '' );
+	}
+
+	// Hide picker rows that don't fuzzy-match what's typed, without touching
+	// the input node (see the render comment).
+	function filterSitePickerRows() {
+		const m = state.modal;
+		if ( ! m || m.type !== 'site-picker' ) return;
+		const q = ( m.q || '' ).trim().toLowerCase();
+		let shown = 0;
+		$$( '[data-spfind]' ).forEach( ( row ) => {
+			const hit = ! q || siteFuzzyScore( q, row.dataset.spfind ) != null;
+			row.hidden = ! hit;
+			if ( hit ) shown++;
+		} );
+		const none = $( '#minimal-sp-none' );
+		if ( none ) none.hidden = shown > 0 || ! m.items;
+	}
+
+	async function loadSitePicker( q ) {
+		const m = state.modal;
+		if ( ! m || m.type !== 'site-picker' ) return;
+		m.loading = true;
+		try {
+			const r = await api( 'minimal-admin/v1/my-sites?per_page=20&search=' + encodeURIComponent( q ) );
+			// Discard a response the query moved past (the input keeps typing).
+			if ( state.modal !== m || ( m.q || '' ) !== q ) return;
+			m.items = Array.isArray( r.items ) ? r.items : [];
+			m.total = r.total || 0;
+		} catch ( e ) {
+			if ( state.modal !== m ) return;
+			m.items = [];
+			m.error = e.message;
+		}
+		m.loading = false;
+		renderOverlays();
+	}
+
 	// Update the sidebar brand in place from B.site (name + Site Icon). The
 	// logo is part of the app shell rendered once at boot, so a Settings save
 	// that changes the site title or icon must patch it here rather than wait
@@ -1781,7 +2030,7 @@
 		if ( B.site.icon ) {
 			mark.classList.add( 'minimal-logo-mark-icon' );
 			mark.textContent = '';
-			mark.style.backgroundImage = `url('${ B.site.icon }')`;
+			mark.style.backgroundImage = `url('${ escCssUrl( B.site.icon ) }')`;
 		} else {
 			mark.classList.remove( 'minimal-logo-mark-icon' );
 			mark.style.backgroundImage = '';
@@ -1827,7 +2076,7 @@
 			ordersHidden: $( '#minimal-orders-count' )?.hidden,
 			dotHidden: $( '#minimal-plugin-dot' )?.hidden,
 		};
-		[ [ 'workspace', workspaceNavItems() ], [ 'tools', toolsNavItems() ], [ 'manage', manageNavItems() ] ].forEach( ( [ key, items ] ) => {
+		[ [ 'workspace', workspaceNavItems() ], [ 'tools', toolsNavItems() ], [ 'manage', manageNavItems() ], [ 'network', networkNavItems() ] ].forEach( ( [ key, items ] ) => {
 			const body = $( '#minimal-nav-' + key );
 			if ( ! body ) return;
 			body.innerHTML = items.map( navBtnHtml ).join( '' );
@@ -1869,10 +2118,14 @@
 				<div class="minimal-logo">
 					<button class="minimal-logo-home" id="minimal-logo-home" title="${ esc( __( 'Overview' ) ) }">
 						${ B.site.icon
-							? `<span class="minimal-logo-mark minimal-logo-mark-icon" style="background-image:url('${ esc( B.site.icon ) }')"></span>`
+							? `<span class="minimal-logo-mark minimal-logo-mark-icon" style="background-image:url('${ escCssUrl( B.site.icon ) }')"></span>`
 							: '<span class="minimal-logo-mark">m</span>' }
 						<span class="minimal-logo-name">${ esc( ( B.site.name || '' ).trim() || 'minimal' ) }</span>
 					</button>
+					${ ( B.sites || [] ).length ? `
+					<button class="minimal-site-switch" id="minimal-site-switch" title="${ esc( __( 'Switch site' ) ) }" aria-label="${ esc( __( 'Switch site' ) ) }" aria-haspopup="menu">
+						${ icon( 'chevron-down' ) }
+					</button>` : '' }
 				</div>
 				<button class="minimal-search-btn" id="minimal-open-palette">
 					${ icon( 'search' ) }<span>${ esc( __( 'Search…' ) ) }</span><span class="minimal-kbd">⌘K</span>
@@ -1881,6 +2134,7 @@
 					${ navGroupHtml( 'workspace', __( 'Workspace' ), workspaceNavItems() ) }
 					${ navGroupHtml( 'tools', __( 'Tools' ), toolsNavItems(), true ) }
 					${ navGroupHtml( 'manage', __( 'Manage' ), manageItems, true ) }
+					${ navGroupHtml( 'network', __( 'Network' ), networkNavItems(), true ) }
 				</nav>
 				${ B.switchBack ? `
 			<a class="minimal-switchback" href="${ esc( B.switchBack.url ) }" title="${ esc( __( 'End this switched session' ) ) }">
@@ -1929,6 +2183,12 @@
 		bindNavGroupToggles();
 		$( '#minimal-open-palette' ).addEventListener( 'click', openPalette );
 		$( '#minimal-logo-home' ).addEventListener( 'click', () => go( 'overview' ) );
+		const siteSwitch = $( '#minimal-site-switch' );
+		if ( siteSwitch ) siteSwitch.addEventListener( 'click', ( e ) => {
+			e.stopPropagation();
+			const r = siteSwitch.getBoundingClientRect();
+			openSiteSwitchMenu( r.left, r.bottom + 4 );
+		} );
 		$( '#minimal-ver-btn' ).addEventListener( 'click', openChangelog );
 
 		// Global nav show/hide — a topbar icon button (panel-left glyph, the
@@ -3934,7 +4194,7 @@
 		const countLabel = metaLabel( c.total, 'file' )
 			+ ( state.mediaFolder != null && state.mediaFolderCapped ? ' (newest 500 in folder)' : '' );
 		const thumbStyle = ( m ) => m.thumb
-			? `background-image:url('${ esc( m.thumb ) }')`
+			? `background-image:url('${ escCssUrl( m.thumb ) }')`
 			: `background:${ m.grad }`;
 
 		view.innerHTML = `
@@ -7791,7 +8051,12 @@
 		const order = state.userOrder === 'asc' ? 'asc' : 'desc';
 		const session = state.userSession || 'all';
 		let q;
-		if ( session === 'all' ) {
+		// Multisite always rides Minimal's /users route: core's edit-context
+		// list drops every user the caller can't edit_user (a subsite admin
+		// would see a one-row "list" of themselves), and only the Minimal route
+		// flags network administrators (`super`) so per-site role/removal
+		// controls know to stand down. Single-site keeps the core default.
+		if ( session === 'all' && B.caps.editUsers && ! B.multisite ) {
 			// Default path: core REST (and User Switching's minimal_switch_url field).
 			// minimal_switch_url only exists while User Switching is active — an
 			// unregistered field in _fields is silently absent (safe).
@@ -7839,10 +8104,15 @@
 	async function runUserBulkRole( role, roleLabel, btn ) {
 		const ids = Array.from( state.userSel || [] );
 		if ( ! ids.length || ! role ) return;
-		const targets = ids.filter( ( id ) => id !== B.user.id );
-		const skippedSelf = targets.length !== ids.length;
+		// Network administrators are skipped too: their power doesn't ride
+		// the per-site role, and wp-admin's list table never offers the edit.
+		const items = ( state.cache.users && state.cache.users.items ) || [];
+		const isSuper = ( id ) => !! ( items.find( ( x ) => x.id === id ) || {} ).super;
+		const targets = ids.filter( ( id ) => id !== B.user.id && ! isSuper( id ) );
+		const skippedSelf = ids.includes( B.user.id );
+		const skippedSuper = ids.some( ( id ) => isSuper( id ) && id !== B.user.id );
 		if ( ! targets.length ) {
-			toast( 'Pick users other than yourself to change roles in bulk.', true );
+			toast( 'Pick users other than yourself or network administrators to change roles in bulk.', true );
 			return;
 		}
 		btn.disabled = true;
@@ -7855,7 +8125,11 @@
 		state.userSel.clear();
 		state.userLastIdx = null;
 		state.cache.users = null;
-		const tail = skippedSelf ? ' (your own account was skipped)' : '';
+		const skipBits = [
+			skippedSelf ? 'your own account' : '',
+			skippedSuper ? 'network administrators' : '',
+		].filter( Boolean );
+		const tail = skipBits.length ? ` (${ skipBits.join( ' and ' ) } skipped)` : '';
 		toast( fail ? `Set ${ roleLabel }: ${ ok } done, ${ fail } failed${ tail }` : `Set ${ ok } user${ ok === 1 ? '' : 's' } to ${ roleLabel }${ tail }`, fail > 0 && ok === 0 );
 		if ( state.route === 'users' ) renderUsers();
 	}
@@ -7914,6 +8188,7 @@
 			<input class="minimal-input minimal-toolbar-search" id="minimal-user-search" placeholder="Search users…" value="${ esc( state.userSearch || '' ) }">
 			<div class="minimal-toolbar-meta">${ metaLabel( c.total, 'user' ) }</div>
 			${ B.caps.createUsers ? `<button class="minimal-btn-soft" id="minimal-add-user" style="margin-left:0;">${ icon( 'plus' ) } Add user</button>` : '' }
+			${ B.multisite && B.caps.promoteUsers ? `<button class="minimal-btn-soft" id="minimal-add-existing-user" style="margin-left:0;" title="Attach an account that already exists on this network">${ icon( 'plus' ) } Add existing user</button>` : '' }
 		</div>
 		<div class="minimal-toolbar minimal-toolbar-filters">
 			<div class="minimal-tabs minimal-ext-filters" role="group" aria-label="${ esc( __( 'Session filter' ) ) }">
@@ -8029,6 +8304,11 @@
 		} );
 		const addBtn = $( '#minimal-add-user', view );
 		if ( addBtn ) addBtn.addEventListener( 'click', () => openUserModal( null ) );
+		const addExistingBtn = $( '#minimal-add-existing-user', view );
+		if ( addExistingBtn ) addExistingBtn.addEventListener( 'click', () => {
+			state.modal = { type: 'user-add-existing', who: '' };
+			renderOverlays();
+		} );
 
 		const userFromRow = ( row ) => {
 			const id = parseInt( row.dataset.user, 10 );
@@ -8043,7 +8323,29 @@
 		const openUserMenu = ( x, y, u ) => {
 			const isSelf = u.id === B.user.id;
 			const entries = [
-				{ label: 'View user', run: () => openUserModal( u.id ) },
+				// The user modal reads context=edit — without edit_users the
+				// fetch 403s, so the entry only renders when it can work
+				// (multisite subsite admins manage role + membership instead).
+				...( B.caps.editUsers || isSelf ? [ { label: 'View user', run: () => openUserModal( u.id ) } ] : [] ),
+				// wp-admin's per-row tool for promote-but-not-edit admins:
+				// role changes ride promote_users and work per-site.
+				...( ! B.caps.editUsers && B.caps.promoteUsers && ! isSelf && ! u.super ? [
+					{ heading: 'Set role' },
+					...Object.entries( B.roles || {} ).map( ( [ key, label ] ) => ( {
+						label: ( u.roles || [] ).includes( key ) ? label + ' ✓' : label,
+						run: async () => {
+							if ( ( u.roles || [] ).includes( key ) ) return;
+							try {
+								await api( `wp/v2/users/${ u.id }`, { method: 'POST', body: JSON.stringify( { roles: [ key ] } ) } );
+								toast( `${ u.name || 'User' } set to ${ label }` );
+								state.cache.users = null;
+								if ( state.route === 'users' ) renderUsers();
+							} catch ( err ) {
+								toast( err.message, true );
+							}
+						},
+					} ) ),
+				] : [] ),
 				...( u.email ? [ {
 					label: 'Copy email',
 					run: async () => {
@@ -8081,11 +8383,45 @@
 					label: isSelf ? 'Sign out other sessions' : 'Sign out all sessions',
 					run: () => killUserSessions( u ),
 				} ] : [] ),
-				{
+				// Without edit_users the wp-admin screen refuses too (edit_user
+				// maps to manage_network_users on multisite) — no dead links.
+				...( B.caps.editUsers || isSelf ? [ {
 					label: 'Edit in wp-admin ↗',
 					href: B.site.adminUrl + 'user-edit.php?user_id=' + u.id,
-				},
-				...( B.caps.deleteUsers && ! isSelf ? [
+				} ] : [] ),
+				// Multisite: accounts are network-shared, so the per-site
+				// action is removal (membership), not deletion — core REST
+				// refuses user deletion on multisite outright. True deletion
+				// lives in Network Admin.
+				...( B.multisite && B.caps.removeUsers && ! isSelf && ! u.super ? [
+					{ heading: 'Danger' },
+					{
+						label: 'Remove from this site…',
+						danger: true,
+						run: async () => {
+							const okRm = await minimalConfirm( {
+								title: `Remove ${ u.name || 'this user' } from this site?`,
+								body: 'Their account and any other site memberships stay; they just lose access here. Content they wrote here keeps their name.',
+								danger: true,
+								confirmLabel: 'Remove from site',
+							} );
+							if ( ! okRm ) return;
+							try {
+								await api( `minimal-admin/v1/users/${ u.id }/remove`, { method: 'POST' } );
+								toast( `${ u.name || 'User' } removed from this site` );
+								state.cache.users = null;
+								if ( state.route === 'users' ) renderUsers();
+							} catch ( err ) {
+								toast( err.message, true );
+							}
+						},
+					},
+					...( B.site.networkAdminUrl ? [ {
+						label: 'Delete network-wide ↗',
+						href: B.site.networkAdminUrl + 'users.php',
+					} ] : [] ),
+				] : [] ),
+				...( ! B.multisite && B.caps.deleteUsers && ! isSelf ? [
 					{ heading: 'Danger' },
 					{
 						label: 'Delete user…',
@@ -8100,8 +8436,12 @@
 		$$( '[data-user]', view ).forEach( ( row ) => {
 			row.addEventListener( 'click', ( e ) => {
 				if ( e.target.closest( '.minimal-row-more' ) ) return;
-				if ( B.caps.editUsers ) openUserModal( parseInt( row.dataset.user, 10 ) );
-				else window.open( B.site.adminUrl + 'user-edit.php?user_id=' + row.dataset.user, '_blank' );
+				// Without edit_users, wp-admin's user-edit.php refuses these
+				// users too — surface the actions that DO work (role,
+				// remove, email copy) instead of a dead tab.
+				const rowId = parseInt( row.dataset.user, 10 );
+				if ( B.caps.editUsers || rowId === B.user.id ) openUserModal( rowId );
+				else openUserMenu( e.clientX, e.clientY, userFromRow( row ) );
 			} );
 			row.addEventListener( 'contextmenu', ( e ) => {
 				e.preventDefault();
@@ -8478,8 +8818,22 @@
 	}
 
 	// Fill {field} placeholders on an action href from the item.
+	//
+	// A placeholder standing INSIDE a larger URL is a path segment or a query
+	// value and must be percent-encoded ("post.php?post={id}"). A href that is
+	// NOTHING BUT a placeholder is the whole destination ("{app}"), and
+	// encoding it turns an absolute URL into a nonsense relative path
+	// (".../minimal-admin/https%3A%2F%2Fteam7…"). Only http(s) values may pass
+	// through unencoded, so a stray value can never introduce a javascript:
+	// or data: destination.
 	function surfaceFillHref( href, item ) {
-		return String( href ).replace( /\{(\w+)\}/g, ( _, k ) => encodeURIComponent( item[ k ] ?? '' ) );
+		const tpl = String( href );
+		const whole = tpl.match( /^\{(\w+)\}$/ );
+		if ( whole ) {
+			const value = String( item[ whole[ 1 ] ] ?? '' );
+			if ( /^https?:\/\//i.test( value ) ) return value;
+		}
+		return tpl.replace( /\{(\w+)\}/g, ( _, k ) => encodeURIComponent( item[ k ] ?? '' ) );
 	}
 
 	// External-link honesty: a plugin-supplied href that leaves this site
@@ -10689,6 +11043,10 @@
 			// the Extensions dot too — per-theme badges only render inside
 			// the Themes tab. The map also feeds Update everything.
 			state.cache.themeUpdates = ( upd && upd.themes ) || {};
+			// Language packs live outside the plugin/theme/core transients, so
+			// a site can read "all caught up" while wp-admin still offers
+			// Update Translations. Carried as a plain count.
+			state.cache.translationUpdates = ( upd && upd.translations ) || 0;
 			state.cache.autoPlugins = ( upd && upd.auto ) || [];
 			state.cache.autoAllowed = !! ( upd && upd.autoAllowed );
 			const dot = $( '#minimal-plugin-dot' );
@@ -10845,6 +11203,7 @@
 			// Keep cache in sync for other cards.
 			if ( state.cache ) state.cache.pluginUpdates = map;
 			if ( upd && upd.themes ) state.cache.themeUpdates = upd.themes;
+			if ( upd ) state.cache.translationUpdates = upd.translations || 0;
 			return !! map[ key ];
 		};
 
@@ -11825,9 +12184,16 @@
 					// version with no remaining offer means the update landed.
 					if ( s && s.version === offered && ! s.update ) {
 						// The dropped request may also have skipped the DB
-						// migration step — run it before declaring done.
+						// migration step — run it before declaring done. On
+						// multisite that means EVERY subsite (subdomain
+						// subsites are cross-origin, so the walk must run
+						// server-side — the network-upgrade route).
 						if ( s.dbUpgrade ) {
-							await fetch( B.site.adminUrl + 'upgrade.php?step=1', { credentials: 'same-origin' } ).catch( () => {} );
+							if ( B.multisite ) {
+								await api( 'minimal-admin/v1/core/network-upgrade', { method: 'POST' } ).catch( () => {} );
+							} else {
+								await fetch( B.site.adminUrl + 'upgrade.php?step=1', { credentials: 'same-origin' } ).catch( () => {} );
+							}
 						}
 						state.cache.core = s;
 						finish( s.version );
@@ -11885,7 +12251,11 @@
 		const updateCount = Object.keys( updates ).length;
 		const queueCount = pluginUpdatePending.size;
 		const bulkBusy = queueCount > 0;
-		const active = plugins.filter( ( p ) => p.status === 'active' ).length;
+		// On multisite, network-activated plugins report a third status.
+		// They are running (count as active) but per-site toggles can't
+		// touch them — that's Network Admin's call.
+		const isOn = ( p ) => p.status === 'active' || p.status === 'network-active';
+		const active = plugins.filter( isOn ).length;
 		const hasUpd = ( p ) => !! updates[ p.plugin + '.php' ] || pluginUpdatePending.has( p.plugin );
 		// Count remaining offers + anything still in the update queue.
 		const updatesFilterCount = new Set( [
@@ -11902,8 +12272,8 @@
 		// Client-side filter + search over the already-cached plugin set.
 		const q = ( state.extSearch || '' ).trim().toLowerCase();
 		const matchesFilter = ( p ) =>
-			state.extFilter === 'active' ? p.status === 'active'
-			: state.extFilter === 'inactive' ? p.status !== 'active'
+			state.extFilter === 'active' ? isOn( p )
+			: state.extFilter === 'inactive' ? ! isOn( p )
 			: state.extFilter === 'updates' ? hasUpd( p )
 			: true;
 		const matchesSearch = ( p ) => ! q ||
@@ -11949,7 +12319,8 @@
 				const offered = updates[ p.plugin + '.php' ] || '';
 				const isUpdating = pluginUpdatePending.has( p.plugin );
 				const isCurrent = pluginUpdateCurrent === p.plugin;
-				const on = p.status === 'active';
+				const net = p.status === 'network-active';
+				const on = p.status === 'active' || net;
 				// wp.org plugins wear their real icon, and the icon links to
 				// their directory page; everything else keeps the letter tile.
 				const meta = ( state.cache.pluginMeta || {} )[ p.plugin + '.php' ];
@@ -11977,8 +12348,8 @@
 						<div class="minimal-plugin-foot">
 							<div class="minimal-plugin-ver">v${ esc( p.version || '?' ) }</div>
 							${ B.caps.update && state.cache.autoAllowed ? autoToggleHtml( 'plugin', p.plugin + '.php', ( state.cache.autoPlugins || [] ).includes( p.plugin + '.php' ), name ) : '' }
-							<button class="minimal-switch${ on ? ' on' : '' }" data-toggle="${ esc( p.plugin ) }" role="switch" aria-checked="${ on }" aria-label="Toggle ${ esc( name ) }"><span class="minimal-switch-knob"></span></button>
-							<span class="minimal-state-label${ on ? ' on' : '' }">${ on ? 'Active' : 'Inactive' }</span>
+							${ net ? '' : `<button class="minimal-switch${ on ? ' on' : '' }" data-toggle="${ esc( p.plugin ) }" role="switch" aria-checked="${ on }" aria-label="Toggle ${ esc( name ) }"><span class="minimal-switch-knob"></span></button>` }
+							<span class="minimal-state-label${ on ? ' on' : '' }"${ net ? ' title="Activated for the whole network in Network Admin"' : '' }>${ net ? 'Network active' : on ? 'Active' : 'Inactive' }</span>
 							${ ! on && B.caps.delete ? `<button class="minimal-plugin-delete" data-del="${ esc( p.plugin ) }" title="Delete ${ esc( name ) }">${ icon( 'trash' ) }</button>` : '' }
 						</div>
 					</div>
@@ -11999,7 +12370,7 @@
 		// three entry points never drift (content-row menu pattern).
 		const togglePluginByFile = async ( file ) => {
 			const plugin = plugins.find( ( p ) => p.plugin === file );
-			if ( ! plugin ) return;
+			if ( ! plugin || plugin.status === 'network-active' ) return;
 			const activating = plugin.status !== 'active';
 			if ( ! activating && file === 'minimal-admin/minimal-admin' ) {
 				// Turning Minimal off ejects the user — that deserves a real
@@ -12036,9 +12407,40 @@
 			if ( state.route === 'extensions' ) renderExtensions();
 		};
 
+		// Network activate/deactivate. The plugin list carries `status`
+		// 'network-active' from the server, so a refresh is what makes the
+		// card flip — never a local guess.
+		const setNetworkPlugin = async ( file, name, on ) => {
+			if ( ! on ) {
+				const okNet = await minimalConfirm( {
+					title: `Deactivate ${ name } across the network?`,
+					body: 'Sites that turned it on for themselves keep it. Everywhere else it stops running.',
+					danger: true,
+					confirmLabel: 'Deactivate network-wide',
+				} );
+				if ( ! okNet ) return;
+			}
+			toast( `${ on ? 'Activating' : 'Deactivating' } ${ name } across the network…` );
+			try {
+				await api( 'minimal-admin/v1/network/plugins/activate', {
+					method: 'POST',
+					body: JSON.stringify( { plugin: file + '.php', on } ),
+				} );
+				toast( on ? `${ name } is active on every site` : `${ name } is no longer network active` );
+				state.cache.plugins = null;
+				state.cache.overview = null;
+				bustTypeCaches();
+				await refreshAfterPluginChange();
+				await loadPlugins().catch( () => {} );
+			} catch ( e ) {
+				toast( e.message, true );
+			}
+			if ( state.route === 'extensions' ) renderExtensions();
+		};
+
 		const deletePluginByFile = async ( file ) => {
 			const plugin = plugins.find( ( p ) => p.plugin === file );
-			if ( ! plugin || plugin.status === 'active' ) return;
+			if ( ! plugin || plugin.status !== 'inactive' ) return;
 			const name = pluginDisplayName( plugin.name );
 			const okDel = await minimalConfirm( {
 				title: `Delete ${ name }?`,
@@ -12068,22 +12470,44 @@
 		const pluginMenuEntries = ( p ) => {
 			const file = p.plugin;
 			const name = pluginDisplayName( p.name );
+			const net = p.status === 'network-active';
 			const on = p.status === 'active';
 			const meta = ( state.cache.pluginMeta || {} )[ file + '.php' ] || {};
 			const offered = ( state.cache.pluginUpdates || {} )[ file + '.php' ] || '';
 			const authorName = p.author ? decodeEntities( stripTags( p.author ) ) : '';
 			const entries = [];
-			entries.push( {
-				label: on ? 'Deactivate' : 'Activate',
-				run: () => togglePluginByFile( file ),
-			} );
+			if ( ! net ) {
+				entries.push( {
+					label: on ? 'Deactivate' : 'Activate',
+					run: () => togglePluginByFile( file ),
+				} );
+			}
+			// Network activation is a SEPARATE switch from this site's own
+			// (core keeps it in a network option), so it gets its own entry
+			// rather than overloading Activate. Minimal's own row is excluded
+			// when turning off: the card's dedicated flow explains the
+			// consequence of removing the app you are standing in.
+			if ( B.caps.networkPlugins ) {
+				const isSelf = file === 'minimal-admin/minimal-admin';
+				if ( ! net ) {
+					entries.push( {
+						label: __( 'Activate for the whole network' ),
+						run: () => setNetworkPlugin( file, name, true ),
+					} );
+				} else if ( ! isSelf ) {
+					entries.push( {
+						label: __( 'Deactivate across the network' ),
+						run: () => setNetworkPlugin( file, name, false ),
+					} );
+				}
+			}
 			if ( offered && B.caps.update && ! pluginUpdatePending.has( file ) ) {
 				entries.push( {
 					label: `Update → ${ offered }`,
 					run: () => queuePluginUpdate( file, name ),
 				} );
 			}
-			if ( ! on && B.caps.delete ) {
+			if ( ! on && ! net && B.caps.delete ) {
 				entries.push( {
 					label: 'Delete plugin',
 					danger: true,
@@ -12288,8 +12712,8 @@
 					${ t.active ? '<span class="minimal-status publish minimal-theme-badge">Active</span>' : '' }
 					${ t.update && ! B.caps.updateThemes ? `<span class="minimal-badge-update minimal-theme-badge-u">Update ${ esc( t.update ) }</span>` : '' }`;
 				const shot = hubHref
-					? `<a class="minimal-theme-shot minimal-theme-shot-link"${ t.screenshot ? ` style="background-image:url('${ esc( t.screenshot ) }')"` : '' } href="${ esc( hubHref ) }" target="_blank" rel="noopener" title="${ esc( hubTitle ) }">${ shotInner }</a>`
-					: `<div class="minimal-theme-shot"${ t.screenshot ? ` style="background-image:url('${ esc( t.screenshot ) }')"` : '' }>${ shotInner }</div>`;
+					? `<a class="minimal-theme-shot minimal-theme-shot-link"${ t.screenshot ? ` style="background-image:url('${ escCssUrl( t.screenshot ) }')"` : '' } href="${ esc( hubHref ) }" target="_blank" rel="noopener" title="${ esc( hubTitle ) }">${ shotInner }</a>`
+					: `<div class="minimal-theme-shot"${ t.screenshot ? ` style="background-image:url('${ escCssUrl( t.screenshot ) }')"` : '' }>${ shotInner }</div>`;
 				return `
 				<div class="minimal-card minimal-theme${ t.active ? ' is-active' : '' }" data-theme="${ i }" data-stylesheet="${ esc( t.stylesheet ) }">
 					${ shot }
@@ -12332,6 +12756,23 @@
 				renderOverlays();
 			} );
 		}
+		// Multisite: add or remove a theme from the network's allowed list.
+		const setNetworkTheme = async ( t, on ) => {
+			toast( `${ on ? 'Offering' : 'Withdrawing' } ${ t.name }…` );
+			try {
+				await api( 'minimal-admin/v1/network/themes/enable', {
+					method: 'POST',
+					body: JSON.stringify( { theme: t.stylesheet, on } ),
+				} );
+				toast( on ? `${ t.name } is available to every site` : `${ t.name } is no longer offered to sites` );
+				state.cache.themes = null;
+				await loadThemes().catch( () => {} );
+			} catch ( e ) {
+				toast( e.message, true );
+			}
+			if ( state.route === 'extensions' ) renderExtensions();
+		};
+
 		const runThemeAction = async ( action, t, btn ) => {
 			if ( ! t ) return;
 			if ( action === 'activate' && ! await confirmThemeActivate( t.name ) ) return;
@@ -12398,6 +12839,14 @@
 			}
 			if ( t.update && B.caps.updateThemes ) {
 				entries.push( { label: `Update → ${ t.update }`, run: () => runThemeAction( 'update', t ) } );
+			}
+			// Network enabling decides which themes each site may CHOOSE; it
+			// never switches a site's theme, so it is not a variant of
+			// Activate and reads as its own thing.
+			if ( B.caps.networkThemes ) {
+				entries.push( t.network
+					? { label: __( 'Stop offering to sites' ), run: () => setNetworkTheme( t, false ) }
+					: { label: __( 'Offer to every site' ), run: () => setNetworkTheme( t, true ) } );
 			}
 			if ( ! t.active && B.caps.deleteThemes ) {
 				entries.push( { label: 'Delete theme', danger: true, run: () => runThemeAction( 'delete', t ) } );
@@ -19657,7 +20106,7 @@
 					const has = !!( img && img.id );
 					const url = has ? ( img.url || '' ) : '';
 					wrap.innerHTML = `
-						${ has && url ? `<button type="button" class="minimal-field-image-thumb" data-img-pick style="background-image:url('${ esc( url ) }')" title="Replace image"></button>` : '' }
+						${ has && url ? `<button type="button" class="minimal-field-image-thumb" data-img-pick style="background-image:url('${ escCssUrl( url ) }')" title="Replace image"></button>` : '' }
 						<div class="minimal-field-image-actions">
 							<button type="button" class="minimal-btn-soft" data-img-pick>${ has ? 'Replace' : 'Set image' }</button>
 							${ has ? '<button type="button" class="minimal-btn-soft danger" data-img-clear>Remove</button>' : '' }
@@ -20123,7 +20572,7 @@
 		<div class="minimal-side-card">
 			<div class="minimal-side-title">Featured image</div>
 			${ ed.featuredMedia && ed.featuredThumb ? `
-			<button type="button" class="minimal-featured-thumb" id="minimal-featured-preview" style="background-image:url('${ esc( ed.featuredThumb ) }')" title="Preview featured image" aria-label="Preview featured image"></button>
+			<button type="button" class="minimal-featured-thumb" id="minimal-featured-preview" style="background-image:url('${ escCssUrl( ed.featuredThumb ) }')" title="Preview featured image" aria-label="Preview featured image"></button>
 			<div style="display:flex; gap:8px; margin-top:10px;">
 				<button class="minimal-btn-soft" id="minimal-featured-set">Replace</button>
 				<button class="minimal-btn-soft danger" id="minimal-featured-remove">Remove</button>
@@ -27084,6 +27533,11 @@
 		if ( p && B.caps.update ) parts.push( { kind: 'plugins', n: p, label: `${ p } plugin${ p === 1 ? '' : 's' }` } );
 		const t = Object.keys( state.cache.themeUpdates || {} ).length;
 		if ( t && B.caps.updateThemes ) parts.push( { kind: 'themes', n: t, label: `${ t } theme${ t === 1 ? '' : 's' }` } );
+		const l = state.cache.translationUpdates || 0;
+		if ( l && B.caps.updateLanguages ) {
+			/* translators: %d is a number of translations. */
+			parts.push( { kind: 'translations', n: l, label: sprintf( _n( '%d translation', '%d translations', l ), l ) } );
+		}
 		const c = state.cache.core && state.cache.core.update;
 		if ( c && B.caps.core ) parts.push( { kind: 'core', label: `WordPress ${ c.version }` } );
 		return parts;
@@ -27147,6 +27601,24 @@
 			}
 			if ( ok ) doneBits.push( `${ ok } theme${ ok === 1 ? '' : 's' }` );
 		}
+		// Language packs go before core: they are one quick bulk call, and
+		// core last still owns the maintenance window.
+		if ( parts.some( ( p ) => p.kind === 'translations' ) ) {
+			const nl = parts.find( ( p ) => p.kind === 'translations' ).n;
+			/* translators: %d is a number of translations. */
+			setPhase( sprintf( _n( 'Updating %d translation…', 'Updating %d translations…', nl ), nl ) );
+			try {
+				const r = await api( 'minimal-admin/v1/translations/update', { method: 'POST' } );
+				const did = ( r && r.updated ) || 0;
+				state.cache.translationUpdates = ( r && r.remaining ) || 0;
+				if ( did ) {
+					/* translators: %d is a number of translations. */
+					doneBits.push( sprintf( _n( '%d translation', '%d translations', did ), did ) );
+				}
+			} catch ( e ) {
+				failures.push( 'translations: ' + e.message );
+			}
+		}
 		if ( hasCore ) {
 			setPhase( 'Updating WordPress…' );
 			try {
@@ -27168,6 +27640,7 @@
 		state.cache.plugins = null;
 		state.cache.pluginUpdates = {};
 		state.cache.themeUpdates = {};
+		state.cache.translationUpdates = 0;
 		state.cache.themes = null;
 		state.cache.core = null;
 		state.cache.notifications = null;
@@ -27479,6 +27952,42 @@
 		if ( B.caps.settings ) cmds.push( { label: __( 'Browse database (read-only)' ), kind: 'nav', icon: '⛁', run: () => go( 'database' ) } );
 		if ( B.caps.settings ) cmds.push( { label: 'View site logs', kind: 'nav', icon: '📄', run: () => openLogViewer() } );
 		if ( B.caps.settings ) cmds.push( { label: 'Open Settings', kind: 'nav', icon: '⚙', run: () => go( 'settings' ) } );
+		// Multisite: one entry PER SITE (not a single "Switch site…" that
+		// opens a second picker), so typing a site's name reaches it in one
+		// step. The palette matches a contiguous substring of the label, so
+		// "switch" lists them all. B.sites excludes the one-site case.
+		//
+		// Past the boot cap the palette would be listing an arbitrary slice
+		// of a much longer list, which reads as "these are your sites" when
+		// it is not — so a big network gets ONE entry that opens the
+		// searchable picker instead.
+		if ( ( B.sites || [] ).length && hasMoreSites() ) {
+			cmds.push( {
+				label: __( 'Switch site…' ),
+				kind: 'nav',
+				icon: '⊞',
+				run: () => openSitePicker(),
+			} );
+		} else {
+			( B.sites || [] ).forEach( ( s ) => {
+				if ( s.current ) return;
+				cmds.push( {
+					/* translators: %s: site name. */
+					label: sprintf( __( 'Switch to %s' ), s.name || s.url ),
+					kind: 'nav',
+					icon: '⊞',
+					run: () => { window.location.href = s.app; },
+				} );
+			} );
+		}
+		if ( B.site.networkAdminUrl ) {
+			cmds.push( {
+				label: __( 'Open Network Admin ↗' ),
+				kind: 'nav',
+				icon: '⊞',
+				run: () => { window.location.href = B.site.networkAdminUrl; },
+			} );
+		}
 		cmds.push(
 			{ label: 'Write new post', kind: 'action', icon: '✎', run: () => newContent( 'posts' ) },
 			...( B.caps.editPages ? [ { label: 'Create new page', kind: 'action', icon: '▭', run: () => newContent( 'pages' ) } ] : [] ),
@@ -28619,6 +29128,78 @@
 			</div>`;
 		}
 
+		if ( m.type === 'site-picker' ) {
+			// Rows render UNFILTERED and carry their own search text: typing
+			// filters them in place (filterSitePickerRows) rather than
+			// re-rendering, because a re-render per keystroke would replace
+			// the input the person is typing into and drop the keystrokes
+			// after the first. The server call is debounced separately and
+			// only its RESULT re-renders.
+			const items = m.items || [];
+			return `
+			<div class="minimal-modal-overlay" id="minimal-modal-overlay">
+				<div class="minimal-modal">
+					<div class="minimal-modal-head">
+						<div class="minimal-modal-title-block">
+							<div class="minimal-modal-title">${ esc( __( 'Switch site' ) ) }</div>
+							<div class="minimal-modal-sub">${ esc( sprintf(
+								/* translators: %d: number of sites. */
+								__( 'You belong to %d sites' ), B.sitesTotal || 0 ) ) }</div>
+						</div>
+						<button class="minimal-x-btn" id="minimal-modal-close">×</button>
+					</div>
+					<div class="minimal-modal-form">
+						<input class="minimal-input" id="minimal-sp-q" value="${ esc( m.q || '' ) }" placeholder="${ esc( __( 'Search by name or address…' ) ) }" autocomplete="off" spellcheck="false">
+					</div>
+					<div class="minimal-sp-list">
+						${ m.loading && ! m.items ? `<div class="minimal-loading">${ esc( __( 'Loading sites…' ) ) }</div>` : '' }
+						${ m.items && ! items.length ? `<div class="minimal-empty" style="padding:18px;">${ esc( __( 'No sites match that search.' ) ) }</div>` : '' }
+						${ items.map( ( s ) => `
+							<button class="minimal-sp-row${ s.current ? ' is-on' : '' }" data-spgo="${ esc( s.app ) }" data-spfind="${ esc( ( ( s.name || '' ) + ' ' + ( s.url || '' ) ).toLowerCase() ) }"${ s.current ? ' disabled' : '' }>
+								<span class="minimal-sp-name">${ esc( s.name || s.url ) }</span>
+								<span class="minimal-sp-url mono">${ esc( s.url ) }</span>
+								${ s.current ? `<span class="minimal-sp-here">${ esc( __( 'You are here' ) ) }</span>` : '' }
+							</button>` ).join( '' ) }
+						<div class="minimal-empty" id="minimal-sp-none" hidden style="padding:18px;">${ esc( __( 'No sites match that search.' ) ) }</div>
+					</div>
+				</div>
+			</div>`;
+		}
+
+		if ( m.type === 'user-add-existing' ) {
+			const roleOpts = Object.entries( B.roles || {} );
+			return `
+			<div class="minimal-modal-overlay" id="minimal-modal-overlay">
+				<div class="minimal-modal">
+					<div class="minimal-modal-head">
+						<div class="minimal-modal-title-block">
+							<div class="minimal-modal-title">Add existing user</div>
+							<div class="minimal-modal-sub">Attach a network account to this site</div>
+						</div>
+						<button class="minimal-x-btn" id="minimal-modal-close">×</button>
+					</div>
+					<div class="minimal-modal-form">
+						<div>
+							<div class="minimal-field-label">Email or username</div>
+							<input class="minimal-input" id="minimal-uae-who" value="${ esc( m.who || '' ) }" placeholder="person@example.com" autocomplete="off" spellcheck="false">
+							<div class="minimal-toggle-desc" style="margin-top:8px;">The account must already exist on this network. Creating new accounts is a network administrator job.</div>
+						</div>
+						<div>
+							<div class="minimal-field-label">Role on this site</div>
+							<div class="minimal-ac" id="minimal-uae-role-ac">
+								<input class="minimal-input minimal-ac-input" id="minimal-uae-role" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" placeholder="Pick a role…">
+								<div class="minimal-ac-panel" hidden></div>
+							</div>
+						</div>
+					</div>
+					<div class="minimal-modal-actions">
+						<button class="minimal-btn-primary" id="minimal-uae-add"${ roleOpts.length ? '' : ' disabled' }>${ icon( 'plus' ) } Add to site</button>
+						<button class="minimal-btn-soft" id="minimal-modal-cancel">Cancel</button>
+					</div>
+				</div>
+			</div>`;
+		}
+
 		if ( m.type === 'user-delete' ) {
 			const u = m.user || {};
 			const cands = m.candidates;
@@ -28955,7 +29536,7 @@
 				: ! m.results.length ? `<div class="minimal-empty" style="padding:20px;">No results for “${ esc( m.q ) }”.</div>`
 				: m.results.map( ( p, i ) => {
 					const local = installedNow( p.slug );
-					const stateLabel = local && local.status === 'active' ? 'Active'
+					const stateLabel = local && ( local.status === 'active' || local.status === 'network-active' ) ? 'Active'
 						: ( local || p.installed ) ? 'Activate' : 'Install';
 					return `
 					<div class="minimal-pi-row">
@@ -29018,7 +29599,7 @@
 							: `<div class="minimal-ti-grid">
 								${ m.results.map( ( t, i ) => `
 								<div class="minimal-ti-card">
-									<div class="minimal-theme-shot"${ t.screenshot ? ` style="background-image:url('${ esc( t.screenshot ) }')"` : '' }></div>
+									<div class="minimal-theme-shot"${ t.screenshot ? ` style="background-image:url('${ escCssUrl( t.screenshot ) }')"` : '' }></div>
 									<div class="minimal-ti-info">
 										<div class="minimal-row-title">${ esc( t.name ) }</div>
 										<div class="minimal-pi-meta">${ t.installs ? Number( t.installs ).toLocaleString() + '+ installs · ' : '' }v${ esc( t.version ) }</div>
@@ -29052,7 +29633,7 @@
 					${ items == null ? `<div class="minimal-loading">Loading ${ any ? 'files' : 'images' }…</div>` : ! items.length ? `<div class="minimal-empty">No ${ any ? 'files' : 'images' } in the library yet.</div>` : `
 					<div class="minimal-picker-grid${ any ? ' any' : '' }">
 						${ items.map( ( it, i ) => it.thumb
-							? `<div class="minimal-picker-item${ m.picked && m.picked.includes( it.id ) ? ' sel' : '' }" data-pick="${ i }" style="background-image:url('${ esc( it.thumb ) }')" title="${ esc( it.name ) }"></div>`
+							? `<div class="minimal-picker-item${ m.picked && m.picked.includes( it.id ) ? ' sel' : '' }" data-pick="${ i }" style="background-image:url('${ escCssUrl( it.thumb ) }')" title="${ esc( it.name ) }"></div>`
 							: `<div class="minimal-picker-item file${ m.picked && m.picked.includes( it.id ) ? ' sel' : '' }" data-pick="${ i }" title="${ esc( it.name ) }"><span class="minimal-picker-file-icon">${ icon( 'file' ) }</span><span class="minimal-picker-file-name">${ esc( it.name ) }</span></div>`
 						).join( '' ) }
 					</div>` }
@@ -30072,6 +30653,70 @@
 			} );
 		}
 
+		if ( m.type === 'site-picker' ) {
+			const input = $( '#minimal-sp-q' );
+			if ( input ) {
+				// A server response re-renders this modal; put the caret back
+				// where it was so an in-flight search never disturbs typing.
+				input.focus( { preventScroll: true } );
+				const pos = m.caret == null ? input.value.length : m.caret;
+				input.setSelectionRange( pos, pos );
+				let t = null;
+				input.addEventListener( 'input', () => {
+					m.q = input.value;
+					m.caret = input.selectionStart;
+					filterSitePickerRows();
+					clearTimeout( t );
+					t = setTimeout( () => loadSitePicker( ( m.q || '' ).trim() ), 250 );
+				} );
+			}
+			filterSitePickerRows();
+			$$( '[data-spgo]' ).forEach( ( btn ) => btn.addEventListener( 'click', () => {
+				window.location.href = btn.dataset.spgo;
+			} ) );
+		}
+
+		if ( m.type === 'user-add-existing' ) {
+			const who = $( '#minimal-uae-who' );
+			const roleAc = $( '#minimal-uae-role-ac' );
+			if ( roleAc ) {
+				const roles = Object.entries( B.roles || {} ).map( ( [ value, label ] ) => ( { value, label } ) );
+				bindAutocomplete( roleAc, roles, {
+					strict: true,
+					value: ( B.roles || {} ).author ? 'author' : ( roles[ 0 ] ? roles[ 0 ].value : '' ),
+				} );
+			}
+			if ( who ) setTimeout( () => who.focus(), 30 );
+			$( '#minimal-uae-add' ).addEventListener( 'click', async ( e ) => {
+				const btn = e.currentTarget;
+				const roleInput = $( '#minimal-uae-role' );
+				const user = ( who && who.value || '' ).trim();
+				const role = ( roleInput && roleInput.dataset.acValue ) || '';
+				if ( ! user ) {
+					toast( 'Enter an email or username', true );
+					return;
+				}
+				if ( ! role ) {
+					toast( 'Pick a role', true );
+					return;
+				}
+				btn.disabled = true;
+				try {
+					const r = await api( 'minimal-admin/v1/users/add-existing', {
+						method: 'POST',
+						body: JSON.stringify( { user, role } ),
+					} );
+					toast( ( r && r.name ? r.name : 'User' ) + ' added to this site' );
+					closeModal();
+					state.cache.users = null;
+					if ( state.route === 'users' ) renderUsers();
+				} catch ( err ) {
+					toast( err.message, true );
+					btn.disabled = false;
+				}
+			} );
+		}
+
 		if ( m.type === 'user-delete' ) {
 			const cands = m.candidates || [];
 			const ac = $( '#minimal-ud-reassign-ac' );
@@ -30635,7 +31280,7 @@
 
 	function catalogChipState( entry ) {
 		const local = catalogLocal( entry );
-		if ( local && local.status === 'active' ) return 'active';
+		if ( local && ( local.status === 'active' || local.status === 'network-active' ) ) return 'active';
 		if ( local ) return 'activate';
 		return 'install';
 	}
@@ -32924,6 +33569,7 @@
 			state.cache.pluginNames = buildPluginNameMap( d.plugins );
 			state.cache.pluginUpdates = ( d.pluginUpdates && d.pluginUpdates.updates ) || {};
 			state.cache.themeUpdates = ( d.pluginUpdates && d.pluginUpdates.themes ) || {};
+			state.cache.translationUpdates = ( d.pluginUpdates && d.pluginUpdates.translations ) || 0;
 			state.cache.autoPlugins = ( d.pluginUpdates && d.pluginUpdates.auto ) || [];
 			state.cache.autoAllowed = !! ( d.pluginUpdates && d.pluginUpdates.autoAllowed );
 			if ( d.pluginMeta ) state.cache.pluginMeta = d.pluginMeta;

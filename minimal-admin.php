@@ -3,7 +3,7 @@
  * Plugin Name:       Minimal Admin
  * Plugin URI:        https://feicode.com/WenPai-org/minimal-admin
  * Description:       A reimagined WordPress admin experience. Fast, focused and beautiful. Served at /minimal-admin/.
- * Version:           0.27.0.2
+ * Version:           0.28.0.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            WenPai.org
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MINIMAL_ADMIN_VERSION', '0.27.0.2' );
+define( 'MINIMAL_ADMIN_VERSION', '0.28.0.1' );
 define( 'MINIMAL_ADMIN_FILE', __FILE__ );
 define( 'MINIMAL_ADMIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MINIMAL_ADMIN_URL', plugin_dir_url( __FILE__ ) );
@@ -117,6 +117,7 @@ require_once MINIMAL_ADMIN_DIR . 'includes/adapters/perfmatters.php';
 require_once MINIMAL_ADMIN_DIR . 'includes/adapters/autoptimize.php';
 require_once MINIMAL_ADMIN_DIR . 'includes/adapters/asset-cleanup.php';
 require_once MINIMAL_ADMIN_DIR . 'includes/adapters/performance-lab.php';
+require_once MINIMAL_ADMIN_DIR . 'includes/adapters/network.php';
 
 Minimal_Admin::init();
 Minimal_Admin_REST::init();
@@ -125,9 +126,21 @@ Minimal_Admin_Notices::init();
 Minimal_Admin_CPT::init();
 new Minimal_Admin_Updater();
 
-register_activation_hook( __FILE__, function () {
+register_activation_hook( __FILE__, function ( $network_wide ) {
 	Minimal_Admin::register_route();
 	flush_rewrite_rules();
+	if ( $network_wide ) {
+		Minimal_Admin::invalidate_network_rewrites();
+	}
 } );
 
-register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
+register_deactivation_hook( __FILE__, function ( $network_wide ) {
+	// Not flush_rewrite_rules(): init already registered the route this
+	// request, so a flush here would regenerate the rules WITH it and leave
+	// /minimal-admin/ serving the homepage after deactivation. Dropping the
+	// option makes the site rebuild on its next request, route omitted.
+	delete_option( 'rewrite_rules' );
+	if ( $network_wide ) {
+		Minimal_Admin::invalidate_network_rewrites();
+	}
+} );

@@ -390,6 +390,18 @@ class Minimal_Admin_REST {
 
 		register_rest_route(
 			self::NS,
+			'/translations/update',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'update_translations' ),
+				'permission_callback' => function () {
+					return current_user_can( 'update_languages' );
+				},
+			)
+		);
+
+		register_rest_route(
+			self::NS,
 			'/auto-updates',
 			array(
 				'methods'             => 'POST',
@@ -461,8 +473,17 @@ class Minimal_Admin_REST {
 		// page (GH #8): admins pre-configure a user's Minimal experience before
 		// their first sign-in. Same callbacks as the /me routes; the {id}
 		// param retargets them, gated on edit_user like wp-admin's profile.
-		$edit_user_gate = function ( $request ) {
-			return is_user_logged_in() && current_user_can( 'edit_user', (int) $request['id'] );
+		// Resolve the target from the URL SEGMENT, exactly like the handlers do
+		// via self::target_user_id(). `$request['id']` also resolves from the
+		// JSON body, the POST body and the query string, so a gate reading it
+		// could be aimed at the caller's own id (`?id=<self>`) while the handler
+		// still acted on the id in the path: current_user_can('edit_user', $own)
+		// is true for EVERY logged-in user, so that let a Subscriber write to an
+		// administrator's account. Gate and handler must read the same source.
+		$edit_user_gate = function ( WP_REST_Request $request ) {
+			$url = $request->get_url_params();
+			$uid = isset( $url['id'] ) ? (int) $url['id'] : 0;
+			return is_user_logged_in() && $uid > 0 && current_user_can( 'edit_user', $uid );
 		};
 		register_rest_route(
 			self::NS,
@@ -751,6 +772,53 @@ class Minimal_Admin_REST {
 				'permission_callback' => function ( WP_REST_Request $request ) {
 					return current_user_can( 'edit_user', (int) $request['id'] );
 				},
+			)
+		);
+
+		// Multisite "Remove from this site" — the per-site counterpart of
+		// deletion, which core REST refuses outright on multisite (501).
+		// The remove_user meta cap carries core's own rules (super-admin
+		// targets need a super-admin actor); the id resolves from the URL
+		// segment in the gate AND the handler (target_user_id rule).
+		register_rest_route(
+			self::NS,
+			'/users/(?P<id>\d+)/remove',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'user_remove_from_site' ),
+				'permission_callback' => function ( WP_REST_Request $request ) {
+					$url = $request->get_url_params();
+					$id  = isset( $url['id'] ) ? (int) $url['id'] : 0;
+					return is_multisite() && $id && current_user_can( 'remove_user', $id );
+				},
+			)
+		);
+
+		// Multisite "Add existing user": attach a network account to this
+		// site with a role — wp-admin's user-new.php Add Existing flow,
+		// which promote_users holders (subsite admins) may run even though
+		// creating accounts stays a network-admin job.
+		register_rest_route(
+			self::NS,
+			'/users/add-existing',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'user_add_existing' ),
+				'permission_callback' => function () {
+					return is_multisite() && current_user_can( 'promote_users' );
+				},
+				'args'                => array(
+					'user' => array(
+						'type'              => 'string',
+						'required'          => true,
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'role' => array(
+						'type'              => 'string',
+						'required'          => true,
+						'sanitize_callback' => 'sanitize_key',
+					),
+				),
 			)
 		);
 
@@ -1092,6 +1160,21 @@ class Minimal_Admin_REST {
 			)
 		);
 
+		// Multisite only: re-run every subsite's DB migration (see
+		// core_network_upgrade). upgrade_network is core's own cap for
+		// exactly this screen.
+		register_rest_route(
+			self::NS,
+			'/core/network-upgrade',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'core_network_upgrade' ),
+				'permission_callback' => function () {
+					return is_multisite() && current_user_can( 'upgrade_network' );
+				},
+			)
+		);
+
 		register_rest_route(
 			self::NS,
 			'/plugins/update-all',
@@ -1406,25 +1489,24 @@ class Minimal_Admin_REST {
 				array(
 					'methods'             => 'GET',
 					'callback'            => array( __CLASS__, 'read_debug_log' ),
-					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
-					},
+					'permission_callback' => array( __CLASS__, 'can_read_logs' ),
 				),
 				array(
 					'methods'             => 'DELETE',
 					'callback'            => array( __CLASS__, 'clear_debug_log' ),
-					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
-					},
+					'permission_callback' => array( __CLASS__, 'can_read_logs' ),
 				),
 			)
 		);
 
 		// The multi-source log viewer: list sources, tail one, clear one.
 		// /system/debug-log above stays as the debug source's legacy alias.
-		$logs_cap = function () {
-			return current_user_can( 'manage_options' );
-		};
+		// wp-content is NETWORK-SHARED on multisite, so debug.log accumulates
+		// every subsite's fatals and query errors, and these routes both read
+		// it and truncate it. manage_options is a per-site capability that a
+		// subsite administrator holds, so gate the way the database viewer
+		// already does: network data needs a network capability.
+		$logs_cap = array( __CLASS__, 'can_read_logs' );
 		register_rest_route(
 			self::NS,
 			'/system/logs',
@@ -1598,6 +1680,13 @@ class Minimal_Admin_REST {
 					if ( ! $post || 'attachment' === $post->post_type ) {
 						return null;
 					}
+					// Never compute a title the caller could not read. Core returns
+					// attachments regardless of their parent's status, so without
+					// this a draft, pending, scheduled or private parent's title
+					// rides out on wp/v2/media.
+					if ( ! current_user_can( 'read_post', $post->ID ) ) {
+						return null;
+					}
 					$type = get_post_type_object( $post->post_type );
 					return array(
 						'id'        => $post->ID,
@@ -1609,6 +1698,13 @@ class Minimal_Admin_REST {
 				},
 				'schema'       => array(
 					'type'    => array( 'object', 'null' ),
+					// Stays in view context because the media library reads it
+					// there (the grid's _fields list, no context=edit). The
+					// read_post check in the callback above is the actual
+					// control: it returns null for a parent the caller cannot
+					// read, so an anonymous request gets nothing for a draft,
+					// pending, scheduled or private post. Restricting the
+					// context as well only removed the Attached to button.
 					'context' => array( 'view', 'edit' ),
 				),
 			)
@@ -2371,7 +2467,12 @@ class Minimal_Admin_REST {
 		 * 'pageviews' => int]], 'prev_visitors' => int] covering the requested
 		 * range (prev_visitors = the period before it, for the delta).
 		 */
-		$traffic     = apply_filters( 'minimal_admin_traffic', null, $days );
+		// Visitor and pageview totals are site intelligence: every analytics
+		// plugin gates its own reports behind a reporting capability, and
+		// routing them through the dashboard's edit_posts floor handed them to
+		// Contributors. Filterable so a provider can name its own cap.
+		$can_traffic = (bool) apply_filters( 'minimal_admin_traffic_cap', current_user_can( 'manage_options' ) );
+		$traffic     = $can_traffic ? apply_filters( 'minimal_admin_traffic', null, $days ) : null;
 		$traffic_out = null;
 
 		$stats = array(
@@ -2390,7 +2491,11 @@ class Minimal_Admin_REST {
 			// Many sites never use comments — an eternal zero is dead weight,
 			// so a comment-less site gets a Users count instead. Pending
 			// comments still force the card (they need moderating).
-			( 0 === (int) $comments->approved && 0 === (int) $comments->moderated ) ? array(
+			// The Users fallback is a site-wide registered-user count, which is
+			// list_users territory in wp-admin. A Contributor who simply has no
+			// comments on the site should not learn the size of the user base,
+			// so fall back to the Comments card for them instead.
+			( 0 === (int) $comments->approved && 0 === (int) $comments->moderated && current_user_can( 'list_users' ) ) ? array(
 				'label' => 'Users',
 				'value' => number_format_i18n( self::user_count() ),
 				'delta' => 'registered',
@@ -2680,7 +2785,11 @@ class Minimal_Admin_REST {
 		 * @param string     $from Inclusive Y-m-d start.
 		 * @param string     $to   Inclusive Y-m-d end.
 		 */
-		$data = apply_filters( 'minimal_admin_traffic_day', null, $from, $to );
+		// Same reporting gate as the overview card this drills into, or the
+		// per-page paths and referrers would still be a Contributor read.
+		$data = apply_filters( 'minimal_admin_traffic_cap', current_user_can( 'manage_options' ) )
+			? apply_filters( 'minimal_admin_traffic_day', null, $from, $to )
+			: null;
 		if ( ! is_array( $data ) ) {
 			return rest_ensure_response(
 				array(
@@ -2757,10 +2866,18 @@ class Minimal_Admin_REST {
 			);
 		}
 
-		$comments = $wpdb->get_results(
+		// Same gate the overview feed applies: unapproved, spam and trashed
+		// rows are moderation-queue data and carry the commenter's name, so
+		// they only appear for someone who can act on them. Without this the
+		// drill-down let a Contributor, who has no comment screen at all, walk
+		// the moderation queue through the chart.
+		$approved_only = ! current_user_can( 'moderate_comments' );
+		$comment_where = $approved_only ? " AND comment_approved = '1'" : '';
+		$comments      = $wpdb->get_results(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- literal fragment chosen above.
 				"SELECT comment_ID, comment_author, comment_post_ID, comment_date_gmt, comment_approved FROM {$wpdb->comments}
-				 WHERE comment_date_gmt > %s AND comment_date_gmt <= %s
+				 WHERE comment_date_gmt > %s AND comment_date_gmt <= %s{$comment_where}
 				 ORDER BY comment_date_gmt DESC LIMIT 100",
 				$from,
 				$to
@@ -3161,6 +3278,33 @@ class Minimal_Admin_REST {
 			}
 		}
 
+		// Language packs are counted, not listed: core offers one button for
+		// all of them, and a row per plugin translation would bury everything
+		// else in the panel.
+		$lang_count = self::translation_update_count();
+		if ( $lang_count ) {
+			$items[] = array(
+				'id'     => 'translations-' . $lang_count,
+				'kind'   => 'updates',
+				'icon'   => '⬆',
+				/* translators: %d is a number of translations. */
+				'title'  => sprintf(
+					_n(
+						'%d translation is available to update',
+						'%d translations are available to update',
+						$lang_count,
+						'minimal-admin'
+					),
+					$lang_count
+				),
+				'time'   => time(),
+				'update' => array(
+					'type'  => 'translations',
+					'count' => $lang_count,
+				),
+			);
+		}
+
 		if ( current_user_can( 'update_themes' ) ) {
 			$tupdates = get_site_transient( 'update_themes' );
 			$tchecked = $tupdates && ! empty( $tupdates->last_checked ) ? (int) $tupdates->last_checked : time();
@@ -3352,15 +3496,79 @@ class Minimal_Admin_REST {
 		}
 		return rest_ensure_response(
 			array(
-				'updates'     => $map,
-				'themes'      => $theme_map,
-				'auto'        => array_values( array_intersect(
+				'updates'      => $map,
+				'themes'       => $theme_map,
+				'translations' => self::translation_update_count(),
+				'auto'         => array_values( array_intersect(
 					(array) get_site_option( 'auto_update_plugins', array() ),
 					array_keys( self::all_plugins() )
 				) ),
-				'autoAllowed' => self::auto_updates_allowed( 'plugin' ),
+				'autoAllowed'  => self::auto_updates_allowed( 'plugin' ),
 			)
 		);
+	}
+
+	/**
+	 * Update every waiting language pack, the way core's Update Translations
+	 * button does. Language packs are small and independent, so this is one
+	 * bulk call rather than the per-item loop themes need.
+	 */
+	public static function update_translations() {
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/misc.php';
+
+		$pending = (array) wp_get_translation_updates();
+		if ( ! $pending ) {
+			return rest_ensure_response( array( 'updated' => 0, 'remaining' => 0 ) );
+		}
+
+		$skin     = new WP_Ajax_Upgrader_Skin();
+		$upgrader = new Language_Pack_Upgrader( $skin );
+		$result   = $upgrader->bulk_upgrade( $pending, array( 'clear_update_cache' => true ) );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		if ( false === $result ) {
+			$errors = $skin->get_error_messages();
+			return new WP_Error(
+				'translations_failed',
+				$errors ? implode( ' ', (array) $errors ) : __( 'Translation update failed.', 'minimal-admin' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		$done = 0;
+		foreach ( (array) $result as $one ) {
+			if ( $one && ! is_wp_error( $one ) ) {
+				++$done;
+			}
+		}
+		// Re-read rather than subtract: a pack that failed is still pending,
+		// and the client decides what to say from what is actually left.
+		return rest_ensure_response(
+			array(
+				'updated'   => $done,
+				'remaining' => count( (array) wp_get_translation_updates() ),
+			)
+		);
+	}
+
+	/**
+	 * How many language packs have an update waiting.
+	 *
+	 * Core keeps these alongside the plugin, theme and core update transients
+	 * rather than in one of them, which is why a site can read "everything is
+	 * current" while wp-admin still offers Update Translations. Counted the
+	 * way core's own update-core.php screen counts them, and only for a user
+	 * who could act on it.
+	 */
+	public static function translation_update_count() {
+		if ( ! current_user_can( 'update_languages' ) ) {
+			return 0;
+		}
+		return count( (array) wp_get_translation_updates() );
 	}
 
 	/**
@@ -3427,15 +3635,30 @@ class Minimal_Admin_REST {
 	}
 
 	/**
+	 * Gate for every log-reading route.
+	 *
+	 * wp-content is shared by the whole network on multisite, so a per-site
+	 * capability is not enough to read or truncate what lands there.
+	 */
+	public static function can_read_logs() {
+		return is_multisite()
+			? current_user_can( 'manage_network_options' )
+			: current_user_can( 'manage_options' );
+	}
+
+	/**
 	 * Which user a shared /me + /users/{id} handler is acting on.
 	 *
 	 * Read the id from the URL SEGMENT only. `$request['id']` also resolves
 	 * from the JSON body, the POST body and the QUERY STRING (see
 	 * WP_REST_Request::get_parameter_order), so on the /me/* routes — whose
 	 * permission callback is only `edit_posts` — `?id=1` used to retarget the
-	 * write at any account, including an administrator's. The /users/{id}
-	 * routes carry a real per-object gate ($edit_user_gate) and a real URL
-	 * segment, so they are unaffected.
+	 * write at any account, including an administrator's.
+	 *
+	 * $edit_user_gate resolves the id the SAME way (URL segment only). It used
+	 * to read `$request['id']`, which let a caller satisfy the gate against
+	 * their own id while this resolver handed the handler the id in the path.
+	 * Any new gate gating these handlers must resolve through this method.
 	 */
 	private static function target_user_id( WP_REST_Request $request ) {
 		$url = $request->get_url_params();
@@ -3732,6 +3955,109 @@ class Minimal_Admin_REST {
 	 * List users with optional session-status filter. Shape matches the
 	 * fields the Users view loads from wp/v2/users (context=edit).
 	 */
+	/**
+	 * POST /users/{id}/remove — take an account off THIS site (multisite).
+	 * The user keeps their network account and any other site memberships;
+	 * their content here stays attributed to them (core's own remove
+	 * semantics — wp-admin's Remove bulk action reassigns nothing either).
+	 */
+	public static function user_remove_from_site( WP_REST_Request $request ) {
+		$id = self::target_user_id( $request );
+		if ( $id === get_current_user_id() ) {
+			return new WP_Error(
+				'cannot_remove_self',
+				__( 'You cannot remove your own account from this site.', 'minimal-admin' ),
+				array( 'status' => 400 )
+			);
+		}
+		$user = get_userdata( $id );
+		if ( ! $user || ! is_user_member_of_blog( $id ) ) {
+			return new WP_Error(
+				'not_a_member',
+				__( 'That account is not a member of this site.', 'minimal-admin' ),
+				array( 'status' => 404 )
+			);
+		}
+		// The remove_user meta cap does NOT protect super admins — wp-admin
+		// enforces that at the screen level (its list table never offers
+		// Remove against get_super_admins()). Without this, a subsite admin
+		// could eject every network administrator from their own site.
+		if ( is_super_admin( $id ) ) {
+			return new WP_Error(
+				'cannot_remove_super_admin',
+				__( 'Network administrators cannot be removed from a site here. Manage network administrators in Network Admin.', 'minimal-admin' ),
+				array( 'status' => 403 )
+			);
+		}
+		$result = remove_user_from_blog( $id, get_current_blog_id() );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		return rest_ensure_response( array( 'removed' => true ) );
+	}
+
+	/**
+	 * POST /users/add-existing — attach an existing network account to this
+	 * site by email or username, with a role. Deliberately NOT account
+	 * creation: an unknown address gets an honest refusal naming the
+	 * network-admin path, never a new user.
+	 */
+	public static function user_add_existing( WP_REST_Request $request ) {
+		$who  = trim( (string) $request->get_param( 'user' ) );
+		$role = (string) $request->get_param( 'role' );
+
+		// wp-admin's own vocabulary for assignable roles (editable_roles
+		// filter included, so role-manager plugins keep their say).
+		$editable = apply_filters( 'editable_roles', wp_roles()->roles );
+		if ( '' === $role || ! isset( $editable[ $role ] ) ) {
+			return new WP_Error(
+				'bad_role',
+				__( 'That role cannot be assigned here.', 'minimal-admin' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$user = get_user_by( 'email', $who );
+		if ( ! $user ) {
+			$user = get_user_by( 'login', $who );
+		}
+		if ( ! $user ) {
+			return new WP_Error(
+				'no_such_user',
+				__( 'No account on this network matches that email or username. New accounts are created by a network administrator.', 'minimal-admin' ),
+				array( 'status' => 404 )
+			);
+		}
+		if ( is_user_member_of_blog( $user->ID ) ) {
+			return new WP_Error(
+				'already_member',
+				/* translators: %s: the user's display name. */
+				sprintf( __( '%s is already a member of this site.', 'minimal-admin' ), $user->display_name ),
+				array( 'status' => 400 )
+			);
+		}
+		// Per-target meta cap, same as every role write in wp-admin.
+		if ( ! current_user_can( 'promote_user', $user->ID ) ) {
+			return new WP_Error(
+				'cannot_promote',
+				__( 'You are not allowed to add that account.', 'minimal-admin' ),
+				array( 'status' => 403 )
+			);
+		}
+		$result = add_user_to_blog( get_current_blog_id(), $user->ID, $role );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		return rest_ensure_response(
+			array(
+				'id'    => $user->ID,
+				'name'  => $user->display_name,
+				'email' => $user->user_email,
+				'roles' => array( $role ),
+			)
+		);
+	}
+
 	public static function list_users( WP_REST_Request $request ) {
 		$page     = max( 1, (int) $request->get_param( 'page' ) );
 		$per_page = min( 100, max( 1, (int) $request->get_param( 'per_page' ) ) );
@@ -3817,6 +4143,12 @@ class Minimal_Admin_REST {
 				'registered_date' => mysql_to_rfc3339( $user->user_registered ),
 				'avatar_urls'     => rest_get_avatar_urls( $user->user_email ),
 			);
+			// Multisite: the client hides per-site role/removal controls for
+			// network administrators (wp-admin's list table does the same —
+			// their power doesn't ride the per-site role anyway).
+			if ( is_multisite() && is_super_admin( $uid ) ) {
+				$item['super'] = true;
+			}
 			// Same shape as the User Switching REST field when the plugin is active.
 			if ( class_exists( 'user_switching' ) && method_exists( 'user_switching', 'maybe_switch_url' ) ) {
 				$url = user_switching::maybe_switch_url( $user );
@@ -4322,6 +4654,8 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		$updates    = get_site_transient( 'update_themes' );
 		$active     = get_stylesheet();
 		$auto       = (array) get_site_option( 'auto_update_themes', array() );
+		// Which themes this network lets its sites choose from (multisite).
+		$network_themes = is_multisite() ? (array) get_site_option( 'allowedthemes', array() ) : array();
 		$items      = array();
 		foreach ( wp_get_themes() as $stylesheet => $theme ) {
 			// update_themes lists only themes WordPress.org (or a licensed
@@ -4343,6 +4677,9 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 				'active'     => $stylesheet === $active,
 				'parent'     => $theme->parent() ? $theme->parent()->get_stylesheet() : null,
 				'on_wporg'   => (bool) $on_wporg,
+				// Multisite: whether sites may CHOOSE this theme (the network
+				// allowedthemes list). Not the same as being active anywhere.
+				'network'    => is_multisite() && ! empty( $network_themes[ $stylesheet ] ),
 				'update'     => $updates && isset( $updates->response[ $stylesheet ]['new_version'] )
 					? $updates->response[ $stylesheet ]['new_version'] : null,
 				// Block themes live-preview through the Site Editor, classic
@@ -5141,13 +5478,19 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		// The loaded $GLOBALS['wp_version'] can be stale right after an update —
 		// read the file that ships with the current core instead.
 		include ABSPATH . WPINC . '/version.php';
+		// True when files updated but a DB migration hasn't run — the update
+		// request's connection dropped before its loopback. On multisite the
+		// walk covers every subsite, and core's own wpmu_upgrade_site stamp
+		// (network/upgrade.php line-for-line) says whether it finished.
+		$db_stale = (int) get_option( 'db_version' ) < (int) $wp_db_version;
+		if ( ! $db_stale && is_multisite() && current_user_can( 'upgrade_network' )
+			&& (int) get_site_option( 'wpmu_upgrade_site' ) !== (int) $wp_db_version ) {
+			$db_stale = true;
+		}
 		return rest_ensure_response(
 			array(
 				'version' => $wp_version,
-				// True when files updated but the DB migration hasn't run —
-				// happens when the update request's connection dropped before
-				// its upgrade.php loopback. The client poll finishes the job.
-				'dbUpgrade' => (int) get_option( 'db_version' ) < (int) $wp_db_version,
+				'dbUpgrade' => $db_stale,
 				'update'  => $offer ? array(
 					'version' => $offer->current,
 					'locale'  => $offer->locale,
@@ -5187,8 +5530,14 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 
 		// Run any database migration with the NEW code — the standard
 		// upgrade.php step, hit over loopback (what wp-admin does after its
-		// post-update redirect).
-		wp_remote_get( admin_url( 'upgrade.php?step=1' ), array( 'timeout' => 60, 'sslverify' => false ) );
+		// post-update redirect). Multisite walks EVERY subsite: their
+		// migrations otherwise wait for someone to open each wp-admin, which
+		// a Minimal-only site never does.
+		if ( is_multisite() ) {
+			self::run_network_upgrade();
+		} else {
+			wp_remote_get( admin_url( 'upgrade.php?step=1' ), array( 'timeout' => 60, 'sslverify' => false ) );
+		}
 
 		include ABSPATH . WPINC . '/version.php';
 		return rest_ensure_response(
@@ -5197,6 +5546,80 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 				'version' => $wp_version,
 			)
 		);
+	}
+
+	/**
+	 * Multisite: run every subsite's database migration — the
+	 * network/upgrade.php loop (per-site upgrade.php?step=upgrade_db over
+	 * loopback, DESC id order, wpmu_upgrade_site stamped, the same two
+	 * actions fired). Serves both the post-update path above and the
+	 * healing route the client polls when an update's connection dropped.
+	 *
+	 * @return int|WP_Error Sites walked, or an error on large networks.
+	 */
+	private static function run_network_upgrade() {
+		global $wp_db_version;
+		if ( wp_is_large_network() ) {
+			return new WP_Error(
+				'large_network',
+				__( 'This network is too large to upgrade from here. Run Network Admin → Upgrade Network instead.', 'minimal-admin' ),
+				array( 'status' => 400 )
+			);
+		}
+		if ( function_exists( 'set_time_limit' ) ) {
+			set_time_limit( 600 );
+		}
+		update_site_option( 'wpmu_upgrade_site', $wp_db_version );
+		$site_ids = get_sites(
+			array(
+				'spam'                   => 0,
+				'deleted'                => 0,
+				'archived'               => 0,
+				'network_id'             => get_current_network_id(),
+				'number'                 => 10000,
+				'fields'                 => 'ids',
+				'order'                  => 'DESC',
+				'orderby'                => 'id',
+				'update_site_meta_cache' => false,
+			)
+		);
+		$done = 0;
+		foreach ( (array) $site_ids as $site_id ) {
+			switch_to_blog( $site_id );
+			$upgrade_url = admin_url( 'upgrade.php?step=upgrade_db' );
+			restore_current_blog();
+			$response = wp_remote_get(
+				$upgrade_url,
+				array(
+					'timeout'     => 120,
+					'httpversion' => '1.1',
+					'sslverify'   => false,
+				)
+			);
+			if ( ! is_wp_error( $response ) ) {
+				/** This action is documented in wp-admin/network/upgrade.php */
+				do_action( 'after_mu_upgrade', $response );
+				/** This action is documented in wp-admin/network/upgrade.php */
+				do_action( 'wpmu_upgrade_site', $site_id );
+				$done++;
+			}
+		}
+		return $done;
+	}
+
+	/**
+	 * POST /core/network-upgrade — the client's healing path: when a core
+	 * update's own request dropped mid-flight (the FrankenPHP-class worker
+	 * recycle), the status poll sees dbUpgrade and calls this instead of a
+	 * single-site upgrade.php fetch, which could never reach the other
+	 * subsites' migrations.
+	 */
+	public static function core_network_upgrade() {
+		$result = self::run_network_upgrade();
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		return rest_ensure_response( array( 'sites' => $result ) );
 	}
 
 	/**
@@ -5888,7 +6311,12 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 				'generated'  => current_time( 'c' ),
 				'checks'     => $checks,
 				'config'     => self::config_state(),
-				'logs'       => Minimal_Admin_Logs::list_payload(),
+				// The log routes are network-gated on multisite (wp-content's
+				// debug.log is shared by every subsite), so don't advertise
+				// sources this user's reads would 403 on — an empty list also
+				// drops the whole Debug card client-side when the config
+				// toggles are super-admin-locked too.
+				'logs'       => self::can_read_logs() ? Minimal_Admin_Logs::list_payload() : array(),
 				'licenses'   => $licenses,
 				'extensions' => self::extensions_manifest(),
 				// Live registry of everything hooked into Minimal, with owner
@@ -6041,7 +6469,13 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			. "To restore: delete this first line, then rename this file over wp-config.php.\n"
 			. "The exit keeps the web server from ever serving these credentials. */ ?>\n";
 		$dest = self::wpconfig_backup_path( $path );
-		return false === file_put_contents( $dest, $header . $contents ) ? '' : $dest;
+		if ( false === file_put_contents( $dest, $header . $contents ) ) {
+			return '';
+		}
+		// Owner-only while it exists. It holds the database password and the
+		// full salt block.
+		@chmod( $dest, 0600 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		return $dest;
 	}
 
 	/**
@@ -6077,7 +6511,10 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 
 		$path       = self::wpconfig_path();
 		$writable   = $path && wp_is_writable( $path );
-		$disallowed = ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS ) || ( is_multisite() && ! is_super_admin() );
+		// DISALLOW_FILE_EDIT counts here too: this endpoint rewrites a PHP file,
+		// which is precisely what that directive exists to forbid, and core maps
+		// it into edit_files for every other PHP-editing path.
+		$disallowed = ! Minimal_Admin::code_edits_allowed() || ( is_multisite() && ! is_super_admin() );
 		$contents   = ( $path && is_readable( $path ) ) ? (string) file_get_contents( $path ) : '';
 
 		$constants = array();
@@ -6125,7 +6562,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		if ( ! isset( $consts[ $name ] ) ) {
 			return new WP_Error( 'bad_constant', 'That constant is not editable.', array( 'status' => 400 ) );
 		}
-		if ( ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS ) || ( is_multisite() && ! is_super_admin() ) ) {
+		if ( ! Minimal_Admin::code_edits_allowed() || ( is_multisite() && ! is_super_admin() ) ) {
 			return new WP_Error( 'forbidden', 'File modifications are disabled on this site.', array( 'status' => 403 ) );
 		}
 		$path = self::wpconfig_path();
@@ -6169,9 +6606,30 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			return new WP_Error( 'parse_error', 'The change would break wp-config.php, so it was not saved.', array( 'status' => 500 ) );
 		}
 
-		self::backup_wpconfig( $path );
+		// Honour the backup's return value: a write that proceeds without a
+		// rollback copy is the case the copy exists for.
+		$backup = self::backup_wpconfig( $path );
+		if ( '' === $backup ) {
+			return new WP_Error(
+				'minimal_backup_failed',
+				'Could not write a rollback copy of wp-config.php, so the change was not made.',
+				array( 'status' => 500 )
+			);
+		}
 		if ( false === file_put_contents( $path, $new ) ) {
+			self::drop_wpconfig_backup( $path );
 			return new WP_Error( 'write_failed', 'Could not write wp-config.php.', array( 'status' => 500 ) );
+		}
+
+		// The write landed and was syntax-checked before it went out, so the
+		// rollback copy has done its job. Re-read from disk and confirm it
+		// parses before dropping the copy: if anything truncated the write,
+		// keep the copy and say so rather than leaving the site with a broken
+		// wp-config.php and nothing to restore from.
+		$written = @file_get_contents( $path ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		$intact  = false !== $written && $written === $new;
+		if ( $intact ) {
+			self::drop_wpconfig_backup( $path );
 		}
 
 		return rest_ensure_response(
@@ -6180,8 +6638,28 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 				// The value that will apply on the next request (this one already
 				// bootstrapped with the old constant).
 				'value'    => $value,
+				// Present only when the rollback copy had to be kept.
+				'backup'   => $intact ? '' : basename( self::wpconfig_backup_path( $path ) ),
 			)
 		);
+	}
+
+	/**
+	 * Remove the rollback copy.
+	 *
+	 * It is a full plaintext copy of DB_USER, DB_PASSWORD and the whole salt
+	 * block, at a fixed path published in this plugin's source, inside the web
+	 * root. The `<?php exit;` header and the .php name stop a web server
+	 * serving it, but host and security-plugin rules that protect credentials
+	 * match the literal filename wp-config.php and do not cover this one, so
+	 * any local file read or backup archive picks it up. A pre-write rollback
+	 * copy has no reason to outlive the write.
+	 */
+	private static function drop_wpconfig_backup( $path ) {
+		$bak = self::wpconfig_backup_path( $path );
+		if ( file_exists( $bak ) ) {
+			wp_delete_file( $bak );
+		}
 	}
 
 	/** Turn an ordered assoc array into [{key,value}] rows for the client. */

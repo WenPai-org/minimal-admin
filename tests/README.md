@@ -18,6 +18,12 @@ MINIMAL_TEST_PASS=<admin password> node editor-sidebar.test.js # slug, discussio
 MINIMAL_TEST_PASS=<admin password> node system.test.js     # diagnostics endpoint + page + copy-report
 MINIMAL_TEST_PASS=<admin password> node undo-toast.test.js # structural-deletion Undo (islands, tables)
 
+# multisite (network) — runs against a SEPARATE subdomain-multisite lab, not
+# minimaladmin. SKIPs (exit 0) with no MINIMAL_MS_SUPER_PASS or no lab, so run-all is
+# unaffected on the single-site dev box. Create the lab first:
+#   cove add minimalms --multisite=subdomain   (see project_minimal_multisite_lab)
+MINIMAL_MS_SUPER_PASS=<lab super-admin password> node multisite.test.js
+
 # all suites (release pre-flight / overnight): sequential, settle-guarded,
 # one retry per failed suite, full logs + summary in the output dir
 MINIMAL_TEST_PASS=… ./run-all.sh /tmp/minimal-run
@@ -46,6 +52,8 @@ Environment (all optional except the password):
 | `MINIMAL_TEST_CHROME` | macOS system Chrome path |
 | `MINIMAL_TEST_USER2` | `minimal-editor` (lock.test.js's second session; needs Editor role) |
 | `MINIMAL_TEST_PASS2` | `minimal-editor-pass-1` |
+| `MINIMAL_MS_SUPER_PASS` | — (multisite.test.js only; unset ⇒ SKIP) |
+| `MINIMAL_MS_URL` / `MINIMAL_MS_STORE` / `MINIMAL_MS_BLOG` | `https://minimalms.localhost` / `store.` / `blog.` |
 
 ## Conventions (read before writing a suite)
 

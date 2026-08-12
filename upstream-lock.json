@@ -2,10 +2,10 @@
   "schema_version": 1,
   "upstream_repository": "https://feicode.com/WPFork/minn-admin-upstream",
   "canonical_upstream": "https://github.com/austinginder/minn-admin",
-  "upstream_tag": "v0.27.0",
-  "upstream_commit": "38c8869e3410daf4d4dcd94bdf165ea30702c5c3",
-  "upstream_source_sha256": "d39b80835115123a82fe5f64ed6449ccf48b102904900a25c6b0628df60c169e",
-  "downstream_version": "0.27.0.2",
+  "upstream_tag": "v0.28.0",
+  "upstream_commit": "855849fccba94f0f4e900cf84485b11b88264d5d",
+  "upstream_source_sha256": "ed9eabead8659418a45ba2057dd3de1f77cc3160818e7bfe257674d67efc207d",
+  "downstream_version": "0.28.0.1",
   "transformation_sha256": "04221eb89199e8ad0aa16b573ff74c7fc8957463445566825da85c176b1688a4",
-  "synced_at": "2026-08-11T02:47:10+00:00"
+  "synced_at": "2026-08-12T18:17:38+00:00"
 }
