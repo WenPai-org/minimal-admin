@@ -247,11 +247,13 @@ v1.0 在满足以下所有条件时发布：
 - 多站点、原生编辑器，以及 native-editors.md 中搁置的项目。
   *（其中一个后来在其他地方按计划发布：只读
   数据库查看器已在 v0.22.0 周期中加入；参见 native-editors.md。）*
+  landed in v0.28.0. The remaining native-editor items stay parked; see
+  本次审计期间完成的路线图修正（2026-07-16）
 
-## 本次审计期间完成的路线图修正（2026-07-16）
+## extension-api.md 标记为历史文档（其中的示例与已发布的
 
-- extension-api.md 标记为历史文档（其中的示例与已发布的
-  词汇）。
 - goals.md 增加了由方向 B 实施的用户主权原则。
-- plugin-support.md 路线图指向 v0.17.0 周期；适配器批次
-  暂停，而不是消失。
+  plugin-support.md 路线图指向 v0.17.0 周期；适配器批次
+- 暂停，而不是消失。
+- plugin-support.md roadmap points here for the v0.17.0 cycle; adapter waves
+  pause rather than disappear.

@@ -38,10 +38,12 @@ Minimal Admin 的存在，是因為 WordPress 管理介面將日常工作埋在�
 - **設定頁對等性。** Minimal 呈現人們實際會修改的設定。長尾
   留在 wp-admin 中。
 - **目前僅限多網站網路管理員。**
-- **成為頁面建構器。**
+  **成為頁面建構器。**
+  in WordPress Network Admin.
+- 品質標準
 
-## 品質標準
+## 每項功能都必須包含：在乾淨網站上的瀏覽器層級驗證，*以及*生產規模
 
-每項功能都必須包含：在乾淨網站上的瀏覽器層級驗證，*以及*生產規模
-網站、零主控台錯誤、透過介面正確隱藏／顯示來驗證能力檢查，以及一個
 Emoji-Log 提交。如果一項功能無法端到端驗證，就代表尚未完成。
+site, zero console errors, capability checks proven by the UI hiding/showing correctly, and an
+Emoji-Log commit. If a feature can't be verified end-to-end, it isn't done.

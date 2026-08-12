@@ -13,367 +13,322 @@ msgstr ""
 
 #: docs/user-guide.md:107
 msgctxt "docs/user-guide.md"
-msgid "where edits live. Its text and images are usually editable in place,"
+msgid "columns; heavy page design still belongs to the block editor, one click"
 msgstr "編輯內容所在的位置。其文字與圖片通常可直接在原處編輯，"
-
-#: docs/user-guide.md:113
-msgctxt "docs/user-guide.md"
-msgid "want the full toolkit. Posts built with page builders (Elementor,"
-msgstr "想要完整的工具組。使用頁面建構器（Elementor、）建立的文章"
 
 #: docs/user-guide.md:120
 msgctxt "docs/user-guide.md"
-msgid "uploads them into that block. Each photo moves as an exact unit, so its"
+msgid "editable blocks."
 msgstr "將其上傳至該區塊。每張照片都會作為完整單位移動，因此其"
 
 #: docs/user-guide.md:123
 msgctxt "docs/user-guide.md"
-msgid "their pictures in settings. A gallery's ⚙ chip also offers columns,"
+msgid "entry in the Content list manages them. A synced pattern inserts as a"
 msgstr "在設定中顯示其圖片。圖庫的 ⚙ 標籤也提供欄數、"
 
 #: docs/user-guide.md:129
 msgctxt "docs/user-guide.md"
-msgid "text front and center and the other settings tucked behind a toggle,"
+msgid "in and type, with markdown, the slash menu and paste all working"
 msgstr "將文字置於中央，其他設定則收納在切換開關後方，"
-
-#: docs/user-guide.md:110
-msgctxt "docs/user-guide.md"
-msgid "structure is preserved byte for byte. Hovering any ⚙ chip outlines the"
-msgstr "結構會逐位元組保留。將滑鼠移到任何 ⚙ 標籤上，都會勾勒出"
 
 #: docs/user-guide.md:105
 msgctxt "docs/user-guide.md"
-msgid "site's real styling, right where it lives, even inside a group."
+msgid "Press **New** (or ⌘K, \"Create new post\") and write. The editor is built"
 msgstr "網站的實際樣式，就在其所在位置呈現，即使位於群組內也一樣。"
 
 #: docs/user-guide.md:202
 msgctxt "docs/user-guide.md"
-msgid "sidebar too, automatically. Like the wp-admin original this is"
+msgid "stays visible on every screen, so you can close the panel or move around"
 msgstr "側邊欄也會自動顯示。和原本的 wp-admin 一樣，這是"
 
 #: docs/user-guide.md:119
 msgctxt "docs/user-guide.md"
-msgid "remove, duplicate and caption photos. Dropping image files on the grid"
+msgid "and raw block markup (from an AI tool or a tutorial) pastes in as real,"
 msgstr "移除、複製照片並新增標題。將圖片檔案拖放到網格上"
 
 #: docs/user-guide.md:130
 msgctxt "docs/user-guide.md"
-msgid "plus reorder, remove and add. Enter it from the container's ⚙ chip"
+msgid "inside, and each column its own surface laid out like the front end."
 msgstr "以及重新排序、移除和新增。從容器的 ⚙ 標籤進入"
 
 #: docs/user-guide.md:128
 msgctxt "docs/user-guide.md"
-msgid "paragraphs, say) edits in a roomy window: one card per block with its"
-msgstr "段落等）會在寬敞的視窗中編輯：每個區塊各有一張卡片，並顯示其"
-
-#: docs/user-guide.md:96
-msgctxt "docs/user-guide.md"
 msgid "media-and-text blocks are writing surfaces, nested to any depth: click"
-msgstr "媒體與文字區塊都是可撰寫的區域，可無限層級巢狀：按一下"
+msgstr "段落等）會在寬敞的視窗中編輯：每個區塊各有一張卡片，並顯示其"
 
 #: docs/user-guide.md:132
 msgctxt "docs/user-guide.md"
-msgid "itself; the block you clicked opens highlighted."
+msgid "anything you do not touch saves back byte for byte, so the block"
 msgstr "本身；您按下的區塊會以醒目方式開啟。"
 
 #: docs/user-guide.md:98
 msgctxt "docs/user-guide.md"
-msgid "inside, and each column its own surface laid out like the front end."
+msgid "sidebar (⌘. does the same), the version badge (click it for what's new),"
 msgstr "其中，每個欄位都有自己的編輯區域，排列方式就像前端畫面。"
 
 #: docs/user-guide.md:97
 msgctxt "docs/user-guide.md"
-msgid "in and type, with markdown, the slash menu and paste all working"
+msgid "**The topbar** carries the page title, a button that shows or hides the"
 msgstr "並輸入內容，Markdown、斜線選單與貼上功能都能正常運作"
 
 #: docs/user-guide.md:127
 msgctxt "docs/user-guide.md"
-msgid "holding several styled blocks (a stats strip of label-and-value"
+msgid "**Layout blocks open for writing.** Groups, columns, covers and"
 msgstr "包含多個套用樣式的區塊（例如由標籤和值組成的統計列"
 
 #: docs/user-guide.md:118
 msgctxt "docs/user-guide.md"
-msgid "grid where you reorder (drag or arrows), replace (click a tile), add,"
+msgid "A pasted image or a lone URL to a tweet or video becomes the real thing,"
 msgstr "網格中重新排序（拖曳或使用箭頭）、取代（按一下圖格）、新增，"
 
 #: docs/user-guide.md:74
 msgctxt "docs/user-guide.md"
-msgid "for writing, from quick posts to full pages assembled from groups and"
+msgid "matches at once even on a large network."
 msgstr "用於撰寫內容，從快速文章到由群組組成的完整頁面，皆可"
 
 #: docs/user-guide.md:101
 msgctxt "docs/user-guide.md"
-msgid "editor always reopens the page cleanly."
+msgid "you: a pending WordPress update, or a site that is not fully public."
 msgstr "編輯器每次都會乾淨地重新開啟頁面。"
 
 #: docs/user-guide.md:88
 msgctxt "docs/user-guide.md"
-msgid "editable blocks."
+msgid "deleting accounts stays in Network Admin, because deleting a network account"
 msgstr "可編輯的區塊中。"
 
 #: docs/user-guide.md:124
 msgctxt "docs/user-guide.md"
-msgid "crop and random order; link, size and lightbox options stay in the"
+msgid "live reference: edit the pattern once and every post using it follows,"
 msgstr "裁剪和隨機排序；連結、大小與燈箱選項會保留在"
 
 #: docs/user-guide.md:203
 msgctxt "docs/user-guide.md"
-msgid "cosmetic; the screens stay reachable by address and from the palette."
+msgid "Minimal and still see that updates are working; click it to come back to the"
 msgstr "僅是外觀上的改變；這些畫面仍可透過網址和調色盤存取。"
-
-#: docs/user-guide.md:75
-msgctxt "docs/user-guide.md"
-msgid "columns; heavy page design still belongs to the block editor, one click"
-msgstr "欄；複雜的頁面設計仍應交由區塊編輯器處理，只需按一下"
 
 #: docs/user-guide.md:201
 msgctxt "docs/user-guide.md"
-msgid "client-site setup), Minimal notices and keeps those entries out of its"
+msgid "run is going, a progress pill in the top bar names the current phase and"
 msgstr "客戶網站設定），Minimal 會顯示通知，並將這些項目排除在其"
 
 #: docs/user-guide.md:112
 msgctxt "docs/user-guide.md"
-msgid "click on \"Block editor ↗\" opens the same post in Gutenberg whenever you"
+msgid "divider, triple backticks for a code block. All applied as you type."
 msgstr "按一下「Block editor ↗」會在 Gutenberg 中開啟相同的文章，只要您"
 
 #: docs/user-guide.md:122
 msgctxt "docs/user-guide.md"
-msgid "carousels, layouts with a fixed set of openings, and blocks that keep"
+msgid "not) appear in the slash menu and the block library, and a Patterns"
 msgstr "輪播、具有固定開口集合的版面配置，以及會保留"
 
 #: docs/user-guide.md:121
 msgctxt "docs/user-guide.md"
-msgid "caption and settings travel with it, and this covers sliders and"
+msgid "**Your patterns come along.** Patterns you save in WordPress (synced or"
 msgstr "標題與設定會隨之保留，這也涵蓋滑桿和"
 
 #: docs/user-guide.md:115
 msgctxt "docs/user-guide.md"
-msgid "button, because the builder owns that content."
+msgid "including your plugins' blocks and entire designs and patterns you can"
 msgstr "按鈕，因為該內容由建構器負責。"
-
-#: docs/user-guide.md:111
-msgctxt "docs/user-guide.md"
-msgid "block it configures, so nested blocks read as distinct controls. One"
-msgstr "它所設定的區塊，因此巢狀區塊會呈現為不同的控制項。一"
 
 #: docs/user-guide.md:125
 msgctxt "docs/user-guide.md"
-msgid "block editor and the popover says so."
+msgid "and Minimal reminds you of that reach before you save one. An unsynced"
 msgstr "區塊編輯器，而彈出視窗會如此說明。"
 
 #: docs/user-guide.md:117
 msgctxt "docs/user-guide.md"
-msgid "block and the card names the action: click anywhere on it for a tile"
+msgid "**Paste from anywhere.** Word, Google Docs and web pages paste in clean."
 msgstr "區塊，而卡片會命名該操作：點擊其中任何位置即可開啟圖格"
 
 #: docs/user-guide.md:76
 msgctxt "docs/user-guide.md"
-msgid "away:"
+msgid "**If you run the network**, a fourth sidebar group appears: Network. Sites"
 msgstr "離開："
 
 #: docs/user-guide.md:100
 msgctxt "docs/user-guide.md"
-msgid "anything you do not touch saves back byte for byte, so the block"
+msgid "and the New button. Amber chips appear here only when something needs"
 msgstr "你未觸碰的任何內容都會逐位元組寫回，因此該區塊"
 
 #: docs/user-guide.md:108
 msgctxt "docs/user-guide.md"
-msgid "and the ⚙ chip holds its settings plus duplicate and move arrows, so"
+msgid "away:"
 msgstr "而 ⚙ 晶片包含其設定，以及複製與移動箭頭，因此"
 
 #: docs/user-guide.md:87
 msgctxt "docs/user-guide.md"
-msgid "and raw block markup (from an AI tool or a tutorial) pastes in as real,"
+msgid "network-administrator status or the last one on the network. Creating and"
 msgstr "以及原始區塊標記（來自 AI 工具或教學）貼上後會成為真正的，"
-
-#: docs/user-guide.md:109
-msgctxt "docs/user-guide.md"
-msgid "a testimonial can hop into the next column without leaving Minimal; its"
-msgstr "一則推薦文字可以跳進下一欄而無需離開 Minimal；其"
-
-#: docs/user-guide.md:104
-msgctxt "docs/user-guide.md"
-msgid "a row of buttons), it appears as a framed card rendered with your"
-msgstr "一排按鈕），它會顯示為以你的"
 
 #: docs/user-guide.md:99
 msgctxt "docs/user-guide.md"
-msgid "The layout itself (widths, colors, spacing) is preserved exactly, and"
+msgid "a View site link, the theme toggle (system, light, dark), notifications,"
 msgstr "版面配置本身（寬度、色彩、間距）會完全保留，而"
 
 #: docs/user-guide.md:200
 msgctxt "docs/user-guide.md"
-msgid "If a developer already hid admin menus in wp-admin with code (a common"
+msgid "exactly what will change and what is untouched before it starts. While a"
 msgstr "如果開發者已使用程式碼隱藏 wp-admin 中的管理選單（這很常見"
 
 #: docs/user-guide.md:106
 msgctxt "docs/user-guide.md"
-msgid "Hovering the card shows a short note saying why it is protected and"
+msgid "for writing, from quick posts to full pages assembled from groups and"
 msgstr "將滑鼠移到卡片上會顯示簡短說明，指出它受保護的原因，以及"
 
 #: docs/user-guide.md:114
 msgctxt "docs/user-guide.md"
-msgid "Bricks, Divi and friends) open read-only with an \"Edit in your builder\""
+msgid "images, embeds, tables and more. **⌘/** opens the full block library,"
 msgstr "Bricks、Divi 與同類工具）會以唯讀模式開啟，並顯示「在你的建構器中編輯」"
 
 #: docs/user-guide.md:95
 msgctxt "docs/user-guide.md"
-msgid "**Layout blocks open for writing.** Groups, columns, covers and"
+msgid "and Minimal will not offer to deactivate itself network-wide from inside Minimal."
 msgstr "**版面配置區塊會開啟以供寫入。** 群組、欄、封面與"
 
 #: docs/user-guide.md:126
 msgctxt "docs/user-guide.md"
-msgid "**Groups of styled text open an Edit content window.** A container"
+msgid "pattern drops in as a detached copy you can edit freely."
 msgstr "**經過樣式設定的文字群組會開啟編輯內容視窗。** 容器"
 
 #: docs/user-guide.md:116
 msgctxt "docs/user-guide.md"
-msgid "**Galleries and sliders open an images editor.** Hover a gallery-shaped"
+msgid "drop in."
 msgstr "**圖庫與滑桿會開啟圖片編輯器。** 將滑鼠移到圖庫形狀的"
 
 #: docs/user-guide.md:131
 msgctxt "docs/user-guide.md"
-msgid "(\"Content · N blocks\") or, on protected cards, by clicking the card"
+msgid "The layout itself (widths, colors, spacing) is preserved exactly, and"
 msgstr "（「內容 · N 個區塊」），或在受保護卡片上點擊卡片"
 
 #: docs/roadmap.md:36
 msgctxt "docs/roadmap.md"
-msgid "writing surface with complex children as protected cards. The 2026-08-08 baseline"
+msgid "**Now:** every parseable group, columns, cover and media-text container opens as a"
 msgstr "將具有複雜子項目的寫入介面作為受保護卡片。2026-08-08 基線"
 
 #: docs/roadmap.md:52
 msgctxt "docs/roadmap.md"
-msgid "within two to three days — the largest recent cohort is the honest lower bound."
+msgid "distinct sites that updated during its reign, and the per-release data saturates"
 msgstr "在兩到三天內 — 最近最大的一批是誠實的下限。"
 
 #: docs/roadmap.md:84
 msgctxt "docs/roadmap.md"
-msgid "what remains."
+msgid "**Now:** architecture and author-experience gates hold; the real-world proof is"
 msgstr "剩下的內容。"
 
 #: docs/roadmap.md:30
 msgctxt "docs/roadmap.md"
-msgid "what real sites are made of. The nesting cycle (2026-08-08/09) was this goal's build-out."
+msgid "\"The writing editor for WordPress\" has to hold on layout-shaped content, because that is"
 msgstr "真實網站的組成。巢狀週期（2026-08-08/09）就是此目標的建置階段。"
-
-#: docs/roadmap.md:77
-msgctxt "docs/roadmap.md"
-msgid "v1.0 is not a feature count. The two promises and their gates live in"
-msgstr "v1.0 不是功能數量。兩項承諾及其閘門位於"
 
 #: docs/roadmap.md:6
 msgctxt "docs/roadmap.md"
-msgid "the v1.0 charter in __MA_DOC_TOKEN_1__). This document is the scoreboard:"
+msgid "WP-CLI in __MA_DOC_TOKEN_1__, and the v1.0 charter in"
 msgstr "__MA_DOC_TOKEN_1__ 中的 v1.0 章程）。這份文件就是評分板："
 
 #: docs/roadmap.md:60
 msgctxt "docs/roadmap.md"
-msgid "the release cycle it arrives in."
+msgid "intake healthy: every real-work report answered, and the fix suite-pinned, within"
 msgstr "它所到達的發布週期。"
 
 #: docs/roadmap.md:58
 msgctxt "docs/roadmap.md"
-msgid "the active-sites claim automatically from ≈50 up. Keep external issue"
+msgid "**Targets:** ≈100 active sites, then ≈500. The marketing site's ethos strip shows"
 msgstr "自動將活躍網站主張從約 50 個往上推進。保持外部問題"
 
 #: docs/roadmap.md:50
 msgctxt "docs/roadmap.md"
-msgid "serves only the current release, so a superseded release's downloads are the"
+msgid "largest closed-release download cohort of the trailing 30 days. The self-updater"
 msgstr "只提供目前版本，因此已被取代版本的下載量會"
 
 #: docs/roadmap.md:25
 msgctxt "docs/roadmap.md"
-msgid "release cut (the release itself managed through Minimal)."
+msgid "**Target:** 30 consecutive days, twice. First across a quiet month, then across a"
 msgstr "版本切出（版本本身透過 Minimal 管理）。"
 
 #: docs/roadmap.md:41
 msgctxt "docs/roadmap.md"
-msgid "regressions, release over release. A regression here blocks the release."
+msgid "**Target:** hold the corpus at effectively 100% writable with zero byte-identity"
 msgstr "回歸問題，逐次發布。此處的回歸會阻擋發布。"
 
 #: docs/roadmap.md:65
 msgctxt "docs/roadmap.md"
-msgid "proven when authors we have never met ship their own."
+msgid "Fifty-plus bundled adapters prove the primitives generalize. The ecosystem claim is only"
 msgstr "當我們從未見過的作者交付他們自己的內容時，就證明了"
 
 #: docs/roadmap.md:86
 msgctxt "docs/roadmap.md"
-msgid "promises because nothing needed changing."
+msgid "**Target:** cut v1.0 when a release goes out that changed nothing about the two"
 msgstr "承諾，因為沒有任何需要變更的內容。"
 
 #: docs/roadmap.md:37
 msgctxt "docs/roadmap.md"
-msgid "probe measured 2% of top-level containers writable; the cycle ended with the gate"
+msgid "writing surface with complex children as protected cards. The 2026-08-08 baseline"
 msgstr "探測顯示頂層容器中僅 2% 可寫入；週期結束時，閘門"
 
 #: docs/roadmap.md:46
 msgctxt "docs/roadmap.md"
-msgid "only hit doing real work."
+msgid "Not stars for a screenshot. Sites that update, and users who file the kind of bug you"
 msgstr "只命中真正完成工作的內容。"
-
-#: docs/roadmap.md:92
-msgctxt "docs/roadmap.md"
-msgid "metric moving the wrong way is information, not an obligation to build."
-msgstr "指標朝錯誤方向移動是資訊，而不是建置義務。"
 
 #: docs/roadmap.md:49
 msgctxt "docs/roadmap.md"
-msgid "largest closed-release download cohort of the trailing 30 days. The self-updater"
+msgid "**Metric:** the ≈active-sites estimate, computed daily by FeiCode repository: the"
 msgstr "過去 30 天中最大的一批已關閉版本下載量。自動更新程式"
 
 #: docs/roadmap.md:38
 msgctxt "docs/roadmap.md"
-msgid "itself deleted. Byte-identity is suite-pinned (nested-islands, container-slots,"
+msgid "probe measured 2% of top-level containers writable; the cycle ended with the gate"
 msgstr "本身刪除。位元組識別性由測試套件固定驗證（nested-islands、container-slots、"
 
 #: docs/roadmap.md:59
 msgctxt "docs/roadmap.md"
-msgid "intake healthy: every real-work report answered, and the fix suite-pinned, within"
+msgid "the active-sites claim automatically from ≈50 up. Keep external issue"
 msgstr "維持健康：每份真正工作的回報都得到回覆，且修正會在"
 
 #: docs/roadmap.md:17
 msgctxt "docs/roadmap.md"
-msgid "honest way to prove it is to live it."
+msgid "The founding claim is that daily WordPress work needs nothing wp-admin has. The only"
 msgstr "證明這一點的誠實方式，就是親自實踐。"
 
 #: docs/roadmap.md:72
 msgctxt "docs/roadmap.md"
-msgid "guide, the shim tutorial with its suite-enforced example plugin, and the"
+msgid "**Target:** the first 3 external adapters. Feeders: the quickstart-first author"
 msgstr "指南、附有測試套件強制驗證範例外掛的 shim 教學，以及"
 
 #: docs/roadmap.md:70
 msgctxt "docs/roadmap.md"
-msgid "external."
+msgid "**Now:** 1 (Anchor Blocks), and it shares an author with Minimal, so honestly: 0"
 msgstr "外部。"
 
 #: docs/roadmap.md:11
 msgctxt "docs/roadmap.md"
-msgid "dogfooding. Statuses get refreshed at each release cut; feature checklists live in the"
+msgid "GitHub's public counters, the pattern-corpus probes, the suite ledger, and disciplined"
 msgstr "dogfooding。每次切出版本時更新狀態；功能檢查清單位於"
 
 #: docs/roadmap.md:51
 msgctxt "docs/roadmap.md"
-msgid "distinct sites that updated during its reign, and the per-release data saturates"
+msgid "serves only the current release, so a superseded release's downloads are the"
 msgstr "在其任期內完成更新的不同網站，而每個發布版本的資料都飽和"
 
 #: docs/roadmap.md:22
 msgctxt "docs/roadmap.md"
-msgid "could not do the job breaks the streak and files an issue."
+msgid "a plugin's own settings screen) counts as Minimal working; opening wp-admin because Minimal"
 msgstr "無法完成工作的內容會中斷連續紀錄並提交問題。"
 
 #: docs/roadmap.md:34
 msgctxt "docs/roadmap.md"
-msgid "content across a save, enforced by suites."
+msgid "494 container units) that opens writable in Minimal, and byte-identity for untouched"
 msgstr "在儲存過程中保留內容，由測試套件強制驗證。"
 
 #: docs/roadmap.md:39
 msgctxt "docs/roadmap.md"
-msgid "attr-carry, island-runs: 119 checks)."
+msgid "itself deleted. Byte-identity is suite-pinned (nested-islands, container-slots,"
 msgstr "attr-carry、island-runs：119 項檢查）。"
 
 #: docs/roadmap.md:12
 msgctxt "docs/roadmap.md"
-msgid "area docs and collapse to one-line ledger entries once shipped."
+msgid "dogfooding. Statuses get refreshed at each release cut; feature checklists live in the"
 msgstr "各領域文件，交付後收斂為一行的帳冊項目。"
 
 #: docs/roadmap.md:5
@@ -381,35 +336,10 @@ msgctxt "docs/roadmap.md"
 msgid "adapters in __MA_DOC_TOKEN_1__ and __MA_DOC_TOKEN_2__,"
 msgstr "__MA_DOC_TOKEN_1__ 與 __MA_DOC_TOKEN_2__ 中的介接器，"
 
-#: docs/roadmap.md:7
-msgctxt "docs/roadmap.md"
-msgid "a short list of outcomes, each judged by a real-world number we can measure honestly.*"
-msgstr "一份成果的簡短清單，每項都以我們能誠實衡量的現實數字評判。*"
-
 #: docs/roadmap.md:21
 msgctxt "docs/roadmap.md"
-msgid "a plugin's own settings screen) counts as Minimal working; opening wp-admin because Minimal"
+msgid "Minimal. Opening wp-admin through a link Minimal itself offers (the block editor escape,"
 msgstr "外掛自己的設定畫面）就算是 Minimal 正常運作；因為 Minimal"
-
-#: docs/roadmap.md:78
-msgctxt "docs/roadmap.md"
-msgid "__MA_DOC_TOKEN_1__: authors enjoy wiring in, and authors cannot abuse"
-msgstr "__MA_DOC_TOKEN_1__：作者樂於接入，而作者無法濫用"
-
-#: docs/roadmap.md:88
-msgctxt "docs/roadmap.md"
-msgid "What this file is not"
-msgstr "這份文件不是什麼"
-
-#: docs/roadmap.md:90
-msgctxt "docs/roadmap.md"
-msgid "The never-build list (__MA_DOC_TOKEN_1__) and the non-goals"
-msgstr "永遠不建置清單（__MA_DOC_TOKEN_1__）與非目標"
-
-#: docs/roadmap.md:16
-msgctxt "docs/roadmap.md"
-msgid "The founding claim is that daily WordPress work needs nothing wp-admin has. The only"
-msgstr "創立時的主張是：日常 WordPress 工作不需要 wp-admin 擁有的任何功能。唯一"
 
 #: docs/roadmap.md:1
 msgctxt "docs/roadmap.md"
@@ -418,82 +348,37 @@ msgstr "路線圖 — 目標與評判它們的數字"
 
 #: docs/roadmap.md:53
 msgctxt "docs/roadmap.md"
-msgid "Plus issues filed by people other than the author."
+msgid "within two to three days — the largest recent cohort is the honest lower bound."
 msgstr "再加上由作者以外的人提交的問題。"
-
-#: docs/roadmap.md:45
-msgctxt "docs/roadmap.md"
-msgid "Not stars for a screenshot. Sites that update, and users who file the kind of bug you"
-msgstr "不是為了截圖而來的星星，而是會更新的網站，以及提交你"
-
-#: docs/roadmap.md:79
-msgctxt "docs/roadmap.md"
-msgid "Minimal. The charter's eleven audit items all shipped at v0.17.0."
-msgstr "Minimal。章程中的十一項稽核項目全都在 v0.17.0 中交付。"
 
 #: docs/roadmap.md:20
 msgctxt "docs/roadmap.md"
-msgid "Minimal. Opening wp-admin through a link Minimal itself offers (the block editor escape,"
+msgid "**Metric:** consecutive days running anchor.host and FeiCode repository entirely through"
 msgstr "Minimal。透過 Minimal 本身提供的連結開啟 wp-admin（區塊編輯器離開"
 
 #: docs/roadmap.md:68
 msgctxt "docs/roadmap.md"
-msgid "Minimal's repo."
+msgid "**Metric:** third-party plugins shipping their own Minimal adapter, not bundled in"
 msgstr "Minimal 的儲存庫。"
-
-#: docs/roadmap.md:9
-msgctxt "docs/roadmap.md"
-msgid "Minimal phones home to no one, so every metric here is one we can read without telemetry:"
-msgstr "Minimal 不會向任何人回傳資料，因此這裡的每項指標都能在沒有遙測的情況下讀取："
 
 #: docs/roadmap.md:73
 msgctxt "docs/roadmap.md"
-msgid "Integrations card flagging contract problems instead of failing silently."
+msgid "guide, the shim tutorial with its suite-enforced example plugin, and the"
 msgstr "整合功能卡片會標示合約問題，而不是靜默失敗。"
-
-#: docs/roadmap.md:75
-msgctxt "docs/roadmap.md"
-msgid "Goal 5 — v1.0 ships when the promises hold"
-msgstr "目標 5 — 承諾成立時發布 v1.0"
-
-#: docs/roadmap.md:62
-msgctxt "docs/roadmap.md"
-msgid "Goal 4 — plugin authors wire in without us"
-msgstr "目標 4 — 外掛作者無需我們協助即可接入"
-
-#: docs/roadmap.md:43
-msgctxt "docs/roadmap.md"
-msgid "Goal 3 — real people do real work in it"
-msgstr "目標 3 — 真正的人在其中完成真正的工作"
-
-#: docs/roadmap.md:27
-msgctxt "docs/roadmap.md"
-msgid "Goal 2 — the editor writes real pages, not just posts"
-msgstr "目標 2 — 編輯器寫入真正的頁面，而不只是文章"
-
-#: docs/roadmap.md:14
-msgctxt "docs/roadmap.md"
-msgid "Goal 1 — Minimal is someone's whole admin"
-msgstr "目標 1 — Minimal 是某人的完整管理介面"
 
 #: docs/roadmap.md:10
 msgctxt "docs/roadmap.md"
-msgid "GitHub's public counters, the pattern-corpus probes, the suite ledger, and disciplined"
+msgid "Minimal phones home to no one, so every metric here is one we can read without telemetry:"
 msgstr "GitHub 的公開計數器、模式語料庫探測、套件帳冊，以及嚴謹的"
-
-#: docs/roadmap.md:64
-msgctxt "docs/roadmap.md"
-msgid "Fifty-plus bundled adapters prove the primitives generalize. The ecosystem claim is only"
-msgstr "五十多個內建介接器證明這些原語具有可泛化性。生態系主張僅"
 
 #: docs/roadmap.md:33
 msgctxt "docs/roadmap.md"
-msgid "494 container units) that opens writable in Minimal, and byte-identity for untouched"
+msgid "**Metric:** the share of the Twenty Twenty-Four/Five pattern corpus (155 patterns,"
 msgstr "494 個容器單位），在 Minimal 中以可寫入狀態開啟；對未變更的"
 
 #: docs/roadmap.md:55
 msgctxt "docs/roadmap.md"
-msgid "43 stars · 10 external issues, several of them exactly the doing-real-work kind"
+msgid "**Now (2026-08-09):** ≈69 active sites · 644 total downloads across 27 releases ·"
 msgstr "43 顆星 · 10 個外部問題，其中有幾個正是實際投入工作的那種"
 
 #: docs/roadmap.md:3
@@ -503,78 +388,53 @@ msgstr "*原則位於 __MA_DOC_TOKEN_1__。深入的技術計畫位於各領域�
 
 #: docs/roadmap.md:57
 msgctxt "docs/roadmap.md"
-msgid "**Targets:** ≈100 active sites, then ≈500. The marketing site's ethos strip shows"
+msgid "(grouped-content editing, stale update offers, entity rendering)."
 msgstr "**目標：**約 100 個活躍網站，接著約 500 個。行銷網站的理念區塊顯示"
 
 #: docs/roadmap.md:71
 msgctxt "docs/roadmap.md"
-msgid "**Target:** the first 3 external adapters. Feeders: the quickstart-first author"
+msgid "external."
 msgstr "**目標：**前 3 個外部介接器。供應者：以快速入門為優先的作者"
 
 #: docs/roadmap.md:40
 msgctxt "docs/roadmap.md"
-msgid "**Target:** hold the corpus at effectively 100% writable with zero byte-identity"
+msgid "attr-carry, island-runs: 119 checks)."
 msgstr "**目標：**讓語料庫維持實際上 100% 可寫入，且位元組識別性為零"
 
 #: docs/roadmap.md:85
 msgctxt "docs/roadmap.md"
-msgid "**Target:** cut v1.0 when a release goes out that changed nothing about the two"
+msgid "what remains."
 msgstr "**目標：**當某個發布版本對這兩項內容毫無改變時，就發布 v1.0"
 
 #: docs/roadmap.md:24
 msgctxt "docs/roadmap.md"
-msgid "**Target:** 30 consecutive days, twice. First across a quiet month, then across a"
+msgid "**Now:** untracked. The streak starts with the v0.26.0 dogfood soak."
 msgstr "**目標：**連續 30 天，執行兩次。第一次跨越平靜的一個月，接著跨越一"
 
 #: docs/roadmap.md:23
 msgctxt "docs/roadmap.md"
-msgid "**Now:** untracked. The streak starts with the v0.26.0 dogfood soak."
+msgid "could not do the job breaks the streak and files an issue."
 msgstr "**現在：**尚未追蹤。連續紀錄從 v0.26.0 的 dogfood soak 開始。"
 
 #: docs/roadmap.md:35
 msgctxt "docs/roadmap.md"
-msgid "**Now:** every parseable group, columns, cover and media-text container opens as a"
+msgid "content across a save, enforced by suites."
 msgstr "**現在：**每個可解析的群組、欄、封面與媒體文字容器都會以"
 
 #: docs/roadmap.md:83
 msgctxt "docs/roadmap.md"
-msgid "**Now:** architecture and author-experience gates hold; the real-world proof is"
+msgid "(a completed 30-day streak; active sites growing under real external use)."
 msgstr "**目前：**架構與作者體驗閘門均維持；真實世界的證據是"
 
 #: docs/roadmap.md:69
 msgctxt "docs/roadmap.md"
-msgid "**Now:** 1 (Anchor Blocks), and it shares an author with Minimal, so honestly: 0"
+msgid "Minimal's repo."
 msgstr "**目前：**1 個（Anchor Blocks），且它與 Minimal 由同一位作者維護，所以坦白說：0"
 
 #: docs/roadmap.md:54
 msgctxt "docs/roadmap.md"
-msgid "**Now (2026-08-09):** ≈69 active sites · 644 total downloads across 27 releases ·"
+msgid "Plus issues filed by people other than the author."
 msgstr "**目前（2026-08-09）：**≈69 個活躍網站 · 27 個發布版本共 644 次下載 ·"
-
-#: docs/roadmap.md:67
-msgctxt "docs/roadmap.md"
-msgid "**Metric:** third-party plugins shipping their own Minimal adapter, not bundled in"
-msgstr "**指標：**發布自有 Minimal adapter、且未隨附於"
-
-#: docs/roadmap.md:48
-msgctxt "docs/roadmap.md"
-msgid "**Metric:** the ≈active-sites estimate, computed daily by FeiCode repository: the"
-msgstr "**指標：**≈活躍網站估計值，由 FeiCode repository 每日計算："
-
-#: docs/roadmap.md:32
-msgctxt "docs/roadmap.md"
-msgid "**Metric:** the share of the Twenty Twenty-Four/Five pattern corpus (155 patterns,"
-msgstr "**指標：**Twenty Twenty-Four／Five 樣式語料庫的佔比（155 個樣式，"
-
-#: docs/roadmap.md:81
-msgctxt "docs/roadmap.md"
-msgid "**Metric:** the charter gates green, plus Goals 1 and 3 showing real-world proof"
-msgstr "**指標：**章程閘門全部通過，加上目標 1 與 3 顯示真實世界的證據"
-
-#: docs/roadmap.md:19
-msgctxt "docs/roadmap.md"
-msgid "**Metric:** consecutive days running anchor.host and FeiCode repository entirely through"
-msgstr "**指標：**連續運行 anchor.host 與 FeiCode repository 的天數，完全透過"
 
 #: docs/roadmap.md:4
 msgctxt "docs/roadmap.md"
@@ -583,23 +443,18 @@ msgstr "（位於 __MA_DOC_TOKEN_1__ 與 __MA_DOC_TOKEN_2__ 中的編輯器，"
 
 #: docs/roadmap.md:56
 msgctxt "docs/roadmap.md"
-msgid "(grouped-content editing, stale update offers, entity rendering)."
+msgid "43 stars · 10 external issues, several of them exactly the doing-real-work kind"
 msgstr "（群組內容編輯、過時的更新提示、實體渲染）。"
 
 #: docs/roadmap.md:82
 msgctxt "docs/roadmap.md"
-msgid "(a completed 30-day streak; active sites growing under real external use)."
+msgid "**Metric:** the charter gates green, plus Goals 1 and 3 showing real-world proof"
 msgstr "（完成 30 天連續使用；活躍網站在真實外部使用下持續成長）。"
 
 #: docs/roadmap.md:91
 msgctxt "docs/roadmap.md"
-msgid "(__MA_DOC_TOKEN_1__) stand unchanged. Nothing here is a feature commitment; a goal's"
+msgid "The never-build list (__MA_DOC_TOKEN_1__) and the non-goals"
 msgstr "（__MA_DOC_TOKEN_1__）維持不變。這裡沒有任何功能承諾；目標的"
-
-#: docs/roadmap.md:29
-msgctxt "docs/roadmap.md"
-msgid "\"The writing editor for WordPress\" has to hold on layout-shaped content, because that is"
-msgstr "「WordPress 的寫作編輯器」必須能處理版面形狀的內容，因為那就是"
 
 #: docs/goals.md:6
 msgctxt "docs/goals.md"
@@ -2581,11 +2436,6 @@ msgctxt "docs/v1-readiness.md"
 msgid "width, detail with labels/messageKey/skip/edit + preserve + the full"
 msgstr "寬度、包含 labels/messageKey/skip/edit 的詳細資訊 + preserve + 完整"
 
-#: docs/v1-readiness.md:254
-msgctxt "docs/v1-readiness.md"
-msgid "vocabulary)."
-msgstr "詞彙）。"
-
 #: docs/v1-readiness.md:185
 msgctxt "docs/v1-readiness.md"
 msgid "via GitHub raw.)*"
@@ -2868,7 +2718,7 @@ msgstr "指標。"
 
 #: docs/v1-readiness.md:256
 msgctxt "docs/v1-readiness.md"
-msgid "plugin-support.md roadmap points here for the v0.17.0 cycle; adapter waves"
+msgid "vocabulary)."
 msgstr "plugin-support.md 路線圖指向此處，適用於 v0.17.0 週期；介面卡階段"
 
 #: docs/v1-readiness.md:11
@@ -2903,7 +2753,7 @@ msgstr "依外掛處理，並標記契約問題，而不是靜默失敗。大多
 
 #: docs/v1-readiness.md:257
 msgctxt "docs/v1-readiness.md"
-msgid "pause rather than disappear."
+msgid "goals.md gains the user-sovereignty principle that Track B implements."
 msgstr "暫停，而不是消失。"
 
 #: docs/v1-readiness.md:69
@@ -3103,7 +2953,7 @@ msgstr "以正常方式處理（僅搜尋、群組收合），而不是直接捨
 
 #: docs/v1-readiness.md:255
 msgctxt "docs/v1-readiness.md"
-msgid "goals.md gains the user-sovereignty principle that Track B implements."
+msgid "extension-api.md marked historical (its example contradicted the shipped"
 msgstr "goals.md 新增使用者自主權原則，由路線 B 實作。"
 
 #: docs/v1-readiness.md:107
@@ -3148,7 +2998,7 @@ msgstr "虛構 custom-table plugin，從頭到尾，最後到達 Integrations"
 
 #: docs/v1-readiness.md:253
 msgctxt "docs/v1-readiness.md"
-msgid "extension-api.md marked historical (its example contradicted the shipped"
+msgid "Roadmap corrections made during this audit (2026-07-16)"
 msgstr "extension-api.md 標記為歷史文件（其範例與已發布的"
 
 #: docs/v1-readiness.md:48
@@ -3223,7 +3073,7 @@ msgstr "資料庫檢視器、可見性切換開關、每個擴充功能的自動
 
 #: docs/v1-readiness.md:249
 msgctxt "docs/v1-readiness.md"
-msgid "database viewer landed in the v0.22.0 cycle; see native-editors.md.)*"
+msgid "database viewer landed in v0.22.0, and daily multisite/network operations"
 msgstr "資料庫檢視器已在 v0.22.0 週期中加入；請參閱 native-editors.md。）*"
 
 #: docs/v1-readiness.md:118
@@ -3428,7 +3278,7 @@ msgstr "螢幕截圖於同日稍後完成：九張深色主題的 2x 擷取圖�
 
 #: docs/v1-readiness.md:251
 msgctxt "docs/v1-readiness.md"
-msgid "Roadmap corrections made during this audit (2026-07-16)"
+msgid "native-editors.md.)*"
 msgstr "本次稽核期間所做的路線圖修正（2026-07-16）"
 
 #: docs/v1-readiness.md:203
@@ -3658,7 +3508,7 @@ msgstr "*（已於 2026-07-16 發布，v0.17.0 週期。Workspace 需要類似�
 
 #: docs/v1-readiness.md:248
 msgctxt "docs/v1-readiness.md"
-msgid "*(One of those later shipped on schedule elsewhere: the read-only"
+msgid "*(These were deferred from v0.17.0, not permanent non-goals. The read-only"
 msgstr "*（其中一項後來在其他地方如期發布：唯讀"
 
 #: docs/v1-readiness.md:100
@@ -3708,83 +3558,78 @@ msgstr "\"(proposal)\"，仍由 readme 連結，其範例使用了會"
 
 #: docs/user-guide.md:141
 msgctxt "docs/user-guide.md"
-msgid "⌘⇧O reduces the screen to the text and an outline. ⌘⇧F is find and"
+msgid "a testimonial can hop into the next column without leaving Minimal; its"
 msgstr "⌘⇧O 將畫面縮減為文字與大綱。⌘⇧F 是尋找並"
 
 #: docs/user-guide.md:284
 msgctxt "docs/user-guide.md"
-msgid "| Keys | Does |"
+msgid "an activity view of what is installed, and debug tools when someone"
 msgstr "| 按鍵 | 功能 |"
 
 #: docs/user-guide.md:288
 msgctxt "docs/user-guide.md"
-msgid "| **⌘⏎** | Publish, Update or Schedule |"
+msgid "**Database** — a window into where your site actually stores things."
 msgstr "| **⌘⏎** | 發布、更新或排程 |"
 
 #: docs/user-guide.md:292
 msgctxt "docs/user-guide.md"
-msgid "| **⌘⇧O** | Outline mode |"
+msgid "every table with its size and rough row count, and opening one shows its"
 msgstr "| **⌘⇧O** | 大綱模式 |"
 
 #: docs/user-guide.md:290
 msgctxt "docs/user-guide.md"
-msgid "| **⌘⇧F** | Find and replace in the post |"
+msgid "the System page's Database card, the command palette (\"Browse database\"),"
 msgstr "| **⌘⇧F** | 在文章中尋找並取代 |"
 
 #: docs/user-guide.md:291
 msgctxt "docs/user-guide.md"
-msgid "| **⌘⇧D** | Focus mode |"
+msgid "or the /minimal-admin/database address. It has three parts. **Tables** lists"
 msgstr "| **⌘⇧D** | 專注模式 |"
 
 #: docs/user-guide.md:287
 msgctxt "docs/user-guide.md"
-msgid "| **⌘S** | Save, keeping the current status |"
+msgid "re-parent categories and tags safely."
 msgstr "| **⌘S** | 儲存，保留目前狀態 |"
 
 #: docs/user-guide.md:286
 msgctxt "docs/user-guide.md"
-msgid "| **⌘K** | Command palette (with text selected in the editor: link) |"
+msgid "**Structure** — post types, taxonomies and terms: rename, merge and"
 msgstr "| **⌘K** | 命令面板（編輯器中選取文字時：連結） |"
 
 #: docs/user-guide.md:289
 msgctxt "docs/user-guide.md"
-msgid "| **⌘/** | Block library |"
+msgid "Most sites never need it, so it is not in the sidebar: you reach it from"
 msgstr "| **⌘/** | 區塊庫 |"
 
 #: docs/user-guide.md:293
 msgctxt "docs/user-guide.md"
-msgid "| **⌘.** | Show or hide the navigation |"
+msgid "rows, with sorting, a per-column filter and a detail view for any single"
 msgstr "| **⌘.** | 顯示或隱藏導覽 |"
 
 #: docs/user-guide.md:294
 msgctxt "docs/user-guide.md"
-msgid "| **← →** | Previous / next item in a media or entry dialog; previous / next day in the traffic dialog |"
+msgid "row. **Structure** (a tab on any open table) shows that table's columns"
 msgstr "| **← →** | 媒體或內容項目對話框中的上一個／下一個項目；流量對話框中的前一天／後一天 |"
 
 #: docs/user-guide.md:295
 msgctxt "docs/user-guide.md"
-msgid "| **Esc** | Close menus and dialogs |"
+msgid "and indexes, which is what someone technical will ask for when a page is"
 msgstr "| **Esc** | 關閉選單與對話框 |"
 
 #: docs/user-guide.md:69
 msgctxt "docs/user-guide.md"
-msgid "you: a pending WordPress update, or a site that is not fully public."
+msgid "creation and deletion, the long tail of network settings, restores, exports"
 msgstr "你：待處理的 WordPress 更新，或尚未完全公開的網站。"
 
 #: docs/user-guide.md:194
 msgctxt "docs/user-guide.md"
-msgid "you never touch), and choose **Hide for you**. Hiding is cosmetic:"
+msgid "**Hide** and it stays gone for you, with Undo. This is the calm version of"
 msgstr "你永遠不會接觸到），然後選擇 **為你隱藏**。隱藏僅是外觀上的："
 
 #: docs/user-guide.md:278
 msgctxt "docs/user-guide.md"
-msgid "you have hidden, and **AI Access**: application passwords for connecting"
+msgid "protection (with Akismet, paste or change your key right on its card),"
 msgstr "你已隱藏的項目，以及 **AI Access**：用於連線的應用程式密碼"
-
-#: docs/user-guide.md:320
-msgctxt "docs/user-guide.md"
-msgid "wp-admin always remains as the fallback while anything is sorted out."
-msgstr "在任何問題釐清期間，wp-admin 始終保留為備援。"
 
 #: docs/user-guide.md:15
 msgctxt "docs/user-guide.md"
@@ -3793,37 +3638,37 @@ msgstr "沒有典型儀表板中常見的橫幅與升級推銷。"
 
 #: docs/user-guide.md:149
 msgctxt "docs/user-guide.md"
-msgid "with Undo). Bulk-select works across the list."
+msgid "block and the card names the action: click anywhere on it for a tile"
 msgstr "搭配復原）。批次選取可跨越整個清單。"
 
 #: docs/user-guide.md:139
 msgctxt "docs/user-guide.md"
-msgid "will be told before you can both edit it."
+msgid "where edits live. Its text and images are usually editable in place,"
 msgstr "在你們兩人都能編輯之前，會先通知你。"
 
 #: docs/user-guide.md:306
 msgctxt "docs/user-guide.md"
-msgid "verified against a checksum published with the release before it"
+msgid "run it yourself or hand it to whoever looks after the site. If you need"
 msgstr "在發布前與隨版本發布的校驗和進行驗證"
 
 #: docs/user-guide.md:136
 msgctxt "docs/user-guide.md"
-msgid "unsaved work in your browser and offers to restore it."
+msgid "a row of buttons), it appears as a framed card rendered with your"
 msgstr "瀏覽器中的未儲存工作，並提供還原功能。"
 
 #: docs/user-guide.md:313
 msgctxt "docs/user-guide.md"
-msgid "trusts to edit content, and each person sees only what their role"
+msgid "Your account page covers your name and avatar, password and sessions,"
 msgstr "信任其編輯內容，而每個人只能看到其角色"
 
 #: docs/user-guide.md:309
 msgctxt "docs/user-guide.md"
-msgid "to. Plugins describe their screens to Minimal as plain data; their own"
+msgid "otherwise."
 msgstr "到。外掛會以純資料的形式向 Minimal 描述其畫面；它們自己的"
 
 #: docs/user-guide.md:270
 msgctxt "docs/user-guide.md"
-msgid "to genuinely edit the database, that is a job for your host's tools or"
+msgid "person's device. On a subsite, this page manages site membership rather"
 msgstr "若要真正編輯資料庫，這是您主機工具或"
 
 #: docs/user-guide.md:28
@@ -3848,12 +3693,12 @@ msgstr "供應商變更。"
 
 #: docs/user-guide.md:163
 msgctxt "docs/user-guide.md"
-msgid "the notice wall, and it is permanent policy: plugins cannot buy space in"
+msgid "(\"Content · N blocks\") or, on protected cards, by clicking the card"
 msgstr "通知牆，而且這是永久政策：外掛無法購買"
 
 #: docs/user-guide.md:305
 msgctxt "docs/user-guide.md"
-msgid "the normal WordPress updates screen. Since v0.21.0 every download is"
+msgid "command to run rather than a button that runs it: copy it, back up, and"
 msgstr "一般 WordPress 更新畫面。自 v0.21.0 起，每次下載都會"
 
 #: docs/user-guide.md:54
@@ -3863,27 +3708,22 @@ msgstr "應用程式，因此以下用簡單的方式說明：內容與媒體中
 
 #: docs/user-guide.md:271
 msgctxt "docs/user-guide.md"
-msgid "the WP-CLI command line, and Minimal says so plainly rather than pretending"
+msgid "than network accounts: add an existing account by email or username,"
 msgstr "WP-CLI 命令列，而 Minimal 會明確說明這點，不會假裝"
 
 #: docs/user-guide.md:253
 msgctxt "docs/user-guide.md"
-msgid "the System page's Database card, the command palette (\"Browse database\"),"
+msgid "manages, and inactive themes offer a Live preview so you can walk the"
 msgstr "系統頁面的「資料庫」卡片、指令面板（「瀏覽資料庫」），"
-
-#: docs/user-guide.md:248
-msgctxt "docs/user-guide.md"
-msgid "technical asks you to turn on logging."
-msgstr "技術支援會要求您啟用記錄功能。"
 
 #: docs/user-guide.md:311
 msgctxt "docs/user-guide.md"
-msgid "take the interface down with it or plaster it with banners."
+msgid "Your profile"
 msgstr "讓介面一併消失，或在介面上鋪滿橫幅。"
 
 #: docs/user-guide.md:243
 msgctxt "docs/user-guide.md"
-msgid "tail of rarely-touched options deliberately stays in wp-admin, one"
+msgid "Plugins also have hard budgets for how much space they may claim in the"
 msgstr "少用選項的末端部分會刻意留在 wp-admin 中，一個"
 
 #: docs/user-guide.md:62
@@ -3891,74 +3731,64 @@ msgctxt "docs/user-guide.md"
 msgid "switcher inside, instead of three lookalike menus. The view stays the same;"
 msgstr "內建切換器，而不是三個外觀相似的選單。檢視畫面維持不變；"
 
-#: docs/user-guide.md:318
-msgctxt "docs/user-guide.md"
-msgid "strip second, and report bugs at"
-msgstr "先移除第二個工具列，並在"
-
 #: docs/user-guide.md:170
 msgctxt "docs/user-guide.md"
-msgid "stays visible on every screen, so you can close the panel or move around"
+msgid "one click. If someone else has the post open (in Minimal or wp-admin), you"
 msgstr "會在每個畫面上持續顯示，因此您可以關閉面板或四處瀏覽"
 
 #: docs/user-guide.md:259
 msgctxt "docs/user-guide.md"
-msgid "slow. **Health** runs a set of storage checks: leftover rows pointing at"
+msgid "WordPress itself manages, which link out to Settings → Connectors for"
 msgstr "速度變慢。**健康狀態**會執行一系列儲存檢查：指向"
 
 #: docs/user-guide.md:190
 msgctxt "docs/user-guide.md"
-msgid "site itself:"
+msgid "**About Notices**: other plugins' wp-admin banners never render inside"
 msgstr "網站本身："
-
-#: docs/user-guide.md:220
-msgctxt "docs/user-guide.md"
-msgid "site in a candidate theme before switching. The Licenses tab"
-msgstr "在切換前，先在候選佈景主題中預覽網站。「授權」分頁"
 
 #: docs/user-guide.md:234
 msgctxt "docs/user-guide.md"
-msgid "sign-in, and restore anything that user hid from their own menus."
+msgid "If a developer already hid admin menus in wp-admin with code (a common"
 msgstr "登入，並復原使用者從自己的選單中隱藏的任何項目。"
 
 #: docs/user-guide.md:210
 msgctxt "docs/user-guide.md"
-msgid "sidebar, palette and menus, so the interface stays calm as you install"
+msgid "**Traffic**: with a supported analytics plugin active (Koko Analytics,"
 msgstr "側邊欄、色盤與選單，因此您安裝"
 
 #: docs/user-guide.md:66
 msgctxt "docs/user-guide.md"
-msgid "sidebar (⌘. does the same), the version badge (click it for what's new),"
+msgid "the sidebar. It opens a short list of sites you can work on and takes you"
 msgstr "側邊欄（⌘. 也有相同作用）、版本徽章（點選即可查看新功能），"
 
 #: docs/user-guide.md:143
 msgctxt "docs/user-guide.md"
-msgid "session writing goal."
+msgid "block it configures, so nested blocks read as distinct controls. One"
 msgstr "工作階段的寫作目標。"
 
 #: docs/user-guide.md:216
 msgctxt "docs/user-guide.md"
-msgid "search, upload, or dropping a zip on the dialog. Toggle, update and"
+msgid "**Cache and backups**: if a caching plugin or host cache is active, ⌘K"
 msgstr "搜尋、上傳，或將 zip 拖放至對話框。切換、更新以及"
 
 #: docs/user-guide.md:269
 msgctxt "docs/user-guide.md"
-msgid "run it yourself or hand it to whoever looks after the site. If you need"
+msgid "Light or dark mode is the one thing that stays personal to each"
 msgstr "自行執行，或交給負責維護網站的人員。如果您需要"
 
 #: docs/user-guide.md:169
 msgctxt "docs/user-guide.md"
-msgid "run is going, a progress pill in the top bar names the current phase and"
+msgid "**History** shows revisions with side-by-side comparisons; restore takes"
 msgstr "執行時，頂端列的進度提示會顯示目前階段，並"
 
 #: docs/user-guide.md:256
 msgctxt "docs/user-guide.md"
-msgid "rows, with sorting, a per-column filter and a detail view for any single"
+msgid "license keys (activate, verify or deactivate without hunting through"
 msgstr "列，提供排序、每欄篩選器，以及查看任何單一項目的詳細資料"
 
 #: docs/user-guide.md:257
 msgctxt "docs/user-guide.md"
-msgid "row. **Structure** (a tab on any open table) shows that table's columns"
+msgid "each plugin's settings screen), service keys like Akismet's, account"
 msgstr "列。**結構**（任何已開啟資料表中的分頁）會顯示該資料表的欄位"
 
 #: docs/user-guide.md:55
@@ -3968,12 +3798,12 @@ msgstr "右鍵選單（開啟、複製、發佈、移至垃圾桶），留言也
 
 #: docs/user-guide.md:206
 msgctxt "docs/user-guide.md"
-msgid "restores it, and an administrator can restore items for you from your"
+msgid "it is allowed to install. After a WordPress core update on multisite, Minimal"
 msgstr "將其復原，而管理員也能從您的"
 
 #: docs/user-guide.md:142
 msgctxt "docs/user-guide.md"
-msgid "replace. A word-count pill sits at the bottom right; click it to set a"
+msgid "structure is preserved byte for byte. Hovering any ⚙ chip outlines the"
 msgstr "取代。右下角有字數提示，點選它即可設定"
 
 #: docs/user-guide.md:46
@@ -3983,47 +3813,42 @@ msgstr "重新載入。"
 
 #: docs/user-guide.md:245
 msgctxt "docs/user-guide.md"
-msgid "reason, not a bug."
+msgid "more of them."
 msgstr "原因，而不是錯誤。"
-
-#: docs/user-guide.md:238
-msgctxt "docs/user-guide.md"
-msgid "reading and discussion, permalinks, visibility (search engines,"
-msgstr "閱讀與討論、固定網址、可見度（搜尋引擎、"
 
 #: docs/user-guide.md:250
 msgctxt "docs/user-guide.md"
-msgid "re-parent categories and tags safely."
+msgid "search, upload, or dropping a zip on the dialog. Toggle, update and"
 msgstr "安全地重新指定分類與標籤的父項目。"
 
 #: docs/user-guide.md:227
 msgctxt "docs/user-guide.md"
-msgid "rather than licenses."
+msgid "of Minimal's own views (Comments on a site that never uses them, Widgets"
 msgstr "而非授權。"
 
 #: docs/user-guide.md:231
 msgctxt "docs/user-guide.md"
-msgid "public profile, language, password and sessions, plus their Minimal"
+msgid "Right-click a group heading in the block library to hide that plugin's"
 msgstr "公開個人資料、語言、密碼與工作階段，以及其 Minimal"
 
 #: docs/user-guide.md:241
 msgctxt "docs/user-guide.md"
-msgid "protection (with Akismet, paste or change your key right on its card),"
+msgid "entry on the Users page. Hiding is personal: your co-editors see their"
 msgstr "保護（搭配 Akismet，您可以直接在其卡片上貼上或變更金鑰），"
 
 #: docs/user-guide.md:173
 msgctxt "docs/user-guide.md"
-msgid "project's GitHub releases and checked against a published checksum before"
+msgid "⌘⇧O reduces the screen to the text and an outline. ⌘⇧F is find and"
 msgstr "專案的 GitHub 發行版本，並在"
 
 #: docs/user-guide.md:260
 msgctxt "docs/user-guide.md"
-msgid "posts or users that no longer exist, missing indexes, tables using an"
+msgid "editing. Small chips mark which rows are service keys or connections"
 msgstr "已不存在的文章或使用者、遺失的索引、使用"
 
 #: docs/user-guide.md:134
 msgctxt "docs/user-guide.md"
-msgid "posts never change under you: edits back up silently, and the live post"
+msgid "**Complex blocks are kept safe, untouched.** If a post contains a block"
 msgstr "文章不會在您不知情的情況下變更：編輯內容會靜默備份，而線上文章"
 
 #: docs/user-guide.md:50
@@ -4038,87 +3863,87 @@ msgstr "外掛時，您需要 __MA_DOC_TOKEN_1__。*"
 
 #: docs/user-guide.md:266
 msgctxt "docs/user-guide.md"
-msgid "plugin's back is how sites break in ways nobody can trace. And where a"
+msgid "appearance. An administrator can set another user's color scheme and"
 msgstr "外掛的後門會讓網站以無人能追查的方式故障。而當"
 
 #: docs/user-guide.md:160
 msgctxt "docs/user-guide.md"
-msgid "plain text with its buttons intact, attributed to the plugin that posted"
+msgid "paragraphs, say) edits in a roomy window: one card per block with its"
 msgstr "保留按鈕的純文字，並標明發佈它的外掛"
 
 #: docs/user-guide.md:236
 msgctxt "docs/user-guide.md"
-msgid "person's device."
+msgid "sidebar too, automatically. Like the wp-admin original this is"
 msgstr "個人的裝置。"
 
 #: docs/user-guide.md:156
 msgctxt "docs/user-guide.md"
-msgid "pending comments, available updates, and Notices."
+msgid "crop and random order; link, size and lightbox options stay in the"
 msgstr "待審核留言、可用更新，以及通知。"
 
 #: docs/user-guide.md:94
 msgctxt "docs/user-guide.md"
-msgid "pattern drops in as a detached copy you can edit freely."
+msgid "enable or disable a theme for every site. Per-site activation stays separate,"
 msgstr "範本會以獨立副本的形式加入，您可以自由編輯。"
 
 #: docs/user-guide.md:172
 msgctxt "docs/user-guide.md"
-msgid "panel. Minimal updates itself the same way: each release is fetched from the"
+msgid "**Focus modes:** ⌘⇧D fades everything but the paragraph you are writing;"
 msgstr "面板。Minimal 也以相同方式自行更新：每個版本都會從"
 
 #: docs/user-guide.md:208
 msgctxt "docs/user-guide.md"
-msgid "own layout."
+msgid "networks are sent to WordPress's own Upgrade Network screen instead."
 msgstr "自己的版面配置。"
 
 #: docs/user-guide.md:229
 msgctxt "docs/user-guide.md"
-msgid "out sessions, and (with the User Switching plugin) switch into an"
+msgid "every screen stays reachable from the command palette and by its"
 msgstr "登出工作階段，並可（搭配 User Switching 外掛）切換至"
 
 #: docs/user-guide.md:272
 msgctxt "docs/user-guide.md"
-msgid "otherwise."
+msgid "change its role, or remove it from that site. Network administrators are"
 msgstr "否則。"
 
 #: docs/user-guide.md:254
 msgctxt "docs/user-guide.md"
-msgid "or the /minimal-admin/database address. It has three parts. **Tables** lists"
+msgid "site in a candidate theme before switching. The Licenses tab"
 msgstr "或 /minimal-admin/database 位址。它由三個部分組成。**資料表**會列出"
 
 #: docs/user-guide.md:135
 msgctxt "docs/user-guide.md"
-msgid "only updates when you press Update. A crash net keeps a local copy of"
+msgid "Minimal's editor doesn't natively edit (a plugin's fancy block, a spacer,"
 msgstr "只有在按下「更新」時才會更新。當機保護機制會在本機保存一份"
 
 #: docs/user-guide.md:138
 msgctxt "docs/user-guide.md"
-msgid "one click. If someone else has the post open (in Minimal or wp-admin), you"
+msgid "Hovering the card shows a short note saying why it is protected and"
 msgstr "只需點選一次即可。如果其他人已在 Minimal 或 wp-admin 中開啟該文章，您"
 
 #: docs/user-guide.md:261
 msgctxt "docs/user-guide.md"
-msgid "old storage engine, space that could be reclaimed, and backlogs like"
+msgid "rather than licenses."
 msgstr "舊儲存引擎、可回收的空間，以及像是"
 
 #: docs/user-guide.md:193
 msgctxt "docs/user-guide.md"
-msgid "of Minimal's own views (Comments on a site that never uses them, Widgets"
+msgid "it. Act on one (\"No thanks\", \"Allow\") without leaving the panel, or press"
 msgstr "Minimal 自有檢視畫面的其中一些項目（從未使用留言功能的網站中的「留言」、小工具"
 
 #: docs/user-guide.md:179
 msgctxt "docs/user-guide.md"
-msgid "numbers. Click a day for its top pages and referrers, and step through"
+msgid "**Comments**: approve, reply, edit in place, mark spam, or block a"
 msgstr "數字。點選某一天即可查看該日的熱門頁面與引薦來源，並逐步瀏覽"
 
 #: docs/user-guide.md:90
 msgctxt "docs/user-guide.md"
-msgid "not) appear in the slash menu and the block library, and a Patterns"
+msgid "to reassign them first."
 msgstr "是否）出現在斜線選單與區塊庫中，而「範本」"
 
 #: docs/user-guide.md:211
 msgctxt "docs/user-guide.md"
-msgid "more of them."
+msgid "Matomo, Independent Analytics, Jetpack Stats, Site Kit and others), the"
 msgstr "更多項目。"
 
 #: docs/user-guide.md:23
@@ -4128,17 +3953,17 @@ msgstr "標記、設定都是一般選項。停用外掛後，您的網站"
 
 #: docs/user-guide.md:219
 msgctxt "docs/user-guide.md"
-msgid "manages, and inactive themes offer a Live preview so you can walk the"
+msgid "how fresh your last backup is."
 msgstr "管理，而未啟用的佈景主題提供即時預覽，讓您可以瀏覽"
 
 #: docs/user-guide.md:240
 msgctxt "docs/user-guide.md"
-msgid "maintenance plugin's mode off in place, with Undo), site language, spam"
+msgid "restores it, and an administrator can restore items for you from your"
 msgstr "維護外掛的模式（並提供「復原」）、網站語言、垃圾郵件"
 
 #: docs/user-guide.md:239
 msgctxt "docs/user-guide.md"
-msgid "maintenance mode, and a switch that turns a detected coming-soon or"
+msgid "Everything hidden is listed under **Your profile**, where one click"
 msgstr "維護模式，以及可直接關閉偵測到的即將推出或"
 
 #: docs/user-guide.md:38
@@ -4148,18 +3973,13 @@ msgstr "記錄、活動記錄、重新導向、備份、程式碼片段。"
 
 #: docs/user-guide.md:92
 msgctxt "docs/user-guide.md"
-msgid "live reference: edit the pattern once and every post using it follows,"
+msgid "Network-wide plugin and theme controls stay in Extensions. A network"
 msgstr "即時參照：只要編輯一次範本，所有使用它的文章都會跟著更新，"
 
 #: docs/user-guide.md:45
 msgctxt "docs/user-guide.md"
 msgid "list in place, so a tab left open all day stays current without a page"
 msgstr "原處更新清單，因此整天開啟的分頁也能保持最新狀態，無需重新載入頁面"
-
-#: docs/user-guide.md:222
-msgctxt "docs/user-guide.md"
-msgid "license keys (activate, verify or deactivate without hunting through"
-msgstr "授權金鑰（啟用、驗證或停用，無需在"
 
 #: docs/user-guide.md:20
 msgctxt "docs/user-guide.md"
@@ -4168,12 +3988,12 @@ msgstr "在 __MA_DOC_TOKEN_1__ 持續運作，而 Minimal 會在每當工作"
 
 #: docs/user-guide.md:161
 msgctxt "docs/user-guide.md"
-msgid "it. Act on one (\"No thanks\", \"Allow\") without leaving the panel, or press"
+msgid "text front and center and the other settings tucked behind a toggle,"
 msgstr "它。無需離開面板即可執行其中一個選項（「不用了」、「允許」），或按下"
 
 #: docs/user-guide.md:174
 msgctxt "docs/user-guide.md"
-msgid "it is allowed to install."
+msgid "replace. A word-count pill sits at the bottom right; click it to set a"
 msgstr "允許安裝。"
 
 #: docs/user-guide.md:24
@@ -4183,37 +4003,37 @@ msgstr "完全維持原樣，不需要遷移任何內容，也不會遺失任何
 
 #: docs/user-guide.md:277
 msgctxt "docs/user-guide.md"
-msgid "interface language (each user can pick their own), appearance, everything"
+msgid "maintenance plugin's mode off in place, with Undo), site language, spam"
 msgstr "介面語言（每位使用者都能選擇自己的語言）、外觀，以及所有其他設定"
 
 #: docs/user-guide.md:307
 msgctxt "docs/user-guide.md"
-msgid "installs; a tampered or broken download refuses to install."
+msgid "to genuinely edit the database, that is a job for your host's tools or"
 msgstr "安裝；遭竄改或損毀的下載內容會拒絕安裝。"
 
 #: docs/user-guide.md:184
 msgctxt "docs/user-guide.md"
-msgid "installed, \"Back up site now\" is there too, and the System page reports"
+msgid "cropped and rotated right in Minimal, and regenerating thumbnails is one"
 msgstr "已安裝，「立即備份網站」也會顯示在此，而系統頁面會回報"
 
 #: docs/user-guide.md:83
 msgctxt "docs/user-guide.md"
-msgid "including your plugins' blocks and entire designs and patterns you can"
+msgid "that away. Network settings covers registration, uploads, what site"
 msgstr "包括您外掛提供的區塊，以及您可以"
 
 #: docs/user-guide.md:82
 msgctxt "docs/user-guide.md"
-msgid "images, embeds, tables and more. **⌘/** opens the full block library,"
+msgid "belongs to, and lets you promote someone to network administrator or take"
 msgstr "影像、嵌入內容、表格等。**⌘/** 可開啟完整區塊庫，"
 
 #: docs/user-guide.md:185
 msgctxt "docs/user-guide.md"
-msgid "how fresh your last backup is."
+msgid "button when that plugin is installed."
 msgstr "您上次備份距今多久。"
 
 #: docs/user-guide.md:221
 msgctxt "docs/user-guide.md"
-msgid "gathers every external service relationship in one place: paid plugins'"
+msgid "You are in control of the interface"
 msgstr "會將所有外部服務關係集中在一處：付費外掛的"
 
 #: docs/user-guide.md:61
@@ -4223,38 +4043,33 @@ msgstr "表單外掛、兩個備份外掛），Minimal 會顯示一個側邊欄�
 
 #: docs/user-guide.md:262
 msgctxt "docs/user-guide.md"
-msgid "expired shop sessions."
+msgid "**Users** — create, edit, change roles in bulk, reset passwords, sign"
 msgstr "已過期的商店工作階段。"
 
 #: docs/user-guide.md:168
 msgctxt "docs/user-guide.md"
-msgid "exactly what will change and what is untouched before it starts. While a"
+msgid "unsaved work in your browser and offers to restore it."
 msgstr "在開始之前，會明確說明哪些內容將變更、哪些內容不會變更。在某個"
 
 #: docs/user-guide.md:167
 msgctxt "docs/user-guide.md"
-msgid "everything** runs plugins, then themes, then WordPress core, telling you"
+msgid "only updates when you press Update. A crash net keeps a local copy of"
 msgstr "所有內容**會依序執行外掛、佈景主題，然後執行 WordPress 核心，告訴您"
 
 #: docs/user-guide.md:255
 msgctxt "docs/user-guide.md"
-msgid "every table with its size and rough row count, and opening one shows its"
+msgid "gathers every external service relationship in one place: paid plugins'"
 msgstr "每張資料表及其大小與大致列數，開啟其中一張即可查看其"
 
 #: docs/user-guide.md:195
 msgctxt "docs/user-guide.md"
-msgid "every screen stays reachable from the command palette and by its"
+msgid "the notice wall, and it is permanent policy: plugins cannot buy space in"
 msgstr "每個畫面都可以從命令面板及其"
 
 #: docs/user-guide.md:207
 msgctxt "docs/user-guide.md"
-msgid "entry on the Users page. Hiding is personal: your co-editors see their"
+msgid "runs the required database upgrade across the network's sites. Very large"
 msgstr "使用者頁面上的項目。隱藏是個人設定：您的共同編輯者會看到他們自己的"
-
-#: docs/user-guide.md:91
-msgctxt "docs/user-guide.md"
-msgid "entry in the Content list manages them. A synced pattern inserts as a"
-msgstr "內容清單中的項目即可管理它們。同步的樣板會插入為"
 
 #: docs/user-guide.md:58
 msgctxt "docs/user-guide.md"
@@ -4263,52 +4078,52 @@ msgstr "編輯器的區塊庫也有一個。在不確定時，試著按一下滑
 
 #: docs/user-guide.md:226
 msgctxt "docs/user-guide.md"
-msgid "editing. Small chips mark which rows are service keys or connections"
+msgid "Right-click any sidebar entry, whether a plugin added it or it is one"
 msgstr "編輯。小型標籤會標示哪些列是服務金鑰或連接"
 
 #: docs/user-guide.md:223
 msgctxt "docs/user-guide.md"
-msgid "each plugin's settings screen), service keys like Akismet's, account"
+msgid "Anything in Minimal's menus can be hidden, per user, without touching the"
 msgstr "每個外掛的設定畫面）、Akismet 等服務金鑰、帳戶"
 
 #: docs/user-guide.md:84
 msgctxt "docs/user-guide.md"
-msgid "drop in."
+msgid "administrators may do, and where network mail goes. Two things Minimal will not"
 msgstr "直接放入。"
 
 #: docs/user-guide.md:80
 msgctxt "docs/user-guide.md"
-msgid "divider, triple backticks for a code block. All applied as you type."
+msgid "an address, a title and the email of someone who already has an account."
 msgstr "分隔線、三個反引號表示程式碼區塊。所有變更都會在您輸入時套用。"
 
 #: docs/user-guide.md:217
 msgctxt "docs/user-guide.md"
-msgid "delete with plain confirmations. Every plugin and theme card carries an"
+msgid "\"Clear site cache\" purges all of them at once. If a backup plugin is"
 msgstr "使用明確的確認提示進行刪除。每張外掛與佈景主題卡片都帶有一個"
 
 #: docs/user-guide.md:233
 msgctxt "docs/user-guide.md"
-msgid "defaults there, so a client's Minimal looks right before their first"
+msgid "Hide any notice from the Notices tab."
 msgstr "預設值會在那裡套用，因此客戶的 Minimal 在他們第一次"
 
 #: docs/user-guide.md:180
 msgctxt "docs/user-guide.md"
-msgid "days with the arrow keys without closing the dialog."
+msgid "commenter (future comments from that address go straight to the trash,"
 msgstr "使用方向鍵瀏覽多天，不必關閉對話框。"
 
 #: docs/user-guide.md:242
 msgctxt "docs/user-guide.md"
-msgid "custom CSS. The long"
+msgid "own layout."
 msgstr "自訂 CSS。較長的"
 
 #: docs/user-guide.md:152
 msgctxt "docs/user-guide.md"
-msgid "cropped and rotated right in Minimal, and regenerating thumbnails is one"
+msgid "uploads them into that block. Each photo moves as an exact unit, so its"
 msgstr "可直接在 Minimal 中裁切與旋轉影像，而重新產生縮圖只需一個"
 
 #: docs/user-guide.md:224
 msgctxt "docs/user-guide.md"
-msgid "connections like Envato Market and WPMU DEV, and the AI connector keys"
+msgid "site itself:"
 msgstr "例如 Envato Market 和 WPMU DEV 的連接，以及 AI 連接器金鑰"
 
 #: docs/user-guide.md:14
@@ -4318,22 +4133,17 @@ msgstr "留言、訂單、使用者、外掛、更新與設定，集中在平靜
 
 #: docs/user-guide.md:148
 msgctxt "docs/user-guide.md"
-msgid "commenter (future comments from that address go straight to the trash,"
+msgid "**Galleries and sliders open an images editor.** Hover a gallery-shaped"
 msgstr "留言者（來自該地址的未來留言會直接進入垃圾桶，"
 
 #: docs/user-guide.md:268
 msgctxt "docs/user-guide.md"
-msgid "command to run rather than a button that runs it: copy it, back up, and"
+msgid "sign-in, and restore anything that user hid from their own menus."
 msgstr "要執行的命令，而不是會執行它的按鈕：複製它、備份，然後"
-
-#: docs/user-guide.md:310
-msgctxt "docs/user-guide.md"
-msgid "code never draws inside the app, so a broken or pushy plugin cannot"
-msgstr "程式碼永遠不會在應用程式內繪製，因此損壞或過於強勢的外掛無法"
 
 #: docs/user-guide.md:244
 msgctxt "docs/user-guide.md"
-msgid "click away. If you look for a setting and don't find it, that is the"
+msgid "sidebar, palette and menus, so the interface stays calm as you install"
 msgstr "按一下即可離開。如果您尋找某項設定卻找不到，那就是"
 
 #: docs/user-guide.md:40
@@ -4348,17 +4158,17 @@ msgstr "檢查各項狀態、讓外掛保持最新。這裡沒有程式碼。如
 
 #: docs/user-guide.md:265
 msgctxt "docs/user-guide.md"
-msgid "change or delete anything in the database, because doing so behind a"
+msgid "public profile, language, password and sessions, plus their Minimal"
 msgstr "變更或刪除資料庫中的任何內容，因為在"
 
 #: docs/user-guide.md:153
 msgctxt "docs/user-guide.md"
-msgid "button when that plugin is installed."
+msgid "caption and settings travel with it, and this covers sliders and"
 msgstr "該外掛已安裝時顯示的按鈕。"
 
 #: docs/user-guide.md:198
 msgctxt "docs/user-guide.md"
-msgid "blocks or designs from your menus."
+msgid "**Updates**: the Updates tab shows everything pending, and **Update"
 msgstr "從您的選單中移除區塊或設計。"
 
 #: docs/user-guide.md:21
@@ -4378,27 +4188,27 @@ msgstr "所閱讀的內容始終符合您已安裝的版本。*"
 
 #: docs/user-guide.md:232
 msgctxt "docs/user-guide.md"
-msgid "appearance. An administrator can set another user's color scheme and"
+msgid "blocks or designs from your menus."
 msgstr "外觀。管理員可以設定其他使用者的配色方案，並"
 
 #: docs/user-guide.md:68
 msgctxt "docs/user-guide.md"
-msgid "and the New button. Amber chips appear here only when something needs"
+msgid "administrators also get a link to Network Admin from there, since account"
 msgstr "以及「新增」按鈕。只有在需要處理某些事項時，琥珀色標籤才會出現在這裡"
 
 #: docs/user-guide.md:302
 msgctxt "docs/user-guide.md"
-msgid "and nothing else. Deactivating or deleting the plugin changes nothing"
+msgid "change or delete anything in the database, because doing so behind a"
 msgstr "以及其他任何內容。停用或刪除外掛不會改變任何"
 
 #: docs/user-guide.md:258
 msgctxt "docs/user-guide.md"
-msgid "and indexes, which is what someone technical will ask for when a page is"
+msgid "connections like Envato Market and WPMU DEV, and the AI connector keys"
 msgstr "以及索引，這正是技術人員在頁面出現問題時會要求提供的內容"
 
 #: docs/user-guide.md:93
 msgctxt "docs/user-guide.md"
-msgid "and Minimal reminds you of that reach before you save one. An unsynced"
+msgid "administrator can activate or deactivate a plugin for the whole network and"
 msgstr "而 Minimal 會在您儲存前提醒您這個影響範圍。未同步的"
 
 #: docs/user-guide.md:35
@@ -4413,48 +4223,43 @@ msgstr "自己的收件匣（例如表單項目）也可以顯示在這裡。"
 
 #: docs/user-guide.md:247
 msgctxt "docs/user-guide.md"
-msgid "an activity view of what is installed, and debug tools when someone"
+msgid "Managing the site"
 msgstr "已安裝項目的活動檢視，以及有人需要時可使用的除錯工具"
 
 #: docs/user-guide.md:279
 msgctxt "docs/user-guide.md"
-msgid "an AI assistant or other tool to your site over the standard WordPress"
+msgid "custom CSS. The long"
 msgstr "透過標準 WordPress 將 AI 助理或其他工具連接到您的網站"
 
 #: docs/user-guide.md:314
 msgctxt "docs/user-guide.md"
-msgid "allows. Everything is re-checked on the server on every action."
+msgid "interface language (each user can pick their own), appearance, everything"
 msgstr "允許的範圍。每次操作時，伺服器都會重新檢查所有內容。"
 
 #: docs/user-guide.md:317
 msgctxt "docs/user-guide.md"
-msgid "after an update is the usual cause), check the System page's health"
+msgid "API, created and revoked per tool."
 msgstr "更新後是最常見的原因），請查看系統頁面的健康"
 
 #: docs/user-guide.md:196
 msgctxt "docs/user-guide.md"
-msgid "address."
+msgid "Minimal's interface."
 msgstr "地址。"
 
 #: docs/user-guide.md:230
 msgctxt "docs/user-guide.md"
-msgid "account to see what they see. Opening a user is a full page: identity,"
+msgid "address."
 msgstr "帳戶即可查看他們所看到的內容。開啟使用者後會顯示完整頁面：身分、"
 
 #: docs/user-guide.md:303
 msgctxt "docs/user-guide.md"
-msgid "about your content, users or settings."
+msgid "plugin's back is how sites break in ways nobody can trace. And where a"
 msgstr "關於您的內容、使用者或設定。"
 
 #: docs/user-guide.md:67
 msgctxt "docs/user-guide.md"
-msgid "a View site link, the theme toggle (system, light, dark), notifications,"
+msgid "straight to Minimal on any other. Network"
 msgstr "網站檢視連結、佈景主題切換（系統、淺色、深色）、通知，"
-
-#: docs/user-guide.md:79
-msgctxt "docs/user-guide.md"
-msgid "__MA_DOC_TOKEN_1__ for a quote, __MA_DOC_TOKEN_2__, `__MA_DOC_TOKEN_3__code__MA_DOC_TOKEN_4____MA_DOC_TOKEN_5____MA_DOC_TOKEN_6____MA_DOC_TOKEN_7__---` for a"
-msgstr "__MA_DOC_TOKEN_1__ 引用文字，__MA_DOC_TOKEN_2__、`__MA_DOC_TOKEN_3__code__MA_DOC_TOKEN_4____MA_DOC_TOKEN_5____MA_DOC_TOKEN_6____MA_DOC_TOKEN_7__---` 代表"
 
 #: docs/user-guide.md:13
 msgctxt "docs/user-guide.md"
@@ -4463,33 +4268,28 @@ msgstr "__MA_DOC_TOKEN_1__，涵蓋日常工作：內容、媒體、"
 
 #: docs/user-guide.md:274
 msgctxt "docs/user-guide.md"
-msgid "Your profile"
+msgid "**Settings** — the settings people actually change: identity and logo,"
 msgstr "您的個人資料"
 
 #: docs/user-guide.md:276
 msgctxt "docs/user-guide.md"
-msgid "Your account page covers your name and avatar, password and sessions,"
+msgid "maintenance mode, and a switch that turns a detected coming-soon or"
 msgstr "您的帳戶頁面涵蓋姓名與頭像、密碼與工作階段、"
 
 #: docs/user-guide.md:187
 msgctxt "docs/user-guide.md"
-msgid "You are in control of the interface"
+msgid "**Notifications** (the bell) collects what actually needs attention:"
 msgstr "介面由您掌控"
 
 #: docs/user-guide.md:71
 msgctxt "docs/user-guide.md"
-msgid "Writing"
+msgid "⌘K and type \"switch\", or just start typing a site's name. The chevron does"
 msgstr "寫作"
 
 #: docs/user-guide.md:26
 msgctxt "docs/user-guide.md"
 msgid "WordPress permissions as wp-admin. An author sees writing tools; the"
 msgstr "WordPress 權限作為 wp-admin。作者會看到寫作工具；而"
-
-#: docs/user-guide.md:225
-msgctxt "docs/user-guide.md"
-msgid "WordPress itself manages, which link out to Settings → Connectors for"
-msgstr "由 WordPress 本身管理的項目，會連結到「設定 → 連接器」，以便"
 
 #: docs/user-guide.md:10
 msgctxt "docs/user-guide.md"
@@ -4503,7 +4303,7 @@ msgstr "使用 Minimal Admin"
 
 #: docs/user-guide.md:264
 msgctxt "docs/user-guide.md"
-msgid "Two things are true of all of it. It is **read-only**: Minimal will never"
+msgid "account to see what they see. Opening a user is a full page: identity,"
 msgstr "所有這些功能都有兩件事是真的。它是**唯讀**的：Minimal 絕不會"
 
 #: docs/user-guide.md:17
@@ -4513,62 +4313,47 @@ msgstr "在其他事情之前，請先知道三件事："
 
 #: docs/user-guide.md:299
 msgctxt "docs/user-guide.md"
-msgid "Safety, honestly stated"
+msgid "expired shop sessions."
 msgstr "如實說明的安全性"
 
 #: docs/user-guide.md:192
 msgctxt "docs/user-guide.md"
-msgid "Right-click any sidebar entry, whether a plugin added it or it is one"
+msgid "plain text with its buttons intact, attributed to the plugin that posted"
 msgstr "在任何側邊欄項目上按一下滑鼠右鍵，無論它是由外掛新增，還是"
-
-#: docs/user-guide.md:197
-msgctxt "docs/user-guide.md"
-msgid "Right-click a group heading in the block library to hide that plugin's"
-msgstr "在區塊庫中以滑鼠右鍵按一下群組標題，即可隱藏該外掛的"
 
 #: docs/user-guide.md:73
 msgctxt "docs/user-guide.md"
-msgid "Press **New** (or ⌘K, \"Create new post\") and write. The editor is built"
+msgid "focused, fuzzy-matches site names and addresses, and shows no more than five"
 msgstr "按下 **新增**（或 ⌘K，「建立新文章」）並開始撰寫。編輯器是以"
-
-#: docs/user-guide.md:209
-msgctxt "docs/user-guide.md"
-msgid "Plugins also have hard budgets for how much space they may claim in the"
-msgstr "外掛也有嚴格的空間預算，限制它們可以在"
-
-#: docs/user-guide.md:178
-msgctxt "docs/user-guide.md"
-msgid "Overview chart shows daily visitors and pageviews from that plugin's own"
-msgstr "總覽圖表會顯示來自該外掛自身的每日訪客數與頁面瀏覽量"
 
 #: docs/user-guide.md:297
 msgctxt "docs/user-guide.md"
-msgid "On Windows and Linux, use Ctrl wherever ⌘ appears."
+msgid "posts or users that no longer exist, missing indexes, tables using an"
 msgstr "在 Windows 和 Linux 上，⌘ 出現的地方請使用 Ctrl。"
 
 #: docs/user-guide.md:252
 msgctxt "docs/user-guide.md"
-msgid "Most sites never need it, so it is not in the sidebar: you reach it from"
+msgid "Auto pill for WordPress automatic updates, the same setting wp-admin"
 msgstr "大多數網站都不需要它，因此它不會顯示在側邊欄中：您可以從"
 
 #: docs/user-guide.md:159
 msgctxt "docs/user-guide.md"
-msgid "Minimal. Instead, Minimal reads them in the background and reduces each one to"
+msgid "holding several styled blocks (a stats strip of label-and-value"
 msgstr "Minimal。相反地，Minimal 會在背景讀取它們，並將每一項縮減為"
 
 #: docs/user-guide.md:164
 msgctxt "docs/user-guide.md"
-msgid "Minimal's interface."
+msgid "itself; the block you clicked opens highlighted."
 msgstr "Minimal 的介面。"
 
 #: docs/user-guide.md:103
 msgctxt "docs/user-guide.md"
-msgid "Minimal's editor doesn't natively edit (a plugin's fancy block, a spacer,"
+msgid "Writing"
 msgstr "Minimal 的編輯器原生無法編輯（外掛的特殊區塊、間隔區塊、"
 
 #: docs/user-guide.md:171
 msgctxt "docs/user-guide.md"
-msgid "Minimal and still see that updates are working; click it to come back to the"
+msgid "will be told before you can both edit it."
 msgstr "Minimal，仍然可以看到更新正常運作；點選它即可返回"
 
 #: docs/user-guide.md:12
@@ -4578,32 +4363,32 @@ msgstr "Minimal Admin 是通往 WordPress 網站的第二個入口。它位於"
 
 #: docs/user-guide.md:177
 msgctxt "docs/user-guide.md"
-msgid "Matomo, Independent Analytics, Jetpack Stats, Site Kit and others), the"
+msgid "Daily site care"
 msgstr "Matomo、Independent Analytics、Jetpack Stats、Site Kit 等），"
 
 #: docs/user-guide.md:213
 msgctxt "docs/user-guide.md"
-msgid "Managing the site"
+msgid "numbers. Click a day for its top pages and referrers, and step through"
 msgstr "管理網站"
 
 #: docs/user-guide.md:235
 msgctxt "docs/user-guide.md"
-msgid "Light or dark mode is the one thing that stays personal to each"
+msgid "client-site setup), Minimal notices and keeps those entries out of its"
 msgstr "淺色或深色模式是唯一會保留給每個人個人化的設定"
 
 #: docs/user-guide.md:282
 msgctxt "docs/user-guide.md"
-msgid "Keyboard shortcuts"
+msgid "reason, not a bug."
 msgstr "鍵盤快速鍵"
 
 #: docs/user-guide.md:199
 msgctxt "docs/user-guide.md"
-msgid "Hide any notice from the Notices tab."
+msgid "everything** runs plugins, then themes, then WordPress core, telling you"
 msgstr "在通知分頁中隱藏任何通知。"
 
 #: docs/user-guide.md:267
 msgctxt "docs/user-guide.md"
-msgid "Health check finds something worth cleaning up, Minimal gives you the exact"
+msgid "defaults there, so a client's Minimal looks right before their first"
 msgstr "健康檢查發現值得清理的問題時，Minimal 會提供確切的"
 
 #: docs/user-guide.md:42
@@ -4623,12 +4408,12 @@ msgstr "只有獲准使用的帳戶才會看到擴充功能與設定區域"
 
 #: docs/user-guide.md:205
 msgctxt "docs/user-guide.md"
-msgid "Everything hidden is listed under **Your profile**, where one click"
+msgid "project's GitHub releases and checked against a published checksum before"
 msgstr "所有隱藏的項目都會列在**你的個人檔案**下，只需點選一次"
 
 #: docs/user-guide.md:145
 msgctxt "docs/user-guide.md"
-msgid "Daily site care"
+msgid "want the full toolkit. Posts built with page builders (Elementor,"
 msgstr "每日網站維護"
 
 #: docs/user-guide.md:44
@@ -4638,27 +4423,22 @@ msgstr "點選目前所在檢視畫面的側邊欄項目，會重新整理其"
 
 #: docs/user-guide.md:218
 msgctxt "docs/user-guide.md"
-msgid "Auto pill for WordPress automatic updates, the same setting wp-admin"
+msgid "installed, \"Back up site now\" is there too, and the System page reports"
 msgstr "WordPress 自動更新的自動切換鈕，與 wp-admin 中相同的設定"
-
-#: docs/user-guide.md:189
-msgctxt "docs/user-guide.md"
-msgid "Anything in Minimal's menus can be hidden, per user, without touching the"
-msgstr "Minimal 選單中的任何項目都可以按使用者隱藏，而不影響"
 
 #: docs/user-guide.md:280
 msgctxt "docs/user-guide.md"
-msgid "API, created and revoked per tool."
+msgid "tail of rarely-touched options deliberately stays in wp-admin, one"
 msgstr "API，並依每個工具建立及撤銷。"
 
 #: docs/user-guide.md:86
 msgctxt "docs/user-guide.md"
-msgid "A pasted image or a lone URL to a tweet or video becomes the real thing,"
+msgid "site you are currently working in, and it never lets you remove your own"
 msgstr "貼上的圖片或單獨的 tweet 或影片 URL 會變成真正的內容，"
 
 #: docs/user-guide.md:7
 msgctxt "docs/user-guide.md"
-msgid "*Current as of v0.27.0. This file ships inside the plugin, so the copy you"
+msgid "*Current as of v0.28.0. This file ships inside the plugin, so the copy you"
 msgstr "*截至 v0.27.0 的目前狀態。本檔案會隨外掛一同發布，因此其中的文案你"
 
 #: docs/user-guide.md:3
@@ -4673,7 +4453,7 @@ msgstr "**wp-admin 仍然存在。** Minimal 不會取代任何內容。傳統�
 
 #: docs/user-guide.md:89
 msgctxt "docs/user-guide.md"
-msgid "**Your patterns come along.** Patterns you save in WordPress (synced or"
+msgid "removes that person's posts from every site and WordPress's own flow offers"
 msgstr "**你的樣式會一併保留。** 你在 WordPress 中儲存的樣式（已同步或"
 
 #: docs/user-guide.md:25
@@ -4686,30 +4466,15 @@ msgctxt "docs/user-guide.md"
 msgid "**Workspace** — the daily material: Overview, Content, Media, Comments,"
 msgstr "**工作區** — 每日使用的內容：概覽、內容、媒體、留言、"
 
-#: docs/user-guide.md:312
-msgctxt "docs/user-guide.md"
-msgid "**Who can open __MA_DOC_TOKEN_1__?** Only logged-in users your site already"
-msgstr "**誰可以開啟 __MA_DOC_TOKEN_1__？** 只有網站現有的已登入使用者"
-
 #: docs/user-guide.md:228
 msgctxt "docs/user-guide.md"
-msgid "**Users** — create, edit, change roles in bulk, reset passwords, sign"
+msgid "you never touch), and choose **Hide for you**. Hiding is cosmetic:"
 msgstr "**使用者** — 建立、編輯、批次變更角色、重設密碼、登入"
 
 #: docs/user-guide.md:166
 msgctxt "docs/user-guide.md"
-msgid "**Updates**: the Updates tab shows everything pending, and **Update"
+msgid "posts never change under you: edits back up silently, and the live post"
 msgstr "**更新**：更新分頁會顯示所有待處理項目，而 **更新"
-
-#: docs/user-guide.md:78
-msgctxt "docs/user-guide.md"
-msgid "**Type markdown, get formatting.** __MA_DOC_TOKEN_1__ for a heading, __MA_DOC_TOKEN_2__ for a list,"
-msgstr "**輸入 Markdown，即可取得格式。** __MA_DOC_TOKEN_1__ 用於標題，__MA_DOC_TOKEN_2__ 用於清單，"
-
-#: docs/user-guide.md:176
-msgctxt "docs/user-guide.md"
-msgid "**Traffic**: with a supported analytics plugin active (Koko Analytics,"
-msgstr "**流量**：啟用支援的分析外掛後（Koko Analytics、"
 
 #: docs/user-guide.md:37
 msgctxt "docs/user-guide.md"
@@ -4718,13 +4483,8 @@ msgstr "**工具** — 由你的外掛提供的網站基礎功能：表單項目
 
 #: docs/user-guide.md:65
 msgctxt "docs/user-guide.md"
-msgid "**The topbar** carries the page title, a button that shows or hides the"
+msgid "**On a network**, a small chevron sits beside the site name at the top of"
 msgstr "**頂端列**會顯示頁面標題，以及一個顯示或隱藏"
-
-#: docs/user-guide.md:81
-msgctxt "docs/user-guide.md"
-msgid "**The slash menu**: type __MA_DOC_TOKEN_1__ on an empty line for headings, lists,"
-msgstr "**斜線選單**：在空白行輸入 __MA_DOC_TOKEN_1__，即可使用標題、清單、"
 
 #: docs/user-guide.md:32
 msgctxt "docs/user-guide.md"
@@ -4736,29 +4496,24 @@ msgctxt "docs/user-guide.md"
 msgid "**The command palette** is the fastest way anywhere. Press **⌘K**"
 msgstr "**指令面板**是前往任何位置的最快方式。按下 **⌘K**"
 
-#: docs/user-guide.md:246
-msgctxt "docs/user-guide.md"
-msgid "**System** — a health check (PHP, HTTPS, caching, backups, loopback),"
-msgstr "**系統** — 健康檢查（PHP、HTTPS、快取、備份、迴路回傳），"
-
 #: docs/user-guide.md:249
 msgctxt "docs/user-guide.md"
-msgid "**Structure** — post types, taxonomies and terms: rename, merge and"
+msgid "**Extensions** — three tabs: Plugins, Themes, and Licenses. Install by"
 msgstr "**結構** — 文章類型、分類法與詞彙：重新命名、合併與"
 
 #: docs/user-guide.md:316
 msgctxt "docs/user-guide.md"
-msgid "**Something looks wrong?** Hard-refresh first (a cached stylesheet"
+msgid "an AI assistant or other tool to your site over the standard WordPress"
 msgstr "**看起來不對？** 先執行強制重新整理（可能是快取的樣式表"
 
 #: docs/user-guide.md:237
 msgctxt "docs/user-guide.md"
-msgid "**Settings** — the settings people actually change: identity and logo,"
+msgid "cosmetic; the screens stay reachable by address and from the palette."
 msgstr "**設定** — 人們實際會變更的設定：網站識別與標誌、"
 
 #: docs/user-guide.md:133
 msgctxt "docs/user-guide.md"
-msgid "**Saving is status-aware.** Drafts autosave as you write. Published"
+msgid "editor always reopens the page cleanly."
 msgstr "**儲存會感知狀態。** 草稿會在你撰寫時自動儲存。已發佈的"
 
 #: docs/user-guide.md:53
@@ -4768,7 +4523,7 @@ msgstr "**Minimal 中的右鍵選單是真的。** 這是本指南中最不容�
 
 #: docs/user-guide.md:85
 msgctxt "docs/user-guide.md"
-msgid "**Paste from anywhere.** Word, Google Docs and web pages paste in clean."
+msgid "do: it never offers to archive or delete the main site of the network or the"
 msgstr "**從任何地方貼上。** Word、Google 文件和網頁貼上後都會保持乾淨。"
 
 #: docs/user-guide.md:60
@@ -4778,17 +4533,17 @@ msgstr "**一個檢視畫面，多個外掛。** 當多個外掛執行相同工�
 
 #: docs/user-guide.md:155
 msgctxt "docs/user-guide.md"
-msgid "**Notifications** (the bell) collects what actually needs attention:"
+msgid "their pictures in settings. A gallery's ⚙ chip also offers columns,"
 msgstr "**通知**（鈴鐺）會收集真正需要處理的事項："
 
 #: docs/user-guide.md:315
 msgctxt "docs/user-guide.md"
-msgid "**Multisite?** Not yet supported; Minimal is built for single sites."
+msgid "you have hidden, and **AI Access**: application passwords for connecting"
 msgstr "**多站點？** 目前尚不支援；Minimal 是為單一網站打造的。"
 
 #: docs/user-guide.md:151
 msgctxt "docs/user-guide.md"
-msgid "**Media**: drop files anywhere in the app to upload. Images can be"
+msgid "remove, duplicate and caption photos. Dropping image files on the grid"
 msgstr "**媒體**：將檔案拖放到應用程式中的任何位置即可上傳。圖片可以"
 
 #: docs/user-guide.md:39
@@ -4798,33 +4553,28 @@ msgstr "**管理** — 網站本身：擴充功能、使用者、選單與小工
 
 #: docs/user-guide.md:301
 msgctxt "docs/user-guide.md"
-msgid "**Is my content locked in?** No. Minimal writes standard WordPress data"
+msgid "Two things are true of all of it. It is **read-only**: Minimal will never"
 msgstr "**我的內容會被鎖定嗎？** 不會。Minimal 會寫入標準 WordPress 資料"
 
 #: docs/user-guide.md:304
 msgctxt "docs/user-guide.md"
-msgid "**How do updates arrive?** From the project's GitHub releases, through"
+msgid "Health check finds something worth cleaning up, Minimal gives you the exact"
 msgstr "**更新如何送達？** 來自專案的 GitHub 發行版本，透過"
 
 #: docs/user-guide.md:137
 msgctxt "docs/user-guide.md"
-msgid "**History** shows revisions with side-by-side comparisons; restore takes"
+msgid "site's real styling, right where it lives, even inside a group."
 msgstr "**歷程記錄**會顯示修訂版本並提供並排比較；復原需要"
 
 #: docs/user-guide.md:162
 msgctxt "docs/user-guide.md"
-msgid "**Hide** and it stays gone for you, with Undo. This is the calm version of"
+msgid "plus reorder, remove and add. Enter it from the container's ⚙ chip"
 msgstr "**隱藏**後，對你而言它就會保持消失，並提供復原功能。這是較平靜的"
 
 #: docs/user-guide.md:140
 msgctxt "docs/user-guide.md"
-msgid "**Focus modes:** ⌘⇧D fades everything but the paragraph you are writing;"
+msgid "and the ⚙ chip holds its settings plus duplicate and move arrows, so"
 msgstr "**專注模式：** ⌘⇧D 會淡出除你正在撰寫的段落以外的所有內容；"
-
-#: docs/user-guide.md:215
-msgctxt "docs/user-guide.md"
-msgid "**Extensions** — three tabs: Plugins, Themes, and Licenses. Install by"
-msgstr "**擴充功能** — 三個分頁：外掛、佈景主題與授權。安裝方式為"
 
 #: docs/user-guide.md:22
 msgctxt "docs/user-guide.md"
@@ -4833,32 +4583,22 @@ msgstr "**Minimal 寫入的所有內容都是原生 WordPress 資料。** 文章
 
 #: docs/user-guide.md:251
 msgctxt "docs/user-guide.md"
-msgid "**Database** — a window into where your site actually stores things."
+msgid "delete with plain confirmations. Every plugin and theme card carries an"
 msgstr "**資料庫** — 瞭解網站實際儲存資料的位置。"
-
-#: docs/user-guide.md:102
-msgctxt "docs/user-guide.md"
-msgid "**Complex blocks are kept safe, untouched.** If a post contains a block"
-msgstr "**複雜區塊會受到保護，不會被變更。** 如果文章包含區塊"
 
 #: docs/user-guide.md:147
 msgctxt "docs/user-guide.md"
-msgid "**Comments**: approve, reply, edit in place, mark spam, or block a"
+msgid "button, because the builder owns that content."
 msgstr "**留言**：核准、回覆、直接編輯、標記為垃圾留言，或封鎖"
 
 #: docs/user-guide.md:308
 msgctxt "docs/user-guide.md"
-msgid "**Can a plugin misbehave inside Minimal?** Not in the ways you are used"
+msgid "the WP-CLI command line, and Minimal says so plainly rather than pretending"
 msgstr "**外掛可以在 Minimal 中執行異常嗎？** 不會以你習慣的方式"
-
-#: docs/user-guide.md:182
-msgctxt "docs/user-guide.md"
-msgid "**Cache and backups**: if a caching plugin or host cache is active, ⌘K"
-msgstr "**快取與備份**：如果已啟用快取外掛或主機快取，⌘K"
 
 #: docs/user-guide.md:158
 msgctxt "docs/user-guide.md"
-msgid "**About Notices**: other plugins' wp-admin banners never render inside"
+msgid "**Groups of styled text open an Edit content window.** A container"
 msgstr "**關於通知**：其他外掛的 wp-admin 橫幅不會呈現在"
 
 #: docs/user-guide.md:49
@@ -4873,7 +4613,7 @@ msgstr "「建立新頁面」。如果你只從本指南記住一件事，就記
 
 #: docs/user-guide.md:183
 msgctxt "docs/user-guide.md"
-msgid "\"Clear site cache\" purges all of them at once. If a backup plugin is"
+msgid "**Media**: drop files anywhere in the app to upload. Images can be"
 msgstr "「清除網站快取」會一次清除所有快取。如果備份外掛"
 
 #: docs/shim-tutorial.md:77
@@ -11201,11 +10941,6 @@ msgctxt "docs/goals.md"
 msgid "stays in wp-admin."
 msgstr "留在 wp-admin 中。"
 
-#: docs/goals.md:46
-msgctxt "docs/goals.md"
-msgid "site, zero console errors, capability checks proven by the UI hiding/showing correctly, and an"
-msgstr "網站、零主控台錯誤、透過介面正確隱藏／顯示來驗證能力檢查，以及一個"
-
 #: docs/goals.md:26
 msgctxt "docs/goals.md"
 msgid "see __MA_DOC_TOKEN_1__. Minimal ships adapters for popular plugins; plugin authors can ship"
@@ -11268,7 +11003,7 @@ msgstr "WordPress 在其通知系統中敗下陣來；Minimal 以架構強制落
 
 #: docs/goals.md:43
 msgctxt "docs/goals.md"
-msgid "Quality bar"
+msgid "**Being a page builder.**"
 msgstr "品質標準"
 
 #: docs/goals.md:1
@@ -11293,12 +11028,12 @@ msgstr "目標"
 
 #: docs/goals.md:45
 msgctxt "docs/goals.md"
-msgid "Every feature lands with: browser-level verification on a clean site *and* a production-scale"
+msgid "Quality bar"
 msgstr "每項功能都必須包含：在乾淨網站上的瀏覽器層級驗證，*以及*生產規模"
 
 #: docs/goals.md:47
 msgctxt "docs/goals.md"
-msgid "Emoji-Log commit. If a feature can't be verified end-to-end, it isn't done."
+msgid "Every feature lands with: browser-level verification on a clean site *and* a production-scale"
 msgstr "Emoji-Log 提交。如果一項功能無法端到端驗證，就代表尚未完成。"
 
 #: docs/goals.md:16
@@ -11328,7 +11063,7 @@ msgstr "**無建置步驟。** 一個原生 JavaScript 檔案、一個樣式表�
 
 #: docs/goals.md:40
 msgctxt "docs/goals.md"
-msgid "**Multisite network admin, for now.**"
+msgid "**Network Admin parity.** Minimal covers daily multisite operations. Network account"
 msgstr "**目前僅限多網站網路管理員。**"
 
 #: docs/goals.md:36
@@ -11348,7 +11083,7 @@ msgstr "**以架構防禦。** 列表情境中絕不執行其他外掛的呈現�
 
 #: docs/goals.md:41
 msgctxt "docs/goals.md"
-msgid "**Being a page builder.**"
+msgid "creation and deletion, the long settings tail, restores, exports and network setup stay"
 msgstr "**成為頁面建構器。**"
 
 #: docs/goals.md:25
@@ -13255,11 +12990,6 @@ msgstr "| __MA_DOC_TOKEN_1__ | 清單定義（如下）。當介面宣告 __MA_D
 msgctxt "docs/for-plugin-authors.md"
 msgid "| __MA_DOC_TOKEN_1__ | Subtitle badge (usually your plugin name) |"
 msgstr "| __MA_DOC_TOKEN_1__ | 副標題徽章（通常是您的外掛程式名稱） |"
-
-#: docs/for-plugin-authors.md:221
-msgctxt "docs/for-plugin-authors.md"
-msgid "| __MA_DOC_TOKEN_1__ | Sidebar placement. Two values are honored: the default **__MA_DOC_TOKEN_2__** (logs, redirects, snippets: site plumbing) and **__MA_DOC_TOKEN_3__** — for inbox-shaped surfaces, something users check daily because new items need a human (form entries are the bundled example). Since v0.17.0 this is enforced, not asked: workspace requires a collection with an __MA_DOC_TOKEN_4__ column (a time-ordered stream); anything else is placed under Tools and the Integrations card says so |"
-msgstr "| __MA_DOC_TOKEN_1__ | 側邊欄位置。接受兩個值：預設的 **__MA_DOC_TOKEN_2__**（日誌、重新導向、程式碼片段：網站基礎功能）和 __MA_DOC_TOKEN_3__ — 用於收件匣形式的介面，使用者每天都會檢查，因為新項目需要人工處理（表單項目是隨附範例）。自 v0.17.0 起，這項規則會強制執行，而非僅提出要求：workspace 需要包含具有 __MA_DOC_TOKEN_4__ 欄位的集合（按時間排序的資料流）；其他內容會放在工具下方，Integrations 卡片也會如此說明 |"
 
 #: docs/for-plugin-authors.md:215
 msgctxt "docs/for-plugin-authors.md"
@@ -17976,65 +17706,25 @@ msgctxt "docs/editor-direction.md"
 msgid "(22), __MA_DOC_TOKEN_1__ (16). Two conclusions follow. For FSE sites the container is the primary"
 msgstr "（22）、__MA_DOC_TOKEN_1__（16）。可得出兩項結論。對 FSE 網站而言，容器是主要"
 
-#: docs/core-gaps.md:146
-msgctxt "docs/core-gaps.md"
-msgid "⌘K \"Manage categories & tags\" command still work, landing on the Terms tab."
-msgstr "⌘K「Manage categories & tags」指令仍可運作，並會進入 Terms 分頁。"
-
-#: docs/core-gaps.md:114
-msgctxt "docs/core-gaps.md"
-msgid "~~**Theme live preview (S).**~~ **SHIPPED 2026-08-04** (v0.23.0"
-msgstr "~~**佈景主題即時預覽（S）。**~~ **已於 2026-08-04 發布**（v0.23.0"
-
 #: docs/core-gaps.md:121
 msgctxt "docs/core-gaps.md"
-msgid "~~**Synced patterns (S-M).**~~ **SHIPPED 2026-08-04** (v0.23.0 cycle):"
+msgid "**Bulk edit beyond status (M).** The content bulk bar does status /"
 msgstr "~~**同步模式（S-M）。**~~ **已於 2026-08-04 發布**（v0.23.0 週期）："
 
 #: docs/core-gaps.md:108
 msgctxt "docs/core-gaps.md"
-msgid "~~**Per-extension auto-update toggles (S).**~~ **SHIPPED 2026-08-04**"
+msgid "Bricks/Divi template areas. Fits the existing page-builders adapter"
 msgstr "~~**每個擴充功能的自動更新切換（S）。**~~ **已於 2026-08-04 發布**"
-
-#: docs/core-gaps.md:130
-msgctxt "docs/core-gaps.md"
-msgid "writes ride __MA_DOC_TOKEN_1__. Suite"
-msgstr "寫入會經由 __MA_DOC_TOKEN_1__。套件"
-
-#: docs/core-gaps.md:122
-msgctxt "docs/core-gaps.md"
-msgid "wp_block allowlisted past the viewable gate (__MA_DOC_TOKEN_1__) → a"
-msgstr "wp_block 通過可檢視閘門的允許清單（__MA_DOC_TOKEN_1__）→ 一個"
-
-#: docs/core-gaps.md:66
-msgctxt "docs/core-gaps.md"
-msgid "with full upload flow, site address, admin email); homepage settings in"
-msgstr "完整上傳流程、網站位址、管理員電子郵件）；首頁設定位於"
 
 #: docs/core-gaps.md:193
 msgctxt "docs/core-gaps.md"
-msgid "with an editor jump all shipped 2026-07-17 (v0.18.0 cycle, suite"
+msgid "caption/description editing and bulk delete (both shipped v0.11.0)."
 msgstr "搭配編輯器跳轉功能的項目已於 2026-07-17 全部發布（v0.18.0 週期、套件"
-
-#: docs/core-gaps.md:128
-msgctxt "docs/core-gaps.md"
-msgid "with a synced-edit note and self-slimmed sidebar; + New → Pattern."
-msgstr "搭配同步編輯提示與自動精簡的側邊欄；＋ New → Pattern。"
-
-#: docs/core-gaps.md:35
-msgctxt "docs/core-gaps.md"
-msgid "with a switcher, an indented tree for hierarchical taxonomies, inline"
-msgstr "搭配切換器、階層分類法使用縮排樹狀結構、內嵌"
 
 #: docs/core-gaps.md:29
 msgctxt "docs/core-gaps.md"
-msgid "whether the gap blocks daily work."
+msgid "theme templates, bulk category/author edit. Minimal's"
 msgstr "缺口是否阻礙日常工作。"
-
-#: docs/core-gaps.md:150
-msgctxt "docs/core-gaps.md"
-msgid "weight, cron health, debug toggles + log viewer, integrations registry,"
-msgstr "權重、cron 健康狀態、偵錯切換＋日誌檢視器、整合登錄表、"
 
 #: docs/core-gaps.md:22
 msgctxt "docs/core-gaps.md"
@@ -18043,22 +17733,17 @@ msgstr "已過時：優先瀏覽的提供者契約（Wave D）早已"
 
 #: docs/core-gaps.md:197
 msgctxt "docs/core-gaps.md"
-msgid "was revised 2026-07-16: FileBird + Real Media Library + Folders total 400k+"
+msgid "media-polish). Folders: not a"
 msgstr "已於 2026-07-16 修訂：FileBird＋Real Media Library＋Folders 合計超過 400k"
 
 #: docs/core-gaps.md:87
 msgctxt "docs/core-gaps.md"
-msgid "verified empirically at v0.23.0:"
+msgid "Theme integration — the audited frontier (2026-07-30)"
 msgstr "已於 v0.23.0 進行實證驗證："
-
-#: docs/core-gaps.md:71
-msgctxt "docs/core-gaps.md"
-msgid "validation mirroring the Customizer's refusal). Custom logo and site"
-msgstr "驗證，與 Customizer 拒絕行為一致）。自訂標誌與網站"
 
 #: docs/core-gaps.md:213
 msgctxt "docs/core-gaps.md"
-msgid "v0.20.0 cycle: inline comment editing (text always; author name/email for"
+msgid "Tabs for pending/approved/spam/trash, full per-row moderation, bulk"
 msgstr "v0.20.0 週期：內嵌留言編輯（文字始終可編輯；作者姓名／電子郵件可供"
 
 #: docs/core-gaps.md:4
@@ -18066,80 +17751,45 @@ msgctxt "docs/core-gaps.md"
 msgid "v0.13.0 cycle (WP 7.0.1); re-checked 2026-07-13 at v0.14.0 open; light"
 msgstr "v0.13.0 週期（WP 7.0.1）；2026-07-13 於 v0.14.0 重新檢查，結果為開放；輕量"
 
-#: docs/core-gaps.md:119
-msgctxt "docs/core-gaps.md"
-msgid "trash / restore / delete but not wp-admin bulk-edit's \"add these"
-msgstr "移至垃圾桶／還原／刪除，但不支援 wp-admin 批次編輯的「加入這些"
-
 #: docs/core-gaps.md:196
 msgctxt "docs/core-gaps.md"
-msgid "to wp-admin and builder pickers), but the earlier \"long-tail, skip\" verdict"
+msgid "with an editor jump all shipped 2026-07-17 (v0.18.0 cycle, suite"
 msgstr "至 wp-admin 與建構器選擇器），但先前「長尾、跳過」的判定"
 
 #: docs/core-gaps.md:106
 msgctxt "docs/core-gaps.md"
-msgid "thesis: list, badge the type (header/footer/popup/archive), show"
+msgid "skips it, meaning a site whose header/footer live in Elementor Theme"
 msgstr "核心主張：列出、標示類型（標頭／頁尾／彈出視窗／封存），顯示"
 
 #: docs/core-gaps.md:26
 msgctxt "docs/core-gaps.md"
-msgid "theme templates, bulk category/author edit. Minimal's"
+msgid "multisite moved from defensive degradation to daily network operations;"
 msgstr "佈景主題範本、批次編輯分類／作者。Minimal 的"
 
 #: docs/core-gaps.md:75
 msgctxt "docs/core-gaps.md"
-msgid "theme mods, FSE global styles. Judgment: identity + homepage + Custom CSS +"
+msgid "language shipped in the v0.20.0 cycle (Settings → Site: the logo gated on"
 msgstr "佈景主題模組、FSE 全域樣式。判定：識別資訊＋首頁＋Custom CSS＋"
-
-#: docs/core-gaps.md:133
-msgctxt "docs/core-gaps.md"
-msgid "theme mods (colors, header/background images, per-theme sections) are"
-msgstr "佈景主題模組（色彩、標頭／背景圖片、每個佈景主題的區段）"
 
 #: docs/core-gaps.md:73
 msgctxt "docs/core-gaps.md"
-msgid "theme custom-logo support via __MA_DOC_TOKEN_1__, the language over"
+msgid "__MA_DOC_TOKEN_1__ (edit_css cap, per-theme stylesheet, structural"
 msgstr "透過 __MA_DOC_TOKEN_1__ 支援佈景主題自訂標誌，語言"
-
-#: docs/core-gaps.md:145
-msgctxt "docs/core-gaps.md"
-msgid "them), while an admin sees all three. The __MA_DOC_TOKEN_1__ route and the"
-msgstr "它們），而管理員可看到全部三項。__MA_DOC_TOKEN_1__ 路由與"
-
-#: docs/core-gaps.md:68
-msgctxt "docs/core-gaps.md"
-msgid "the v0.11.0 cycle, **Custom CSS** (__MA_DOC_TOKEN_1__, the Customizer's"
-msgstr "v0.11.0 週期、**Custom CSS**（__MA_DOC_TOKEN_1__，Customizer 的"
 
 #: docs/core-gaps.md:13
 msgctxt "docs/core-gaps.md"
 msgid "the new section below): the remaining wp-admin territory is theme-shaped"
 msgstr "下方的新區段）：其餘 wp-admin 領域具有佈景主題形態"
 
-#: docs/core-gaps.md:142
-msgctxt "docs/core-gaps.md"
-msgid "the MANAGE group short. The tabs gate individually: Post Types and"
-msgstr "MANAGE 群組不足。分頁個別控管：Post Types 與"
-
 #: docs/core-gaps.md:98
 msgctxt "docs/core-gaps.md"
-msgid "templates/parts as \"Edit in Site Editor ↗\" rows, current palette). The"
+msgid "demotes Minimal from \"the admin\" to \"the content admin\". Scoped build,"
 msgstr "範本／部分顯示為「Edit in Site Editor ↗」列，目前的調色盤）。"
-
-#: docs/core-gaps.md:224
-msgctxt "docs/core-gaps.md"
-msgid "taxonomies without __MA_DOC_TOKEN_1__ (the UI flags them), meta not registered,"
-msgstr "沒有 __MA_DOC_TOKEN_1__ 的分類法（介面會標示它們）、未註冊的 meta、"
 
 #: docs/core-gaps.md:21
 msgctxt "docs/core-gaps.md"
 msgid "synced patterns; marked below), and the Media section's folders verdict"
 msgstr "同步模式；下方已標記），以及 Media 區段的資料夾判定"
-
-#: docs/core-gaps.md:59
-msgctxt "docs/core-gaps.md"
-msgid "support (matching wp-admin), saving through wp/v2's native __MA_DOC_TOKEN_1__"
-msgstr "支援（與 wp-admin 相符），透過 wp/v2 的原生 __MA_DOC_TOKEN_1__ 儲存"
 
 #: docs/core-gaps.md:15
 msgctxt "docs/core-gaps.md"
@@ -18148,7 +17798,7 @@ msgstr "較小的營運缺口（每個擴充功能的自動更新切換、佈景
 
 #: docs/core-gaps.md:103
 msgctxt "docs/core-gaps.md"
-msgid "skips it, meaning a site whose header/footer live in Elementor Theme"
+msgid "form builders)."
 msgstr "會跳過它，也就是說標頭／頁尾位於 Elementor Theme 中的網站"
 
 #: docs/core-gaps.md:20
@@ -18168,22 +17818,17 @@ msgstr "已在 v0.18.0 週期發布，以下已修正。v0.24.0 週期目前"
 
 #: docs/core-gaps.md:172
 msgctxt "docs/core-gaps.md"
-msgid "settings screen (thumbnail sizes, month/year folders),"
+msgid "key-source honesty for wp-config/env keys, companion-plugin install in"
 msgstr "設定畫面（縮圖大小、月份／年份資料夾）、"
 
 #: docs/core-gaps.md:55
 msgctxt "docs/core-gaps.md"
-msgid "selected user's role at once; the current user is skipped (self-lockout"
+msgid "on), applied per item."
 msgstr "立即變更所選使用者的角色；目前使用者會被跳過（避免自我鎖定"
-
-#: docs/core-gaps.md:180
-msgctxt "docs/core-gaps.md"
-msgid "reset, send email, session kill, bulk role change (shipped v0.11.0),"
-msgstr "重設、寄送電子郵件、終止工作階段、批次變更角色（v0.11.0 已發布）、"
 
 #: docs/core-gaps.md:126
 msgctxt "docs/core-gaps.md"
-msgid "reference island, quiet insert; unsynced → detached copy via"
+msgid "Patterns entry in the Content switcher with the standard row machinery"
 msgstr "參照區塊、靜默插入；未同步 → 透過"
 
 #: docs/core-gaps.md:5
@@ -18198,7 +17843,7 @@ msgstr "既定的優先順序仍維持已發布狀態，核心區域沒有新的
 
 #: docs/core-gaps.md:96
 msgctxt "docs/core-gaps.md"
-msgid "ranked inside this item: navigation first (real daily work, existing"
+msgid "already does for classic menus), no template/template-part LISTING with"
 msgstr "在此項目內排序：導覽優先（實際日常工作、現有"
 
 #: docs/core-gaps.md:16
@@ -18208,42 +17853,37 @@ msgstr "預覽、批次編輯分類／作者、同步模式可見度）。開發
 
 #: docs/core-gaps.md:165
 msgctxt "docs/core-gaps.md"
-msgid "posts per page, search visibility), Discussion (default comment/ping status,"
+msgid "Writable today: General (title, tagline, icon, URL, admin email, timezone,"
 msgstr "每頁文章數、搜尋可見度）、Discussion（預設留言／引用狀態、"
 
 #: docs/core-gaps.md:27
 msgctxt "docs/core-gaps.md"
-msgid "positioning grades these: daily work belongs in Minimal, the long tail stays"
+msgid "the section below now records the shipped surface and its deliberate"
 msgstr "定位評分如下：日常工作歸入 Minimal，長尾需求則保留"
 
 #: docs/core-gaps.md:170
 msgctxt "docs/core-gaps.md"
-msgid "place), plus site logo and site language on the Site tab since the v0.20.0"
+msgid "bases), Spam (provider cards + disallowed keys), Connectors (WP 7.0's"
 msgstr "位置），並在 Site 分頁加入網站標誌與網站語言，因為 v0.20.0"
-
-#: docs/core-gaps.md:204
-msgctxt "docs/core-gaps.md"
-msgid "pagination keep working, newest 500 per folder), and a Move-to-folder bulk"
-msgstr "分頁持續運作，每個資料夾最新 500 個），以及移至資料夾的批次"
 
 #: docs/core-gaps.md:183
 msgctxt "docs/core-gaps.md"
-msgid "page (first/last name, bio, website, per-user language with automatic"
+msgid "reset, send email, session kill, bulk role change (shipped v0.11.0),"
 msgstr "頁面（名字、姓氏、個人簡介、網站、每位使用者的語言與自動"
 
 #: docs/core-gaps.md:184
 msgctxt "docs/core-gaps.md"
-msgid "pack installs, the front-end toolbar preference). Application passwords"
+msgid "application passwords (\"AI Access\" with generated agent guide). The"
 msgstr "套件安裝、前端工具列偏好設定）。應用程式密碼"
 
 #: docs/core-gaps.md:28
 msgctxt "docs/core-gaps.md"
-msgid "one click away in wp-admin. Each area below gets a status and a judgment on"
+msgid "boundaries. Still open: block-theme surfaces, builder"
 msgstr "在 wp-admin 中只需一鍵即可使用。下方每個區域都會獲得狀態，以及對"
 
 #: docs/core-gaps.md:52
 msgctxt "docs/core-gaps.md"
-msgid "on), applied per item."
+msgid "**Comment bulk moderation** — ✅ shipped (v0.11.0 cycle): comment rows get"
 msgstr "上），逐項套用。"
 
 #: docs/core-gaps.md:18
@@ -18258,77 +17898,62 @@ msgstr "原生開發者介面，詳見下方 Tools；不新增日常工作"
 
 #: docs/core-gaps.md:166
 msgctxt "docs/core-gaps.md"
-msgid "moderation, registration required, avatars on/off), Permalinks (structure +"
+msgid "date/time format, week start, default role, membership, maintenance, default"
 msgstr "審核、需要註冊、啟用／停用頭像）、Permalinks（結構＋"
-
-#: docs/core-gaps.md:211
-msgctxt "docs/core-gaps.md"
-msgid "moderation with per-tab verbs (shipped v0.11.0), inline reply"
-msgstr "審核，依分頁提供動詞（已於 v0.11.0 推出），內嵌回覆"
 
 #: docs/core-gaps.md:48
 msgctxt "docs/core-gaps.md"
-msgid "mirroring the content-list pattern; force=true, per item."
+msgid "light) and saving through wp/v2/media."
 msgstr "比照內容清單模式；force=true，逐項處理。"
 
 #: docs/core-gaps.md:153
 msgctxt "docs/core-gaps.md"
-msgid "minutes), and a Tools card deep-links the one-shot jobs (Site Health,"
+msgid "weight, cron health, debug toggles + log viewer, integrations registry,"
 msgstr "分鐘），Tools 卡片會深層連結至一次性工作（Site Health、"
 
 #: docs/core-gaps.md:125
 msgctxt "docs/core-gaps.md"
-msgid "menu + ⌘/ picker \"Your patterns\" (synced → __MA_DOC_TOKEN_1__"
+msgid "wp_block allowlisted past the viewable gate (__MA_DOC_TOKEN_1__) → a"
 msgstr "選單＋⌘/ 選擇器「Your patterns」（已同步 → __MA_DOC_TOKEN_1__"
 
 #: docs/core-gaps.md:194
 msgctxt "docs/core-gaps.md"
-msgid "media-polish). Folders: not a"
+msgid "Unattached filter (core parent=0), month filter (minimal-admin/v1/media/months"
 msgstr "media-polish）。資料夾：不是"
 
 #: docs/core-gaps.md:39
 msgctxt "docs/core-gaps.md"
-msgid "machinery, then the source is deleted). Editors get it via"
+msgid "create/edit (name, slug, parent, description), delete with honest"
 msgstr "機制，接著刪除來源）。編輯器可透過"
 
 #: docs/core-gaps.md:182
 msgctxt "docs/core-gaps.md"
-msgid "long-tail profile fields all shipped v0.17.0 on the /minimal-admin/profile"
+msgid "List, search, roles, add/edit, delete with content reassignment, password"
 msgstr "所有長尾個人資料欄位已於 v0.17.0 在 /minimal-admin/profile 推出"
-
-#: docs/core-gaps.md:76
-msgctxt "docs/core-gaps.md"
-msgid "logo + language is the daily slice and it's covered; the Customizer proper"
-msgstr "標誌＋語言是日常範圍，且已涵蓋；真正的 Customizer"
 
 #: docs/core-gaps.md:47
 msgctxt "docs/core-gaps.md"
-msgid "list rows carry a checkbox (shift-range, select-all) with a delete bar"
+msgid "carrying the edit-context raw value (fetched lazily so the list stays"
 msgstr "清單列帶有核取方塊（Shift 範圍選取、全選）與刪除列"
 
 #: docs/core-gaps.md:45
 msgctxt "docs/core-gaps.md"
-msgid "light) and saving through wp/v2/media."
+msgid "**Media caption and description** — ✅ shipped (v0.11.0 cycle): the media"
 msgstr "淺色）以及透過 wp/v2/media 儲存。"
 
 #: docs/core-gaps.md:72
 msgctxt "docs/core-gaps.md"
-msgid "language shipped in the v0.20.0 cycle (Settings → Site: the logo gated on"
+msgid "\"Additional CSS\") edits in Settings → Design through"
 msgstr "語言已在 v0.20.0 週期推出（Settings → Site：標誌受限於"
 
 #: docs/core-gaps.md:169
 msgctxt "docs/core-gaps.md"
-msgid "key-source honesty for wp-config/env keys, companion-plugin install in"
+msgid "moderation, registration required, avatars on/off), Permalinks (structure +"
 msgstr "針對 wp-config／env 金鑰的來源誠實性、伴隨外掛安裝於"
-
-#: docs/core-gaps.md:226
-msgctxt "docs/core-gaps.md"
-msgid "keeps list views fast and safe."
-msgstr "讓清單檢視保持快速且安全。"
 
 #: docs/core-gaps.md:158
 msgctxt "docs/core-gaps.md"
-msgid "item). Writes and a SQL console stay permanent non-goals there"
+msgid "click away, by design. As of the v0.22.0 cycle the Database card is also a"
 msgstr "項目）。寫入功能與 SQL 主控台在此仍是永久的非目標"
 
 #: docs/core-gaps.md:24
@@ -18338,37 +17963,32 @@ msgstr "是介面卡深度（WPForms entries、表單狀態卡、FluentSMTP）�
 
 #: docs/core-gaps.md:198
 msgctxt "docs/core-gaps.md"
-msgid "installs, so a browse-first provider contract became Wave D in"
+msgid "core feature (a Minimal-owned tree would be a fifth folder standard invisible"
 msgstr "安裝，因此以瀏覽優先的提供者合約成為 Wave D 的一部分"
-
-#: docs/core-gaps.md:81
-msgctxt "docs/core-gaps.md"
-msgid "install/activate/update/delete under Extensions. Template/FSE editing,"
-msgstr "在 Extensions 下安裝／啟用／更新／刪除。範本／FSE 編輯、"
 
 #: docs/core-gaps.md:135
 msgctxt "docs/core-gaps.md"
-msgid "honest answer, same verdict as before."
+msgid "**Classic Customizer theme options — stays a link-out.** Arbitrary"
 msgstr "誠實的答案，判定與先前相同。"
 
 #: docs/core-gaps.md:152
 msgctxt "docs/core-gaps.md"
-msgid "health rows shipped 2026-07-10 (core's own Site Health tests, cached 15"
+msgid "The System page covers diagnostics well (health checks, DB tables, autoload"
 msgstr "健康列已於 2026-07-10 推出（核心自身的 Site Health 測試，快取 15"
 
 #: docs/core-gaps.md:58
 msgctxt "docs/core-gaps.md"
-msgid "has a Format select, gated on the active theme declaring post-format"
+msgid "selected user's role at once; the current user is skipped (self-lockout"
 msgstr "具有 Format 選擇器，受目前主題宣告 post-format"
 
 #: docs/core-gaps.md:214
 msgctxt "docs/core-gaps.md"
-msgid "guest comments) and Block commenter (adds the author's email or IP to"
+msgid "moderation with per-tab verbs (shipped v0.11.0), inline reply"
 msgstr "訪客留言）與封鎖留言者（將作者的電子郵件或 IP 新增至"
 
 #: docs/core-gaps.md:56
 msgctxt "docs/core-gaps.md"
-msgid "guard)."
+msgid "**Bulk user role change** — ✅ shipped (v0.11.0 cycle): the users table"
 msgstr "防護）。"
 
 #: docs/core-gaps.md:10
@@ -18378,372 +17998,212 @@ msgstr "缺口）：每個"
 
 #: docs/core-gaps.md:54
 msgctxt "docs/core-gaps.md"
-msgid "gains a checkbox column (gated on edit-users) and a bar to change every"
+msgid "actions (Approve/Spam/Trash on Pending, Restore/Delete on Trash, and so"
 msgstr "增加核取方塊欄（受 edit-users 限制），以及可變更每個項目的列"
 
 #: docs/core-gaps.md:100
 msgctxt "docs/core-gaps.md"
-msgid "form builders)."
+msgid "Menus UX transfers), then a read-only Design card (active theme, its"
 msgstr "表單建構器）。"
-
-#: docs/core-gaps.md:203
-msgctxt "docs/core-gaps.md"
-msgid "filters the normal wp/v2/media query (search, type tabs, Unattached and"
-msgstr "篩選一般 wp/v2/media 查詢（搜尋、類型分頁、未附加項目與"
 
 #: docs/core-gaps.md:60
 msgctxt "docs/core-gaps.md"
-msgid "field. Boot payload carries the supported formats."
+msgid "**Per-post format picker** — ✅ shipped (v0.11.0 cycle): the editor sidebar"
 msgstr "欄位。啟動載荷會攜帶支援的格式。"
 
 #: docs/core-gaps.md:151
 msgctxt "docs/core-gaps.md"
-msgid "extensions manifest, copy-as-markdown report). Loopback and REST self-check"
+msgid "Tools — System page strong, one-shot tools absent"
 msgstr "擴充功能資訊清單、複製為 Markdown 的報告）。Loopback 與 REST 自我檢查"
 
 #: docs/core-gaps.md:154
 msgctxt "docs/core-gaps.md"
-msgid "export/import, GDPR export/erase): episodic surgery stays in wp-admin, one"
+msgid "extensions manifest, copy-as-markdown report). Loopback and REST self-check"
 msgstr "匯出／匯入、GDPR 匯出／刪除）：偶發性處理仍留在 wp-admin，一"
 
 #: docs/core-gaps.md:175
 msgctxt "docs/core-gaps.md"
-msgid "emails, avatar rating/default). Judgment: what's missing is set-once config;"
+msgid "settings screen (thumbnail sizes, month/year folders),"
 msgstr "電子郵件、頭像評分／預設）。判斷：缺少的是一次設定的組態；"
-
-#: docs/core-gaps.md:189
-msgctxt "docs/core-gaps.md"
-msgid "editor (rotate/crop to a new copy), featured-image flows, delete, copy URL,"
-msgstr "編輯器（旋轉／裁剪為新副本）、精選圖片流程、刪除、複製 URL、"
 
 #: docs/core-gaps.md:156
 msgctxt "docs/core-gaps.md"
-msgid "doorway: its largest-table rows and a \"browse all\" link open the read-only"
+msgid "minutes), and a Tools card deep-links the one-shot jobs (Site Health,"
 msgstr "入口：其最大資料表列與「瀏覽全部」連結會開啟唯讀"
 
 #: docs/core-gaps.md:107
 msgctxt "docs/core-gaps.md"
-msgid "display conditions read-only, deep-link into the builder canvas."
+msgid "Builder has no Minimal surface listing those templates. Same story for"
 msgstr "顯示條件為唯讀，並深層連結至建構器畫布。"
-
-#: docs/core-gaps.md:43
-msgctxt "docs/core-gaps.md"
-msgid "detail modal now edits caption and description alongside title and alt,"
-msgstr "詳細資料視窗現在可在標題與替代文字之外編輯標題與說明，"
 
 #: docs/core-gaps.md:174
 msgctxt "docs/core-gaps.md"
-msgid "depth, per-page, previously-approved shortcut, close-after-days, notification"
+msgid "cycle. Missing: the entire Media"
 msgstr "深度、每頁數量、先前核准的捷徑、關閉後天數、通知"
-
-#: docs/core-gaps.md:95
-msgctxt "docs/core-gaps.md"
-msgid "demotes Minimal from \"the admin\" to \"the content admin\". Scoped build,"
-msgstr "使 Minimal 從「管理員」降為「內容管理員」。範圍明確的建置，"
-
-#: docs/core-gaps.md:163
-msgctxt "docs/core-gaps.md"
-msgid "date/time format, week start, default role, membership, maintenance, default"
-msgstr "日期／時間格式、星期起始日、預設角色、會員資格、維護、預設"
-
-#: docs/core-gaps.md:157
-msgctxt "docs/core-gaps.md"
-msgid "database viewer (__MA_DOC_TOKEN_1__, also in ⌘K; deliberately not a nav"
-msgstr "資料庫檢視器（__MA_DOC_TOKEN_1__，也可在 ⌘K 中使用；刻意不設為導覽"
 
 #: docs/core-gaps.md:171
 msgctxt "docs/core-gaps.md"
-msgid "cycle. Missing: the entire Media"
+msgid "connector registry: provider keys with core-side masking and validation,"
 msgstr "週期。缺少：整個 Media"
-
-#: docs/core-gaps.md:115
-msgctxt "docs/core-gaps.md"
-msgid "cycle): Live preview link on inactive theme cards: Customizer for"
-msgstr "週期）：非啟用主題卡片上的即時預覽連結：Customizer 適用於"
 
 #: docs/core-gaps.md:225
 msgctxt "docs/core-gaps.md"
-msgid "custom statuses. This is deliberate and worth keeping; it's the line that"
+msgid "administrators are protected from those per-site controls."
 msgstr "自訂狀態。這是刻意如此，而且值得保留；這就是"
 
 #: docs/core-gaps.md:36
 msgctxt "docs/core-gaps.md"
-msgid "create/edit (name, slug, parent, description), delete with honest"
+msgid "**Term management** — ✅ shipped 2026-07-10: the **Terms** manager"
 msgstr "建立／編輯（名稱、代稱、父項目、說明），刪除時提供誠實的"
 
 #: docs/core-gaps.md:215
 msgctxt "docs/core-gaps.md"
-msgid "core's disallowed list, visible under Settings → Comments, with Undo)."
+msgid "(auto-approves like core), context menu. The last two gaps closed in the"
 msgstr "核心的不允許清單，可在 Settings → Comments 中查看，並提供 Undo）。"
 
 #: docs/core-gaps.md:195
 msgctxt "docs/core-gaps.md"
-msgid "core feature (a Minimal-owned tree would be a fifth folder standard invisible"
+msgid "combobox → after/before windows) and the detail modal's \"Attached to\" row"
 msgstr "核心功能（Minimal 擁有的樹狀結構會成為第五種資料夾標準，且不可見"
 
 #: docs/core-gaps.md:168
 msgctxt "docs/core-gaps.md"
-msgid "connector registry: provider keys with core-side masking and validation,"
+msgid "posts per page, search visibility), Discussion (default comment/ping status,"
 msgstr "連接器登錄：提供者金鑰由核心端遮罩與驗證，"
-
-#: docs/core-gaps.md:37
-msgctxt "docs/core-gaps.md"
-msgid "confirms, count links into the filtered content list, and **merge**"
-msgstr "確認，數量連結至已篩選的內容清單，並且 **合併**"
 
 #: docs/core-gaps.md:192
 msgctxt "docs/core-gaps.md"
-msgid "combobox → after/before windows) and the detail modal's \"Attached to\" row"
+msgid "editor (rotate/crop to a new copy), featured-image flows, delete, copy URL,"
 msgstr "組合框 → 前後時間範圍）以及詳細資料視窗的「Attached to」列"
 
 #: docs/core-gaps.md:155
 msgctxt "docs/core-gaps.md"
-msgid "click away, by design. As of the v0.22.0 cycle the Database card is also a"
+msgid "health rows shipped 2026-07-10 (core's own Site Health tests, cached 15"
 msgstr "依設計離開。自 v0.22.0 週期起，Database 卡片也成為"
-
-#: docs/core-gaps.md:116
-msgctxt "docs/core-gaps.md"
-msgid "classic themes, __MA_DOC_TOKEN_1__ for block themes"
-msgstr "區塊主題的 __MA_DOC_TOKEN_1__"
-
-#: docs/core-gaps.md:219
-msgctxt "docs/core-gaps.md"
-msgid "checks, System report row). No network surfaces, no visible hard breakage on"
-msgstr "檢查、System 報告列）。沒有網路介面，也沒有可見的嚴重故障"
 
 #: docs/core-gaps.md:25
 msgctxt "docs/core-gaps.md"
-msgid "changes no core-gap status. Still open: block-theme surfaces, builder"
+msgid "changes no core-gap status. Re-checked 2026-08-11 at v0.28.0 open:"
 msgstr "不會改變核心缺口狀態。仍開放：區塊主題介面、建構器"
-
-#: docs/core-gaps.md:120
-msgctxt "docs/core-gaps.md"
-msgid "categories / set author across selected posts\"."
-msgstr "分類／為選取的文章設定作者」。"
 
 #: docs/core-gaps.md:44
 msgctxt "docs/core-gaps.md"
-msgid "carrying the edit-context raw value (fetched lazily so the list stays"
+msgid "REST routes."
 msgstr "攜帶編輯內容的原始值（延遲擷取，使清單維持"
 
 #: docs/core-gaps.md:190
 msgctxt "docs/core-gaps.md"
-msgid "caption/description editing and bulk delete (both shipped v0.11.0)."
+msgid "Media — grid solid, editing caught up"
 msgstr "標題／說明編輯與批次刪除（兩者皆已於 v0.11.0 推出）。"
 
 #: docs/core-gaps.md:167
 msgctxt "docs/core-gaps.md"
-msgid "bases), Spam (provider cards + disallowed keys), Connectors (WP 7.0's"
+msgid "admin), Writing (default category/format, smilies), Reading (front page,"
 msgstr "基礎）、Spam（提供者卡片＋不允許的金鑰）、Connectors（WP 7.0 的"
 
 #: docs/core-gaps.md:82
 msgctxt "docs/core-gaps.md"
-msgid "background and header images: out of scope by design."
+msgid "Appearance — covered where it counts"
 msgstr "背景與頁首圖片：依設計不在範圍內。"
 
 #: docs/core-gaps.md:181
 msgctxt "docs/core-gaps.md"
-msgid "application passwords (\"AI Access\" with generated agent guide). The"
+msgid "Users — at parity or better"
 msgstr "應用程式密碼（「AI Access」含產生的代理指南）。"
 
 #: docs/core-gaps.md:185
 msgctxt "docs/core-gaps.md"
-msgid "and reassign-on-delete are better surfaced than classic."
+msgid "long-tail profile fields all shipped v0.17.0 on the /minimal-admin/profile"
 msgstr "以及刪除時重新指派，比傳統介面呈現得更好。"
-
-#: docs/core-gaps.md:77
-msgctxt "docs/core-gaps.md"
-msgid "and global styles are correctly long-tail."
-msgstr "而全域樣式確實屬於長尾功能。"
 
 #: docs/core-gaps.md:144
 msgctxt "docs/core-gaps.md"
-msgid "an editor's Structure item shows just the Terms tab (labeled \"Terms\" for"
+msgid "Types / Taxonomies / Terms tabs) rather than a standalone nav item, to keep"
 msgstr "編輯器的 Structure 項目只顯示 Terms 分頁（標示為「Terms」以"
-
-#: docs/core-gaps.md:93
-msgctxt "docs/core-gaps.md"
-msgid "already does for classic menus), no template/template-part LISTING with"
-msgstr "如同傳統選單目前已支援的功能），不提供範本／範本部件清單，並具備"
 
 #: docs/core-gaps.md:164
 msgctxt "docs/core-gaps.md"
-msgid "admin), Writing (default category/format, smilies), Reading (front page,"
+msgid "Settings — daily options covered, two screens thin"
 msgstr "管理員）、Writing（預設分類／格式、表情符號）、Reading（首頁、"
-
-#: docs/core-gaps.md:139
-msgctxt "docs/core-gaps.md"
-msgid "addition was __MA_DOC_TOKEN_1__; everything else rides core REST."
-msgstr "新增項目是 __MA_DOC_TOKEN_1__；其餘全部使用核心 REST。"
-
-#: docs/core-gaps.md:176
-msgctxt "docs/core-gaps.md"
-msgid "add Discussion depth only if comment-heavy sites ask."
-msgstr "只有在留言密集型網站提出需求時，才增加 Discussion 深度。"
 
 #: docs/core-gaps.md:51
 msgctxt "docs/core-gaps.md"
-msgid "actions (Approve/Spam/Trash on Pending, Restore/Delete on Trash, and so"
+msgid "mirroring the content-list pattern; force=true, per item."
 msgstr "動作（Pending 上的 Approve／Spam／Trash、Trash 上的 Restore／Delete，以及其他"
-
-#: docs/core-gaps.md:205
-msgctxt "docs/core-gaps.md"
-msgid "action rides each provider's optional __MA_DOC_TOKEN_1__ callable. Suite"
-msgstr "動作會使用各提供者選用的 __MA_DOC_TOKEN_1__ 可呼叫項目。Suite"
 
 #: docs/core-gaps.md:220
 msgctxt "docs/core-gaps.md"
-msgid "a subsite."
+msgid "Multisite — daily network operations covered"
 msgstr "子網站。"
-
-#: docs/core-gaps.md:134
-msgctxt "docs/core-gaps.md"
-msgid "a per-theme treadmill with no schema; the Customizer deep link is the"
-msgstr "沒有結構描述的每個主題反覆調整；Customizer 深層連結是"
 
 #: docs/core-gaps.md:207
 msgctxt "docs/core-gaps.md"
-msgid "a folder tree of its own."
+msgid "pagination keep working, newest 500 per folder), and a Move-to-folder bulk"
 msgstr "自己的資料夾樹。"
 
 #: docs/core-gaps.md:50
 msgctxt "docs/core-gaps.md"
-msgid "a checkbox + Select-page, and a bar whose verbs are the current tab's own"
+msgid "list rows carry a checkbox (shift-range, select-all) with a delete bar"
 msgstr "核取方塊＋選取頁面，以及一個動作列，其動詞是目前分頁本身的"
-
-#: docs/core-gaps.md:40
-msgctxt "docs/core-gaps.md"
-msgid "__MA_DOC_TOKEN_1__; per-taxonomy capabilities are enforced by core's"
-msgstr "__MA_DOC_TOKEN_1__；每個分類法的功能由核心"
-
-#: docs/core-gaps.md:199
-msgctxt "docs/core-gaps.md"
-msgid "__MA_DOC_TOKEN_1__. Wave D shipped 2026-07-17 (v0.18.0 cycle): the"
-msgstr "__MA_DOC_TOKEN_1__。Wave D 已於 2026-07-17 推出（v0.18.0 週期）："
-
-#: docs/core-gaps.md:206
-msgctxt "docs/core-gaps.md"
-msgid "__MA_DOC_TOKEN_1__. Moving stays browse-first: Minimal never owns"
-msgstr "__MA_DOC_TOKEN_1__。移動仍以瀏覽優先：Minimal 從不擁有"
-
-#: docs/core-gaps.md:111
-msgctxt "docs/core-gaps.md"
-msgid "__MA_DOC_TOKEN_1__, stale entries pruned; gated on"
-msgstr "__MA_DOC_TOKEN_1__，清除過時項目；受限於"
-
-#: docs/core-gaps.md:74
-msgctxt "docs/core-gaps.md"
-msgid "__MA_DOC_TOKEN_1__, downloading packs on save). Missing: other"
-msgstr "__MA_DOC_TOKEN_1__，儲存時下載套件）。缺少：其他"
-
-#: docs/core-gaps.md:127
-msgctxt "docs/core-gaps.md"
-msgid "__MA_DOC_TOKEN_1__); editor opens __MA_DOC_TOKEN_2__ natively"
-msgstr "__MA_DOC_TOKEN_1__）；編輯器原生開啟 __MA_DOC_TOKEN_2__"
-
-#: docs/core-gaps.md:112
-msgctxt "docs/core-gaps.md"
-msgid "__MA_DOC_TOKEN_1__ server- and client-side). Suite"
-msgstr "__MA_DOC_TOKEN_1__ 伺服器端與用戶端）。Suite"
-
-#: docs/core-gaps.md:200
-msgctxt "docs/core-gaps.md"
-msgid "__MA_DOC_TOKEN_1__ provider filter"
-msgstr "__MA_DOC_TOKEN_1__ 提供者篩選器"
-
-#: docs/core-gaps.md:173
-msgctxt "docs/core-gaps.md"
-msgid "__MA_DOC_TOKEN_1__ / feed excerpt, and most of the Discussion matrix (threading"
-msgstr "__MA_DOC_TOKEN_1__／feed 摘要，以及大部分 Discussion 矩陣（串接"
-
-#: docs/core-gaps.md:110
-msgctxt "docs/core-gaps.md"
-msgid "__MA_DOC_TOKEN_1__ (the same option writes as"
-msgstr "__MA_DOC_TOKEN_1__（相同選項寫入"
-
-#: docs/core-gaps.md:70
-msgctxt "docs/core-gaps.md"
-msgid "__MA_DOC_TOKEN_1__ (edit_css cap, per-theme stylesheet, structural"
-msgstr "__MA_DOC_TOKEN_1__（edit_css cap、每個主題的樣式表、結構"
-
-#: docs/core-gaps.md:162
-msgctxt "docs/core-gaps.md"
-msgid "Writable today: General (title, tagline, icon, URL, admin email, timezone,"
-msgstr "目前可寫入：General（標題、標語、圖示、URL、管理員電子郵件、時區、"
 
 #: docs/core-gaps.md:178
 msgctxt "docs/core-gaps.md"
-msgid "Users — at parity or better"
+msgid "emails, avatar rating/default). Judgment: what's missing is set-once config;"
 msgstr "使用者 — 已達到或超越對等程度"
 
 #: docs/core-gaps.md:191
 msgctxt "docs/core-gaps.md"
-msgid "Unattached filter (core parent=0), month filter (minimal-admin/v1/media/months"
+msgid "Grid with type filter/search/pagination, multi-upload, drag-drop, image"
 msgstr "未附加篩選器（核心 parent=0）、月份篩選器（minimal-admin/v1/media/months"
 
 #: docs/core-gaps.md:141
 msgctxt "docs/core-gaps.md"
-msgid "Types / Taxonomies / Terms tabs) rather than a standalone nav item, to keep"
+msgid "The Terms manager shipped 2026-07-10 (see priority #1). The only server"
 msgstr "Types／Taxonomies／Terms 分頁，而不是獨立的導覽項目，以便維持"
-
-#: docs/core-gaps.md:148
-msgctxt "docs/core-gaps.md"
-msgid "Tools — System page strong, one-shot tools absent"
-msgstr "Tools — System 頁面強大，但缺少一次性工具"
 
 #: docs/core-gaps.md:84
 msgctxt "docs/core-gaps.md"
-msgid "Theme integration — the audited frontier (2026-07-30)"
+msgid "install/activate/update/delete under Extensions. Template/FSE editing,"
 msgstr "主題整合 — 已稽核的前沿（2026-07-30）"
 
 #: docs/core-gaps.md:138
 msgctxt "docs/core-gaps.md"
-msgid "The Terms manager shipped 2026-07-10 (see priority #1). The only server"
+msgid "honest answer, same verdict as before."
 msgstr "Terms 管理器已於 2026-07-10 推出（請參閱優先級 #1）。唯一的伺服器"
 
 #: docs/core-gaps.md:149
 msgctxt "docs/core-gaps.md"
-msgid "The System page covers diagnostics well (health checks, DB tables, autoload"
+msgid "⌘K \"Manage categories & tags\" command still work, landing on the Terms tab."
 msgstr "System 頁面完整涵蓋診斷功能（健康檢查、資料庫表格、自動載入"
 
 #: docs/core-gaps.md:137
 msgctxt "docs/core-gaps.md"
-msgid "Taxonomies — covered"
+msgid "a per-theme treadmill with no schema; the Customizer deep link is the"
 msgstr "分類法 — 已涵蓋"
-
-#: docs/core-gaps.md:143
-msgctxt "docs/core-gaps.md"
-msgid "Taxonomies need __MA_DOC_TOKEN_1__, Terms needs only __MA_DOC_TOKEN_2__, so"
-msgstr "分類法需要 __MA_DOC_TOKEN_1__，Terms 只需要 __MA_DOC_TOKEN_2__，因此"
 
 #: docs/core-gaps.md:210
 msgctxt "docs/core-gaps.md"
-msgid "Tabs for pending/approved/spam/trash, full per-row moderation, bulk"
+msgid "a folder tree of its own."
 msgstr "待審核／已核准／垃圾／回收桶分頁，完整的逐列審核，批次"
 
 #: docs/core-gaps.md:222
 msgctxt "docs/core-gaps.md"
-msgid "Structural observation — REST-only is a hard boundary"
+msgid "and offers a capped, searchable site switcher in the sidebar and command"
 msgstr "結構觀察 — 僅限 REST 是硬性邊界"
-
-#: docs/core-gaps.md:94
-msgctxt "docs/core-gaps.md"
-msgid "Site Editor deep links, no global-styles summary. A block-theme site"
-msgstr "Site Editor 深層連結，沒有全域樣式摘要。區塊主題網站"
 
 #: docs/core-gaps.md:99
 msgctxt "docs/core-gaps.md"
-msgid "Site Editor canvas itself is a permanent link-out (same reasoning as"
+msgid "ranked inside this item: navigation first (real daily work, existing"
 msgstr "Site Editor 畫布本身是永久的外部連結（理由與"
 
 #: docs/core-gaps.md:67
 msgctxt "docs/core-gaps.md"
-msgid "Settings → Reading (latest posts vs static page, with page pickers); and as of"
+msgid "Customizer and theme options — partial, mostly by design"
 msgstr "Settings → Reading（最新文章或靜態頁面，含頁面選擇器）；截至"
 
 #: docs/core-gaps.md:161
 msgctxt "docs/core-gaps.md"
-msgid "Settings — daily options covered, two screens thin"
+msgid "item). Writes and a SQL console stay permanent non-goals there"
 msgstr "Settings — 日常選項已涵蓋，兩個畫面較薄弱"
 
 #: docs/core-gaps.md:12
@@ -18751,115 +18211,65 @@ msgctxt "docs/core-gaps.md"
 msgid "Re-audited 2026-07-30 at v0.23.0 open with a theme-integration focus (see"
 msgstr "已於 2026-07-30 在 v0.23.0 開放版本重新稽核，聚焦主題整合（請參閱"
 
-#: docs/core-gaps.md:102
-msgctxt "docs/core-gaps.md"
-msgid "REST-exposed but not __MA_DOC_TOKEN_1__, so the content switcher (rightly)"
-msgstr "已公開 REST，但未 __MA_DOC_TOKEN_1__，因此內容切換器（正確地）"
-
 #: docs/core-gaps.md:41
 msgctxt "docs/core-gaps.md"
-msgid "REST routes."
+msgid "(posts move to the surviving term through core's own reassignment"
 msgstr "REST 路由。"
 
 #: docs/core-gaps.md:31
 msgctxt "docs/core-gaps.md"
-msgid "Priority ranking (the gaps that matter)"
+msgid "one click away in wp-admin. Each area below gets a status and a judgment on"
 msgstr "優先級排名（重要的缺口）"
 
 #: docs/core-gaps.md:123
 msgctxt "docs/core-gaps.md"
-msgid "Patterns entry in the Content switcher with the standard row machinery"
+msgid "categories / set author across selected posts\"."
 msgstr "Content 切換器中的 Patterns 項目，具備標準列機制"
 
 #: docs/core-gaps.md:85
 msgctxt "docs/core-gaps.md"
-msgid "On a CLASSIC theme, the daily slice is covered: Menus, Widgets, logo, icon,"
+msgid "background and header images: out of scope by design."
 msgstr "在 CLASSIC 主題上，日常範圍已涵蓋：Menus、Widgets、標誌、圖示、"
 
 #: docs/core-gaps.md:217
 msgctxt "docs/core-gaps.md"
-msgid "Multisite — non-goal, degrades sanely"
+msgid "guest comments) and Block commenter (adds the author's email or IP to"
 msgstr "多網站 — 非目標，但能合理降級"
-
-#: docs/core-gaps.md:90
-msgctxt "docs/core-gaps.md"
-msgid "Minimal correctly hides Menus and Widgets when __MA_DOC_TOKEN_1__"
-msgstr "當 __MA_DOC_TOKEN_1__ 時，Minimal 會正確隱藏 Menus 與 Widgets"
 
 #: docs/core-gaps.md:97
 msgctxt "docs/core-gaps.md"
-msgid "Menus UX transfers), then a read-only Design card (active theme, its"
+msgid "Site Editor deep links, no global-styles summary. A block-theme site"
 msgstr "Menus UX 轉移），接著是唯讀 Design 卡片（啟用中的主題及其"
 
 #: docs/core-gaps.md:80
 msgctxt "docs/core-gaps.md"
-msgid "Menus (with drag reorder) and classic widgets are fully built; themes"
+msgid "and global styles are correctly long-tail."
 msgstr "Menus（含拖曳重新排序）與傳統小工具已完整建置；主題"
 
 #: docs/core-gaps.md:187
 msgctxt "docs/core-gaps.md"
-msgid "Media — grid solid, editing caught up"
+msgid "pack installs, the front-end toolbar preference). Application passwords"
 msgstr "媒體 — 網格穩固，編輯功能已跟上"
 
 #: docs/core-gaps.md:179
 msgctxt "docs/core-gaps.md"
-msgid "List, search, roles, add/edit, delete with content reassignment, password"
+msgid "add Discussion depth only if comment-heavy sites ask."
 msgstr "清單、搜尋、角色、新增／編輯、刪除並重新指派內容、密碼"
-
-#: docs/core-gaps.md:202
-msgctxt "docs/core-gaps.md"
-msgid "Library and Folders by Premio providers; a folder picker on the Media view"
-msgstr "由 Premio 提供者提供的 Library 與 Folders；Media 檢視中有資料夾選擇器"
 
 #: docs/core-gaps.md:188
 msgctxt "docs/core-gaps.md"
-msgid "Grid with type filter/search/pagination, multi-upload, drag-drop, image"
+msgid "and reassign-on-delete are better surfaced than classic."
 msgstr "具備類型篩選／搜尋／分頁的網格、多檔上傳、拖放、圖片"
-
-#: docs/core-gaps.md:129
-msgctxt "docs/core-gaps.md"
-msgid "GOTCHA: __MA_DOC_TOKEN_1__ is top-level READ-only in REST;"
-msgstr "注意：__MA_DOC_TOKEN_1__ 在 REST 中是頂層唯讀項目；"
-
-#: docs/core-gaps.md:218
-msgctxt "docs/core-gaps.md"
-msgid "Defensive gating exists (__MA_DOC_TOKEN_1__, super-admin file-mod"
-msgstr "存在防禦性閘控（__MA_DOC_TOKEN_1__、超級管理員檔案修改"
-
-#: docs/core-gaps.md:64
-msgctxt "docs/core-gaps.md"
-msgid "Customizer and theme options — partial, mostly by design"
-msgstr "Customizer 與主題選項 — 部分支援，主要是刻意如此"
-
-#: docs/core-gaps.md:86
-msgctxt "docs/core-gaps.md"
-msgid "Custom CSS, homepage. The gaps cluster on block themes and theme builders,"
-msgstr "自訂 CSS、首頁。缺口集中在區塊主題與主題建構器，"
 
 #: docs/core-gaps.md:65
 msgctxt "docs/core-gaps.md"
-msgid "Covered: site identity lives in Settings → General (title, tagline, site icon"
+msgid "Area-by-area status"
 msgstr "已涵蓋：網站識別資料位於 Settings → General（標題、標語、網站圖示"
 
 #: docs/core-gaps.md:1
 msgctxt "docs/core-gaps.md"
 msgid "Core coverage audit — gaps vs classic wp-admin"
 msgstr "核心涵蓋範圍稽核 — 與傳統 wp-admin 的差距"
-
-#: docs/core-gaps.md:209
-msgctxt "docs/core-gaps.md"
-msgid "Comments — complete, single-row and bulk"
-msgstr "留言 — 完整支援單列與批次"
-
-#: docs/core-gaps.md:104
-msgctxt "docs/core-gaps.md"
-msgid "Builder has no Minimal surface listing those templates. Same story for"
-msgstr "Builder 沒有列出這些範本的 Minimal 介面。同樣的情況也適用於"
-
-#: docs/core-gaps.md:105
-msgctxt "docs/core-gaps.md"
-msgid "Bricks/Divi template areas. Fits the existing page-builders adapter"
-msgstr "Bricks／Divi 範本區域。符合現有的頁面建構器介面卡"
 
 #: docs/core-gaps.md:3
 msgctxt "docs/core-gaps.md"
@@ -18868,22 +18278,17 @@ msgstr "已於 2026-07-10 針對 v0.10.0 完成稽核；2026-07-12 在"
 
 #: docs/core-gaps.md:140
 msgctxt "docs/core-gaps.md"
-msgid "As of the v0.11.0 cycle, Terms is folded into the **Structure** page (Post"
+msgid "Taxonomies — covered"
 msgstr "截至 v0.11.0 週期，Terms 已併入 **Structure** 頁面（Post"
-
-#: docs/core-gaps.md:62
-msgctxt "docs/core-gaps.md"
-msgid "Area-by-area status"
-msgstr "逐區域狀態"
 
 #: docs/core-gaps.md:79
 msgctxt "docs/core-gaps.md"
-msgid "Appearance — covered where it counts"
+msgid "logo + language is the daily slice and it's covered; the Customizer proper"
 msgstr "外觀 — 在關鍵位置已涵蓋"
 
 #: docs/core-gaps.md:223
 msgctxt "docs/core-gaps.md"
-msgid "Anything not exposed to REST is invisible to Minimal by construction: CPTs and"
+msgid "palette. A subsite administrator gets the site's full Users list with role"
 msgstr "任何未公開至 REST 的內容，依設計對 Minimal 而言都是不可見的：CPT 與"
 
 #: docs/core-gaps.md:19
@@ -18896,74 +18301,54 @@ msgctxt "docs/core-gaps.md"
 msgid "2026-07-24 at v0.22.0 open (the read-only database viewer shipped as a"
 msgstr "於 v0.22.0 開放日 2026-07-24（唯讀資料庫檢視器已作為"
 
-#: docs/core-gaps.md:33
-msgctxt "docs/core-gaps.md"
-msgid "**Term management** — ✅ shipped 2026-07-10: the **Terms** manager"
-msgstr "**詞彙管理** — ✅ 已於 2026-07-10 推出：**Terms** 管理器"
-
 #: docs/core-gaps.md:57
 msgctxt "docs/core-gaps.md"
-msgid "**Per-post format picker** — ✅ shipped (v0.11.0 cycle): the editor sidebar"
+msgid "gains a checkbox column (gated on edit-users) and a bar to change every"
 msgstr "**每篇文章的格式選擇器** — ✅ 已推出（v0.11.0 週期）：編輯器側邊欄"
 
 #: docs/core-gaps.md:42
 msgctxt "docs/core-gaps.md"
-msgid "**Media caption and description** — ✅ shipped (v0.11.0 cycle): the media"
+msgid "machinery, then the source is deleted). Editors get it via"
 msgstr "**媒體標題與說明** — ✅ 已推出（v0.11.0 週期）：媒體"
 
 #: docs/core-gaps.md:46
 msgctxt "docs/core-gaps.md"
-msgid "**Media bulk select/delete** — ✅ shipped (v0.11.0 cycle): grid tiles and"
+msgid "detail modal now edits caption and description alongside title and alt,"
 msgstr "**媒體批次選取／刪除** — ✅ 已推出（v0.11.0 週期）：網格項目與"
 
 #: docs/core-gaps.md:49
 msgctxt "docs/core-gaps.md"
-msgid "**Comment bulk moderation** — ✅ shipped (v0.11.0 cycle): comment rows get"
+msgid "**Media bulk select/delete** — ✅ shipped (v0.11.0 cycle): grid tiles and"
 msgstr "**留言批次審核** — ✅ 已推出（v0.11.0 週期）：留言列取得"
-
-#: docs/core-gaps.md:132
-msgctxt "docs/core-gaps.md"
-msgid "**Classic Customizer theme options — stays a link-out.** Arbitrary"
-msgstr "**Classic Customizer 主題選項 — 維持外部連結。** 任意"
 
 #: docs/core-gaps.md:53
 msgctxt "docs/core-gaps.md"
-msgid "**Bulk user role change** — ✅ shipped (v0.11.0 cycle): the users table"
+msgid "a checkbox + Select-page, and a bar whose verbs are the current tab's own"
 msgstr "**批次變更使用者角色** — ✅ 已推出（v0.11.0 週期）：使用者表格"
 
 #: docs/core-gaps.md:118
 msgctxt "docs/core-gaps.md"
-msgid "**Bulk edit beyond status (M).** The content bulk bar does status /"
+msgid "cycle): Live preview link on inactive theme cards: Customizer for"
 msgstr "**超出狀態的批次編輯（M）。** 內容批次列可處理狀態／"
-
-#: docs/core-gaps.md:101
-msgctxt "docs/core-gaps.md"
-msgid "**Builder theme templates are invisible (M).** __MA_DOC_TOKEN_1__ IS"
-msgstr "**建構器主題範本不可見（M）。** __MA_DOC_TOKEN_1__ IS"
 
 #: docs/core-gaps.md:89
 msgctxt "docs/core-gaps.md"
-msgid "**Block themes lose ground with no replacement (L, needs design).**"
+msgid "Custom CSS, homepage. The gaps cluster on block themes and theme builders,"
 msgstr "**區塊主題在沒有替代方案時失去優勢（L，需要設計）。**"
 
 #: docs/core-gaps.md:109
 msgctxt "docs/core-gaps.md"
-msgid "(v0.23.0 cycle): Auto pills on plugin AND theme cards through"
+msgid "thesis: list, badge the type (header/footer/popup/archive), show"
 msgstr "（v0.23.0 週期）：外掛與主題卡片都透過"
-
-#: docs/core-gaps.md:117
-msgctxt "docs/core-gaps.md"
-msgid "(the __MA_DOC_TOKEN_1__ flag now rides __MA_DOC_TOKEN_2__)."
-msgstr "（__MA_DOC_TOKEN_1__ 旗標現在隨 __MA_DOC_TOKEN_2__ 傳遞）。"
 
 #: docs/core-gaps.md:38
 msgctxt "docs/core-gaps.md"
-msgid "(posts move to the surviving term through core's own reassignment"
+msgid "with a switcher, an indented tree for hierarchical taxonomies, inline"
 msgstr "（文章會透過核心本身的重新指派功能移至仍存在的詞彙"
 
 #: docs/core-gaps.md:124
 msgctxt "docs/core-gaps.md"
-msgid "(front-end view/preview suppressed, not publicly queryable); slash"
+msgid "~~**Synced patterns (S-M).**~~ **SHIPPED 2026-08-04** (v0.23.0 cycle):"
 msgstr "（前端檢視／預覽已抑制，無法公開查詢）；斜線"
 
 #: docs/core-gaps.md:6
@@ -18978,28 +18363,8 @@ msgstr "（區塊主題 Site Editor 成果、建構器主題範本）以及另�
 
 #: docs/core-gaps.md:212
 msgctxt "docs/core-gaps.md"
-msgid "(auto-approves like core), context menu. The last two gaps closed in the"
+msgid "Comments — complete, single-row and bulk"
 msgstr "（像核心功能一樣自動核准）、內容選單。最後兩個缺口已在"
-
-#: docs/core-gaps.md:91
-msgctxt "docs/core-gaps.md"
-msgid "(__MA_DOC_TOKEN_1__), but nothing steps in: no navigation editing"
-msgstr "（__MA_DOC_TOKEN_1__），但沒有任何功能介入：沒有導覽編輯"
-
-#: docs/core-gaps.md:201
-msgctxt "docs/core-gaps.md"
-msgid "(__MA_DOC_TOKEN_1__) with bundled FileBird, Real Media"
-msgstr "（__MA_DOC_TOKEN_1__）以及隨附的 FileBird、Real Media"
-
-#: docs/core-gaps.md:92
-msgctxt "docs/core-gaps.md"
-msgid "(__MA_DOC_TOKEN_1__ posts have REST parity with what the Menus manager"
-msgstr "（__MA_DOC_TOKEN_1__ 文章在 REST 上與 Menus 管理器具有相同的對等性"
-
-#: docs/core-gaps.md:34
-msgctxt "docs/core-gaps.md"
-msgid "(Manage → Terms, __MA_DOC_TOKEN_1__) covers every REST-enabled taxonomy"
-msgstr "（Manage → Terms、__MA_DOC_TOKEN_1__）涵蓋所有啟用 REST 的分類法"
 
 #: docs/core-gaps.md:17
 msgctxt "docs/core-gaps.md"
@@ -19008,7 +18373,7 @@ msgstr "（Diagnostics 系列）；進一步的盤點工作屬於介面卡深度
 
 #: docs/core-gaps.md:69
 msgctxt "docs/core-gaps.md"
-msgid "\"Additional CSS\") edits in Settings → Design through"
+msgid "with full upload flow, site address, admin email); homepage settings in"
 msgstr "「Additional CSS」）會在 Settings → Design 中編輯"
 
 #: docs/content-blocks.md:31
@@ -21757,114 +21122,59 @@ msgctxt "docs/block-inspector.md"
 msgid "\"parent editing\": declared text inside a wrapper (e.g. the conversation header) is editable"
 msgstr "「parent editing」：wrapper 內宣告的文字（例如 conversation header）可編輯"
 
-#: docs/adapter-coverage.md:220
-msgctxt "docs/adapter-coverage.md"
-msgid "| — | ~~woocommerce-subscriptions update~~ | ~~ops~~ | ~~License-gated at 9.0.1~~ | — | **Resolved 2026-08-06**: Austin supplied the 9.1.0 zip; provenance-scanned (pattern-clean, no nulled markers, 474 files identical to installed 9.0.1, coherent 45-file minor-release delta, changelog dated 2026-08-05), manually updated, wcs-subscriptions 18/18 green (their \"hardened REST permission checks\" don't affect Minimal's admin cookie+nonce path). Elementor Pro was resolved earlier the same day (licensed, 4.2.1). All fixture-update debt is now clear |"
-msgstr "| — | ~~woocommerce-subscriptions update~~ | ~~ops~~ | ~~於 9.0.1 受授權限制~~ | — | **已於 2026-08-06 解決**：Austin 提供 9.1.0 zip；已完成來源掃描（模式乾淨、無破解標記、474 個檔案與已安裝的 9.0.1 相同、45 個檔案的次版本差異一致、變更記錄日期為 2026-08-05），手動更新，wcs-subscriptions 18/18 通過（其「強化的 REST 權限檢查」不影響 Minimal 的 admin cookie+nonce 路徑）。Elementor Pro 也在當天稍早解決（已授權，4.2.1）。所有 fixture 更新債務現已清除 |"
-
 #: docs/adapter-coverage.md:233
 msgctxt "docs/adapter-coverage.md"
-msgid "| — | elementor-pro update | ops | License-blocked 4.2.0 | — | Free Elementor is 4.2.0; Pro stuck on 4.1.2 until license updates; forms adapter still 200 |"
+msgid "| 2 | **WPForms Pro entries** | B | Forms family | M–L | Still needs Pro license + fixtures; biggest uncovered forms name |"
 msgstr "| — | elementor-pro update | ops | 授權封鎖 4.2.0 | — | Free Elementor 為 4.2.0；Pro 在取得授權更新前停留於 4.1.2；forms adapter 仍為 200 |"
 
 #: docs/adapter-coverage.md:249
 msgctxt "docs/adapter-coverage.md"
-msgid "| ~~9~~ | ~~fluent-smtp~~ | ~~B~~ | ~~Settings mapper (connections)~~ | ~~M–L~~ | **Resolved 2026-07-17**: misc settings WIRED (connections routing, logging, retention, simulation; suite fsmtp-settings 8); the per-provider connection wizard is the canvas part and stays a deep-link |"
+msgid "| ~~8~~ | ~~Media folders provider contract (FileBird first)~~ | ~~B~~ | ~~Wave D, browse-first~~ | ~~L~~ | **Shipped 2026-07-17 IN FULL** (minimal_admin_media_folders + FileBird, RML Lite and Premio Folders providers + the Move to folder bulk action; suite media-folders 20) |"
 msgstr "| ~~9~~ | ~~fluent-smtp~~ | ~~B~~ | ~~設定對應器（連線）~~ | ~~M–L~~ | **已於 2026-07-17 解決**：misc settings 已接線（連線路由、記錄、保留、模擬；suite fsmtp-settings 8）；每個提供者的連線精靈是 canvas 部分，並維持為深層連結 |"
 
 #: docs/adapter-coverage.md:248
 msgctxt "docs/adapter-coverage.md"
-msgid "| ~~8~~ | ~~Media folders provider contract (FileBird first)~~ | ~~B~~ | ~~Wave D, browse-first~~ | ~~L~~ | **Shipped 2026-07-17 IN FULL** (minimal_admin_media_folders + FileBird, RML Lite and Premio Folders providers + the Move to folder bulk action; suite media-folders 20) |"
+msgid "| 7 | WPForms Pro entries | B | Forms family | M–L | Needs a Pro license for fixtures; biggest uncovered forms name |"
 msgstr "| ~~8~~ | ~~媒體資料夾提供者合約（FileBird 優先）~~ | ~~B~~ | ~~Wave D，以瀏覽為優先~~ | ~~L~~ | **已於 2026-07-17 完整發布**（minimal_admin_media_folders + FileBird、RML Lite 和 Premio Folders 提供者 + Move to folder 批次動作；suite media-folders 20） |"
-
-#: docs/adapter-coverage.md:246
-msgctxt "docs/adapter-coverage.md"
-msgid "| ~~6~~ | ~~Enable Media Replace + core media polish~~ | ~~B~~ | ~~Wave D opener (unattached/date filters, \"attached to\", replace-in-place)~~ | ~~M~~ | **Shipped 2026-07-17 in two slices**: EMR ⇅ Replace file (suite media-replace 12) + core media polish (Unattached/month filters, Attached to; suite media-polish 15) |"
-msgstr "| ~~6~~ | ~~Enable Media Replace + 核心媒體最佳化~~ | ~~B~~ | ~~Wave D 開端（未附加/日期篩選器、「附加至」、原位取代）~~ | ~~M~~ | **已於 2026-07-17 分兩部分發布**：EMR ⇅ Replace file（suite media-replace 12）+ 核心媒體最佳化（Unattached/月篩選器、Attached to；suite media-polish 15） |"
 
 #: docs/adapter-coverage.md:245
 msgctxt "docs/adapter-coverage.md"
-msgid "| ~~5~~ | ~~GoSMTP / SureMails / Site Mailer~~ | ~~B~~ | ~~New mail-log providers~~ | ~~M~~ | **Resolved 2026-07-17**: SureMails + Site Mailer shipped (full mail-family treatment, suite __MA_DOC_TOKEN_1__); GoSMTP is a documented skip (free build stores no logs) |"
+msgid "| ~~4~~ | ~~All-In-One Security (AIOS)~~ | ~~B~~ | ~~Activity-log + posture~~ | ~~M~~ | **Shipped 2026-07-17** (audit feed + level tabs + status card; suite __MA_DOC_TOKEN_1__; the failed-login/permanent-block posture row stays a future add) |"
 msgstr "| ~~5~~ | ~~GoSMTP / SureMails / Site Mailer~~ | ~~B~~ | ~~新郵件記錄提供者~~ | ~~M~~ | **已於 2026-07-17 解決**：SureMails + Site Mailer 已發布（完整郵件系列處理；suite __MA_DOC_TOKEN_1__）；GoSMTP 為已記錄的跳過項目（免費版本不儲存記錄） |"
 
 #: docs/adapter-coverage.md:244
 msgctxt "docs/adapter-coverage.md"
-msgid "| ~~4~~ | ~~All-In-One Security (AIOS)~~ | ~~B~~ | ~~Activity-log + posture~~ | ~~M~~ | **Shipped 2026-07-17** (audit feed + level tabs + status card; suite __MA_DOC_TOKEN_1__; the failed-login/permanent-block posture row stays a future add) |"
+msgid "| ~~3~~ | ~~code-snippets~~ | ~~A~~ | ~~__MA_DOC_TOKEN_1__ card~~ | ~~S~~ | **Shipped 2026-07-17** (active/inactive/trashed, running scopes, last change, safe-mode row; suite code-snippets 26). CORRECTION: the 07-17 report's \"siblings all have one\" claim was a grep over-match on the word status; Redirection and Code Snippets are the FIRST cards in their families. Sibling cards (wpcode, fluent-snippets, custom-css-js, hfcm, SRM, S301, EPS) are now legitimate S-effort follow-ups |"
 msgstr "| ~~4~~ | ~~All-In-One Security (AIOS)~~ | ~~B~~ | ~~活動記錄 + 狀態~~ | ~~M~~ | **已於 2026-07-17 發布**（稽核資訊流 + level tabs + 狀態卡；suite __MA_DOC_TOKEN_1__；登入失敗/永久封鎖狀態列仍是未來新增項目） |"
 
 #: docs/adapter-coverage.md:243
 msgctxt "docs/adapter-coverage.md"
-msgid "| ~~3~~ | ~~code-snippets~~ | ~~A~~ | ~~__MA_DOC_TOKEN_1__ card~~ | ~~S~~ | **Shipped 2026-07-17** (active/inactive/trashed, running scopes, last change, safe-mode row; suite code-snippets 26). CORRECTION: the 07-17 report's \"siblings all have one\" claim was a grep over-match on the word status; Redirection and Code Snippets are the FIRST cards in their families. Sibling cards (wpcode, fluent-snippets, custom-css-js, hfcm, SRM, S301, EPS) are now legitimate S-effort follow-ups |"
+msgid "| ~~2~~ | ~~redirection~~ | ~~A~~ | ~~__MA_DOC_TOKEN_1__ card~~ | ~~S~~ | **Shipped 2026-07-17** (rows + dual redirects/404s chart; suite redirection-status, 10) |"
 msgstr "| ~~3~~ | ~~code-snippets~~ | ~~A~~ | ~~__MA_DOC_TOKEN_1__ 卡~~ | ~~S~~ | **已於 2026-07-17 發布**（啟用/停用/丟棄、執行範圍、最後變更、安全模式列；suite code-snippets 26）。更正：07-17 報告的「所有同系列都有一個」是對 status 一詞的 grep 過度匹配；Redirection 與 Code Snippets 是其系列中的 FIRST cards。Sibling cards（wpcode、fluent-snippets、custom-css-js、hfcm、SRM、S301、EPS）現在是合理的 S-effort 後續工作 |"
-
-#: docs/adapter-coverage.md:216
-msgctxt "docs/adapter-coverage.md"
-msgid "| ~~3~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~Honor __MA_DOC_TOKEN_1__~~ | ~~S~~ | **Shipped 2026-08-06** |"
-msgstr "| ~~3~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~遵循 __MA_DOC_TOKEN_1__~~ | ~~S~~ | **已於 2026-08-06 發布** |"
 
 #: docs/adapter-coverage.md:230
 msgctxt "docs/adapter-coverage.md"
-msgid "| ~~3~~ | ~~**all-in-one-security**~~ | ~~B~~ | ~~Failed-login / permanent-block posture~~ | ~~S–M~~ | **Shipped 2026-07-27** (status card + System health row; suite aios-log) |"
+msgid "| ~~2~~ | ~~**disembark**~~ | ~~B~~ | ~~Status-card deep-link \"Restore a backup ↗\"~~ | ~~S~~ | **Shipped 2026-07-27** (suite disembark; Disembark 2.8+ only) |"
 msgstr "| ~~3~~ | ~~**all-in-one-security**~~ | ~~B~~ | ~~登入失敗 / 永久封鎖狀態~~ | ~~S–M~~ | **已於 2026-07-27 發布**（狀態卡 + System health 列；suite aios-log） |"
-
-#: docs/adapter-coverage.md:242
-msgctxt "docs/adapter-coverage.md"
-msgid "| ~~2~~ | ~~redirection~~ | ~~A~~ | ~~__MA_DOC_TOKEN_1__ card~~ | ~~S~~ | **Shipped 2026-07-17** (rows + dual redirects/404s chart; suite redirection-status, 10) |"
-msgstr "| ~~2~~ | ~~redirection~~ | ~~A~~ | ~~__MA_DOC_TOKEN_1__ 卡~~ | ~~S~~ | **已於 2026-07-17 發布**（列 + dual redirects/404s chart；suite redirection-status，10） |"
-
-#: docs/adapter-coverage.md:215
-msgctxt "docs/adapter-coverage.md"
-msgid "| ~~2~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~ConnectionHealth status-card + System rows~~ | ~~S~~ | **Shipped 2026-08-06** |"
-msgstr "| ~~2~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~ConnectionHealth 狀態卡 + System 列~~ | ~~S~~ | **已於 2026-08-06 發布** |"
 
 #: docs/adapter-coverage.md:229
 msgctxt "docs/adapter-coverage.md"
-msgid "| ~~2~~ | ~~**disembark**~~ | ~~B~~ | ~~Status-card deep-link \"Restore a backup ↗\"~~ | ~~S~~ | **Shipped 2026-07-27** (suite disembark; Disembark 2.8+ only) |"
+msgid "| ~~1~~ | ~~**scrutoscope**~~ | ~~B~~ | ~~Cron view: \"Profile this hook\"~~ | ~~S~~ | **Shipped 2026-07-27** (suite scrutoscope; Scrutoscope 1.4+ only) |"
 msgstr "| ~~2~~ | ~~**disembark**~~ | ~~B~~ | ~~狀態卡深層連結「還原備份 ↗」~~ | ~~S~~ | **已於 2026-07-27 發布**（suite disembark；僅限 Disembark 2.8+） |"
-
-#: docs/adapter-coverage.md:241
-msgctxt "docs/adapter-coverage.md"
-msgid "| ~~1~~ | ~~sectionsRoute row types (__MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__, __MA_DOC_TOKEN_3__ sandboxed, __MA_DOC_TOKEN_4__)~~ | ~~A~~ | ~~Shared detail primitive~~ | ~~M~~ | **Shipped 2026-07-17** (suite detail-rows, 19; GSMTP log detail is the first consumer) |"
-msgstr "| ~~1~~ | ~~sectionsRoute 列類型（__MA_DOC_TOKEN_1__、__MA_DOC_TOKEN_2__、__MA_DOC_TOKEN_3__ 已沙盒化、__MA_DOC_TOKEN_4__）~~ | ~~A~~ | ~~共用詳細資料原語~~ | ~~M~~ | **已於 2026-07-17 發布**（suite detail-rows，19；GSMTP log detail 是第一個使用者） |"
 
 #: docs/adapter-coverage.md:218
 msgctxt "docs/adapter-coverage.md"
-msgid "| ~~1~~ | ~~forms status cards (fluent / ninja / forminator / flamingo)~~ | ~~A~~ | ~~Status-card parity with SureForms~~ | ~~S each~~ | **Shipped 2026-08-06** (+ everest-forms as a fifth; suite forms-status 12) |"
+msgid "| ~~1~~ | ~~**ecommerce suite re-run vs WC 11.0**~~ | ~~ops~~ | ~~Major-version deep pass~~ | ~~S~~ | **Verified 2026-08-06**: all 10 WC suites green (orders, order-page, order-payment, order-refunds, products, coupons, customers, ecommerce-create, ecommerce-depth, wcs-subscriptions = 153/153) against WC 11.0.0 with WC Subscriptions 9.0.1 riding on it; 11.0 changelog removals are the product block editor + admin notices moved to Site Health, nothing wc/v3-facing. No code change |"
 msgstr "| ~~1~~ | ~~表單狀態卡（fluent / ninja / forminator / flamingo）~~ | ~~A~~ | ~~與 SureForms 的狀態卡一致性~~ | ~~每個 S~~ | **已於 2026-08-06 發布**（加上 everest-forms 作為第五個；suite forms-status 12） |"
-
-#: docs/adapter-coverage.md:219
-msgctxt "docs/adapter-coverage.md"
-msgid "| ~~1~~ | ~~WPForms Pro entries~~ | ~~B~~ | ~~Forms family~~ | ~~M–L~~ | **SHIPPED 2026-08-06** (adapters/wpforms.php; suite wpforms 16; forms-status 14). Fixture history: **UNBLOCKED + fixture ready 2026-08-06.** Austin supplied a WPForms Pro 2.0.0.2 zip (dev use; GPL). Provenance-verified before install: 823 shared PHP files byte-identical to wp.org Lite 2.0.0.2, only diff = plugin header line; no eval/base64/odd-host patterns outside vendor; no nulled watermarks; license code intact; single build date 2026-07-22. ACTIVE on minimaladmin; all 13 tables created on activation; entries VERIFIED to store unlicensed through their own __MA_DOC_TOKEN_1__ (license gates updates/addons, not storage). Standing fixture: form 5363 \"Minimal Contact Form\" (name/email/textarea) + 2 entries (Dana/Miguel). Storage: wpforms CPT (form JSON in post_content), {prefix}wpforms_entries (status/viewed/starred + fields JSON) + wpforms_entry_fields per-answer rows |"
-msgstr "| ~~1~~ | ~~WPForms Pro entries~~ | ~~B~~ | ~~表單系列~~ | ~~M–L~~ | **已於 2026-08-06 發布**（adapters/wpforms.php；suite wpforms 16；forms-status 14）。Fixture 歷史：**已解除阻塞 + fixture 已於 2026-08-06 就緒。** Austin 提供 WPForms Pro 2.0.0.2 zip（開發用途；GPL）。安裝前已完成來源驗證：823 個共用 PHP 檔案與 wp.org Lite 2.0.0.2 逐位元組相同，唯一差異是外掛標頭行；vendor 外沒有 eval/base64/異常主機模式；沒有破解浮水印；授權程式碼完整；唯一建置日期為 2026-07-22。在 minimaladmin 上啟用；啟用時建立全部 13 個資料表；已驗證 entries 可透過其自身的 __MA_DOC_TOKEN_1__ 在未授權狀態下儲存（授權限制更新/附加元件，不限制儲存）。固定 fixture：表單 5363 \"Minimal Contact Form\"（姓名/電子郵件/textarea）+ 2 筆 entries（Dana/Miguel）。儲存：wpforms CPT（表單 JSON 位於 post_content）、{prefix}wpforms_entries（status/viewed/starred + fields JSON）+ wpforms_entry_fields 每個答案一列 |"
 
 #: docs/adapter-coverage.md:257
 msgctxt "docs/adapter-coverage.md"
-msgid "| ~~1~~ | ~~**simple-history / wsal / stream / aryo**~~ | ~~A~~ | ~~**status** cards~~ | ~~S–M~~ | **Shipped 2026-07-15** |"
-msgstr "| ~~1~~ | ~~**simple-history / wsal / stream / aryo**~~ | ~~A~~ | ~~**狀態**卡~~ | ~~S–M~~ | **已於 2026-07-15 發布** |"
-
-#: docs/adapter-coverage.md:228
-msgctxt "docs/adapter-coverage.md"
-msgid "| ~~1~~ | ~~**scrutoscope**~~ | ~~B~~ | ~~Cron view: \"Profile this hook\"~~ | ~~S~~ | **Shipped 2026-07-27** (suite scrutoscope; Scrutoscope 1.4+ only) |"
-msgstr "| ~~1~~ | ~~**scrutoscope**~~ | ~~B~~ | ~~Cron 檢視：「Profile this hook」~~ | ~~S~~ | **已於 2026-07-27 發布**（套件 scrutoscope；僅限 Scrutoscope 1.4+） |"
-
-#: docs/adapter-coverage.md:256
-msgctxt "docs/adapter-coverage.md"
 msgid "| ~~1~~ | ~~**gravity-smtp**~~ | ~~A~~ | ~~Bulk log delete~~ | ~~S~~ | **Shipped 2026-07-15** |"
-msgstr "| ~~1~~ | ~~**gravity-smtp**~~ | ~~A~~ | ~~批次記錄刪除~~ | ~~S~~ | **已於 2026-07-15 發布** |"
-
-#: docs/adapter-coverage.md:214
-msgctxt "docs/adapter-coverage.md"
-msgid "| ~~1~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~Resend through their __MA_DOC_TOKEN_1__ + resend-history detail + \"Resend to…\" override~~ | ~~S–M~~ | **Shipped 2026-08-06** (mail-log 36) |"
-msgstr "| ~~1~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~透過其 __MA_DOC_TOKEN_1__ 重新傳送 + resend-history 詳細資料 +「Resend to…」覆寫~~ | ~~S–M~~ | **已於 2026-08-06 發布**（mail-log 36） |"
-
-#: docs/adapter-coverage.md:217
-msgctxt "docs/adapter-coverage.md"
-msgid "| ~~1~~ | ~~**ecommerce suite re-run vs WC 11.0**~~ | ~~ops~~ | ~~Major-version deep pass~~ | ~~S~~ | **Verified 2026-08-06**: all 10 WC suites green (orders, order-page, order-payment, order-refunds, products, coupons, customers, ecommerce-create, ecommerce-depth, wcs-subscriptions = 153/153) against WC 11.0.0 with WC Subscriptions 9.0.1 riding on it; 11.0 changelog removals are the product block editor + admin notices moved to Site Health, nothing wc/v3-facing. No code change |"
-msgstr "| ~~1~~ | ~~**ecommerce suite 重新對照 WC 11.0 執行**~~ | ~~ops~~ | ~~重大版本深入檢查~~ | ~~S~~ | **已於 2026-08-06 驗證**：全部 10 個 WC 套件通過（orders、order-page、order-payment、order-refunds、products、coupons、customers、ecommerce-create、ecommerce-depth、wcs-subscriptions = 153/153），對照 WC 11.0.0，並使用 WC Subscriptions 9.0.1；11.0 變更日誌的移除項目是產品區塊編輯器 + 移至 Site Health 的管理通知，不涉及 wc/v3。沒有程式碼變更 |"
+msgstr "| ~~1~~ | ~~**simple-history / wsal / stream / aryo**~~ | ~~A~~ | ~~**狀態**卡~~ | ~~S–M~~ | **已於 2026-07-15 發布** |"
 
 #: docs/adapter-coverage.md:250
 msgctxt "docs/adapter-coverage.md"
-msgid "| ~~10~~ | ~~GF add-on/feed settings~~ | ~~B~~ | ~~Schema-export multiplier from full-ui-adapters~~ | ~~L~~ | **Resolved 2026-07-17**: Feeds VIEW shipped (list/toggle/delete/deep-link; suite gf-feeds 10); config mapper deferred with a written verdict (full-ui-adapters.md) |"
+msgid "| ~~9~~ | ~~fluent-smtp~~ | ~~B~~ | ~~Settings mapper (connections)~~ | ~~M–L~~ | **Resolved 2026-07-17**: misc settings WIRED (connections routing, logging, retention, simulation; suite fsmtp-settings 8); the per-provider connection wizard is the canvas part and stays a deep-link |"
 msgstr "| ~~10~~ | ~~GF 附加元件/Feed 設定~~ | ~~B~~ | ~~來自 full-ui-adapters 的 Schema 匯出倍增器~~ | ~~L~~ | **已於 2026-07-17 解決**：Feeds VIEW 已發布（清單/切換/刪除/深層連結；套件 gf-feeds 10）；設定對映器延後，並已有書面結論（full-ui-adapters.md） |"
 
 #: docs/adapter-coverage.md:81
@@ -22202,12 +21512,6 @@ msgctxt "docs/adapter-coverage.md"
 msgid "| ai1wm | Y | — | — | Y | — | Y | — | — | — | Y | 2026-07-12 | .wpress list; export/import wizards = **L**; no freshness |"
 msgstr "| ai1wm | Y | — | — | Y | — | Y | — | — | — | Y | 2026-07-12 | .wpress 清單；匯出/匯入精靈 = **L**；沒有新鮮度 |"
 
-#: docs/adapter-coverage.md:212 docs/adapter-coverage.md:226
-#: docs/adapter-coverage.md:239 docs/adapter-coverage.md:254
-msgctxt "docs/adapter-coverage.md"
-msgid "| Rank | Adapter | Axis | Gap | Effort | Why now |"
-msgstr "| 排名 | 適配器 | 軸 | 缺口 | 工作量 | 為何現在 |"
-
 #: docs/adapter-coverage.md:155
 msgctxt "docs/adapter-coverage.md"
 msgid "| Date | Scope | Outcome |"
@@ -22237,28 +21541,23 @@ msgstr "| 適配器 | 形狀 | 套件 | 已審查 | 備註 |"
 
 #: docs/adapter-coverage.md:247
 msgctxt "docs/adapter-coverage.md"
-msgid "| 7 | WPForms Pro entries | B | Forms family | M–L | Needs a Pro license for fixtures; biggest uncovered forms name |"
+msgid "| ~~6~~ | ~~Enable Media Replace + core media polish~~ | ~~B~~ | ~~Wave D opener (unattached/date filters, \"attached to\", replace-in-place)~~ | ~~M~~ | **Shipped 2026-07-17 in two slices**: EMR ⇅ Replace file (suite media-replace 12) + core media polish (Unattached/month filters, Attached to; suite media-polish 15) |"
 msgstr "| 7 | WPForms Pro entries | B | 表單系列 | M–L | 需要 Pro 授權以建立 fixtures；最大的未涵蓋表單名稱 |"
 
 #: docs/adapter-coverage.md:262
 msgctxt "docs/adapter-coverage.md"
-msgid "| 6 | fluent-smtp | B | Settings mapper (connections) | M | GSMTP has settings; Fluent connection UI is canvas-ish → likely **L** |"
+msgid "| 5 | WPForms Pro entries | B | Forms family | M–L | Needs Pro license + fixtures; biggest missing forms name |"
 msgstr "| 6 | fluent-smtp | B | 設定對映器（連線） | M | GSMTP 有設定；Fluent 連線 UI 類似畫布 → 可能為 **L** |"
 
 #: docs/adapter-coverage.md:261
 msgctxt "docs/adapter-coverage.md"
-msgid "| 5 | WPForms Pro entries | B | Forms family | M–L | Needs Pro license + fixtures; biggest missing forms name |"
+msgid "| 4 | GoSMTP / SureMails / Site Mailer | B | New mail-log providers | M | **Not installed**; source-verify free log storage first |"
 msgstr "| 5 | WPForms Pro entries | B | 表單系列 | M–L | 需要 Pro 授權 + fixtures；缺少的最大表單名稱 |"
 
 #: docs/adapter-coverage.md:260
 msgctxt "docs/adapter-coverage.md"
-msgid "| 4 | GoSMTP / SureMails / Site Mailer | B | New mail-log providers | M | **Not installed**; source-verify free log storage first |"
-msgstr "| 4 | GoSMTP / SureMails / Site Mailer | B | 新郵件記錄供應商 | M | **尚未安裝**；請先驗證免費記錄儲存功能 |"
-
-#: docs/adapter-coverage.md:259
-msgctxt "docs/adapter-coverage.md"
 msgid "| 3 | All-In-One Security (AIOS) | B | Activity-log + posture (LLA-R/Solid pattern) | M | Wave B leftover; **not installed** on minimaladmin — install first |"
-msgstr "| 3 | All-In-One Security (AIOS) | B | 活動記錄 + 安全態勢（LLA-R/Solid 模式） | M | Wave B 遺留項目；在 minimaladmin 上**尚未安裝**——請先安裝 |"
+msgstr "| 4 | GoSMTP / SureMails / Site Mailer | B | 新郵件記錄供應商 | M | **尚未安裝**；請先驗證免費記錄儲存功能 |"
 
 #: docs/adapter-coverage.md:177
 msgctxt "docs/adapter-coverage.md"
@@ -22512,17 +21811,12 @@ msgstr "| 2026-07-12 | 建立 Skill 與此矩陣 | 將以報告為先的操作�
 
 #: docs/adapter-coverage.md:232
 msgctxt "docs/adapter-coverage.md"
-msgid "| 2 | **WPForms Pro entries** | B | Forms family | M–L | Still needs Pro license + fixtures; biggest uncovered forms name |"
+msgid "| 1 | **forms status cards** (fluent / ninja / forminator / flamingo) | A | Status card parity with SureForms | S each | Optional polish; GF deliberately skips chart/status; only ship if dogfooding wants at-a-glance inbox counts |"
 msgstr "| 2 | **WPForms Pro entries** | B | 表單家族 | M–L | 仍需要 Pro 授權與 fixtures；最大的未涵蓋表單名稱 |"
-
-#: docs/adapter-coverage.md:258
-msgctxt "docs/adapter-coverage.md"
-msgid "| 1 | sectionsRoute row types (__MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__, __MA_DOC_TOKEN_3__, __MA_DOC_TOKEN_4__) | A | Email-log detail fidelity | M | Shared primitive; benefits GSMTP/Fluent/Post detail |"
-msgstr "| 1 | sectionsRoute 列類型（__MA_DOC_TOKEN_1__、__MA_DOC_TOKEN_2__、__MA_DOC_TOKEN_3__、__MA_DOC_TOKEN_4__） | A | 電子郵件記錄詳細資料完整性 | M | 共用原語；有益於 GSMTP／Fluent／Post 詳細資料 |"
 
 #: docs/adapter-coverage.md:231
 msgctxt "docs/adapter-coverage.md"
-msgid "| 1 | **forms status cards** (fluent / ninja / forminator / flamingo) | A | Status card parity with SureForms | S each | Optional polish; GF deliberately skips chart/status; only ship if dogfooding wants at-a-glance inbox counts |"
+msgid "| ~~3~~ | ~~**all-in-one-security**~~ | ~~B~~ | ~~Failed-login / permanent-block posture~~ | ~~S–M~~ | **Shipped 2026-07-27** (status card + System health row; suite aios-log) |"
 msgstr "| 1 | **表單狀態卡**（fluent／ninja／forminator／flamingo） | A | 與 SureForms 的狀態卡相等性 | 各 S | 可選的精修；GF 刻意跳過圖表／狀態；只有 dogfooding 想快速查看收件匣數量時才發布 |"
 
 #: docs/adapter-coverage.md:17
@@ -22597,7 +21891,7 @@ msgstr "| **L** | 刻意連結至 wp-admin／供應商 UI（畫布、OAuth、條
 
 #: docs/adapter-coverage.md:271
 msgctxt "docs/adapter-coverage.md"
-msgid "touched adapters (or stamp __MA_DOC_TOKEN_1__ in the adapter header)."
+msgid "When a sweep updates cells or ships work, append a row and set __MA_DOC_TOKEN_1__ on"
 msgstr "已觸及的 Adapter（或在 Adapter 標頭中標記 __MA_DOC_TOKEN_1__）。"
 
 #: docs/adapter-coverage.md:114
@@ -22637,7 +21931,7 @@ msgstr "備份"
 
 #: docs/adapter-coverage.md:273
 msgctxt "docs/adapter-coverage.md"
-msgid "and keep development-environment details out of them."
+msgid "Rows are public: record adapter-relevant facts (versions, deltas, verdicts)"
 msgstr "並將開發環境細節排除在外。"
 
 #: docs/adapter-coverage.md:87
@@ -22650,11 +21944,6 @@ msgctxt "docs/adapter-coverage.md"
 msgid "__MA_DOC_TOKEN_1__. For descriptor contracts, see __MA_DOC_TOKEN_2__."
 msgstr "__MA_DOC_TOKEN_1__。如需描述元合約，請參閱 __MA_DOC_TOKEN_2__。"
 
-#: docs/adapter-coverage.md:270
-msgctxt "docs/adapter-coverage.md"
-msgid "When a sweep updates cells or ships work, append a row and set __MA_DOC_TOKEN_1__ on"
-msgstr "當掃描更新儲存格或發布工作時，附加一列，並在其上設定 __MA_DOC_TOKEN_1__"
-
 #: docs/adapter-coverage.md:7
 msgctxt "docs/adapter-coverage.md"
 msgid "This is **not** the marketing map. For \"what plugins show up in Minimal,\" see"
@@ -22665,20 +21954,10 @@ msgctxt "docs/adapter-coverage.md"
 msgid "Sweep log"
 msgstr "掃描記錄"
 
-#: docs/adapter-coverage.md:235
-msgctxt "docs/adapter-coverage.md"
-msgid "Superseded open items from 2026-07-17 (struck above) remain shipped. Matrix cells: no Axis A drift found this pass."
-msgstr "2026-07-17 的已取代開放項目（上方刪除線）仍已發布。本次未發現矩陣儲存格有 Axis A 漂移。"
-
 #: docs/adapter-coverage.md:41
 msgctxt "docs/adapter-coverage.md"
 msgid "Seeded 2026-07-12 from adapter sources + recent expansion rounds. Re-check"
 msgstr "於 2026-07-12 從 Adapter 來源與近期擴充輪次建立。重新檢查"
-
-#: docs/adapter-coverage.md:272
-msgctxt "docs/adapter-coverage.md"
-msgid "Rows are public: record adapter-relevant facts (versions, deltas, verdicts)"
-msgstr "列為公開資訊：記錄與 Adapter 相關的事實（版本、差異、判定）"
 
 #: docs/adapter-coverage.md:46
 msgctxt "docs/adapter-coverage.md"
@@ -22689,31 +21968,6 @@ msgstr "參考深度：**Gravity SMTP**。家族文件：__MA_DOC_TOKEN_1__。"
 msgctxt "docs/adapter-coverage.md"
 msgid "Reference depth: **Gravity Forms**."
 msgstr "參考深度：**Gravity Forms**。"
-
-#: docs/adapter-coverage.md:222
-msgctxt "docs/adapter-coverage.md"
-msgid "Ranks 1–3 (the FluentSMTP 2.3.0 catch-up) shipped as one unit on 2026-08-06."
-msgstr "排名 1–3（FluentSMTP 2.3.0 追趕工作）已於 2026-08-06 作為單一單元發布。"
-
-#: docs/adapter-coverage.md:210
-msgctxt "docs/adapter-coverage.md"
-msgid "Ranked backlog (2026-08-06 sweep)"
-msgstr "排名待辦事項（2026-08-06 掃描）"
-
-#: docs/adapter-coverage.md:224
-msgctxt "docs/adapter-coverage.md"
-msgid "Ranked backlog (2026-07-27, v0.22.0 sweep)"
-msgstr "排名待辦事項（2026-07-27，v0.22.0 掃描）"
-
-#: docs/adapter-coverage.md:237
-msgctxt "docs/adapter-coverage.md"
-msgid "Ranked backlog (2026-07-17, v0.18.0 open)"
-msgstr "排名待辦事項（2026-07-17，v0.18.0 開放）"
-
-#: docs/adapter-coverage.md:252
-msgctxt "docs/adapter-coverage.md"
-msgid "Ranked backlog (2026-07-15 Axis A pass, superseded)"
-msgstr "排名待辦事項（2026-07-15 Axis A 階段，已取代）"
 
 #: docs/adapter-coverage.md:151
 msgctxt "docs/adapter-coverage.md"
@@ -22784,21 +22038,6 @@ msgstr "Adapter 涵蓋矩陣"
 msgctxt "docs/adapter-coverage.md"
 msgid "**family reference** first. A thin log shim that matches siblings is done."
 msgstr "先以 **family reference** 為準。符合兄弟外掛的精簡記錄 shim 已完成。"
-
-#: docs/adapter-coverage.md:264
-msgctxt "docs/adapter-coverage.md"
-msgid "**Matrix fixes this sweep:** gravity-smtp bulk → **Y**; cf7-flamingo / cfdb7 / ninja-forms bulk → **Y** (code already had bulk; cells were stale)."
-msgstr "**本次掃描的矩陣修正：** gravity-smtp bulk → **Y**；cf7-flamingo／cfdb7／ninja-forms bulk → **Y**（程式碼原本已有 bulk；儲存格內容過時）。"
-
-#: docs/adapter-coverage.md:268
-msgctxt "docs/adapter-coverage.md"
-msgid "**Fixtures snapshot (minimaladmin):** mail residents FluentSMTP + WP Mail Logging + Gravity SMTP active, Post SMTP + WP Mail SMTP inactive; forms pack active (GF not listed in grep but usually is, Fluent Forms, Ninja, Forminator, Formidable, Everest, Flamingo, CFDB7, Elementor Pro); activity-log WSAL + LLA-R + **Solid active**; redirects Redirection active, SRM/S301/EPS inactive; backups Updraft/WPvivid/Duplicator/Disembark/BackWPup active."
-msgstr "**Fixtures 快照（minimaladmin）：** 郵件常駐外掛 FluentSMTP + WP Mail Logging + Gravity SMTP 啟用，Post SMTP + WP Mail SMTP 停用；表單套件啟用（grep 未列出 GF，但通常存在，另有 Fluent Forms、Ninja、Forminator、Formidable、Everest、Flamingo、CFDB7、Elementor Pro）；活動記錄 WSAL + LLA-R + **Solid 啟用**；重新導向 Redirection 啟用，SRM/S301/EPS 停用；備份 Updraft/WPvivid/Duplicator/Disembark/BackWPup 啟用。"
-
-#: docs/adapter-coverage.md:266
-msgctxt "docs/adapter-coverage.md"
-msgid "**Deliberate non-goals:** GSMTP routing tree authoring; GF form builder / notifications events; backup restores; WP Mail SMTP Pro log without Pro; forminator \"status card\" (inbox plugins don't need GSMTP-style charts); ecommerce (shipped v0.14); re-proposing forminator/formidable tabs (already wired)."
-msgstr "**刻意不涵蓋的目標：** GSMTP 路由樹編寫；GF 表單建構器／通知事件；備份還原；沒有 Pro 的 WP Mail SMTP Pro 記錄；forminator「狀態卡」（收件匣外掛不需要 GSMTP 風格的圖表）；電子商務（已於 v0.14 發布）；重新提出 forminator/formidable 分頁（已接線）。"
 
 #: docs/adapter-coverage.md:5
 msgctxt "docs/adapter-coverage.md"

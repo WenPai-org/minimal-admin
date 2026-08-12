@@ -2,7 +2,7 @@
 # Documentation translations for Minimal Admin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Minimal Admin Docs 0.27.0.2\n"
+"Project-Id-Version: Minimal Admin Docs 0.28.0.1\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -477,17 +477,17 @@ msgctxt "docs/adapter-coverage.md"
 msgid "**Adapter sweep** runbook in the __MA_DOC_TOKEN_1__ skill (__MA_DOC_TOKEN_2__)."
 msgstr ""
 
-#: docs/adapter-coverage.md:266
+#: docs/adapter-coverage.md:267
 msgctxt "docs/adapter-coverage.md"
 msgid "**Deliberate non-goals:** GSMTP routing tree authoring; GF form builder / notifications events; backup restores; WP Mail SMTP Pro log without Pro; forminator \"status card\" (inbox plugins don't need GSMTP-style charts); ecommerce (shipped v0.14); re-proposing forminator/formidable tabs (already wired)."
 msgstr ""
 
-#: docs/adapter-coverage.md:268
+#: docs/adapter-coverage.md:269
 msgctxt "docs/adapter-coverage.md"
 msgid "**Fixtures snapshot (minimaladmin):** mail residents FluentSMTP + WP Mail Logging + Gravity SMTP active, Post SMTP + WP Mail SMTP inactive; forms pack active (GF not listed in grep but usually is, Fluent Forms, Ninja, Forminator, Formidable, Everest, Flamingo, CFDB7, Elementor Pro); activity-log WSAL + LLA-R + **Solid active**; redirects Redirection active, SRM/S301/EPS inactive; backups Updraft/WPvivid/Duplicator/Disembark/BackWPup active."
 msgstr ""
 
-#: docs/adapter-coverage.md:264
+#: docs/adapter-coverage.md:265
 msgctxt "docs/adapter-coverage.md"
 msgid "**Matrix fixes this sweep:** gravity-smtp bulk → **Y**; cf7-flamingo / cfdb7 / ninja-forms bulk → **Y** (code already had bulk; cells were stale)."
 msgstr ""
@@ -562,27 +562,27 @@ msgctxt "docs/adapter-coverage.md"
 msgid "Pro-only stores without fixtures (WP Mail SMTP Pro full log, WPForms Pro entries)"
 msgstr ""
 
-#: docs/adapter-coverage.md:252
+#: docs/adapter-coverage.md:253
 msgctxt "docs/adapter-coverage.md"
 msgid "Ranked backlog (2026-07-15 Axis A pass, superseded)"
 msgstr ""
 
-#: docs/adapter-coverage.md:237
+#: docs/adapter-coverage.md:238
 msgctxt "docs/adapter-coverage.md"
 msgid "Ranked backlog (2026-07-17, v0.18.0 open)"
 msgstr ""
 
-#: docs/adapter-coverage.md:224
+#: docs/adapter-coverage.md:225
 msgctxt "docs/adapter-coverage.md"
 msgid "Ranked backlog (2026-07-27, v0.22.0 sweep)"
 msgstr ""
 
-#: docs/adapter-coverage.md:210
+#: docs/adapter-coverage.md:211
 msgctxt "docs/adapter-coverage.md"
 msgid "Ranked backlog (2026-08-06 sweep)"
 msgstr ""
 
-#: docs/adapter-coverage.md:222
+#: docs/adapter-coverage.md:223
 msgctxt "docs/adapter-coverage.md"
 msgid "Ranks 1–3 (the FluentSMTP 2.3.0 catch-up) shipped as one unit on 2026-08-06."
 msgstr ""
@@ -597,7 +597,7 @@ msgctxt "docs/adapter-coverage.md"
 msgid "Reference depth: **Gravity SMTP**. Family doc: __MA_DOC_TOKEN_1__."
 msgstr ""
 
-#: docs/adapter-coverage.md:272
+#: docs/adapter-coverage.md:273
 msgctxt "docs/adapter-coverage.md"
 msgid "Rows are public: record adapter-relevant facts (versions, deltas, verdicts)"
 msgstr ""
@@ -607,7 +607,7 @@ msgctxt "docs/adapter-coverage.md"
 msgid "Seeded 2026-07-12 from adapter sources + recent expansion rounds. Re-check"
 msgstr ""
 
-#: docs/adapter-coverage.md:235
+#: docs/adapter-coverage.md:236
 msgctxt "docs/adapter-coverage.md"
 msgid "Superseded open items from 2026-07-17 (struck above) remain shipped. Matrix cells: no Axis A drift found this pass."
 msgstr ""
@@ -622,7 +622,7 @@ msgctxt "docs/adapter-coverage.md"
 msgid "This is **not** the marketing map. For \"what plugins show up in Minimal,\" see"
 msgstr ""
 
-#: docs/adapter-coverage.md:270
+#: docs/adapter-coverage.md:271
 msgctxt "docs/adapter-coverage.md"
 msgid "When a sweep updates cells or ships work, append a row and set __MA_DOC_TOKEN_1__ on"
 msgstr ""
@@ -637,7 +637,7 @@ msgctxt "docs/adapter-coverage.md"
 msgid "activity-log"
 msgstr ""
 
-#: docs/adapter-coverage.md:273
+#: docs/adapter-coverage.md:274
 msgctxt "docs/adapter-coverage.md"
 msgid "and keep development-environment details out of them."
 msgstr ""
@@ -677,7 +677,7 @@ msgctxt "docs/adapter-coverage.md"
 msgid "settings-only / other surfaces"
 msgstr ""
 
-#: docs/adapter-coverage.md:271
+#: docs/adapter-coverage.md:272
 msgctxt "docs/adapter-coverage.md"
 msgid "touched adapters (or stamp __MA_DOC_TOKEN_1__ in the adapter header)."
 msgstr ""
@@ -752,17 +752,17 @@ msgctxt "docs/adapter-coverage.md"
 msgid "| **—** | Not applicable (plugin has no such concept, or a thin shim is enough) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:231
+#: docs/adapter-coverage.md:232
 msgctxt "docs/adapter-coverage.md"
 msgid "| 1 | **forms status cards** (fluent / ninja / forminator / flamingo) | A | Status card parity with SureForms | S each | Optional polish; GF deliberately skips chart/status; only ship if dogfooding wants at-a-glance inbox counts |"
 msgstr ""
 
-#: docs/adapter-coverage.md:258
+#: docs/adapter-coverage.md:259
 msgctxt "docs/adapter-coverage.md"
 msgid "| 1 | sectionsRoute row types (__MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__, __MA_DOC_TOKEN_3__, __MA_DOC_TOKEN_4__) | A | Email-log detail fidelity | M | Shared primitive; benefits GSMTP/Fluent/Post detail |"
 msgstr ""
 
-#: docs/adapter-coverage.md:232
+#: docs/adapter-coverage.md:233
 msgctxt "docs/adapter-coverage.md"
 msgid "| 2 | **WPForms Pro entries** | B | Forms family | M–L | Still needs Pro license + fixtures; biggest uncovered forms name |"
 msgstr ""
@@ -1027,27 +1027,37 @@ msgctxt "docs/adapter-coverage.md"
 msgid "| 2026-08-10 | Release pre-flight sweep (v0.27.0 cut) | **Plugins:** 1/3 updated — fluentform 6.2.11→6.2.12; perfmatters 2.6.7 + searchwp 4.6.1 both license-gated (expected). Axis B skim of fluentform 6.2.12: entries list gains a **Spam status filter** (backlog: mirror as a tab in the fluent-forms adapter's entries view); optional MCP server off by default (no adapter surface); output-escaping/authorization hardening aligns with the v0.26 security pass. No storage or API moves. Smoke: fluent-forms entries/forms/status all 200 post-update. **No ship.** |"
 msgstr ""
 
-#: docs/adapter-coverage.md:259
+#: docs/adapter-coverage.md:209
 msgctxt "docs/adapter-coverage.md"
-msgid "| 3 | All-In-One Security (AIOS) | B | Activity-log + posture (LLA-R/Solid pattern) | M | Wave B leftover; **not installed** on minimaladmin — install first |"
+msgid "| 2026-08-11 | **Multisite security axis** (v0.28.0 network cycle, lab minimalms.localhost) | Graded every table-shim adapter for network-shared storage. **Fixed (shipped):** four adapters read a __MA_DOC_TOKEN_1__ table holding the WHOLE network's data with only a per-site cap — Wordfence (wfLogins), Duplicator (duplicator_packages), Solid Security (itsec_lockouts, one table no site column), and LLA-R in its network-options mode. Each now denies non-super-admins on multisite (the AIOS v0.28.0 scoping pattern; where scoping by site is possible AIOS already does it, where it isn't the data is super-admin-only). **Verified safe (no change):** stream/wp-activity-log/aryo already carry a __MA_DOC_TOKEN_2__/__MA_DOC_TOKEN_3__ WHERE clause; simple-history/most log shims + all forms/mail adapters use per-site __MA_DOC_TOKEN_4__ by definition; transients-manager reads per-site __MA_DOC_TOKEN_5__; code-snippets is REST-native and owns its own network scoping. **No greenfield ship.** Lab fixtures: wordfence/duplicator/better-wp-security/limit-login-attempts-reloaded copied in, activated on store subsite. |"
+msgstr ""
+
+#: docs/adapter-coverage.md:275
+msgctxt "docs/adapter-coverage.md"
+msgid "| 2026-08-12 | v0.28.0 release pre-flight | Fixture set already current: only perfmatters (2.6.6→2.6.7) and searchwp (4.6.0→4.6.1) had updates, both license-gated and unavailable, both patch bumps. No adapter-relevant deltas to skim, no smoke needed. Audit-of-the-audit over the release own three security fix classes found the form-entry ownership sweep complete (the six peer form plugins have no own/others split, so no lower-privileged role to leak to) and the network-shared table sweep complete (all five base_prefix adapters guarded; Solid Security denies where its table has no site column, AIOS scopes by site_id where it has one). One gap: the DISALLOW_FILE_EDIT pass covered WPCode and Custom CSS and JS but not Code Snippets, which shares the same Snippets surface and authors PHP. Fixed. |"
 msgstr ""
 
 #: docs/adapter-coverage.md:260
 msgctxt "docs/adapter-coverage.md"
-msgid "| 4 | GoSMTP / SureMails / Site Mailer | B | New mail-log providers | M | **Not installed**; source-verify free log storage first |"
+msgid "| 3 | All-In-One Security (AIOS) | B | Activity-log + posture (LLA-R/Solid pattern) | M | Wave B leftover; **not installed** on minimaladmin — install first |"
 msgstr ""
 
 #: docs/adapter-coverage.md:261
 msgctxt "docs/adapter-coverage.md"
-msgid "| 5 | WPForms Pro entries | B | Forms family | M–L | Needs Pro license + fixtures; biggest missing forms name |"
+msgid "| 4 | GoSMTP / SureMails / Site Mailer | B | New mail-log providers | M | **Not installed**; source-verify free log storage first |"
 msgstr ""
 
 #: docs/adapter-coverage.md:262
 msgctxt "docs/adapter-coverage.md"
+msgid "| 5 | WPForms Pro entries | B | Forms family | M–L | Needs Pro license + fixtures; biggest missing forms name |"
+msgstr ""
+
+#: docs/adapter-coverage.md:263
+msgctxt "docs/adapter-coverage.md"
 msgid "| 6 | fluent-smtp | B | Settings mapper (connections) | M | GSMTP has settings; Fluent connection UI is canvas-ish → likely **L** |"
 msgstr ""
 
-#: docs/adapter-coverage.md:247
+#: docs/adapter-coverage.md:248
 msgctxt "docs/adapter-coverage.md"
 msgid "| 7 | WPForms Pro entries | B | Forms family | M–L | Needs a Pro license for fixtures; biggest uncovered forms name |"
 msgstr ""
@@ -1077,7 +1087,7 @@ msgctxt "docs/adapter-coverage.md"
 msgid "| Date | Scope | Outcome |"
 msgstr ""
 
-#: docs/adapter-coverage.md:212 docs/adapter-coverage.md:226 docs/adapter-coverage.md:239 docs/adapter-coverage.md:254
+#: docs/adapter-coverage.md:213 docs/adapter-coverage.md:227 docs/adapter-coverage.md:240 docs/adapter-coverage.md:255
 msgctxt "docs/adapter-coverage.md"
 msgid "| Rank | Adapter | Axis | Gap | Effort | Why now |"
 msgstr ""
@@ -1417,112 +1427,112 @@ msgctxt "docs/adapter-coverage.md"
 msgid "| wpvivid | Y | — | — | Y | — | Y | — | — | — | Y | | Schedule + backup-now; restore = **L** |"
 msgstr ""
 
-#: docs/adapter-coverage.md:250
+#: docs/adapter-coverage.md:251
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~10~~ | ~~GF add-on/feed settings~~ | ~~B~~ | ~~Schema-export multiplier from full-ui-adapters~~ | ~~L~~ | **Resolved 2026-07-17**: Feeds VIEW shipped (list/toggle/delete/deep-link; suite gf-feeds 10); config mapper deferred with a written verdict (full-ui-adapters.md) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:217
+#: docs/adapter-coverage.md:218
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~1~~ | ~~**ecommerce suite re-run vs WC 11.0**~~ | ~~ops~~ | ~~Major-version deep pass~~ | ~~S~~ | **Verified 2026-08-06**: all 10 WC suites green (orders, order-page, order-payment, order-refunds, products, coupons, customers, ecommerce-create, ecommerce-depth, wcs-subscriptions = 153/153) against WC 11.0.0 with WC Subscriptions 9.0.1 riding on it; 11.0 changelog removals are the product block editor + admin notices moved to Site Health, nothing wc/v3-facing. No code change |"
 msgstr ""
 
-#: docs/adapter-coverage.md:214
+#: docs/adapter-coverage.md:215
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~1~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~Resend through their __MA_DOC_TOKEN_1__ + resend-history detail + \"Resend to…\" override~~ | ~~S–M~~ | **Shipped 2026-08-06** (mail-log 36) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:256
+#: docs/adapter-coverage.md:257
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~1~~ | ~~**gravity-smtp**~~ | ~~A~~ | ~~Bulk log delete~~ | ~~S~~ | **Shipped 2026-07-15** |"
 msgstr ""
 
-#: docs/adapter-coverage.md:228
+#: docs/adapter-coverage.md:229
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~1~~ | ~~**scrutoscope**~~ | ~~B~~ | ~~Cron view: \"Profile this hook\"~~ | ~~S~~ | **Shipped 2026-07-27** (suite scrutoscope; Scrutoscope 1.4+ only) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:257
+#: docs/adapter-coverage.md:258
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~1~~ | ~~**simple-history / wsal / stream / aryo**~~ | ~~A~~ | ~~**status** cards~~ | ~~S–M~~ | **Shipped 2026-07-15** |"
 msgstr ""
 
-#: docs/adapter-coverage.md:219
+#: docs/adapter-coverage.md:220
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~1~~ | ~~WPForms Pro entries~~ | ~~B~~ | ~~Forms family~~ | ~~M–L~~ | **SHIPPED 2026-08-06** (adapters/wpforms.php; suite wpforms 16; forms-status 14). Fixture history: **UNBLOCKED + fixture ready 2026-08-06.** Austin supplied a WPForms Pro 2.0.0.2 zip (dev use; GPL). Provenance-verified before install: 823 shared PHP files byte-identical to wp.org Lite 2.0.0.2, only diff = plugin header line; no eval/base64/odd-host patterns outside vendor; no nulled watermarks; license code intact; single build date 2026-07-22. ACTIVE on minimaladmin; all 13 tables created on activation; entries VERIFIED to store unlicensed through their own __MA_DOC_TOKEN_1__ (license gates updates/addons, not storage). Standing fixture: form 5363 \"Minimal Contact Form\" (name/email/textarea) + 2 entries (Dana/Miguel). Storage: wpforms CPT (form JSON in post_content), {prefix}wpforms_entries (status/viewed/starred + fields JSON) + wpforms_entry_fields per-answer rows |"
 msgstr ""
 
-#: docs/adapter-coverage.md:218
+#: docs/adapter-coverage.md:219
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~1~~ | ~~forms status cards (fluent / ninja / forminator / flamingo)~~ | ~~A~~ | ~~Status-card parity with SureForms~~ | ~~S each~~ | **Shipped 2026-08-06** (+ everest-forms as a fifth; suite forms-status 12) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:241
+#: docs/adapter-coverage.md:242
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~1~~ | ~~sectionsRoute row types (__MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__, __MA_DOC_TOKEN_3__ sandboxed, __MA_DOC_TOKEN_4__)~~ | ~~A~~ | ~~Shared detail primitive~~ | ~~M~~ | **Shipped 2026-07-17** (suite detail-rows, 19; GSMTP log detail is the first consumer) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:229
+#: docs/adapter-coverage.md:230
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~2~~ | ~~**disembark**~~ | ~~B~~ | ~~Status-card deep-link \"Restore a backup ↗\"~~ | ~~S~~ | **Shipped 2026-07-27** (suite disembark; Disembark 2.8+ only) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:215
+#: docs/adapter-coverage.md:216
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~2~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~ConnectionHealth status-card + System rows~~ | ~~S~~ | **Shipped 2026-08-06** |"
 msgstr ""
 
-#: docs/adapter-coverage.md:242
+#: docs/adapter-coverage.md:243
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~2~~ | ~~redirection~~ | ~~A~~ | ~~__MA_DOC_TOKEN_1__ card~~ | ~~S~~ | **Shipped 2026-07-17** (rows + dual redirects/404s chart; suite redirection-status, 10) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:230
+#: docs/adapter-coverage.md:231
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~3~~ | ~~**all-in-one-security**~~ | ~~B~~ | ~~Failed-login / permanent-block posture~~ | ~~S–M~~ | **Shipped 2026-07-27** (status card + System health row; suite aios-log) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:216
+#: docs/adapter-coverage.md:217
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~3~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~Honor __MA_DOC_TOKEN_1__~~ | ~~S~~ | **Shipped 2026-08-06** |"
 msgstr ""
 
-#: docs/adapter-coverage.md:243
+#: docs/adapter-coverage.md:244
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~3~~ | ~~code-snippets~~ | ~~A~~ | ~~__MA_DOC_TOKEN_1__ card~~ | ~~S~~ | **Shipped 2026-07-17** (active/inactive/trashed, running scopes, last change, safe-mode row; suite code-snippets 26). CORRECTION: the 07-17 report's \"siblings all have one\" claim was a grep over-match on the word status; Redirection and Code Snippets are the FIRST cards in their families. Sibling cards (wpcode, fluent-snippets, custom-css-js, hfcm, SRM, S301, EPS) are now legitimate S-effort follow-ups |"
 msgstr ""
 
-#: docs/adapter-coverage.md:244
+#: docs/adapter-coverage.md:245
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~4~~ | ~~All-In-One Security (AIOS)~~ | ~~B~~ | ~~Activity-log + posture~~ | ~~M~~ | **Shipped 2026-07-17** (audit feed + level tabs + status card; suite __MA_DOC_TOKEN_1__; the failed-login/permanent-block posture row stays a future add) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:245
+#: docs/adapter-coverage.md:246
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~5~~ | ~~GoSMTP / SureMails / Site Mailer~~ | ~~B~~ | ~~New mail-log providers~~ | ~~M~~ | **Resolved 2026-07-17**: SureMails + Site Mailer shipped (full mail-family treatment, suite __MA_DOC_TOKEN_1__); GoSMTP is a documented skip (free build stores no logs) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:246
+#: docs/adapter-coverage.md:247
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~6~~ | ~~Enable Media Replace + core media polish~~ | ~~B~~ | ~~Wave D opener (unattached/date filters, \"attached to\", replace-in-place)~~ | ~~M~~ | **Shipped 2026-07-17 in two slices**: EMR ⇅ Replace file (suite media-replace 12) + core media polish (Unattached/month filters, Attached to; suite media-polish 15) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:248
+#: docs/adapter-coverage.md:249
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~8~~ | ~~Media folders provider contract (FileBird first)~~ | ~~B~~ | ~~Wave D, browse-first~~ | ~~L~~ | **Shipped 2026-07-17 IN FULL** (minimal_admin_media_folders + FileBird, RML Lite and Premio Folders providers + the Move to folder bulk action; suite media-folders 20) |"
 msgstr ""
 
-#: docs/adapter-coverage.md:249
+#: docs/adapter-coverage.md:250
 msgctxt "docs/adapter-coverage.md"
 msgid "| ~~9~~ | ~~fluent-smtp~~ | ~~B~~ | ~~Settings mapper (connections)~~ | ~~M–L~~ | **Resolved 2026-07-17**: misc settings WIRED (connections routing, logging, retention, simulation; suite fsmtp-settings 8); the per-provider connection wizard is the canvas part and stays a deep-link |"
 msgstr ""
 
-#: docs/adapter-coverage.md:233
+#: docs/adapter-coverage.md:234
 msgctxt "docs/adapter-coverage.md"
 msgid "| — | elementor-pro update | ops | License-blocked 4.2.0 | — | Free Elementor is 4.2.0; Pro stuck on 4.1.2 until license updates; forms adapter still 200 |"
 msgstr ""
 
-#: docs/adapter-coverage.md:220
+#: docs/adapter-coverage.md:221
 msgctxt "docs/adapter-coverage.md"
 msgid "| — | ~~woocommerce-subscriptions update~~ | ~~ops~~ | ~~License-gated at 9.0.1~~ | — | **Resolved 2026-08-06**: Austin supplied the 9.1.0 zip; provenance-scanned (pattern-clean, no nulled markers, 474 files identical to installed 9.0.1, coherent 45-file minor-release delta, changelog dated 2026-08-05), manually updated, wcs-subscriptions 18/18 green (their \"hardened REST permission checks\" don't affect Minimal's admin cookie+nonce path). Elementor Pro was resolved earlier the same day (licensed, 4.2.1). All fixture-update debt is now clear |"
 msgstr ""
@@ -4352,7 +4362,7 @@ msgctxt "docs/content-blocks.md"
 msgid "| | **Content blocks (for Minimal)** | **Layout blocks (for Gutenberg)** |"
 msgstr ""
 
-#: docs/core-gaps.md:69
+#: docs/core-gaps.md:72
 msgctxt "docs/core-gaps.md"
 msgid "\"Additional CSS\") edits in Settings → Design through"
 msgstr ""
@@ -4362,27 +4372,27 @@ msgctxt "docs/core-gaps.md"
 msgid "(Diagnostics family); further inventory work is adapter depth or parked"
 msgstr ""
 
-#: docs/core-gaps.md:34
+#: docs/core-gaps.md:37
 msgctxt "docs/core-gaps.md"
 msgid "(Manage → Terms, __MA_DOC_TOKEN_1__) covers every REST-enabled taxonomy"
 msgstr ""
 
-#: docs/core-gaps.md:92
+#: docs/core-gaps.md:95
 msgctxt "docs/core-gaps.md"
 msgid "(__MA_DOC_TOKEN_1__ posts have REST parity with what the Menus manager"
 msgstr ""
 
-#: docs/core-gaps.md:201
+#: docs/core-gaps.md:204
 msgctxt "docs/core-gaps.md"
 msgid "(__MA_DOC_TOKEN_1__) with bundled FileBird, Real Media"
 msgstr ""
 
-#: docs/core-gaps.md:91
+#: docs/core-gaps.md:94
 msgctxt "docs/core-gaps.md"
 msgid "(__MA_DOC_TOKEN_1__), but nothing steps in: no navigation editing"
 msgstr ""
 
-#: docs/core-gaps.md:212
+#: docs/core-gaps.md:215
 msgctxt "docs/core-gaps.md"
 msgid "(auto-approves like core), context menu. The last two gaps closed in the"
 msgstr ""
@@ -4397,72 +4407,72 @@ msgctxt "docs/core-gaps.md"
 msgid "(comment editing + commenter blocking, site logo and site language all"
 msgstr ""
 
-#: docs/core-gaps.md:124
+#: docs/core-gaps.md:127
 msgctxt "docs/core-gaps.md"
 msgid "(front-end view/preview suppressed, not publicly queryable); slash"
 msgstr ""
 
-#: docs/core-gaps.md:38
+#: docs/core-gaps.md:41
 msgctxt "docs/core-gaps.md"
 msgid "(posts move to the surviving term through core's own reassignment"
 msgstr ""
 
-#: docs/core-gaps.md:117
+#: docs/core-gaps.md:120
 msgctxt "docs/core-gaps.md"
 msgid "(the __MA_DOC_TOKEN_1__ flag now rides __MA_DOC_TOKEN_2__)."
 msgstr ""
 
-#: docs/core-gaps.md:109
+#: docs/core-gaps.md:112
 msgctxt "docs/core-gaps.md"
 msgid "(v0.23.0 cycle): Auto pills on plugin AND theme cards through"
 msgstr ""
 
-#: docs/core-gaps.md:89
+#: docs/core-gaps.md:92
 msgctxt "docs/core-gaps.md"
 msgid "**Block themes lose ground with no replacement (L, needs design).**"
 msgstr ""
 
-#: docs/core-gaps.md:101
+#: docs/core-gaps.md:104
 msgctxt "docs/core-gaps.md"
 msgid "**Builder theme templates are invisible (M).** __MA_DOC_TOKEN_1__ IS"
 msgstr ""
 
-#: docs/core-gaps.md:118
+#: docs/core-gaps.md:121
 msgctxt "docs/core-gaps.md"
 msgid "**Bulk edit beyond status (M).** The content bulk bar does status /"
 msgstr ""
 
-#: docs/core-gaps.md:53
+#: docs/core-gaps.md:56
 msgctxt "docs/core-gaps.md"
 msgid "**Bulk user role change** — ✅ shipped (v0.11.0 cycle): the users table"
 msgstr ""
 
-#: docs/core-gaps.md:132
+#: docs/core-gaps.md:135
 msgctxt "docs/core-gaps.md"
 msgid "**Classic Customizer theme options — stays a link-out.** Arbitrary"
 msgstr ""
 
-#: docs/core-gaps.md:49
+#: docs/core-gaps.md:52
 msgctxt "docs/core-gaps.md"
 msgid "**Comment bulk moderation** — ✅ shipped (v0.11.0 cycle): comment rows get"
 msgstr ""
 
-#: docs/core-gaps.md:46
+#: docs/core-gaps.md:49
 msgctxt "docs/core-gaps.md"
 msgid "**Media bulk select/delete** — ✅ shipped (v0.11.0 cycle): grid tiles and"
 msgstr ""
 
-#: docs/core-gaps.md:42
+#: docs/core-gaps.md:45
 msgctxt "docs/core-gaps.md"
 msgid "**Media caption and description** — ✅ shipped (v0.11.0 cycle): the media"
 msgstr ""
 
-#: docs/core-gaps.md:57
+#: docs/core-gaps.md:60
 msgctxt "docs/core-gaps.md"
 msgid "**Per-post format picker** — ✅ shipped (v0.11.0 cycle): the editor sidebar"
 msgstr ""
 
-#: docs/core-gaps.md:33
+#: docs/core-gaps.md:36
 msgctxt "docs/core-gaps.md"
 msgid "**Term management** — ✅ shipped 2026-07-10: the **Terms** manager"
 msgstr ""
@@ -4477,22 +4487,22 @@ msgctxt "docs/core-gaps.md"
 msgid "2026-08-06 at v0.24.0 open (unreleased): three of those four smaller gaps"
 msgstr ""
 
-#: docs/core-gaps.md:223
+#: docs/core-gaps.md:243
 msgctxt "docs/core-gaps.md"
 msgid "Anything not exposed to REST is invisible to Minimal by construction: CPTs and"
 msgstr ""
 
-#: docs/core-gaps.md:79
+#: docs/core-gaps.md:82
 msgctxt "docs/core-gaps.md"
 msgid "Appearance — covered where it counts"
 msgstr ""
 
-#: docs/core-gaps.md:62
+#: docs/core-gaps.md:65
 msgctxt "docs/core-gaps.md"
 msgid "Area-by-area status"
 msgstr ""
 
-#: docs/core-gaps.md:140
+#: docs/core-gaps.md:143
 msgctxt "docs/core-gaps.md"
 msgid "As of the v0.11.0 cycle, Terms is folded into the **Structure** page (Post"
 msgstr ""
@@ -4502,17 +4512,17 @@ msgctxt "docs/core-gaps.md"
 msgid "Audited 2026-07-10 against v0.10.0; stale-checked 2026-07-12 during the"
 msgstr ""
 
-#: docs/core-gaps.md:105
+#: docs/core-gaps.md:108
 msgctxt "docs/core-gaps.md"
 msgid "Bricks/Divi template areas. Fits the existing page-builders adapter"
 msgstr ""
 
-#: docs/core-gaps.md:104
+#: docs/core-gaps.md:107
 msgctxt "docs/core-gaps.md"
 msgid "Builder has no Minimal surface listing those templates. Same story for"
 msgstr ""
 
-#: docs/core-gaps.md:209
+#: docs/core-gaps.md:212
 msgctxt "docs/core-gaps.md"
 msgid "Comments — complete, single-row and bulk"
 msgstr ""
@@ -4522,92 +4532,102 @@ msgctxt "docs/core-gaps.md"
 msgid "Core coverage audit — gaps vs classic wp-admin"
 msgstr ""
 
-#: docs/core-gaps.md:65
+#: docs/core-gaps.md:68
 msgctxt "docs/core-gaps.md"
 msgid "Covered: site identity lives in Settings → General (title, tagline, site icon"
 msgstr ""
 
-#: docs/core-gaps.md:86
+#: docs/core-gaps.md:89
 msgctxt "docs/core-gaps.md"
 msgid "Custom CSS, homepage. The gaps cluster on block themes and theme builders,"
 msgstr ""
 
-#: docs/core-gaps.md:64
+#: docs/core-gaps.md:67
 msgctxt "docs/core-gaps.md"
 msgid "Customizer and theme options — partial, mostly by design"
 msgstr ""
 
-#: docs/core-gaps.md:218
-msgctxt "docs/core-gaps.md"
-msgid "Defensive gating exists (__MA_DOC_TOKEN_1__, super-admin file-mod"
-msgstr ""
-
-#: docs/core-gaps.md:129
+#: docs/core-gaps.md:132
 msgctxt "docs/core-gaps.md"
 msgid "GOTCHA: __MA_DOC_TOKEN_1__ is top-level READ-only in REST;"
 msgstr ""
 
-#: docs/core-gaps.md:188
+#: docs/core-gaps.md:191
 msgctxt "docs/core-gaps.md"
 msgid "Grid with type filter/search/pagination, multi-upload, drag-drop, image"
 msgstr ""
 
-#: docs/core-gaps.md:202
+#: docs/core-gaps.md:205
 msgctxt "docs/core-gaps.md"
 msgid "Library and Folders by Premio providers; a folder picker on the Media view"
 msgstr ""
 
-#: docs/core-gaps.md:179
+#: docs/core-gaps.md:182
 msgctxt "docs/core-gaps.md"
 msgid "List, search, roles, add/edit, delete with content reassignment, password"
 msgstr ""
 
-#: docs/core-gaps.md:187
+#: docs/core-gaps.md:190
 msgctxt "docs/core-gaps.md"
 msgid "Media — grid solid, editing caught up"
 msgstr ""
 
-#: docs/core-gaps.md:80
+#: docs/core-gaps.md:83
 msgctxt "docs/core-gaps.md"
 msgid "Menus (with drag reorder) and classic widgets are fully built; themes"
 msgstr ""
 
-#: docs/core-gaps.md:97
+#: docs/core-gaps.md:100
 msgctxt "docs/core-gaps.md"
 msgid "Menus UX transfers), then a read-only Design card (active theme, its"
 msgstr ""
 
-#: docs/core-gaps.md:90
+#: docs/core-gaps.md:221
+msgctxt "docs/core-gaps.md"
+msgid "Minimal boots on main sites and subsites, heals routes after network activation,"
+msgstr ""
+
+#: docs/core-gaps.md:93
 msgctxt "docs/core-gaps.md"
 msgid "Minimal correctly hides Menus and Widgets when __MA_DOC_TOKEN_1__"
 msgstr ""
 
-#: docs/core-gaps.md:217
+#: docs/core-gaps.md:220
 msgctxt "docs/core-gaps.md"
-msgid "Multisite — non-goal, degrades sanely"
+msgid "Multisite — daily network operations covered"
 msgstr ""
 
-#: docs/core-gaps.md:85
+#: docs/core-gaps.md:227
+msgctxt "docs/core-gaps.md"
+msgid "Network administrators get first-class Sites, Network users and Network"
+msgstr ""
+
+#: docs/core-gaps.md:238
+msgctxt "docs/core-gaps.md"
+msgid "Network-shared logs, database tables and plugin data are either scoped by site"
+msgstr ""
+
+#: docs/core-gaps.md:88
 msgctxt "docs/core-gaps.md"
 msgid "On a CLASSIC theme, the daily slice is covered: Menus, Widgets, logo, icon,"
 msgstr ""
 
-#: docs/core-gaps.md:123
+#: docs/core-gaps.md:126
 msgctxt "docs/core-gaps.md"
 msgid "Patterns entry in the Content switcher with the standard row machinery"
 msgstr ""
 
-#: docs/core-gaps.md:31
+#: docs/core-gaps.md:34
 msgctxt "docs/core-gaps.md"
 msgid "Priority ranking (the gaps that matter)"
 msgstr ""
 
-#: docs/core-gaps.md:41
+#: docs/core-gaps.md:44
 msgctxt "docs/core-gaps.md"
 msgid "REST routes."
 msgstr ""
 
-#: docs/core-gaps.md:102
+#: docs/core-gaps.md:105
 msgctxt "docs/core-gaps.md"
 msgid "REST-exposed but not __MA_DOC_TOKEN_1__, so the content switcher (rightly)"
 msgstr ""
@@ -4617,372 +4637,412 @@ msgctxt "docs/core-gaps.md"
 msgid "Re-audited 2026-07-30 at v0.23.0 open with a theme-integration focus (see"
 msgstr ""
 
-#: docs/core-gaps.md:161
+#: docs/core-gaps.md:164
 msgctxt "docs/core-gaps.md"
 msgid "Settings — daily options covered, two screens thin"
 msgstr ""
 
-#: docs/core-gaps.md:67
+#: docs/core-gaps.md:70
 msgctxt "docs/core-gaps.md"
 msgid "Settings → Reading (latest posts vs static page, with page pickers); and as of"
 msgstr ""
 
-#: docs/core-gaps.md:99
+#: docs/core-gaps.md:102
 msgctxt "docs/core-gaps.md"
 msgid "Site Editor canvas itself is a permanent link-out (same reasoning as"
 msgstr ""
 
-#: docs/core-gaps.md:94
+#: docs/core-gaps.md:97
 msgctxt "docs/core-gaps.md"
 msgid "Site Editor deep links, no global-styles summary. A block-theme site"
 msgstr ""
 
-#: docs/core-gaps.md:222
+#: docs/core-gaps.md:242
 msgctxt "docs/core-gaps.md"
 msgid "Structural observation — REST-only is a hard boundary"
 msgstr ""
 
-#: docs/core-gaps.md:210
+#: docs/core-gaps.md:213
 msgctxt "docs/core-gaps.md"
 msgid "Tabs for pending/approved/spam/trash, full per-row moderation, bulk"
 msgstr ""
 
-#: docs/core-gaps.md:143
+#: docs/core-gaps.md:146
 msgctxt "docs/core-gaps.md"
 msgid "Taxonomies need __MA_DOC_TOKEN_1__, Terms needs only __MA_DOC_TOKEN_2__, so"
 msgstr ""
 
-#: docs/core-gaps.md:137
+#: docs/core-gaps.md:140
 msgctxt "docs/core-gaps.md"
 msgid "Taxonomies — covered"
 msgstr ""
 
-#: docs/core-gaps.md:149
+#: docs/core-gaps.md:152
 msgctxt "docs/core-gaps.md"
 msgid "The System page covers diagnostics well (health checks, DB tables, autoload"
 msgstr ""
 
-#: docs/core-gaps.md:138
+#: docs/core-gaps.md:141
 msgctxt "docs/core-gaps.md"
 msgid "The Terms manager shipped 2026-07-10 (see priority #1). The only server"
 msgstr ""
 
-#: docs/core-gaps.md:84
+#: docs/core-gaps.md:234
+msgctxt "docs/core-gaps.md"
+msgid "The boundary is deliberate: network account creation/deletion, welcome"
+msgstr ""
+
+#: docs/core-gaps.md:87
 msgctxt "docs/core-gaps.md"
 msgid "Theme integration — the audited frontier (2026-07-30)"
 msgstr ""
 
-#: docs/core-gaps.md:148
+#: docs/core-gaps.md:151
 msgctxt "docs/core-gaps.md"
 msgid "Tools — System page strong, one-shot tools absent"
 msgstr ""
 
-#: docs/core-gaps.md:141
+#: docs/core-gaps.md:144
 msgctxt "docs/core-gaps.md"
 msgid "Types / Taxonomies / Terms tabs) rather than a standalone nav item, to keep"
 msgstr ""
 
-#: docs/core-gaps.md:191
+#: docs/core-gaps.md:194
 msgctxt "docs/core-gaps.md"
 msgid "Unattached filter (core parent=0), month filter (minimal-admin/v1/media/months"
 msgstr ""
 
-#: docs/core-gaps.md:178
+#: docs/core-gaps.md:181
 msgctxt "docs/core-gaps.md"
 msgid "Users — at parity or better"
 msgstr ""
 
-#: docs/core-gaps.md:162
+#: docs/core-gaps.md:237
+msgctxt "docs/core-gaps.md"
+msgid "WordPress's Upgrade Network screen rather than a request-bound site walk."
+msgstr ""
+
+#: docs/core-gaps.md:165
 msgctxt "docs/core-gaps.md"
 msgid "Writable today: General (title, tagline, icon, URL, admin email, timezone,"
 msgstr ""
 
-#: docs/core-gaps.md:70
+#: docs/core-gaps.md:73
 msgctxt "docs/core-gaps.md"
 msgid "__MA_DOC_TOKEN_1__ (edit_css cap, per-theme stylesheet, structural"
 msgstr ""
 
-#: docs/core-gaps.md:110
+#: docs/core-gaps.md:113
 msgctxt "docs/core-gaps.md"
 msgid "__MA_DOC_TOKEN_1__ (the same option writes as"
 msgstr ""
 
-#: docs/core-gaps.md:173
+#: docs/core-gaps.md:176
 msgctxt "docs/core-gaps.md"
 msgid "__MA_DOC_TOKEN_1__ / feed excerpt, and most of the Discussion matrix (threading"
 msgstr ""
 
-#: docs/core-gaps.md:200
+#: docs/core-gaps.md:203
 msgctxt "docs/core-gaps.md"
 msgid "__MA_DOC_TOKEN_1__ provider filter"
 msgstr ""
 
-#: docs/core-gaps.md:112
+#: docs/core-gaps.md:115
 msgctxt "docs/core-gaps.md"
 msgid "__MA_DOC_TOKEN_1__ server- and client-side). Suite"
 msgstr ""
 
-#: docs/core-gaps.md:127
+#: docs/core-gaps.md:130
 msgctxt "docs/core-gaps.md"
 msgid "__MA_DOC_TOKEN_1__); editor opens __MA_DOC_TOKEN_2__ natively"
 msgstr ""
 
-#: docs/core-gaps.md:74
+#: docs/core-gaps.md:77
 msgctxt "docs/core-gaps.md"
 msgid "__MA_DOC_TOKEN_1__, downloading packs on save). Missing: other"
 msgstr ""
 
-#: docs/core-gaps.md:111
+#: docs/core-gaps.md:114
 msgctxt "docs/core-gaps.md"
 msgid "__MA_DOC_TOKEN_1__, stale entries pruned; gated on"
 msgstr ""
 
-#: docs/core-gaps.md:206
+#: docs/core-gaps.md:209
 msgctxt "docs/core-gaps.md"
 msgid "__MA_DOC_TOKEN_1__. Moving stays browse-first: Minimal never owns"
 msgstr ""
 
-#: docs/core-gaps.md:199
+#: docs/core-gaps.md:202
 msgctxt "docs/core-gaps.md"
 msgid "__MA_DOC_TOKEN_1__. Wave D shipped 2026-07-17 (v0.18.0 cycle): the"
 msgstr ""
 
-#: docs/core-gaps.md:40
+#: docs/core-gaps.md:43
 msgctxt "docs/core-gaps.md"
 msgid "__MA_DOC_TOKEN_1__; per-taxonomy capabilities are enforced by core's"
 msgstr ""
 
-#: docs/core-gaps.md:50
+#: docs/core-gaps.md:53
 msgctxt "docs/core-gaps.md"
 msgid "a checkbox + Select-page, and a bar whose verbs are the current tab's own"
 msgstr ""
 
-#: docs/core-gaps.md:207
+#: docs/core-gaps.md:210
 msgctxt "docs/core-gaps.md"
 msgid "a folder tree of its own."
 msgstr ""
 
-#: docs/core-gaps.md:134
+#: docs/core-gaps.md:137
 msgctxt "docs/core-gaps.md"
 msgid "a per-theme treadmill with no schema; the Customizer deep link is the"
 msgstr ""
 
-#: docs/core-gaps.md:220
-msgctxt "docs/core-gaps.md"
-msgid "a subsite."
-msgstr ""
-
-#: docs/core-gaps.md:205
+#: docs/core-gaps.md:208
 msgctxt "docs/core-gaps.md"
 msgid "action rides each provider's optional __MA_DOC_TOKEN_1__ callable. Suite"
 msgstr ""
 
-#: docs/core-gaps.md:51
+#: docs/core-gaps.md:54
 msgctxt "docs/core-gaps.md"
 msgid "actions (Approve/Spam/Trash on Pending, Restore/Delete on Trash, and so"
 msgstr ""
 
-#: docs/core-gaps.md:176
+#: docs/core-gaps.md:179
 msgctxt "docs/core-gaps.md"
 msgid "add Discussion depth only if comment-heavy sites ask."
 msgstr ""
 
-#: docs/core-gaps.md:139
+#: docs/core-gaps.md:142
 msgctxt "docs/core-gaps.md"
 msgid "addition was __MA_DOC_TOKEN_1__; everything else rides core REST."
 msgstr ""
 
-#: docs/core-gaps.md:164
+#: docs/core-gaps.md:167
 msgctxt "docs/core-gaps.md"
 msgid "admin), Writing (default category/format, smilies), Reading (front page,"
 msgstr ""
 
-#: docs/core-gaps.md:93
+#: docs/core-gaps.md:230
+msgctxt "docs/core-gaps.md"
+msgid "administrator permissions and network mail. Extensions adds network-wide"
+msgstr ""
+
+#: docs/core-gaps.md:225
+msgctxt "docs/core-gaps.md"
+msgid "administrators are protected from those per-site controls."
+msgstr ""
+
+#: docs/core-gaps.md:96
 msgctxt "docs/core-gaps.md"
 msgid "already does for classic menus), no template/template-part LISTING with"
 msgstr ""
 
-#: docs/core-gaps.md:144
+#: docs/core-gaps.md:147
 msgctxt "docs/core-gaps.md"
 msgid "an editor's Structure item shows just the Terms tab (labeled \"Terms\" for"
 msgstr ""
 
-#: docs/core-gaps.md:77
+#: docs/core-gaps.md:80
 msgctxt "docs/core-gaps.md"
 msgid "and global styles are correctly long-tail."
 msgstr ""
 
-#: docs/core-gaps.md:185
+#: docs/core-gaps.md:236
+msgctxt "docs/core-gaps.md"
+msgid "and network setup stay in WordPress Network Admin. Very large networks use"
+msgstr ""
+
+#: docs/core-gaps.md:222
+msgctxt "docs/core-gaps.md"
+msgid "and offers a capped, searchable site switcher in the sidebar and command"
+msgstr ""
+
+#: docs/core-gaps.md:188
 msgctxt "docs/core-gaps.md"
 msgid "and reassign-on-delete are better surfaced than classic."
 msgstr ""
 
-#: docs/core-gaps.md:181
+#: docs/core-gaps.md:184
 msgctxt "docs/core-gaps.md"
 msgid "application passwords (\"AI Access\" with generated agent guide). The"
 msgstr ""
 
-#: docs/core-gaps.md:82
+#: docs/core-gaps.md:85
 msgctxt "docs/core-gaps.md"
 msgid "background and header images: out of scope by design."
 msgstr ""
 
-#: docs/core-gaps.md:167
+#: docs/core-gaps.md:170
 msgctxt "docs/core-gaps.md"
 msgid "bases), Spam (provider cards + disallowed keys), Connectors (WP 7.0's"
 msgstr ""
 
-#: docs/core-gaps.md:190
+#: docs/core-gaps.md:28
+msgctxt "docs/core-gaps.md"
+msgid "boundaries. Still open: block-theme surfaces, builder"
+msgstr ""
+
+#: docs/core-gaps.md:193
 msgctxt "docs/core-gaps.md"
 msgid "caption/description editing and bulk delete (both shipped v0.11.0)."
 msgstr ""
 
-#: docs/core-gaps.md:44
+#: docs/core-gaps.md:47
 msgctxt "docs/core-gaps.md"
 msgid "carrying the edit-context raw value (fetched lazily so the list stays"
 msgstr ""
 
-#: docs/core-gaps.md:120
+#: docs/core-gaps.md:123
 msgctxt "docs/core-gaps.md"
 msgid "categories / set author across selected posts\"."
 msgstr ""
 
 #: docs/core-gaps.md:25
 msgctxt "docs/core-gaps.md"
-msgid "changes no core-gap status. Still open: block-theme surfaces, builder"
+msgid "changes no core-gap status. Re-checked 2026-08-11 at v0.28.0 open:"
 msgstr ""
 
-#: docs/core-gaps.md:219
+#: docs/core-gaps.md:224
 msgctxt "docs/core-gaps.md"
-msgid "checks, System report row). No network surfaces, no visible hard breakage on"
+msgid "changes, add-existing-account and remove-membership actions; network"
 msgstr ""
 
-#: docs/core-gaps.md:116
+#: docs/core-gaps.md:119
 msgctxt "docs/core-gaps.md"
 msgid "classic themes, __MA_DOC_TOKEN_1__ for block themes"
 msgstr ""
 
-#: docs/core-gaps.md:155
+#: docs/core-gaps.md:158
 msgctxt "docs/core-gaps.md"
 msgid "click away, by design. As of the v0.22.0 cycle the Database card is also a"
 msgstr ""
 
-#: docs/core-gaps.md:192
+#: docs/core-gaps.md:195
 msgctxt "docs/core-gaps.md"
 msgid "combobox → after/before windows) and the detail modal's \"Attached to\" row"
 msgstr ""
 
-#: docs/core-gaps.md:37
+#: docs/core-gaps.md:40
 msgctxt "docs/core-gaps.md"
 msgid "confirms, count links into the filtered content list, and **merge**"
 msgstr ""
 
-#: docs/core-gaps.md:168
+#: docs/core-gaps.md:171
 msgctxt "docs/core-gaps.md"
 msgid "connector registry: provider keys with core-side masking and validation,"
 msgstr ""
 
-#: docs/core-gaps.md:195
+#: docs/core-gaps.md:198
 msgctxt "docs/core-gaps.md"
 msgid "core feature (a Minimal-owned tree would be a fifth folder standard invisible"
 msgstr ""
 
-#: docs/core-gaps.md:215
+#: docs/core-gaps.md:218
 msgctxt "docs/core-gaps.md"
 msgid "core's disallowed list, visible under Settings → Comments, with Undo)."
 msgstr ""
 
-#: docs/core-gaps.md:36
+#: docs/core-gaps.md:39
 msgctxt "docs/core-gaps.md"
 msgid "create/edit (name, slug, parent, description), delete with honest"
 msgstr ""
 
-#: docs/core-gaps.md:225
+#: docs/core-gaps.md:245
 msgctxt "docs/core-gaps.md"
 msgid "custom statuses. This is deliberate and worth keeping; it's the line that"
 msgstr ""
 
-#: docs/core-gaps.md:115
+#: docs/core-gaps.md:118
 msgctxt "docs/core-gaps.md"
 msgid "cycle): Live preview link on inactive theme cards: Customizer for"
 msgstr ""
 
-#: docs/core-gaps.md:171
+#: docs/core-gaps.md:174
 msgctxt "docs/core-gaps.md"
 msgid "cycle. Missing: the entire Media"
 msgstr ""
 
-#: docs/core-gaps.md:157
+#: docs/core-gaps.md:232
+msgctxt "docs/core-gaps.md"
+msgid "database migration across each subsite."
+msgstr ""
+
+#: docs/core-gaps.md:160
 msgctxt "docs/core-gaps.md"
 msgid "database viewer (__MA_DOC_TOKEN_1__, also in ⌘K; deliberately not a nav"
 msgstr ""
 
-#: docs/core-gaps.md:163
+#: docs/core-gaps.md:166
 msgctxt "docs/core-gaps.md"
 msgid "date/time format, week start, default role, membership, maintenance, default"
 msgstr ""
 
-#: docs/core-gaps.md:95
+#: docs/core-gaps.md:98
 msgctxt "docs/core-gaps.md"
 msgid "demotes Minimal from \"the admin\" to \"the content admin\". Scoped build,"
 msgstr ""
 
-#: docs/core-gaps.md:174
+#: docs/core-gaps.md:177
 msgctxt "docs/core-gaps.md"
 msgid "depth, per-page, previously-approved shortcut, close-after-days, notification"
 msgstr ""
 
-#: docs/core-gaps.md:43
+#: docs/core-gaps.md:46
 msgctxt "docs/core-gaps.md"
 msgid "detail modal now edits caption and description alongside title and alt,"
 msgstr ""
 
-#: docs/core-gaps.md:107
+#: docs/core-gaps.md:110
 msgctxt "docs/core-gaps.md"
 msgid "display conditions read-only, deep-link into the builder canvas."
 msgstr ""
 
-#: docs/core-gaps.md:156
+#: docs/core-gaps.md:159
 msgctxt "docs/core-gaps.md"
 msgid "doorway: its largest-table rows and a \"browse all\" link open the read-only"
 msgstr ""
 
-#: docs/core-gaps.md:189
+#: docs/core-gaps.md:192
 msgctxt "docs/core-gaps.md"
 msgid "editor (rotate/crop to a new copy), featured-image flows, delete, copy URL,"
 msgstr ""
 
-#: docs/core-gaps.md:175
+#: docs/core-gaps.md:178
 msgctxt "docs/core-gaps.md"
 msgid "emails, avatar rating/default). Judgment: what's missing is set-once config;"
 msgstr ""
 
-#: docs/core-gaps.md:154
+#: docs/core-gaps.md:235
+msgctxt "docs/core-gaps.md"
+msgid "emails, first-post text, reserved names, language defaults, restores, exports"
+msgstr ""
+
+#: docs/core-gaps.md:157
 msgctxt "docs/core-gaps.md"
 msgid "export/import, GDPR export/erase): episodic surgery stays in wp-admin, one"
 msgstr ""
 
-#: docs/core-gaps.md:151
+#: docs/core-gaps.md:154
 msgctxt "docs/core-gaps.md"
 msgid "extensions manifest, copy-as-markdown report). Loopback and REST self-check"
 msgstr ""
 
-#: docs/core-gaps.md:60
+#: docs/core-gaps.md:63
 msgctxt "docs/core-gaps.md"
 msgid "field. Boot payload carries the supported formats."
 msgstr ""
 
-#: docs/core-gaps.md:203
+#: docs/core-gaps.md:206
 msgctxt "docs/core-gaps.md"
 msgid "filters the normal wp/v2/media query (search, type tabs, Unattached and"
 msgstr ""
 
-#: docs/core-gaps.md:100
+#: docs/core-gaps.md:103
 msgctxt "docs/core-gaps.md"
 msgid "form builders)."
 msgstr ""
 
-#: docs/core-gaps.md:54
+#: docs/core-gaps.md:57
 msgctxt "docs/core-gaps.md"
 msgid "gains a checkbox column (gated on edit-users) and a bar to change every"
 msgstr ""
@@ -4992,37 +5052,37 @@ msgctxt "docs/core-gaps.md"
 msgid "gaps): every"
 msgstr ""
 
-#: docs/core-gaps.md:56
+#: docs/core-gaps.md:59
 msgctxt "docs/core-gaps.md"
 msgid "guard)."
 msgstr ""
 
-#: docs/core-gaps.md:214
+#: docs/core-gaps.md:217
 msgctxt "docs/core-gaps.md"
 msgid "guest comments) and Block commenter (adds the author's email or IP to"
 msgstr ""
 
-#: docs/core-gaps.md:58
+#: docs/core-gaps.md:61
 msgctxt "docs/core-gaps.md"
 msgid "has a Format select, gated on the active theme declaring post-format"
 msgstr ""
 
-#: docs/core-gaps.md:152
+#: docs/core-gaps.md:155
 msgctxt "docs/core-gaps.md"
 msgid "health rows shipped 2026-07-10 (core's own Site Health tests, cached 15"
 msgstr ""
 
-#: docs/core-gaps.md:135
+#: docs/core-gaps.md:138
 msgctxt "docs/core-gaps.md"
 msgid "honest answer, same verdict as before."
 msgstr ""
 
-#: docs/core-gaps.md:81
+#: docs/core-gaps.md:84
 msgctxt "docs/core-gaps.md"
 msgid "install/activate/update/delete under Extensions. Template/FSE editing,"
 msgstr ""
 
-#: docs/core-gaps.md:198
+#: docs/core-gaps.md:201
 msgctxt "docs/core-gaps.md"
 msgid "installs, so a browse-first provider contract became Wave D in"
 msgstr ""
@@ -5032,79 +5092,84 @@ msgctxt "docs/core-gaps.md"
 msgid "is adapter depth (WPForms entries, forms status cards, FluentSMTP) and"
 msgstr ""
 
-#: docs/core-gaps.md:158
+#: docs/core-gaps.md:161
 msgctxt "docs/core-gaps.md"
 msgid "item). Writes and a SQL console stay permanent non-goals there"
 msgstr ""
 
-#: docs/core-gaps.md:226
+#: docs/core-gaps.md:246
 msgctxt "docs/core-gaps.md"
 msgid "keeps list views fast and safe."
 msgstr ""
 
-#: docs/core-gaps.md:169
+#: docs/core-gaps.md:172
 msgctxt "docs/core-gaps.md"
 msgid "key-source honesty for wp-config/env keys, companion-plugin install in"
 msgstr ""
 
-#: docs/core-gaps.md:72
+#: docs/core-gaps.md:75
 msgctxt "docs/core-gaps.md"
 msgid "language shipped in the v0.20.0 cycle (Settings → Site: the logo gated on"
 msgstr ""
 
-#: docs/core-gaps.md:45
+#: docs/core-gaps.md:48
 msgctxt "docs/core-gaps.md"
 msgid "light) and saving through wp/v2/media."
 msgstr ""
 
-#: docs/core-gaps.md:47
+#: docs/core-gaps.md:50
 msgctxt "docs/core-gaps.md"
 msgid "list rows carry a checkbox (shift-range, select-all) with a delete bar"
 msgstr ""
 
-#: docs/core-gaps.md:76
+#: docs/core-gaps.md:79
 msgctxt "docs/core-gaps.md"
 msgid "logo + language is the daily slice and it's covered; the Customizer proper"
 msgstr ""
 
-#: docs/core-gaps.md:182
+#: docs/core-gaps.md:185
 msgctxt "docs/core-gaps.md"
 msgid "long-tail profile fields all shipped v0.17.0 on the /minimal-admin/profile"
 msgstr ""
 
-#: docs/core-gaps.md:39
+#: docs/core-gaps.md:42
 msgctxt "docs/core-gaps.md"
 msgid "machinery, then the source is deleted). Editors get it via"
 msgstr ""
 
-#: docs/core-gaps.md:194
+#: docs/core-gaps.md:197
 msgctxt "docs/core-gaps.md"
 msgid "media-polish). Folders: not a"
 msgstr ""
 
-#: docs/core-gaps.md:125
+#: docs/core-gaps.md:128
 msgctxt "docs/core-gaps.md"
 msgid "menu + ⌘/ picker \"Your patterns\" (synced → __MA_DOC_TOKEN_1__"
 msgstr ""
 
-#: docs/core-gaps.md:153
+#: docs/core-gaps.md:156
 msgctxt "docs/core-gaps.md"
 msgid "minutes), and a Tools card deep-links the one-shot jobs (Site Health,"
 msgstr ""
 
-#: docs/core-gaps.md:48
+#: docs/core-gaps.md:51
 msgctxt "docs/core-gaps.md"
 msgid "mirroring the content-list pattern; force=true, per item."
 msgstr ""
 
-#: docs/core-gaps.md:211
+#: docs/core-gaps.md:214
 msgctxt "docs/core-gaps.md"
 msgid "moderation with per-tab verbs (shipped v0.11.0), inline reply"
 msgstr ""
 
-#: docs/core-gaps.md:166
+#: docs/core-gaps.md:169
 msgctxt "docs/core-gaps.md"
 msgid "moderation, registration required, avatars on/off), Permalinks (structure +"
+msgstr ""
+
+#: docs/core-gaps.md:26
+msgctxt "docs/core-gaps.md"
+msgid "multisite moved from defensive degradation to daily network operations;"
 msgstr ""
 
 #: docs/core-gaps.md:9
@@ -5117,42 +5182,67 @@ msgctxt "docs/core-gaps.md"
 msgid "native surfaces (__MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__). Re-checked"
 msgstr ""
 
-#: docs/core-gaps.md:52
+#: docs/core-gaps.md:229
+msgctxt "docs/core-gaps.md"
+msgid "network-administrator promotion and revocation, registration, uploads, site"
+msgstr ""
+
+#: docs/core-gaps.md:240
+msgctxt "docs/core-gaps.md"
+msgid "never treated as permission to read the whole network."
+msgstr ""
+
+#: docs/core-gaps.md:55
 msgctxt "docs/core-gaps.md"
 msgid "on), applied per item."
 msgstr ""
 
-#: docs/core-gaps.md:28
+#: docs/core-gaps.md:31
 msgctxt "docs/core-gaps.md"
 msgid "one click away in wp-admin. Each area below gets a status and a judgment on"
 msgstr ""
 
-#: docs/core-gaps.md:184
+#: docs/core-gaps.md:239
+msgctxt "docs/core-gaps.md"
+msgid "or restricted to super administrators; a per-site __MA_DOC_TOKEN_1__ check is"
+msgstr ""
+
+#: docs/core-gaps.md:187
 msgctxt "docs/core-gaps.md"
 msgid "pack installs, the front-end toolbar preference). Application passwords"
 msgstr ""
 
-#: docs/core-gaps.md:183
+#: docs/core-gaps.md:186
 msgctxt "docs/core-gaps.md"
 msgid "page (first/last name, bio, website, per-user language with automatic"
 msgstr ""
 
-#: docs/core-gaps.md:204
+#: docs/core-gaps.md:207
 msgctxt "docs/core-gaps.md"
 msgid "pagination keep working, newest 500 per folder), and a Move-to-folder bulk"
 msgstr ""
 
-#: docs/core-gaps.md:170
+#: docs/core-gaps.md:223
+msgctxt "docs/core-gaps.md"
+msgid "palette. A subsite administrator gets the site's full Users list with role"
+msgstr ""
+
+#: docs/core-gaps.md:173
 msgctxt "docs/core-gaps.md"
 msgid "place), plus site logo and site language on the Site tab since the v0.20.0"
 msgstr ""
 
-#: docs/core-gaps.md:27
+#: docs/core-gaps.md:231
+msgctxt "docs/core-gaps.md"
+msgid "plugin activation and theme availability, and a core update runs the required"
+msgstr ""
+
+#: docs/core-gaps.md:30
 msgctxt "docs/core-gaps.md"
 msgid "positioning grades these: daily work belongs in Minimal, the long tail stays"
 msgstr ""
 
-#: docs/core-gaps.md:165
+#: docs/core-gaps.md:168
 msgctxt "docs/core-gaps.md"
 msgid "posts per page, search visibility), Discussion (default comment/ping status,"
 msgstr ""
@@ -5162,7 +5252,7 @@ msgctxt "docs/core-gaps.md"
 msgid "preview, bulk category/author edit, synced-pattern visibility). Dev tools Wave A is complete"
 msgstr ""
 
-#: docs/core-gaps.md:96
+#: docs/core-gaps.md:99
 msgctxt "docs/core-gaps.md"
 msgid "ranked inside this item: navigation first (real daily work, existing"
 msgstr ""
@@ -5177,24 +5267,29 @@ msgctxt "docs/core-gaps.md"
 msgid "re-check 2026-07-15 at v0.16.0 open; re-checked 2026-07-23 at v0.21.0 open"
 msgstr ""
 
-#: docs/core-gaps.md:126
+#: docs/core-gaps.md:129
 msgctxt "docs/core-gaps.md"
 msgid "reference island, quiet insert; unsynced → detached copy via"
 msgstr ""
 
-#: docs/core-gaps.md:180
+#: docs/core-gaps.md:183
 msgctxt "docs/core-gaps.md"
 msgid "reset, send email, session kill, bulk role change (shipped v0.11.0),"
 msgstr ""
 
-#: docs/core-gaps.md:55
+#: docs/core-gaps.md:58
 msgctxt "docs/core-gaps.md"
 msgid "selected user's role at once; the current user is skipped (self-lockout"
 msgstr ""
 
-#: docs/core-gaps.md:172
+#: docs/core-gaps.md:175
 msgctxt "docs/core-gaps.md"
 msgid "settings screen (thumbnail sizes, month/year folders),"
+msgstr ""
+
+#: docs/core-gaps.md:228
+msgctxt "docs/core-gaps.md"
+msgid "settings surfaces. The daily slice covers site creation and lifecycle,"
 msgstr ""
 
 #: docs/core-gaps.md:23
@@ -5212,7 +5307,7 @@ msgctxt "docs/core-gaps.md"
 msgid "shipped in the v0.23.0 cycle (auto-update toggles, theme live preview,"
 msgstr ""
 
-#: docs/core-gaps.md:103
+#: docs/core-gaps.md:106
 msgctxt "docs/core-gaps.md"
 msgid "skips it, meaning a site whose header/footer live in Elementor Theme"
 msgstr ""
@@ -5222,7 +5317,7 @@ msgctxt "docs/core-gaps.md"
 msgid "smaller operational gaps (per-extension auto-update toggles, theme live"
 msgstr ""
 
-#: docs/core-gaps.md:59
+#: docs/core-gaps.md:62
 msgctxt "docs/core-gaps.md"
 msgid "support (matching wp-admin), saving through wp/v2's native __MA_DOC_TOKEN_1__"
 msgstr ""
@@ -5232,17 +5327,17 @@ msgctxt "docs/core-gaps.md"
 msgid "synced patterns; marked below), and the Media section's folders verdict"
 msgstr ""
 
-#: docs/core-gaps.md:224
+#: docs/core-gaps.md:244
 msgctxt "docs/core-gaps.md"
 msgid "taxonomies without __MA_DOC_TOKEN_1__ (the UI flags them), meta not registered,"
 msgstr ""
 
-#: docs/core-gaps.md:98
+#: docs/core-gaps.md:101
 msgctxt "docs/core-gaps.md"
 msgid "templates/parts as \"Edit in Site Editor ↗\" rows, current palette). The"
 msgstr ""
 
-#: docs/core-gaps.md:142
+#: docs/core-gaps.md:145
 msgctxt "docs/core-gaps.md"
 msgid "the MANAGE group short. The tabs gate individually: Post Types and"
 msgstr ""
@@ -5252,47 +5347,52 @@ msgctxt "docs/core-gaps.md"
 msgid "the new section below): the remaining wp-admin territory is theme-shaped"
 msgstr ""
 
-#: docs/core-gaps.md:68
+#: docs/core-gaps.md:27
+msgctxt "docs/core-gaps.md"
+msgid "the section below now records the shipped surface and its deliberate"
+msgstr ""
+
+#: docs/core-gaps.md:71
 msgctxt "docs/core-gaps.md"
 msgid "the v0.11.0 cycle, **Custom CSS** (__MA_DOC_TOKEN_1__, the Customizer's"
 msgstr ""
 
-#: docs/core-gaps.md:145
+#: docs/core-gaps.md:148
 msgctxt "docs/core-gaps.md"
 msgid "them), while an admin sees all three. The __MA_DOC_TOKEN_1__ route and the"
 msgstr ""
 
-#: docs/core-gaps.md:73
+#: docs/core-gaps.md:76
 msgctxt "docs/core-gaps.md"
 msgid "theme custom-logo support via __MA_DOC_TOKEN_1__, the language over"
 msgstr ""
 
-#: docs/core-gaps.md:133
+#: docs/core-gaps.md:136
 msgctxt "docs/core-gaps.md"
 msgid "theme mods (colors, header/background images, per-theme sections) are"
 msgstr ""
 
-#: docs/core-gaps.md:75
+#: docs/core-gaps.md:78
 msgctxt "docs/core-gaps.md"
 msgid "theme mods, FSE global styles. Judgment: identity + homepage + Custom CSS +"
 msgstr ""
 
-#: docs/core-gaps.md:26
+#: docs/core-gaps.md:29
 msgctxt "docs/core-gaps.md"
 msgid "theme templates, bulk category/author edit. Minimal's"
 msgstr ""
 
-#: docs/core-gaps.md:106
+#: docs/core-gaps.md:109
 msgctxt "docs/core-gaps.md"
 msgid "thesis: list, badge the type (header/footer/popup/archive), show"
 msgstr ""
 
-#: docs/core-gaps.md:196
+#: docs/core-gaps.md:199
 msgctxt "docs/core-gaps.md"
 msgid "to wp-admin and builder pickers), but the earlier \"long-tail, skip\" verdict"
 msgstr ""
 
-#: docs/core-gaps.md:119
+#: docs/core-gaps.md:122
 msgctxt "docs/core-gaps.md"
 msgid "trash / restore / delete but not wp-admin bulk-edit's \"add these"
 msgstr ""
@@ -5302,22 +5402,22 @@ msgctxt "docs/core-gaps.md"
 msgid "v0.13.0 cycle (WP 7.0.1); re-checked 2026-07-13 at v0.14.0 open; light"
 msgstr ""
 
-#: docs/core-gaps.md:213
+#: docs/core-gaps.md:216
 msgctxt "docs/core-gaps.md"
 msgid "v0.20.0 cycle: inline comment editing (text always; author name/email for"
 msgstr ""
 
-#: docs/core-gaps.md:71
+#: docs/core-gaps.md:74
 msgctxt "docs/core-gaps.md"
 msgid "validation mirroring the Customizer's refusal). Custom logo and site"
 msgstr ""
 
-#: docs/core-gaps.md:87
+#: docs/core-gaps.md:90
 msgctxt "docs/core-gaps.md"
 msgid "verified empirically at v0.23.0:"
 msgstr ""
 
-#: docs/core-gaps.md:197
+#: docs/core-gaps.md:200
 msgctxt "docs/core-gaps.md"
 msgid "was revised 2026-07-16: FileBird + Real Media Library + Folders total 400k+"
 msgstr ""
@@ -5327,62 +5427,62 @@ msgctxt "docs/core-gaps.md"
 msgid "was stale: the browse-first provider contract (Wave D) had already"
 msgstr ""
 
-#: docs/core-gaps.md:150
+#: docs/core-gaps.md:153
 msgctxt "docs/core-gaps.md"
 msgid "weight, cron health, debug toggles + log viewer, integrations registry,"
 msgstr ""
 
-#: docs/core-gaps.md:29
+#: docs/core-gaps.md:32
 msgctxt "docs/core-gaps.md"
 msgid "whether the gap blocks daily work."
 msgstr ""
 
-#: docs/core-gaps.md:35
+#: docs/core-gaps.md:38
 msgctxt "docs/core-gaps.md"
 msgid "with a switcher, an indented tree for hierarchical taxonomies, inline"
 msgstr ""
 
-#: docs/core-gaps.md:128
+#: docs/core-gaps.md:131
 msgctxt "docs/core-gaps.md"
 msgid "with a synced-edit note and self-slimmed sidebar; + New → Pattern."
 msgstr ""
 
-#: docs/core-gaps.md:193
+#: docs/core-gaps.md:196
 msgctxt "docs/core-gaps.md"
 msgid "with an editor jump all shipped 2026-07-17 (v0.18.0 cycle, suite"
 msgstr ""
 
-#: docs/core-gaps.md:66
+#: docs/core-gaps.md:69
 msgctxt "docs/core-gaps.md"
 msgid "with full upload flow, site address, admin email); homepage settings in"
 msgstr ""
 
-#: docs/core-gaps.md:122
+#: docs/core-gaps.md:125
 msgctxt "docs/core-gaps.md"
 msgid "wp_block allowlisted past the viewable gate (__MA_DOC_TOKEN_1__) → a"
 msgstr ""
 
-#: docs/core-gaps.md:130
+#: docs/core-gaps.md:133
 msgctxt "docs/core-gaps.md"
 msgid "writes ride __MA_DOC_TOKEN_1__. Suite"
 msgstr ""
 
-#: docs/core-gaps.md:108
+#: docs/core-gaps.md:111
 msgctxt "docs/core-gaps.md"
 msgid "~~**Per-extension auto-update toggles (S).**~~ **SHIPPED 2026-08-04**"
 msgstr ""
 
-#: docs/core-gaps.md:121
+#: docs/core-gaps.md:124
 msgctxt "docs/core-gaps.md"
 msgid "~~**Synced patterns (S-M).**~~ **SHIPPED 2026-08-04** (v0.23.0 cycle):"
 msgstr ""
 
-#: docs/core-gaps.md:114
+#: docs/core-gaps.md:117
 msgctxt "docs/core-gaps.md"
 msgid "~~**Theme live preview (S).**~~ **SHIPPED 2026-08-04** (v0.23.0"
 msgstr ""
 
-#: docs/core-gaps.md:146
+#: docs/core-gaps.md:149
 msgctxt "docs/core-gaps.md"
 msgid "⌘K \"Manage categories & tags\" command still work, landing on the Terms tab."
 msgstr ""
@@ -11819,7 +11919,7 @@ msgstr ""
 
 #: docs/for-plugin-authors.md:221
 msgctxt "docs/for-plugin-authors.md"
-msgid "| __MA_DOC_TOKEN_1__ | Sidebar placement. Two values are honored: the default **__MA_DOC_TOKEN_2__** (logs, redirects, snippets: site plumbing) and **__MA_DOC_TOKEN_3__** — for inbox-shaped surfaces, something users check daily because new items need a human (form entries are the bundled example). Since v0.17.0 this is enforced, not asked: workspace requires a collection with an __MA_DOC_TOKEN_4__ column (a time-ordered stream); anything else is placed under Tools and the Integrations card says so |"
+msgid "| __MA_DOC_TOKEN_1__ | Sidebar placement. Three values are honored: the default **__MA_DOC_TOKEN_2__** (logs, redirects, snippets: site plumbing), **__MA_DOC_TOKEN_3__** — for inbox-shaped surfaces, something users check daily because new items need a human (form entries are the bundled example) — and **__MA_DOC_TOKEN_4__** for multisite surfaces that belong to the whole network rather than one site. Since v0.17.0 workspace is enforced, not asked: it requires a collection with an __MA_DOC_TOKEN_5__ column (a time-ordered stream); anything else is placed under Tools and the Integrations card says so. A __MA_DOC_TOKEN_6__ surface is only as protected as its __MA_DOC_TOKEN_7__, so gate it on a network capability (__MA_DOC_TOKEN_8__, __MA_DOC_TOKEN_9__) or it will show up for ordinary site administrators |"
 msgstr ""
 
 #: docs/for-plugin-authors.md:216
@@ -13737,7 +13837,7 @@ msgctxt "docs/goals.md"
 msgid "**An ecosystem invitation.** Third-party plugins integrate through one declarative filter —"
 msgstr ""
 
-#: docs/goals.md:41
+#: docs/goals.md:43
 msgctxt "docs/goals.md"
 msgid "**Being a page builder.**"
 msgstr ""
@@ -13759,7 +13859,7 @@ msgstr ""
 
 #: docs/goals.md:40
 msgctxt "docs/goals.md"
-msgid "**Multisite network admin, for now.**"
+msgid "**Network Admin parity.** Minimal covers daily multisite operations. Network account"
 msgstr ""
 
 #: docs/goals.md:19
@@ -13787,12 +13887,12 @@ msgctxt "docs/goals.md"
 msgid "**Zero lock-in.** Everything Minimal writes is native WordPress: Gutenberg block markup, core"
 msgstr ""
 
-#: docs/goals.md:47
+#: docs/goals.md:49
 msgctxt "docs/goals.md"
 msgid "Emoji-Log commit. If a feature can't be verified end-to-end, it isn't done."
 msgstr ""
 
-#: docs/goals.md:45
+#: docs/goals.md:47
 msgctxt "docs/goals.md"
 msgid "Every feature lands with: browser-level verification on a clean site *and* a production-scale"
 msgstr ""
@@ -13817,7 +13917,7 @@ msgctxt "docs/goals.md"
 msgid "Project goals"
 msgstr ""
 
-#: docs/goals.md:43
+#: docs/goals.md:45
 msgctxt "docs/goals.md"
 msgid "Quality bar"
 msgstr ""
@@ -13857,9 +13957,19 @@ msgctxt "docs/goals.md"
 msgid "cleanly (__MA_DOC_TOKEN_1__)."
 msgstr ""
 
+#: docs/goals.md:41
+msgctxt "docs/goals.md"
+msgid "creation and deletion, the long settings tail, restores, exports and network setup stay"
+msgstr ""
+
 #: docs/goals.md:11
 msgctxt "docs/goals.md"
 msgid "files and users — should be one click away and visually calm. Density serves the reader, not"
+msgstr ""
+
+#: docs/goals.md:42
+msgctxt "docs/goals.md"
+msgid "in WordPress Network Admin."
 msgstr ""
 
 #: docs/goals.md:6
@@ -13892,7 +14002,7 @@ msgctxt "docs/goals.md"
 msgid "see __MA_DOC_TOKEN_1__. Minimal ships adapters for popular plugins; plugin authors can ship"
 msgstr ""
 
-#: docs/goals.md:46
+#: docs/goals.md:48
 msgctxt "docs/goals.md"
 msgid "site, zero console errors, capability checks proven by the UI hiding/showing correctly, and an"
 msgstr ""
@@ -19557,22 +19667,22 @@ msgctxt "docs/plugin-support.md"
 msgid "⇅ Replace file on the media detail modal through EMR's own"
 msgstr ""
 
-#: docs/roadmap.md:29
+#: docs/roadmap.md:30
 msgctxt "docs/roadmap.md"
 msgid "\"The writing editor for WordPress\" has to hold on layout-shaped content, because that is"
 msgstr ""
 
-#: docs/roadmap.md:91
+#: docs/roadmap.md:92
 msgctxt "docs/roadmap.md"
 msgid "(__MA_DOC_TOKEN_1__) stand unchanged. Nothing here is a feature commitment; a goal's"
 msgstr ""
 
-#: docs/roadmap.md:82
+#: docs/roadmap.md:83
 msgctxt "docs/roadmap.md"
 msgid "(a completed 30-day streak; active sites growing under real external use)."
 msgstr ""
 
-#: docs/roadmap.md:56
+#: docs/roadmap.md:57
 msgctxt "docs/roadmap.md"
 msgid "(grouped-content editing, stale update offers, entity rendering)."
 msgstr ""
@@ -19582,77 +19692,77 @@ msgctxt "docs/roadmap.md"
 msgid "(the editor in __MA_DOC_TOKEN_1__ and __MA_DOC_TOKEN_2__,"
 msgstr ""
 
-#: docs/roadmap.md:19
+#: docs/roadmap.md:20
 msgctxt "docs/roadmap.md"
 msgid "**Metric:** consecutive days running anchor.host and FeiCode repository entirely through"
 msgstr ""
 
-#: docs/roadmap.md:81
+#: docs/roadmap.md:82
 msgctxt "docs/roadmap.md"
 msgid "**Metric:** the charter gates green, plus Goals 1 and 3 showing real-world proof"
 msgstr ""
 
-#: docs/roadmap.md:32
+#: docs/roadmap.md:33
 msgctxt "docs/roadmap.md"
 msgid "**Metric:** the share of the Twenty Twenty-Four/Five pattern corpus (155 patterns,"
 msgstr ""
 
-#: docs/roadmap.md:48
+#: docs/roadmap.md:49
 msgctxt "docs/roadmap.md"
 msgid "**Metric:** the ≈active-sites estimate, computed daily by FeiCode repository: the"
 msgstr ""
 
-#: docs/roadmap.md:67
+#: docs/roadmap.md:68
 msgctxt "docs/roadmap.md"
 msgid "**Metric:** third-party plugins shipping their own Minimal adapter, not bundled in"
 msgstr ""
 
-#: docs/roadmap.md:54
+#: docs/roadmap.md:55
 msgctxt "docs/roadmap.md"
 msgid "**Now (2026-08-09):** ≈69 active sites · 644 total downloads across 27 releases ·"
 msgstr ""
 
-#: docs/roadmap.md:69
+#: docs/roadmap.md:70
 msgctxt "docs/roadmap.md"
 msgid "**Now:** 1 (Anchor Blocks), and it shares an author with Minimal, so honestly: 0"
 msgstr ""
 
-#: docs/roadmap.md:83
+#: docs/roadmap.md:84
 msgctxt "docs/roadmap.md"
 msgid "**Now:** architecture and author-experience gates hold; the real-world proof is"
 msgstr ""
 
-#: docs/roadmap.md:35
+#: docs/roadmap.md:36
 msgctxt "docs/roadmap.md"
 msgid "**Now:** every parseable group, columns, cover and media-text container opens as a"
 msgstr ""
 
-#: docs/roadmap.md:23
+#: docs/roadmap.md:24
 msgctxt "docs/roadmap.md"
 msgid "**Now:** untracked. The streak starts with the v0.26.0 dogfood soak."
 msgstr ""
 
-#: docs/roadmap.md:24
+#: docs/roadmap.md:25
 msgctxt "docs/roadmap.md"
 msgid "**Target:** 30 consecutive days, twice. First across a quiet month, then across a"
 msgstr ""
 
-#: docs/roadmap.md:85
+#: docs/roadmap.md:86
 msgctxt "docs/roadmap.md"
 msgid "**Target:** cut v1.0 when a release goes out that changed nothing about the two"
 msgstr ""
 
-#: docs/roadmap.md:40
+#: docs/roadmap.md:41
 msgctxt "docs/roadmap.md"
 msgid "**Target:** hold the corpus at effectively 100% writable with zero byte-identity"
 msgstr ""
 
-#: docs/roadmap.md:71
+#: docs/roadmap.md:72
 msgctxt "docs/roadmap.md"
 msgid "**Target:** the first 3 external adapters. Feeders: the quickstart-first author"
 msgstr ""
 
-#: docs/roadmap.md:57
+#: docs/roadmap.md:58
 msgctxt "docs/roadmap.md"
 msgid "**Targets:** ≈100 active sites, then ≈500. The marketing site's ethos strip shows"
 msgstr ""
@@ -19662,82 +19772,82 @@ msgctxt "docs/roadmap.md"
 msgid "*Principles live in __MA_DOC_TOKEN_1__. Deep technical plans live in the per-area docs"
 msgstr ""
 
-#: docs/roadmap.md:55
+#: docs/roadmap.md:56
 msgctxt "docs/roadmap.md"
 msgid "43 stars · 10 external issues, several of them exactly the doing-real-work kind"
 msgstr ""
 
-#: docs/roadmap.md:33
+#: docs/roadmap.md:34
 msgctxt "docs/roadmap.md"
 msgid "494 container units) that opens writable in Minimal, and byte-identity for untouched"
 msgstr ""
 
-#: docs/roadmap.md:64
+#: docs/roadmap.md:65
 msgctxt "docs/roadmap.md"
 msgid "Fifty-plus bundled adapters prove the primitives generalize. The ecosystem claim is only"
 msgstr ""
 
-#: docs/roadmap.md:10
+#: docs/roadmap.md:11
 msgctxt "docs/roadmap.md"
 msgid "GitHub's public counters, the pattern-corpus probes, the suite ledger, and disciplined"
 msgstr ""
 
-#: docs/roadmap.md:14
+#: docs/roadmap.md:15
 msgctxt "docs/roadmap.md"
 msgid "Goal 1 — Minimal is someone's whole admin"
 msgstr ""
 
-#: docs/roadmap.md:27
+#: docs/roadmap.md:28
 msgctxt "docs/roadmap.md"
 msgid "Goal 2 — the editor writes real pages, not just posts"
 msgstr ""
 
-#: docs/roadmap.md:43
+#: docs/roadmap.md:44
 msgctxt "docs/roadmap.md"
 msgid "Goal 3 — real people do real work in it"
 msgstr ""
 
-#: docs/roadmap.md:62
+#: docs/roadmap.md:63
 msgctxt "docs/roadmap.md"
 msgid "Goal 4 — plugin authors wire in without us"
 msgstr ""
 
-#: docs/roadmap.md:75
+#: docs/roadmap.md:76
 msgctxt "docs/roadmap.md"
 msgid "Goal 5 — v1.0 ships when the promises hold"
 msgstr ""
 
-#: docs/roadmap.md:73
+#: docs/roadmap.md:74
 msgctxt "docs/roadmap.md"
 msgid "Integrations card flagging contract problems instead of failing silently."
 msgstr ""
 
-#: docs/roadmap.md:9
+#: docs/roadmap.md:10
 msgctxt "docs/roadmap.md"
 msgid "Minimal phones home to no one, so every metric here is one we can read without telemetry:"
 msgstr ""
 
-#: docs/roadmap.md:68
+#: docs/roadmap.md:69
 msgctxt "docs/roadmap.md"
 msgid "Minimal's repo."
 msgstr ""
 
-#: docs/roadmap.md:20
+#: docs/roadmap.md:21
 msgctxt "docs/roadmap.md"
 msgid "Minimal. Opening wp-admin through a link Minimal itself offers (the block editor escape,"
 msgstr ""
 
-#: docs/roadmap.md:79
+#: docs/roadmap.md:80
 msgctxt "docs/roadmap.md"
 msgid "Minimal. The charter's eleven audit items all shipped at v0.17.0."
 msgstr ""
 
-#: docs/roadmap.md:45
+#: docs/roadmap.md:46
 msgctxt "docs/roadmap.md"
 msgid "Not stars for a screenshot. Sites that update, and users who file the kind of bug you"
 msgstr ""
 
-#: docs/roadmap.md:53
+#: docs/roadmap.md:54
 msgctxt "docs/roadmap.md"
 msgid "Plus issues filed by people other than the author."
 msgstr ""
@@ -19747,32 +19857,42 @@ msgctxt "docs/roadmap.md"
 msgid "Roadmap — goals and the numbers that judge them"
 msgstr ""
 
-#: docs/roadmap.md:16
+#: docs/roadmap.md:17
 msgctxt "docs/roadmap.md"
 msgid "The founding claim is that daily WordPress work needs nothing wp-admin has. The only"
 msgstr ""
 
-#: docs/roadmap.md:90
+#: docs/roadmap.md:91
 msgctxt "docs/roadmap.md"
 msgid "The never-build list (__MA_DOC_TOKEN_1__) and the non-goals"
 msgstr ""
 
-#: docs/roadmap.md:88
+#: docs/roadmap.md:6
+msgctxt "docs/roadmap.md"
+msgid "WP-CLI in __MA_DOC_TOKEN_1__, and the v1.0 charter in"
+msgstr ""
+
+#: docs/roadmap.md:89
 msgctxt "docs/roadmap.md"
 msgid "What this file is not"
 msgstr ""
 
-#: docs/roadmap.md:78
+#: docs/roadmap.md:7
+msgctxt "docs/roadmap.md"
+msgid "__MA_DOC_TOKEN_1__). This document is the scoreboard:"
+msgstr ""
+
+#: docs/roadmap.md:79
 msgctxt "docs/roadmap.md"
 msgid "__MA_DOC_TOKEN_1__: authors enjoy wiring in, and authors cannot abuse"
 msgstr ""
 
-#: docs/roadmap.md:21
+#: docs/roadmap.md:22
 msgctxt "docs/roadmap.md"
 msgid "a plugin's own settings screen) counts as Minimal working; opening wp-admin because Minimal"
 msgstr ""
 
-#: docs/roadmap.md:7
+#: docs/roadmap.md:8
 msgctxt "docs/roadmap.md"
 msgid "a short list of outcomes, each judged by a real-world number we can measure honestly.*"
 msgstr ""
@@ -19782,142 +19902,137 @@ msgctxt "docs/roadmap.md"
 msgid "adapters in __MA_DOC_TOKEN_1__ and __MA_DOC_TOKEN_2__,"
 msgstr ""
 
-#: docs/roadmap.md:12
+#: docs/roadmap.md:13
 msgctxt "docs/roadmap.md"
 msgid "area docs and collapse to one-line ledger entries once shipped."
 msgstr ""
 
-#: docs/roadmap.md:39
+#: docs/roadmap.md:40
 msgctxt "docs/roadmap.md"
 msgid "attr-carry, island-runs: 119 checks)."
 msgstr ""
 
-#: docs/roadmap.md:34
+#: docs/roadmap.md:35
 msgctxt "docs/roadmap.md"
 msgid "content across a save, enforced by suites."
 msgstr ""
 
-#: docs/roadmap.md:22
+#: docs/roadmap.md:23
 msgctxt "docs/roadmap.md"
 msgid "could not do the job breaks the streak and files an issue."
 msgstr ""
 
-#: docs/roadmap.md:51
+#: docs/roadmap.md:52
 msgctxt "docs/roadmap.md"
 msgid "distinct sites that updated during its reign, and the per-release data saturates"
 msgstr ""
 
-#: docs/roadmap.md:11
+#: docs/roadmap.md:12
 msgctxt "docs/roadmap.md"
 msgid "dogfooding. Statuses get refreshed at each release cut; feature checklists live in the"
 msgstr ""
 
-#: docs/roadmap.md:70
+#: docs/roadmap.md:71
 msgctxt "docs/roadmap.md"
 msgid "external."
 msgstr ""
 
-#: docs/roadmap.md:72
+#: docs/roadmap.md:73
 msgctxt "docs/roadmap.md"
 msgid "guide, the shim tutorial with its suite-enforced example plugin, and the"
 msgstr ""
 
-#: docs/roadmap.md:17
+#: docs/roadmap.md:18
 msgctxt "docs/roadmap.md"
 msgid "honest way to prove it is to live it."
 msgstr ""
 
-#: docs/roadmap.md:59
+#: docs/roadmap.md:60
 msgctxt "docs/roadmap.md"
 msgid "intake healthy: every real-work report answered, and the fix suite-pinned, within"
 msgstr ""
 
-#: docs/roadmap.md:38
+#: docs/roadmap.md:39
 msgctxt "docs/roadmap.md"
 msgid "itself deleted. Byte-identity is suite-pinned (nested-islands, container-slots,"
 msgstr ""
 
-#: docs/roadmap.md:49
+#: docs/roadmap.md:50
 msgctxt "docs/roadmap.md"
 msgid "largest closed-release download cohort of the trailing 30 days. The self-updater"
 msgstr ""
 
-#: docs/roadmap.md:92
+#: docs/roadmap.md:93
 msgctxt "docs/roadmap.md"
 msgid "metric moving the wrong way is information, not an obligation to build."
 msgstr ""
 
-#: docs/roadmap.md:46
+#: docs/roadmap.md:47
 msgctxt "docs/roadmap.md"
 msgid "only hit doing real work."
 msgstr ""
 
-#: docs/roadmap.md:37
+#: docs/roadmap.md:38
 msgctxt "docs/roadmap.md"
 msgid "probe measured 2% of top-level containers writable; the cycle ended with the gate"
 msgstr ""
 
-#: docs/roadmap.md:86
+#: docs/roadmap.md:87
 msgctxt "docs/roadmap.md"
 msgid "promises because nothing needed changing."
 msgstr ""
 
-#: docs/roadmap.md:65
+#: docs/roadmap.md:66
 msgctxt "docs/roadmap.md"
 msgid "proven when authors we have never met ship their own."
 msgstr ""
 
-#: docs/roadmap.md:41
+#: docs/roadmap.md:42
 msgctxt "docs/roadmap.md"
 msgid "regressions, release over release. A regression here blocks the release."
 msgstr ""
 
-#: docs/roadmap.md:25
+#: docs/roadmap.md:26
 msgctxt "docs/roadmap.md"
 msgid "release cut (the release itself managed through Minimal)."
 msgstr ""
 
-#: docs/roadmap.md:50
+#: docs/roadmap.md:51
 msgctxt "docs/roadmap.md"
 msgid "serves only the current release, so a superseded release's downloads are the"
 msgstr ""
 
-#: docs/roadmap.md:58
+#: docs/roadmap.md:59
 msgctxt "docs/roadmap.md"
 msgid "the active-sites claim automatically from ≈50 up. Keep external issue"
 msgstr ""
 
-#: docs/roadmap.md:60
+#: docs/roadmap.md:61
 msgctxt "docs/roadmap.md"
 msgid "the release cycle it arrives in."
 msgstr ""
 
-#: docs/roadmap.md:6
-msgctxt "docs/roadmap.md"
-msgid "the v1.0 charter in __MA_DOC_TOKEN_1__). This document is the scoreboard:"
-msgstr ""
-
-#: docs/roadmap.md:77
+#: docs/roadmap.md:78
 msgctxt "docs/roadmap.md"
 msgid "v1.0 is not a feature count. The two promises and their gates live in"
 msgstr ""
 
-#: docs/roadmap.md:30
+#: docs/roadmap.md:31
 msgctxt "docs/roadmap.md"
 msgid "what real sites are made of. The nesting cycle (2026-08-08/09) was this goal's build-out."
 msgstr ""
 
-#: docs/roadmap.md:84
+#: docs/roadmap.md:85
 msgctxt "docs/roadmap.md"
 msgid "what remains."
 msgstr ""
 
-#: docs/roadmap.md:52
+#: docs/roadmap.md:53
 msgctxt "docs/roadmap.md"
 msgid "within two to three days — the largest recent cohort is the honest lower bound."
 msgstr ""
 
-#: docs/roadmap.md:36
+#: docs/roadmap.md:37
 msgctxt "docs/roadmap.md"
 msgid "writing surface with complex children as protected cards. The 2026-08-08 baseline"
 msgstr ""
@@ -20587,7 +20702,7 @@ msgctxt "docs/shim-tutorial.md"
 msgid "| __MA_DOC_TOKEN_1__ | the status card model |"
 msgstr ""
 
-#: docs/user-guide.md:183
+#: docs/user-guide.md:217
 msgctxt "docs/user-guide.md"
 msgid "\"Clear site cache\" purges all of them at once. If a backup plugin is"
 msgstr ""
@@ -20597,7 +20712,7 @@ msgctxt "docs/user-guide.md"
 msgid "\"Create new page\". If you learn one thing from this guide, learn ⌘K."
 msgstr ""
 
-#: docs/user-guide.md:131
+#: docs/user-guide.md:163
 msgctxt "docs/user-guide.md"
 msgid "(\"Content · N blocks\") or, on protected cards, by clicking the card"
 msgstr ""
@@ -20607,32 +20722,32 @@ msgctxt "docs/user-guide.md"
 msgid "(Ctrl+K on Windows and Linux), start typing, and jump to any view, any"
 msgstr ""
 
-#: docs/user-guide.md:158
+#: docs/user-guide.md:190
 msgctxt "docs/user-guide.md"
 msgid "**About Notices**: other plugins' wp-admin banners never render inside"
 msgstr ""
 
-#: docs/user-guide.md:182
+#: docs/user-guide.md:216
 msgctxt "docs/user-guide.md"
 msgid "**Cache and backups**: if a caching plugin or host cache is active, ⌘K"
 msgstr ""
 
-#: docs/user-guide.md:308
+#: docs/user-guide.md:345
 msgctxt "docs/user-guide.md"
 msgid "**Can a plugin misbehave inside Minimal?** Not in the ways you are used"
 msgstr ""
 
-#: docs/user-guide.md:147
+#: docs/user-guide.md:179
 msgctxt "docs/user-guide.md"
 msgid "**Comments**: approve, reply, edit in place, mark spam, or block a"
 msgstr ""
 
-#: docs/user-guide.md:102
+#: docs/user-guide.md:134
 msgctxt "docs/user-guide.md"
 msgid "**Complex blocks are kept safe, untouched.** If a post contains a block"
 msgstr ""
 
-#: docs/user-guide.md:251
+#: docs/user-guide.md:288
 msgctxt "docs/user-guide.md"
 msgid "**Database** — a window into where your site actually stores things."
 msgstr ""
@@ -20642,47 +20757,52 @@ msgctxt "docs/user-guide.md"
 msgid "**Everything Minimal writes is native WordPress.** Posts are normal block"
 msgstr ""
 
-#: docs/user-guide.md:215
+#: docs/user-guide.md:249
 msgctxt "docs/user-guide.md"
 msgid "**Extensions** — three tabs: Plugins, Themes, and Licenses. Install by"
 msgstr ""
 
-#: docs/user-guide.md:140
+#: docs/user-guide.md:172
 msgctxt "docs/user-guide.md"
 msgid "**Focus modes:** ⌘⇧D fades everything but the paragraph you are writing;"
 msgstr ""
 
-#: docs/user-guide.md:116
+#: docs/user-guide.md:148
 msgctxt "docs/user-guide.md"
 msgid "**Galleries and sliders open an images editor.** Hover a gallery-shaped"
 msgstr ""
 
-#: docs/user-guide.md:126
+#: docs/user-guide.md:158
 msgctxt "docs/user-guide.md"
 msgid "**Groups of styled text open an Edit content window.** A container"
 msgstr ""
 
-#: docs/user-guide.md:162
+#: docs/user-guide.md:194
 msgctxt "docs/user-guide.md"
 msgid "**Hide** and it stays gone for you, with Undo. This is the calm version of"
 msgstr ""
 
-#: docs/user-guide.md:137
+#: docs/user-guide.md:169
 msgctxt "docs/user-guide.md"
 msgid "**History** shows revisions with side-by-side comparisons; restore takes"
 msgstr ""
 
-#: docs/user-guide.md:304
+#: docs/user-guide.md:341
 msgctxt "docs/user-guide.md"
 msgid "**How do updates arrive?** From the project's GitHub releases, through"
 msgstr ""
 
-#: docs/user-guide.md:301
+#: docs/user-guide.md:76
+msgctxt "docs/user-guide.md"
+msgid "**If you run the network**, a fourth sidebar group appears: Network. Sites"
+msgstr ""
+
+#: docs/user-guide.md:338
 msgctxt "docs/user-guide.md"
 msgid "**Is my content locked in?** No. Minimal writes standard WordPress data"
 msgstr ""
 
-#: docs/user-guide.md:95
+#: docs/user-guide.md:127
 msgctxt "docs/user-guide.md"
 msgid "**Layout blocks open for writing.** Groups, columns, covers and"
 msgstr ""
@@ -20692,19 +20812,24 @@ msgctxt "docs/user-guide.md"
 msgid "**Manage** — the site itself: Extensions, Users, Menus and Widgets (on"
 msgstr ""
 
-#: docs/user-guide.md:151
+#: docs/user-guide.md:183
 msgctxt "docs/user-guide.md"
 msgid "**Media**: drop files anywhere in the app to upload. Images can be"
 msgstr ""
 
-#: docs/user-guide.md:315
+#: docs/user-guide.md:352
 msgctxt "docs/user-guide.md"
-msgid "**Multisite?** Not yet supported; Minimal is built for single sites."
+msgid "**Multisite?** Yes. Site members can switch among the sites they may use,"
 msgstr ""
 
-#: docs/user-guide.md:155
+#: docs/user-guide.md:187
 msgctxt "docs/user-guide.md"
 msgid "**Notifications** (the bell) collects what actually needs attention:"
+msgstr ""
+
+#: docs/user-guide.md:65
+msgctxt "docs/user-guide.md"
+msgid "**On a network**, a small chevron sits beside the site name at the top of"
 msgstr ""
 
 #: docs/user-guide.md:60
@@ -20712,7 +20837,7 @@ msgctxt "docs/user-guide.md"
 msgid "**One view, many plugins.** Where several plugins do the same job (three"
 msgstr ""
 
-#: docs/user-guide.md:85
+#: docs/user-guide.md:117
 msgctxt "docs/user-guide.md"
 msgid "**Paste from anywhere.** Word, Google Docs and web pages paste in clean."
 msgstr ""
@@ -20722,27 +20847,27 @@ msgctxt "docs/user-guide.md"
 msgid "**Right-click is real in Minimal.** This is the least discoverable thing in"
 msgstr ""
 
-#: docs/user-guide.md:133
+#: docs/user-guide.md:165
 msgctxt "docs/user-guide.md"
 msgid "**Saving is status-aware.** Drafts autosave as you write. Published"
 msgstr ""
 
-#: docs/user-guide.md:237
+#: docs/user-guide.md:274
 msgctxt "docs/user-guide.md"
 msgid "**Settings** — the settings people actually change: identity and logo,"
 msgstr ""
 
-#: docs/user-guide.md:316
+#: docs/user-guide.md:357
 msgctxt "docs/user-guide.md"
 msgid "**Something looks wrong?** Hard-refresh first (a cached stylesheet"
 msgstr ""
 
-#: docs/user-guide.md:249
+#: docs/user-guide.md:286
 msgctxt "docs/user-guide.md"
 msgid "**Structure** — post types, taxonomies and terms: rename, merge and"
 msgstr ""
 
-#: docs/user-guide.md:246
+#: docs/user-guide.md:283
 msgctxt "docs/user-guide.md"
 msgid "**System** — a health check (PHP, HTTPS, caching, backups, loopback),"
 msgstr ""
@@ -20757,12 +20882,12 @@ msgctxt "docs/user-guide.md"
 msgid "**The sidebar** has three groups:"
 msgstr ""
 
-#: docs/user-guide.md:81
+#: docs/user-guide.md:113
 msgctxt "docs/user-guide.md"
 msgid "**The slash menu**: type __MA_DOC_TOKEN_1__ on an empty line for headings, lists,"
 msgstr ""
 
-#: docs/user-guide.md:65
+#: docs/user-guide.md:97
 msgctxt "docs/user-guide.md"
 msgid "**The topbar** carries the page title, a button that shows or hides the"
 msgstr ""
@@ -20772,27 +20897,27 @@ msgctxt "docs/user-guide.md"
 msgid "**Tools** — site plumbing contributed by your plugins: form entries, mail"
 msgstr ""
 
-#: docs/user-guide.md:176
+#: docs/user-guide.md:210
 msgctxt "docs/user-guide.md"
 msgid "**Traffic**: with a supported analytics plugin active (Koko Analytics,"
 msgstr ""
 
-#: docs/user-guide.md:78
+#: docs/user-guide.md:110
 msgctxt "docs/user-guide.md"
 msgid "**Type markdown, get formatting.** __MA_DOC_TOKEN_1__ for a heading, __MA_DOC_TOKEN_2__ for a list,"
 msgstr ""
 
-#: docs/user-guide.md:166
+#: docs/user-guide.md:198
 msgctxt "docs/user-guide.md"
 msgid "**Updates**: the Updates tab shows everything pending, and **Update"
 msgstr ""
 
-#: docs/user-guide.md:228
+#: docs/user-guide.md:262
 msgctxt "docs/user-guide.md"
 msgid "**Users** — create, edit, change roles in bulk, reset passwords, sign"
 msgstr ""
 
-#: docs/user-guide.md:312
+#: docs/user-guide.md:349
 msgctxt "docs/user-guide.md"
 msgid "**Who can open __MA_DOC_TOKEN_1__?** Only logged-in users your site already"
 msgstr ""
@@ -20807,7 +20932,7 @@ msgctxt "docs/user-guide.md"
 msgid "**You only see what your account can do.** Minimal checks the same"
 msgstr ""
 
-#: docs/user-guide.md:89
+#: docs/user-guide.md:121
 msgctxt "docs/user-guide.md"
 msgid "**Your patterns come along.** Patterns you save in WordPress (synced or"
 msgstr ""
@@ -20824,30 +20949,35 @@ msgstr ""
 
 #: docs/user-guide.md:7
 msgctxt "docs/user-guide.md"
-msgid "*Current as of v0.27.0. This file ships inside the plugin, so the copy you"
+msgid "*Current as of v0.28.0. This file ships inside the plugin, so the copy you"
 msgstr ""
 
-#: docs/user-guide.md:86
+#: docs/user-guide.md:118
 msgctxt "docs/user-guide.md"
 msgid "A pasted image or a lone URL to a tweet or video becomes the real thing,"
 msgstr ""
 
-#: docs/user-guide.md:280
+#: docs/user-guide.md:317
 msgctxt "docs/user-guide.md"
 msgid "API, created and revoked per tool."
 msgstr ""
 
-#: docs/user-guide.md:189
+#: docs/user-guide.md:355
+msgctxt "docs/user-guide.md"
+msgid "Account creation and deletion, the long settings tail and very-large-network"
+msgstr ""
+
+#: docs/user-guide.md:223
 msgctxt "docs/user-guide.md"
 msgid "Anything in Minimal's menus can be hidden, per user, without touching the"
 msgstr ""
 
-#: docs/user-guide.md:218
+#: docs/user-guide.md:252
 msgctxt "docs/user-guide.md"
 msgid "Auto pill for WordPress automatic updates, the same setting wp-admin"
 msgstr ""
 
-#: docs/user-guide.md:114
+#: docs/user-guide.md:146
 msgctxt "docs/user-guide.md"
 msgid "Bricks, Divi and friends) open read-only with an \"Edit in your builder\""
 msgstr ""
@@ -20857,12 +20987,12 @@ msgctxt "docs/user-guide.md"
 msgid "Clicking the sidebar item for the view you are already on refreshes its"
 msgstr ""
 
-#: docs/user-guide.md:145
+#: docs/user-guide.md:177
 msgctxt "docs/user-guide.md"
 msgid "Daily site care"
 msgstr ""
 
-#: docs/user-guide.md:205
+#: docs/user-guide.md:239
 msgctxt "docs/user-guide.md"
 msgid "Everything hidden is listed under **Your profile**, where one click"
 msgstr ""
@@ -20882,42 +21012,42 @@ msgctxt "docs/user-guide.md"
 msgid "Group headings collapse when clicked, and the sidebar remembers your"
 msgstr ""
 
-#: docs/user-guide.md:267
+#: docs/user-guide.md:304
 msgctxt "docs/user-guide.md"
 msgid "Health check finds something worth cleaning up, Minimal gives you the exact"
 msgstr ""
 
-#: docs/user-guide.md:199
+#: docs/user-guide.md:233
 msgctxt "docs/user-guide.md"
 msgid "Hide any notice from the Notices tab."
 msgstr ""
 
-#: docs/user-guide.md:106
+#: docs/user-guide.md:138
 msgctxt "docs/user-guide.md"
 msgid "Hovering the card shows a short note saying why it is protected and"
 msgstr ""
 
-#: docs/user-guide.md:200
+#: docs/user-guide.md:234
 msgctxt "docs/user-guide.md"
 msgid "If a developer already hid admin menus in wp-admin with code (a common"
 msgstr ""
 
-#: docs/user-guide.md:282
+#: docs/user-guide.md:319
 msgctxt "docs/user-guide.md"
 msgid "Keyboard shortcuts"
 msgstr ""
 
-#: docs/user-guide.md:235
+#: docs/user-guide.md:269
 msgctxt "docs/user-guide.md"
 msgid "Light or dark mode is the one thing that stays personal to each"
 msgstr ""
 
-#: docs/user-guide.md:213
+#: docs/user-guide.md:247
 msgctxt "docs/user-guide.md"
 msgid "Managing the site"
 msgstr ""
 
-#: docs/user-guide.md:177
+#: docs/user-guide.md:211
 msgctxt "docs/user-guide.md"
 msgid "Matomo, Independent Analytics, Jetpack Stats, Site Kit and others), the"
 msgstr ""
@@ -20927,67 +21057,77 @@ msgctxt "docs/user-guide.md"
 msgid "Minimal Admin is a second front door to your WordPress site. It lives at"
 msgstr ""
 
-#: docs/user-guide.md:171
+#: docs/user-guide.md:203
 msgctxt "docs/user-guide.md"
 msgid "Minimal and still see that updates are working; click it to come back to the"
 msgstr ""
 
-#: docs/user-guide.md:103
+#: docs/user-guide.md:135
 msgctxt "docs/user-guide.md"
 msgid "Minimal's editor doesn't natively edit (a plugin's fancy block, a spacer,"
 msgstr ""
 
-#: docs/user-guide.md:164
+#: docs/user-guide.md:196
 msgctxt "docs/user-guide.md"
 msgid "Minimal's interface."
 msgstr ""
 
-#: docs/user-guide.md:159
+#: docs/user-guide.md:191
 msgctxt "docs/user-guide.md"
 msgid "Minimal. Instead, Minimal reads them in the background and reduces each one to"
 msgstr ""
 
-#: docs/user-guide.md:252
+#: docs/user-guide.md:289
 msgctxt "docs/user-guide.md"
 msgid "Most sites never need it, so it is not in the sidebar: you reach it from"
 msgstr ""
 
-#: docs/user-guide.md:297
+#: docs/user-guide.md:81
+msgctxt "docs/user-guide.md"
+msgid "Network users lists every account on the network, shows how many sites each"
+msgstr ""
+
+#: docs/user-guide.md:92
+msgctxt "docs/user-guide.md"
+msgid "Network-wide plugin and theme controls stay in Extensions. A network"
+msgstr ""
+
+#: docs/user-guide.md:334
 msgctxt "docs/user-guide.md"
 msgid "On Windows and Linux, use Ctrl wherever ⌘ appears."
 msgstr ""
 
-#: docs/user-guide.md:178
+#: docs/user-guide.md:212
 msgctxt "docs/user-guide.md"
 msgid "Overview chart shows daily visitors and pageviews from that plugin's own"
 msgstr ""
 
-#: docs/user-guide.md:209
+#: docs/user-guide.md:243
 msgctxt "docs/user-guide.md"
 msgid "Plugins also have hard budgets for how much space they may claim in the"
 msgstr ""
 
-#: docs/user-guide.md:73
+#: docs/user-guide.md:105
 msgctxt "docs/user-guide.md"
 msgid "Press **New** (or ⌘K, \"Create new post\") and write. The editor is built"
 msgstr ""
 
-#: docs/user-guide.md:197
+#: docs/user-guide.md:231
 msgctxt "docs/user-guide.md"
 msgid "Right-click a group heading in the block library to hide that plugin's"
 msgstr ""
 
-#: docs/user-guide.md:192
+#: docs/user-guide.md:226
 msgctxt "docs/user-guide.md"
 msgid "Right-click any sidebar entry, whether a plugin added it or it is one"
 msgstr ""
 
-#: docs/user-guide.md:299
+#: docs/user-guide.md:336
 msgctxt "docs/user-guide.md"
 msgid "Safety, honestly stated"
 msgstr ""
 
-#: docs/user-guide.md:99
+#: docs/user-guide.md:131
 msgctxt "docs/user-guide.md"
 msgid "The layout itself (widths, colors, spacing) is preserved exactly, and"
 msgstr ""
@@ -20997,7 +21137,7 @@ msgctxt "docs/user-guide.md"
 msgid "Three things to know before anything else:"
 msgstr ""
 
-#: docs/user-guide.md:264
+#: docs/user-guide.md:301
 msgctxt "docs/user-guide.md"
 msgid "Two things are true of all of it. It is **read-only**: Minimal will never"
 msgstr ""
@@ -21012,7 +21152,7 @@ msgctxt "docs/user-guide.md"
 msgid "What Minimal is (and is not)"
 msgstr ""
 
-#: docs/user-guide.md:225
+#: docs/user-guide.md:259
 msgctxt "docs/user-guide.md"
 msgid "WordPress itself manages, which link out to Settings → Connectors for"
 msgstr ""
@@ -21022,22 +21162,22 @@ msgctxt "docs/user-guide.md"
 msgid "WordPress permissions as wp-admin. An author sees writing tools; the"
 msgstr ""
 
-#: docs/user-guide.md:71
+#: docs/user-guide.md:103
 msgctxt "docs/user-guide.md"
 msgid "Writing"
 msgstr ""
 
-#: docs/user-guide.md:187
+#: docs/user-guide.md:221
 msgctxt "docs/user-guide.md"
 msgid "You are in control of the interface"
 msgstr ""
 
-#: docs/user-guide.md:276
+#: docs/user-guide.md:313
 msgctxt "docs/user-guide.md"
 msgid "Your account page covers your name and avatar, password and sessions,"
 msgstr ""
 
-#: docs/user-guide.md:274
+#: docs/user-guide.md:311
 msgctxt "docs/user-guide.md"
 msgid "Your profile"
 msgstr ""
@@ -21047,59 +21187,84 @@ msgctxt "docs/user-guide.md"
 msgid "__MA_DOC_TOKEN_1__ and covers the daily work: content, media,"
 msgstr ""
 
-#: docs/user-guide.md:79
+#: docs/user-guide.md:111
 msgctxt "docs/user-guide.md"
 msgid "__MA_DOC_TOKEN_1__ for a quote, __MA_DOC_TOKEN_2__, `__MA_DOC_TOKEN_3__code__MA_DOC_TOKEN_4____MA_DOC_TOKEN_5____MA_DOC_TOKEN_6____MA_DOC_TOKEN_7__---` for a"
 msgstr ""
 
-#: docs/user-guide.md:67
+#: docs/user-guide.md:99
 msgctxt "docs/user-guide.md"
 msgid "a View site link, the theme toggle (system, light, dark), notifications,"
 msgstr ""
 
-#: docs/user-guide.md:104
+#: docs/user-guide.md:136
 msgctxt "docs/user-guide.md"
 msgid "a row of buttons), it appears as a framed card rendered with your"
 msgstr ""
 
-#: docs/user-guide.md:109
+#: docs/user-guide.md:141
 msgctxt "docs/user-guide.md"
 msgid "a testimonial can hop into the next column without leaving Minimal; its"
 msgstr ""
 
-#: docs/user-guide.md:303
+#: docs/user-guide.md:340
 msgctxt "docs/user-guide.md"
 msgid "about your content, users or settings."
 msgstr ""
 
-#: docs/user-guide.md:230
+#: docs/user-guide.md:264
 msgctxt "docs/user-guide.md"
 msgid "account to see what they see. Opening a user is a full page: identity,"
 msgstr ""
 
-#: docs/user-guide.md:196
+#: docs/user-guide.md:230
 msgctxt "docs/user-guide.md"
 msgid "address."
 msgstr ""
 
-#: docs/user-guide.md:317
+#: docs/user-guide.md:93
+msgctxt "docs/user-guide.md"
+msgid "administrator can activate or deactivate a plugin for the whole network and"
+msgstr ""
+
+#: docs/user-guide.md:68
+msgctxt "docs/user-guide.md"
+msgid "administrators also get a link to Network Admin from there, since account"
+msgstr ""
+
+#: docs/user-guide.md:354
+msgctxt "docs/user-guide.md"
+msgid "administrators get daily Sites, Users, Settings, plugin and theme controls."
+msgstr ""
+
+#: docs/user-guide.md:84
+msgctxt "docs/user-guide.md"
+msgid "administrators may do, and where network mail goes. Two things Minimal will not"
+msgstr ""
+
+#: docs/user-guide.md:358
 msgctxt "docs/user-guide.md"
 msgid "after an update is the usual cause), check the System page's health"
 msgstr ""
 
-#: docs/user-guide.md:314
+#: docs/user-guide.md:351
 msgctxt "docs/user-guide.md"
 msgid "allows. Everything is re-checked on the server on every action."
 msgstr ""
 
-#: docs/user-guide.md:279
+#: docs/user-guide.md:316
 msgctxt "docs/user-guide.md"
 msgid "an AI assistant or other tool to your site over the standard WordPress"
 msgstr ""
 
-#: docs/user-guide.md:247
+#: docs/user-guide.md:284
 msgctxt "docs/user-guide.md"
 msgid "an activity view of what is installed, and debug tools when someone"
+msgstr ""
+
+#: docs/user-guide.md:80
+msgctxt "docs/user-guide.md"
+msgid "an address, a title and the email of someone who already has an account."
 msgstr ""
 
 #: docs/user-guide.md:36
@@ -21112,44 +21277,64 @@ msgctxt "docs/user-guide.md"
 msgid "and (with WooCommerce) Orders, Products, Coupons, Customers. Plugins with"
 msgstr ""
 
-#: docs/user-guide.md:93
+#: docs/user-guide.md:125
 msgctxt "docs/user-guide.md"
 msgid "and Minimal reminds you of that reach before you save one. An unsynced"
 msgstr ""
 
-#: docs/user-guide.md:258
+#: docs/user-guide.md:95
+msgctxt "docs/user-guide.md"
+msgid "and Minimal will not offer to deactivate itself network-wide from inside Minimal."
+msgstr ""
+
+#: docs/user-guide.md:295
 msgctxt "docs/user-guide.md"
 msgid "and indexes, which is what someone technical will ask for when a page is"
 msgstr ""
 
-#: docs/user-guide.md:302
+#: docs/user-guide.md:70
+msgctxt "docs/user-guide.md"
+msgid "and network setup stay with WordPress. The palette knows the sites too: press"
+msgstr ""
+
+#: docs/user-guide.md:339
 msgctxt "docs/user-guide.md"
 msgid "and nothing else. Deactivating or deleting the plugin changes nothing"
 msgstr ""
 
-#: docs/user-guide.md:87
+#: docs/user-guide.md:119
 msgctxt "docs/user-guide.md"
 msgid "and raw block markup (from an AI tool or a tutorial) pastes in as real,"
 msgstr ""
 
-#: docs/user-guide.md:68
+#: docs/user-guide.md:78
 msgctxt "docs/user-guide.md"
-msgid "and the New button. Amber chips appear here only when something needs"
-msgstr ""
-
-#: docs/user-guide.md:108
-msgctxt "docs/user-guide.md"
-msgid "and the ⚙ chip holds its settings plus duplicate and move arrows, so"
+msgid "and spam sites, and search; from a row you can open a site in Minimal, visit it,"
 msgstr ""
 
 #: docs/user-guide.md:100
 msgctxt "docs/user-guide.md"
+msgid "and the New button. Amber chips appear here only when something needs"
+msgstr ""
+
+#: docs/user-guide.md:140
+msgctxt "docs/user-guide.md"
+msgid "and the ⚙ chip holds its settings plus duplicate and move arrows, so"
+msgstr ""
+
+#: docs/user-guide.md:132
+msgctxt "docs/user-guide.md"
 msgid "anything you do not touch saves back byte for byte, so the block"
 msgstr ""
 
-#: docs/user-guide.md:232
+#: docs/user-guide.md:266
 msgctxt "docs/user-guide.md"
 msgid "appearance. An administrator can set another user's color scheme and"
+msgstr ""
+
+#: docs/user-guide.md:79
+msgctxt "docs/user-guide.md"
+msgid "archive or restore it, mark it as spam, or delete it. Adding a site asks for"
 msgstr ""
 
 #: docs/user-guide.md:8
@@ -21162,9 +21347,14 @@ msgctxt "docs/user-guide.md"
 msgid "arrangement. Counts on Content, Comments and Orders show pending work."
 msgstr ""
 
-#: docs/user-guide.md:76
+#: docs/user-guide.md:108
 msgctxt "docs/user-guide.md"
 msgid "away:"
+msgstr ""
+
+#: docs/user-guide.md:82
+msgctxt "docs/user-guide.md"
+msgid "belongs to, and lets you promote someone to network administrator or take"
 msgstr ""
 
 #: docs/user-guide.md:21
@@ -21172,47 +21362,52 @@ msgctxt "docs/user-guide.md"
 msgid "better done there. You can use both side by side forever."
 msgstr ""
 
-#: docs/user-guide.md:117
+#: docs/user-guide.md:149
 msgctxt "docs/user-guide.md"
 msgid "block and the card names the action: click anywhere on it for a tile"
 msgstr ""
 
-#: docs/user-guide.md:125
+#: docs/user-guide.md:157
 msgctxt "docs/user-guide.md"
 msgid "block editor and the popover says so."
 msgstr ""
 
-#: docs/user-guide.md:111
+#: docs/user-guide.md:143
 msgctxt "docs/user-guide.md"
 msgid "block it configures, so nested blocks read as distinct controls. One"
 msgstr ""
 
-#: docs/user-guide.md:198
+#: docs/user-guide.md:232
 msgctxt "docs/user-guide.md"
 msgid "blocks or designs from your menus."
 msgstr ""
 
-#: docs/user-guide.md:153
+#: docs/user-guide.md:185
 msgctxt "docs/user-guide.md"
 msgid "button when that plugin is installed."
 msgstr ""
 
-#: docs/user-guide.md:115
+#: docs/user-guide.md:147
 msgctxt "docs/user-guide.md"
 msgid "button, because the builder owns that content."
 msgstr ""
 
-#: docs/user-guide.md:121
+#: docs/user-guide.md:153
 msgctxt "docs/user-guide.md"
 msgid "caption and settings travel with it, and this covers sliders and"
 msgstr ""
 
-#: docs/user-guide.md:122
+#: docs/user-guide.md:154
 msgctxt "docs/user-guide.md"
 msgid "carousels, layouts with a fixed set of openings, and blocks that keep"
 msgstr ""
 
-#: docs/user-guide.md:265
+#: docs/user-guide.md:272
+msgctxt "docs/user-guide.md"
+msgid "change its role, or remove it from that site. Network administrators are"
+msgstr ""
+
+#: docs/user-guide.md:302
 msgctxt "docs/user-guide.md"
 msgid "change or delete anything in the database, because doing so behind a"
 msgstr ""
@@ -21227,37 +21422,37 @@ msgctxt "docs/user-guide.md"
 msgid "classic themes), Structure, System, Settings."
 msgstr ""
 
-#: docs/user-guide.md:244
+#: docs/user-guide.md:281
 msgctxt "docs/user-guide.md"
 msgid "click away. If you look for a setting and don't find it, that is the"
 msgstr ""
 
-#: docs/user-guide.md:112
+#: docs/user-guide.md:144
 msgctxt "docs/user-guide.md"
 msgid "click on \"Block editor ↗\" opens the same post in Gutenberg whenever you"
 msgstr ""
 
-#: docs/user-guide.md:201
+#: docs/user-guide.md:235
 msgctxt "docs/user-guide.md"
 msgid "client-site setup), Minimal notices and keeps those entries out of its"
 msgstr ""
 
-#: docs/user-guide.md:310
+#: docs/user-guide.md:347
 msgctxt "docs/user-guide.md"
 msgid "code never draws inside the app, so a broken or pushy plugin cannot"
 msgstr ""
 
-#: docs/user-guide.md:75
+#: docs/user-guide.md:107
 msgctxt "docs/user-guide.md"
 msgid "columns; heavy page design still belongs to the block editor, one click"
 msgstr ""
 
-#: docs/user-guide.md:268
+#: docs/user-guide.md:305
 msgctxt "docs/user-guide.md"
 msgid "command to run rather than a button that runs it: copy it, back up, and"
 msgstr ""
 
-#: docs/user-guide.md:148
+#: docs/user-guide.md:180
 msgctxt "docs/user-guide.md"
 msgid "commenter (future comments from that address go straight to the trash,"
 msgstr ""
@@ -21267,72 +21462,92 @@ msgctxt "docs/user-guide.md"
 msgid "comments, orders, users, plugins, updates and settings, in a calm interface"
 msgstr ""
 
-#: docs/user-guide.md:224
+#: docs/user-guide.md:258
 msgctxt "docs/user-guide.md"
 msgid "connections like Envato Market and WPMU DEV, and the AI connector keys"
 msgstr ""
 
-#: docs/user-guide.md:203
+#: docs/user-guide.md:237
 msgctxt "docs/user-guide.md"
 msgid "cosmetic; the screens stay reachable by address and from the palette."
 msgstr ""
 
-#: docs/user-guide.md:124
+#: docs/user-guide.md:69
+msgctxt "docs/user-guide.md"
+msgid "creation and deletion, the long tail of network settings, restores, exports"
+msgstr ""
+
+#: docs/user-guide.md:156
 msgctxt "docs/user-guide.md"
 msgid "crop and random order; link, size and lightbox options stay in the"
 msgstr ""
 
-#: docs/user-guide.md:152
+#: docs/user-guide.md:184
 msgctxt "docs/user-guide.md"
 msgid "cropped and rotated right in Minimal, and regenerating thumbnails is one"
 msgstr ""
 
-#: docs/user-guide.md:242
+#: docs/user-guide.md:279
 msgctxt "docs/user-guide.md"
 msgid "custom CSS. The long"
 msgstr ""
 
-#: docs/user-guide.md:180
+#: docs/user-guide.md:356
+msgctxt "docs/user-guide.md"
+msgid "database upgrades stay in Network Admin."
+msgstr ""
+
+#: docs/user-guide.md:214
 msgctxt "docs/user-guide.md"
 msgid "days with the arrow keys without closing the dialog."
 msgstr ""
 
-#: docs/user-guide.md:233
+#: docs/user-guide.md:267
 msgctxt "docs/user-guide.md"
 msgid "defaults there, so a client's Minimal looks right before their first"
 msgstr ""
 
-#: docs/user-guide.md:217
+#: docs/user-guide.md:251
 msgctxt "docs/user-guide.md"
 msgid "delete with plain confirmations. Every plugin and theme card carries an"
 msgstr ""
 
-#: docs/user-guide.md:80
+#: docs/user-guide.md:88
+msgctxt "docs/user-guide.md"
+msgid "deleting accounts stays in Network Admin, because deleting a network account"
+msgstr ""
+
+#: docs/user-guide.md:112
 msgctxt "docs/user-guide.md"
 msgid "divider, triple backticks for a code block. All applied as you type."
 msgstr ""
 
-#: docs/user-guide.md:84
+#: docs/user-guide.md:85
+msgctxt "docs/user-guide.md"
+msgid "do: it never offers to archive or delete the main site of the network or the"
+msgstr ""
+
+#: docs/user-guide.md:116
 msgctxt "docs/user-guide.md"
 msgid "drop in."
 msgstr ""
 
-#: docs/user-guide.md:223
+#: docs/user-guide.md:257
 msgctxt "docs/user-guide.md"
 msgid "each plugin's settings screen), service keys like Akismet's, account"
 msgstr ""
 
-#: docs/user-guide.md:88
+#: docs/user-guide.md:120
 msgctxt "docs/user-guide.md"
 msgid "editable blocks."
 msgstr ""
 
-#: docs/user-guide.md:226
+#: docs/user-guide.md:260
 msgctxt "docs/user-guide.md"
 msgid "editing. Small chips mark which rows are service keys or connections"
 msgstr ""
 
-#: docs/user-guide.md:101
+#: docs/user-guide.md:133
 msgctxt "docs/user-guide.md"
 msgid "editor always reopens the page cleanly."
 msgstr ""
@@ -21342,42 +21557,52 @@ msgctxt "docs/user-guide.md"
 msgid "editor's block library have one too. When in doubt, try a right-click."
 msgstr ""
 
-#: docs/user-guide.md:91
+#: docs/user-guide.md:94
+msgctxt "docs/user-guide.md"
+msgid "enable or disable a theme for every site. Per-site activation stays separate,"
+msgstr ""
+
+#: docs/user-guide.md:123
 msgctxt "docs/user-guide.md"
 msgid "entry in the Content list manages them. A synced pattern inserts as a"
 msgstr ""
 
-#: docs/user-guide.md:207
+#: docs/user-guide.md:241
 msgctxt "docs/user-guide.md"
 msgid "entry on the Users page. Hiding is personal: your co-editors see their"
 msgstr ""
 
-#: docs/user-guide.md:195
+#: docs/user-guide.md:229
 msgctxt "docs/user-guide.md"
 msgid "every screen stays reachable from the command palette and by its"
 msgstr ""
 
-#: docs/user-guide.md:255
+#: docs/user-guide.md:292
 msgctxt "docs/user-guide.md"
 msgid "every table with its size and rough row count, and opening one shows its"
 msgstr ""
 
-#: docs/user-guide.md:167
+#: docs/user-guide.md:199
 msgctxt "docs/user-guide.md"
 msgid "everything** runs plugins, then themes, then WordPress core, telling you"
 msgstr ""
 
-#: docs/user-guide.md:168
+#: docs/user-guide.md:200
 msgctxt "docs/user-guide.md"
 msgid "exactly what will change and what is untouched before it starts. While a"
 msgstr ""
 
-#: docs/user-guide.md:262
+#: docs/user-guide.md:299
 msgctxt "docs/user-guide.md"
 msgid "expired shop sessions."
 msgstr ""
 
-#: docs/user-guide.md:74
+#: docs/user-guide.md:73
+msgctxt "docs/user-guide.md"
+msgid "focused, fuzzy-matches site names and addresses, and shows no more than five"
+msgstr ""
+
+#: docs/user-guide.md:106
 msgctxt "docs/user-guide.md"
 msgid "for writing, from quick posts to full pages assembled from groups and"
 msgstr ""
@@ -21387,57 +21612,57 @@ msgctxt "docs/user-guide.md"
 msgid "form plugins, two backup plugins), Minimal shows one sidebar entry with a"
 msgstr ""
 
-#: docs/user-guide.md:221
+#: docs/user-guide.md:255
 msgctxt "docs/user-guide.md"
 msgid "gathers every external service relationship in one place: paid plugins'"
 msgstr ""
 
-#: docs/user-guide.md:118
+#: docs/user-guide.md:150
 msgctxt "docs/user-guide.md"
 msgid "grid where you reorder (drag or arrows), replace (click a tile), add,"
 msgstr ""
 
-#: docs/user-guide.md:127
+#: docs/user-guide.md:159
 msgctxt "docs/user-guide.md"
 msgid "holding several styled blocks (a stats strip of label-and-value"
 msgstr ""
 
-#: docs/user-guide.md:185
+#: docs/user-guide.md:219
 msgctxt "docs/user-guide.md"
 msgid "how fresh your last backup is."
 msgstr ""
 
-#: docs/user-guide.md:82
+#: docs/user-guide.md:114
 msgctxt "docs/user-guide.md"
 msgid "images, embeds, tables and more. **⌘/** opens the full block library,"
 msgstr ""
 
-#: docs/user-guide.md:97
+#: docs/user-guide.md:129
 msgctxt "docs/user-guide.md"
 msgid "in and type, with markdown, the slash menu and paste all working"
 msgstr ""
 
-#: docs/user-guide.md:83
+#: docs/user-guide.md:115
 msgctxt "docs/user-guide.md"
 msgid "including your plugins' blocks and entire designs and patterns you can"
 msgstr ""
 
-#: docs/user-guide.md:98
+#: docs/user-guide.md:130
 msgctxt "docs/user-guide.md"
 msgid "inside, and each column its own surface laid out like the front end."
 msgstr ""
 
-#: docs/user-guide.md:184
+#: docs/user-guide.md:218
 msgctxt "docs/user-guide.md"
 msgid "installed, \"Back up site now\" is there too, and the System page reports"
 msgstr ""
 
-#: docs/user-guide.md:307
+#: docs/user-guide.md:344
 msgctxt "docs/user-guide.md"
 msgid "installs; a tampered or broken download refuses to install."
 msgstr ""
 
-#: docs/user-guide.md:277
+#: docs/user-guide.md:314
 msgctxt "docs/user-guide.md"
 msgid "interface language (each user can pick their own), appearance, everything"
 msgstr ""
@@ -21447,17 +21672,17 @@ msgctxt "docs/user-guide.md"
 msgid "is exactly as it was, with nothing to migrate and nothing lost."
 msgstr ""
 
-#: docs/user-guide.md:174
+#: docs/user-guide.md:206
 msgctxt "docs/user-guide.md"
-msgid "it is allowed to install."
+msgid "it is allowed to install. After a WordPress core update on multisite, Minimal"
 msgstr ""
 
-#: docs/user-guide.md:161
+#: docs/user-guide.md:193
 msgctxt "docs/user-guide.md"
 msgid "it. Act on one (\"No thanks\", \"Allow\") without leaving the panel, or press"
 msgstr ""
 
-#: docs/user-guide.md:132
+#: docs/user-guide.md:164
 msgctxt "docs/user-guide.md"
 msgid "itself; the block you clicked opens highlighted."
 msgstr ""
@@ -21467,7 +21692,7 @@ msgctxt "docs/user-guide.md"
 msgid "keeps working at __MA_DOC_TOKEN_1__, and Minimal links you to it whenever a job is"
 msgstr ""
 
-#: docs/user-guide.md:222
+#: docs/user-guide.md:256
 msgctxt "docs/user-guide.md"
 msgid "license keys (activate, verify or deactivate without hunting through"
 msgstr ""
@@ -21477,7 +21702,12 @@ msgctxt "docs/user-guide.md"
 msgid "list in place, so a tab left open all day stays current without a page"
 msgstr ""
 
-#: docs/user-guide.md:92
+#: docs/user-guide.md:77
+msgctxt "docs/user-guide.md"
+msgid "lists every site with its address, members and state, filters for archived"
+msgstr ""
+
+#: docs/user-guide.md:124
 msgctxt "docs/user-guide.md"
 msgid "live reference: edit the pattern once and every post using it follows,"
 msgstr ""
@@ -21487,17 +21717,17 @@ msgctxt "docs/user-guide.md"
 msgid "logs, activity logs, redirects, backups, snippets."
 msgstr ""
 
-#: docs/user-guide.md:239
+#: docs/user-guide.md:276
 msgctxt "docs/user-guide.md"
 msgid "maintenance mode, and a switch that turns a detected coming-soon or"
 msgstr ""
 
-#: docs/user-guide.md:240
+#: docs/user-guide.md:277
 msgctxt "docs/user-guide.md"
 msgid "maintenance plugin's mode off in place, with Undo), site language, spam"
 msgstr ""
 
-#: docs/user-guide.md:219
+#: docs/user-guide.md:253
 msgctxt "docs/user-guide.md"
 msgid "manages, and inactive themes offer a Live preview so you can walk the"
 msgstr ""
@@ -21507,97 +21737,117 @@ msgctxt "docs/user-guide.md"
 msgid "markup, settings are normal options. Deactivate the plugin and your site"
 msgstr ""
 
-#: docs/user-guide.md:96
+#: docs/user-guide.md:74
 msgctxt "docs/user-guide.md"
-msgid "media-and-text blocks are writing surfaces, nested to any depth: click"
-msgstr ""
-
-#: docs/user-guide.md:211
-msgctxt "docs/user-guide.md"
-msgid "more of them."
-msgstr ""
-
-#: docs/user-guide.md:90
-msgctxt "docs/user-guide.md"
-msgid "not) appear in the slash menu and the block library, and a Patterns"
-msgstr ""
-
-#: docs/user-guide.md:179
-msgctxt "docs/user-guide.md"
-msgid "numbers. Click a day for its top pages and referrers, and step through"
-msgstr ""
-
-#: docs/user-guide.md:193
-msgctxt "docs/user-guide.md"
-msgid "of Minimal's own views (Comments on a site that never uses them, Widgets"
-msgstr ""
-
-#: docs/user-guide.md:261
-msgctxt "docs/user-guide.md"
-msgid "old storage engine, space that could be reclaimed, and backlogs like"
-msgstr ""
-
-#: docs/user-guide.md:138
-msgctxt "docs/user-guide.md"
-msgid "one click. If someone else has the post open (in Minimal or wp-admin), you"
-msgstr ""
-
-#: docs/user-guide.md:135
-msgctxt "docs/user-guide.md"
-msgid "only updates when you press Update. A crash net keeps a local copy of"
-msgstr ""
-
-#: docs/user-guide.md:254
-msgctxt "docs/user-guide.md"
-msgid "or the /minimal-admin/database address. It has three parts. **Tables** lists"
-msgstr ""
-
-#: docs/user-guide.md:272
-msgctxt "docs/user-guide.md"
-msgid "otherwise."
-msgstr ""
-
-#: docs/user-guide.md:229
-msgctxt "docs/user-guide.md"
-msgid "out sessions, and (with the User Switching plugin) switch into an"
-msgstr ""
-
-#: docs/user-guide.md:208
-msgctxt "docs/user-guide.md"
-msgid "own layout."
-msgstr ""
-
-#: docs/user-guide.md:172
-msgctxt "docs/user-guide.md"
-msgid "panel. Minimal updates itself the same way: each release is fetched from the"
+msgid "matches at once even on a large network."
 msgstr ""
 
 #: docs/user-guide.md:128
 msgctxt "docs/user-guide.md"
-msgid "paragraphs, say) edits in a roomy window: one card per block with its"
+msgid "media-and-text blocks are writing surfaces, nested to any depth: click"
 msgstr ""
 
-#: docs/user-guide.md:94
+#: docs/user-guide.md:245
 msgctxt "docs/user-guide.md"
-msgid "pattern drops in as a detached copy you can edit freely."
+msgid "more of them."
 msgstr ""
 
-#: docs/user-guide.md:156
+#: docs/user-guide.md:87
 msgctxt "docs/user-guide.md"
-msgid "pending comments, available updates, and Notices."
+msgid "network-administrator status or the last one on the network. Creating and"
 msgstr ""
 
-#: docs/user-guide.md:236
+#: docs/user-guide.md:208
 msgctxt "docs/user-guide.md"
-msgid "person's device."
+msgid "networks are sent to WordPress's own Upgrade Network screen instead."
+msgstr ""
+
+#: docs/user-guide.md:72
+msgctxt "docs/user-guide.md"
+msgid "not appear when you belong to only one site. Its menu opens with search already"
+msgstr ""
+
+#: docs/user-guide.md:122
+msgctxt "docs/user-guide.md"
+msgid "not) appear in the slash menu and the block library, and a Patterns"
+msgstr ""
+
+#: docs/user-guide.md:213
+msgctxt "docs/user-guide.md"
+msgid "numbers. Click a day for its top pages and referrers, and step through"
+msgstr ""
+
+#: docs/user-guide.md:227
+msgctxt "docs/user-guide.md"
+msgid "of Minimal's own views (Comments on a site that never uses them, Widgets"
+msgstr ""
+
+#: docs/user-guide.md:298
+msgctxt "docs/user-guide.md"
+msgid "old storage engine, space that could be reclaimed, and backlogs like"
+msgstr ""
+
+#: docs/user-guide.md:170
+msgctxt "docs/user-guide.md"
+msgid "one click. If someone else has the post open (in Minimal or wp-admin), you"
+msgstr ""
+
+#: docs/user-guide.md:167
+msgctxt "docs/user-guide.md"
+msgid "only updates when you press Update. A crash net keeps a local copy of"
+msgstr ""
+
+#: docs/user-guide.md:291
+msgctxt "docs/user-guide.md"
+msgid "or the /minimal-admin/database address. It has three parts. **Tables** lists"
+msgstr ""
+
+#: docs/user-guide.md:309
+msgctxt "docs/user-guide.md"
+msgid "otherwise."
+msgstr ""
+
+#: docs/user-guide.md:263
+msgctxt "docs/user-guide.md"
+msgid "out sessions, and (with the User Switching plugin) switch into an"
+msgstr ""
+
+#: docs/user-guide.md:242
+msgctxt "docs/user-guide.md"
+msgid "own layout."
+msgstr ""
+
+#: docs/user-guide.md:204
+msgctxt "docs/user-guide.md"
+msgid "panel. Minimal updates itself the same way: each release is fetched from the"
 msgstr ""
 
 #: docs/user-guide.md:160
 msgctxt "docs/user-guide.md"
+msgid "paragraphs, say) edits in a roomy window: one card per block with its"
+msgstr ""
+
+#: docs/user-guide.md:126
+msgctxt "docs/user-guide.md"
+msgid "pattern drops in as a detached copy you can edit freely."
+msgstr ""
+
+#: docs/user-guide.md:188
+msgctxt "docs/user-guide.md"
+msgid "pending comments, available updates, and Notices."
+msgstr ""
+
+#: docs/user-guide.md:270
+msgctxt "docs/user-guide.md"
+msgid "person's device. On a subsite, this page manages site membership rather"
+msgstr ""
+
+#: docs/user-guide.md:192
+msgctxt "docs/user-guide.md"
 msgid "plain text with its buttons intact, attributed to the plugin that posted"
 msgstr ""
 
-#: docs/user-guide.md:266
+#: docs/user-guide.md:303
 msgctxt "docs/user-guide.md"
 msgid "plugin's back is how sites break in ways nobody can trace. And where a"
 msgstr ""
@@ -21607,7 +21857,7 @@ msgctxt "docs/user-guide.md"
 msgid "plugins, you want __MA_DOC_TOKEN_1__ instead.*"
 msgstr ""
 
-#: docs/user-guide.md:130
+#: docs/user-guide.md:162
 msgctxt "docs/user-guide.md"
 msgid "plus reorder, remove and add. Enter it from the container's ⚙ chip"
 msgstr ""
@@ -21617,47 +21867,52 @@ msgctxt "docs/user-guide.md"
 msgid "post, or run a command directly: \"Clear site cache\", \"Back up site now\","
 msgstr ""
 
-#: docs/user-guide.md:134
+#: docs/user-guide.md:166
 msgctxt "docs/user-guide.md"
 msgid "posts never change under you: edits back up silently, and the live post"
 msgstr ""
 
-#: docs/user-guide.md:260
+#: docs/user-guide.md:297
 msgctxt "docs/user-guide.md"
 msgid "posts or users that no longer exist, missing indexes, tables using an"
 msgstr ""
 
-#: docs/user-guide.md:173
+#: docs/user-guide.md:205
 msgctxt "docs/user-guide.md"
 msgid "project's GitHub releases and checked against a published checksum before"
 msgstr ""
 
-#: docs/user-guide.md:241
+#: docs/user-guide.md:273
+msgctxt "docs/user-guide.md"
+msgid "protected from per-site role and removal controls."
+msgstr ""
+
+#: docs/user-guide.md:278
 msgctxt "docs/user-guide.md"
 msgid "protection (with Akismet, paste or change your key right on its card),"
 msgstr ""
 
-#: docs/user-guide.md:231
+#: docs/user-guide.md:265
 msgctxt "docs/user-guide.md"
 msgid "public profile, language, password and sessions, plus their Minimal"
 msgstr ""
 
-#: docs/user-guide.md:227
+#: docs/user-guide.md:261
 msgctxt "docs/user-guide.md"
 msgid "rather than licenses."
 msgstr ""
 
-#: docs/user-guide.md:250
+#: docs/user-guide.md:287
 msgctxt "docs/user-guide.md"
 msgid "re-parent categories and tags safely."
 msgstr ""
 
-#: docs/user-guide.md:238
+#: docs/user-guide.md:275
 msgctxt "docs/user-guide.md"
 msgid "reading and discussion, permalinks, visibility (search engines,"
 msgstr ""
 
-#: docs/user-guide.md:245
+#: docs/user-guide.md:282
 msgctxt "docs/user-guide.md"
 msgid "reason, not a bug."
 msgstr ""
@@ -21667,17 +21922,22 @@ msgctxt "docs/user-guide.md"
 msgid "reload."
 msgstr ""
 
-#: docs/user-guide.md:119
+#: docs/user-guide.md:151
 msgctxt "docs/user-guide.md"
 msgid "remove, duplicate and caption photos. Dropping image files on the grid"
 msgstr ""
 
-#: docs/user-guide.md:142
+#: docs/user-guide.md:89
+msgctxt "docs/user-guide.md"
+msgid "removes that person's posts from every site and WordPress's own flow offers"
+msgstr ""
+
+#: docs/user-guide.md:174
 msgctxt "docs/user-guide.md"
 msgid "replace. A word-count pill sits at the bottom right; click it to set a"
 msgstr ""
 
-#: docs/user-guide.md:206
+#: docs/user-guide.md:240
 msgctxt "docs/user-guide.md"
 msgid "restores it, and an administrator can restore items for you from your"
 msgstr ""
@@ -21687,89 +21947,109 @@ msgctxt "docs/user-guide.md"
 msgid "right-click menus (open, duplicate, publish, trash), comments have them,"
 msgstr ""
 
-#: docs/user-guide.md:257
+#: docs/user-guide.md:294
 msgctxt "docs/user-guide.md"
 msgid "row. **Structure** (a tab on any open table) shows that table's columns"
 msgstr ""
 
-#: docs/user-guide.md:256
+#: docs/user-guide.md:293
 msgctxt "docs/user-guide.md"
 msgid "rows, with sorting, a per-column filter and a detail view for any single"
 msgstr ""
 
-#: docs/user-guide.md:169
+#: docs/user-guide.md:201
 msgctxt "docs/user-guide.md"
 msgid "run is going, a progress pill in the top bar names the current phase and"
 msgstr ""
 
-#: docs/user-guide.md:269
+#: docs/user-guide.md:306
 msgctxt "docs/user-guide.md"
 msgid "run it yourself or hand it to whoever looks after the site. If you need"
 msgstr ""
 
-#: docs/user-guide.md:216
+#: docs/user-guide.md:207
+msgctxt "docs/user-guide.md"
+msgid "runs the required database upgrade across the network's sites. Very large"
+msgstr ""
+
+#: docs/user-guide.md:250
 msgctxt "docs/user-guide.md"
 msgid "search, upload, or dropping a zip on the dialog. Toggle, update and"
 msgstr ""
 
-#: docs/user-guide.md:143
+#: docs/user-guide.md:175
 msgctxt "docs/user-guide.md"
 msgid "session writing goal."
 msgstr ""
 
-#: docs/user-guide.md:66
+#: docs/user-guide.md:98
 msgctxt "docs/user-guide.md"
 msgid "sidebar (⌘. does the same), the version badge (click it for what's new),"
 msgstr ""
 
-#: docs/user-guide.md:202
+#: docs/user-guide.md:236
 msgctxt "docs/user-guide.md"
 msgid "sidebar too, automatically. Like the wp-admin original this is"
 msgstr ""
 
-#: docs/user-guide.md:210
+#: docs/user-guide.md:244
 msgctxt "docs/user-guide.md"
 msgid "sidebar, palette and menus, so the interface stays calm as you install"
 msgstr ""
 
-#: docs/user-guide.md:234
+#: docs/user-guide.md:268
 msgctxt "docs/user-guide.md"
 msgid "sign-in, and restore anything that user hid from their own menus."
 msgstr ""
 
-#: docs/user-guide.md:220
+#: docs/user-guide.md:254
 msgctxt "docs/user-guide.md"
 msgid "site in a candidate theme before switching. The Licenses tab"
 msgstr ""
 
-#: docs/user-guide.md:190
+#: docs/user-guide.md:224
 msgctxt "docs/user-guide.md"
 msgid "site itself:"
 msgstr ""
 
-#: docs/user-guide.md:105
+#: docs/user-guide.md:86
+msgctxt "docs/user-guide.md"
+msgid "site you are currently working in, and it never lets you remove your own"
+msgstr ""
+
+#: docs/user-guide.md:137
 msgctxt "docs/user-guide.md"
 msgid "site's real styling, right where it lives, even inside a group."
 msgstr ""
 
-#: docs/user-guide.md:259
+#: docs/user-guide.md:296
 msgctxt "docs/user-guide.md"
 msgid "slow. **Health** runs a set of storage checks: leftover rows pointing at"
 msgstr ""
 
-#: docs/user-guide.md:170
+#: docs/user-guide.md:202
 msgctxt "docs/user-guide.md"
 msgid "stays visible on every screen, so you can close the panel or move around"
 msgstr ""
 
-#: docs/user-guide.md:318
+#: docs/user-guide.md:67
+msgctxt "docs/user-guide.md"
+msgid "straight to Minimal on any other. Network"
+msgstr ""
+
+#: docs/user-guide.md:359
 msgctxt "docs/user-guide.md"
 msgid "strip second, and report bugs at"
 msgstr ""
 
-#: docs/user-guide.md:110
+#: docs/user-guide.md:142
 msgctxt "docs/user-guide.md"
 msgid "structure is preserved byte for byte. Hovering any ⚙ chip outlines the"
+msgstr ""
+
+#: docs/user-guide.md:353
+msgctxt "docs/user-guide.md"
+msgid "subsite administrators can manage local membership, and network"
 msgstr ""
 
 #: docs/user-guide.md:62
@@ -21777,32 +22057,42 @@ msgctxt "docs/user-guide.md"
 msgid "switcher inside, instead of three lookalike menus. The view stays the same;"
 msgstr ""
 
-#: docs/user-guide.md:243
+#: docs/user-guide.md:280
 msgctxt "docs/user-guide.md"
 msgid "tail of rarely-touched options deliberately stays in wp-admin, one"
 msgstr ""
 
-#: docs/user-guide.md:311
+#: docs/user-guide.md:348
 msgctxt "docs/user-guide.md"
 msgid "take the interface down with it or plaster it with banners."
 msgstr ""
 
-#: docs/user-guide.md:248
+#: docs/user-guide.md:285
 msgctxt "docs/user-guide.md"
 msgid "technical asks you to turn on logging."
 msgstr ""
 
-#: docs/user-guide.md:129
+#: docs/user-guide.md:161
 msgctxt "docs/user-guide.md"
 msgid "text front and center and the other settings tucked behind a toggle,"
 msgstr ""
 
-#: docs/user-guide.md:253
+#: docs/user-guide.md:271
+msgctxt "docs/user-guide.md"
+msgid "than network accounts: add an existing account by email or username,"
+msgstr ""
+
+#: docs/user-guide.md:83
+msgctxt "docs/user-guide.md"
+msgid "that away. Network settings covers registration, uploads, what site"
+msgstr ""
+
+#: docs/user-guide.md:290
 msgctxt "docs/user-guide.md"
 msgid "the System page's Database card, the command palette (\"Browse database\"),"
 msgstr ""
 
-#: docs/user-guide.md:271
+#: docs/user-guide.md:308
 msgctxt "docs/user-guide.md"
 msgid "the WP-CLI command line, and Minimal says so plainly rather than pretending"
 msgstr ""
@@ -21812,12 +22102,12 @@ msgctxt "docs/user-guide.md"
 msgid "the app, so here it is in plain terms: rows in Content and Media have"
 msgstr ""
 
-#: docs/user-guide.md:305
+#: docs/user-guide.md:342
 msgctxt "docs/user-guide.md"
 msgid "the normal WordPress updates screen. Since v0.21.0 every download is"
 msgstr ""
 
-#: docs/user-guide.md:163
+#: docs/user-guide.md:195
 msgctxt "docs/user-guide.md"
 msgid "the notice wall, and it is permanent policy: plugins cannot buy space in"
 msgstr ""
@@ -21827,12 +22117,17 @@ msgctxt "docs/user-guide.md"
 msgid "the provider changes."
 msgstr ""
 
+#: docs/user-guide.md:66
+msgctxt "docs/user-guide.md"
+msgid "the sidebar. It opens a short list of sites you can work on and takes you"
+msgstr ""
+
 #: docs/user-guide.md:56
 msgctxt "docs/user-guide.md"
 msgid "the theme toggle has one, sidebar entries have one whether a plugin added"
 msgstr ""
 
-#: docs/user-guide.md:123
+#: docs/user-guide.md:155
 msgctxt "docs/user-guide.md"
 msgid "their pictures in settings. A gallery's ⚙ chip also offers columns,"
 msgstr ""
@@ -21847,52 +22142,57 @@ msgctxt "docs/user-guide.md"
 msgid "them."
 msgstr ""
 
-#: docs/user-guide.md:270
+#: docs/user-guide.md:307
 msgctxt "docs/user-guide.md"
 msgid "to genuinely edit the database, that is a job for your host's tools or"
 msgstr ""
 
-#: docs/user-guide.md:309
+#: docs/user-guide.md:90
+msgctxt "docs/user-guide.md"
+msgid "to reassign them first."
+msgstr ""
+
+#: docs/user-guide.md:346
 msgctxt "docs/user-guide.md"
 msgid "to. Plugins describe their screens to Minimal as plain data; their own"
 msgstr ""
 
-#: docs/user-guide.md:313
+#: docs/user-guide.md:350
 msgctxt "docs/user-guide.md"
 msgid "trusts to edit content, and each person sees only what their role"
 msgstr ""
 
-#: docs/user-guide.md:136
+#: docs/user-guide.md:168
 msgctxt "docs/user-guide.md"
 msgid "unsaved work in your browser and offers to restore it."
 msgstr ""
 
-#: docs/user-guide.md:120
+#: docs/user-guide.md:152
 msgctxt "docs/user-guide.md"
 msgid "uploads them into that block. Each photo moves as an exact unit, so its"
 msgstr ""
 
-#: docs/user-guide.md:306
+#: docs/user-guide.md:343
 msgctxt "docs/user-guide.md"
 msgid "verified against a checksum published with the release before it"
 msgstr ""
 
-#: docs/user-guide.md:113
+#: docs/user-guide.md:145
 msgctxt "docs/user-guide.md"
 msgid "want the full toolkit. Posts built with page builders (Elementor,"
 msgstr ""
 
-#: docs/user-guide.md:107
+#: docs/user-guide.md:139
 msgctxt "docs/user-guide.md"
 msgid "where edits live. Its text and images are usually editable in place,"
 msgstr ""
 
-#: docs/user-guide.md:139
+#: docs/user-guide.md:171
 msgctxt "docs/user-guide.md"
 msgid "will be told before you can both edit it."
 msgstr ""
 
-#: docs/user-guide.md:149
+#: docs/user-guide.md:181
 msgctxt "docs/user-guide.md"
 msgid "with Undo). Bulk-select works across the list."
 msgstr ""
@@ -21902,82 +22202,87 @@ msgctxt "docs/user-guide.md"
 msgid "with none of the banners and upsells that crowd a typical dashboard."
 msgstr ""
 
-#: docs/user-guide.md:320
+#: docs/user-guide.md:361
 msgctxt "docs/user-guide.md"
 msgid "wp-admin always remains as the fallback while anything is sorted out."
 msgstr ""
 
-#: docs/user-guide.md:278
+#: docs/user-guide.md:315
 msgctxt "docs/user-guide.md"
 msgid "you have hidden, and **AI Access**: application passwords for connecting"
 msgstr ""
 
-#: docs/user-guide.md:194
+#: docs/user-guide.md:228
 msgctxt "docs/user-guide.md"
 msgid "you never touch), and choose **Hide for you**. Hiding is cosmetic:"
 msgstr ""
 
-#: docs/user-guide.md:69
+#: docs/user-guide.md:101
 msgctxt "docs/user-guide.md"
 msgid "you: a pending WordPress update, or a site that is not fully public."
 msgstr ""
 
-#: docs/user-guide.md:295
+#: docs/user-guide.md:332
 msgctxt "docs/user-guide.md"
 msgid "| **Esc** | Close menus and dialogs |"
 msgstr ""
 
-#: docs/user-guide.md:294
+#: docs/user-guide.md:331
 msgctxt "docs/user-guide.md"
 msgid "| **← →** | Previous / next item in a media or entry dialog; previous / next day in the traffic dialog |"
 msgstr ""
 
-#: docs/user-guide.md:293
+#: docs/user-guide.md:330
 msgctxt "docs/user-guide.md"
 msgid "| **⌘.** | Show or hide the navigation |"
 msgstr ""
 
-#: docs/user-guide.md:289
+#: docs/user-guide.md:326
 msgctxt "docs/user-guide.md"
 msgid "| **⌘/** | Block library |"
 msgstr ""
 
-#: docs/user-guide.md:286
+#: docs/user-guide.md:323
 msgctxt "docs/user-guide.md"
 msgid "| **⌘K** | Command palette (with text selected in the editor: link) |"
 msgstr ""
 
-#: docs/user-guide.md:287
+#: docs/user-guide.md:324
 msgctxt "docs/user-guide.md"
 msgid "| **⌘S** | Save, keeping the current status |"
 msgstr ""
 
-#: docs/user-guide.md:291
+#: docs/user-guide.md:328
 msgctxt "docs/user-guide.md"
 msgid "| **⌘⇧D** | Focus mode |"
 msgstr ""
 
-#: docs/user-guide.md:290
+#: docs/user-guide.md:327
 msgctxt "docs/user-guide.md"
 msgid "| **⌘⇧F** | Find and replace in the post |"
 msgstr ""
 
-#: docs/user-guide.md:292
+#: docs/user-guide.md:329
 msgctxt "docs/user-guide.md"
 msgid "| **⌘⇧O** | Outline mode |"
 msgstr ""
 
-#: docs/user-guide.md:288
+#: docs/user-guide.md:325
 msgctxt "docs/user-guide.md"
 msgid "| **⌘⏎** | Publish, Update or Schedule |"
 msgstr ""
 
-#: docs/user-guide.md:284
+#: docs/user-guide.md:321
 msgctxt "docs/user-guide.md"
 msgid "| Keys | Does |"
 msgstr ""
 
-#: docs/user-guide.md:141
+#: docs/user-guide.md:71
+msgctxt "docs/user-guide.md"
+msgid "⌘K and type \"switch\", or just start typing a site's name. The chevron does"
+msgstr ""
+
+#: docs/user-guide.md:173
 msgctxt "docs/user-guide.md"
 msgid "⌘⇧O reduces the screen to the text and an outline. ⌘⇧F is find and"
 msgstr ""
@@ -22027,14 +22332,14 @@ msgctxt "docs/v1-readiness.md"
 msgid "(tests/hide-integrations.test.js, hide-slash-designs.test.js,"
 msgstr ""
 
-#: docs/v1-readiness.md:248
-msgctxt "docs/v1-readiness.md"
-msgid "*(One of those later shipped on schedule elsewhere: the read-only"
-msgstr ""
-
 #: docs/v1-readiness.md:136
 msgctxt "docs/v1-readiness.md"
 msgid "*(Shipped 2026-07-16, v0.17.0 cycle. Workspace requires an inbox-shaped"
+msgstr ""
+
+#: docs/v1-readiness.md:248
+msgctxt "docs/v1-readiness.md"
+msgid "*(These were deferred from v0.17.0, not permanent non-goals. The read-only"
 msgstr ""
 
 #: docs/v1-readiness.md:36
@@ -22257,7 +22562,7 @@ msgctxt "docs/v1-readiness.md"
 msgid "Playground blueprint so \"try the API\" is one click."
 msgstr ""
 
-#: docs/v1-readiness.md:251
+#: docs/v1-readiness.md:253
 msgctxt "docs/v1-readiness.md"
 msgid "Roadmap corrections made during this audit (2026-07-16)"
 msgstr ""
@@ -22464,7 +22769,7 @@ msgstr ""
 
 #: docs/v1-readiness.md:249
 msgctxt "docs/v1-readiness.md"
-msgid "database viewer landed in the v0.22.0 cycle; see native-editors.md.)*"
+msgid "database viewer landed in v0.22.0, and daily multisite/network operations"
 msgstr ""
 
 #: docs/v1-readiness.md:104
@@ -22537,7 +22842,7 @@ msgctxt "docs/v1-readiness.md"
 msgid "extension-api.md deleted, 3 shim tutorial + suite-enforced example plugin,"
 msgstr ""
 
-#: docs/v1-readiness.md:253
+#: docs/v1-readiness.md:255
 msgctxt "docs/v1-readiness.md"
 msgid "extension-api.md marked historical (its example contradicted the shipped"
 msgstr ""
@@ -22582,7 +22887,7 @@ msgctxt "docs/v1-readiness.md"
 msgid "gated vocabulary; the one new extension point since v0.22.0,"
 msgstr ""
 
-#: docs/v1-readiness.md:255
+#: docs/v1-readiness.md:257
 msgctxt "docs/v1-readiness.md"
 msgid "goals.md gains the user-sovereignty principle that Track B implements."
 msgstr ""
@@ -22657,6 +22962,11 @@ msgctxt "docs/v1-readiness.md"
 msgid "key in the validator's vocabulary constants must appear in"
 msgstr ""
 
+#: docs/v1-readiness.md:250
+msgctxt "docs/v1-readiness.md"
+msgid "landed in v0.28.0. The remaining native-editor items stay parked; see"
+msgstr ""
+
 #: docs/v1-readiness.md:72
 msgctxt "docs/v1-readiness.md"
 msgid "layouts blind."
@@ -22700,6 +23010,11 @@ msgstr ""
 #: docs/v1-readiness.md:128
 msgctxt "docs/v1-readiness.md"
 msgid "namespaced commands together) completed the gate later the same day:"
+msgstr ""
+
+#: docs/v1-readiness.md:251
+msgctxt "docs/v1-readiness.md"
+msgid "native-editors.md.)*"
 msgstr ""
 
 #: docs/v1-readiness.md:62
@@ -22782,7 +23097,7 @@ msgctxt "docs/v1-readiness.md"
 msgid "pattern than the doc** (surface __MA_DOC_TOKEN_1__ plus adapter-side gating, the"
 msgstr ""
 
-#: docs/v1-readiness.md:257
+#: docs/v1-readiness.md:259
 msgctxt "docs/v1-readiness.md"
 msgid "pause rather than disappear."
 msgstr ""
@@ -22817,7 +23132,7 @@ msgctxt "docs/v1-readiness.md"
 msgid "plugin into Minimal in an afternoon, without reading Minimal's source, and knows the"
 msgstr ""
 
-#: docs/v1-readiness.md:256
+#: docs/v1-readiness.md:258
 msgctxt "docs/v1-readiness.md"
 msgid "plugin-support.md roadmap points here for the v0.17.0 cycle; adapter waves"
 msgstr ""
@@ -23102,7 +23417,7 @@ msgctxt "docs/v1-readiness.md"
 msgid "via GitHub raw.)*"
 msgstr ""
 
-#: docs/v1-readiness.md:254
+#: docs/v1-readiness.md:256
 msgctxt "docs/v1-readiness.md"
 msgid "vocabulary)."
 msgstr ""
@@ -23140,4 +23455,919 @@ msgstr ""
 #: docs/v1-readiness.md:207
 msgctxt "docs/v1-readiness.md"
 msgid "~~**The forms-family companion**~~ *(shipped 2026-07-16, same day as the"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:3
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "*Audit completed 2026-08-11 against Minimal Admin v0.27.0. This is a future-cycle"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:269
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "A malformed fixture surface makes __MA_DOC_TOKEN_1__ fail, while a"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:167
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Activation and deactivation stay out of this wave. A key passed as a positional"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:258
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Add __MA_DOC_TOKEN_1__ as a plain Node suite that shells out to the local"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:233
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Add __MA_DOC_TOKEN_1__, load it only when"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:253
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "An adapter should bootstrap the small vendor files it needs, as the license"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:231
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Architecture"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:23
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Audit snapshot"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:272
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Commands target only the site selected by __MA_DOC_TOKEN_1__ on the multisite lab."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:58
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Default fields: __MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__, __MA_DOC_TOKEN_3__, __MA_DOC_TOKEN_4__, __MA_DOC_TOKEN_5__. Every check needs a"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:276
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Do not assert absolute provider counts. The development site's plugin roster is"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:209
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Do not claim an exact __MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__ or __MA_DOC_TOKEN_3__ prediction unless the"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:237
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Do not make HTTP requests to Minimal's own REST API. REST and CLI should be two"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:263
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Every command appears under __MA_DOC_TOKEN_1__ with examples and a documented"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:62
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Exit __MA_DOC_TOKEN_1__ when any check fails."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:120
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Exit __MA_DOC_TOKEN_1__ when contract problems exist."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:119
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Exit __MA_DOC_TOKEN_1__ when descriptors are valid."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:61
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Exit __MA_DOC_TOKEN_1__ when there are no failing checks."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:213
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Explicit non-goals"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:76
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Expose the existing normalized license and connection inventory without ever"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:16
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Exposes a Minimal-owned diagnostic or safety judgment to automation."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:242
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Extract System check assembly from __MA_DOC_TOKEN_1__ into a"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:245
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Extract license and visibility action runners from their REST closures before"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:17
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Gives integration authors feedback they cannot get from core WP-CLI."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:20
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "If core WP-CLI or a vendor command already owns the job, Minimal should stay out"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:211
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "JavaScript tokenizer in PHP would create two safety models that can drift."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:124
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Keep off-site link disclosures informational unless a future policy makes one"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:268
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "License output contains fixture rows and never contains the fixture secret."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:96
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "List everything connected to Minimal's extension contracts."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:67
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Local checks must not trigger updates, backups, scans or vendor network calls."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:123
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Minimal already handles them safely."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:6
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Minimal should add a focused __MA_DOC_TOKEN_1__ namespace. It should expose the parts of"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:7
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Minimal that are genuinely different from core WordPress: cross-provider license"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:273
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Mutating second-wave commands require their explicit target or confirmation,"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:215
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "No __MA_DOC_TOKEN_1__. Surface descriptors are a UI contract, not a stable"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:218
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "No editor create, save, find-and-replace or block mutation commands. Use core"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:220
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "No generic database query or file-manager commands. Minimal's database viewer is"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:227
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "No hidden dependency on __MA_DOC_TOKEN_1__. Raw inventory and validation should"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:225
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "No implicit multisite fleet loop. Commands operate on the site selected by"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:223
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "No update, plugin, theme, user, media or term command mirrors unless Minimal adds"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:15
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Normalizes several plugins behind one stable command."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:286
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Only schedule Wave 2 after those commands are used in at least one real deploy or"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:49
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Print Minimal's health checks as a table and make them usable in deploy scripts."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:176
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Print one sanitized descriptor for debugging. Replace callables with their"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:18
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Produces machine-readable state that is useful across many sites."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:271
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Provider exceptions become one failed row instead of a fatal command."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:88
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Raw keys, masked fragments and vendor tokens never reach stdout, stderr or an"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:142
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Re-use __MA_DOC_TOKEN_1__. Require either one provider ID or the"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:239
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Re-use the registries that are already clean domain functions:"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:43
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Recommended command tree"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:279
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Recommended scheduling"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:201
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Report facts, not a simulated editor:"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:193
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Report the registered title, dynamic/static shape, PHP attribute schema,"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:121
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Report unknown keys, malformed fields, invalid view or settings shapes and"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:163
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Run one provider's existing __MA_DOC_TOKEN_1__ callable, then print its fresh rows. Never"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:86
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Stable fields: __MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__, __MA_DOC_TOKEN_3__, __MA_DOC_TOKEN_4__, __MA_DOC_TOKEN_5__, __MA_DOC_TOKEN_6__,"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:106
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Stable fields: __MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__, __MA_DOC_TOKEN_3__, __MA_DOC_TOKEN_4__, __MA_DOC_TOKEN_5__, __MA_DOC_TOKEN_6__, __MA_DOC_TOKEN_7__,"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:155
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Status is read-only and reports __MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__, __MA_DOC_TOKEN_3__, __MA_DOC_TOKEN_4__ or"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:65
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "System check is cookie-aware and deliberately skips those rows under CLI, so"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:265
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Table and JSON output contain the same stable rows and honor __MA_DOC_TOKEN_1__."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:252
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Test both normal CLI and admin context where vendor boot behavior differs."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:297
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "That slice captures what makes Minimal unusual without committing the project to a"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:158
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "The __MA_DOC_TOKEN_1__ command must use Minimal's stored restore context so two-mode providers"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:290
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "The best first slice is:"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:12
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "The decision test is simple. A Minimal command earns its place when it does at"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:183
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "The editor is Minimal's most distinctive feature, but it is not the best place to"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:261
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "The first wave is complete when the suite proves:"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:25
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "The primary development fixture currently resolves 32 surfaces, 6 editor"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:129
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "This command directly serves the roadmap goal of getting external plugin authors"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:69
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "This command should include the checks already assembled for System, including"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:91
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "This is an inventory command, not a second copy of __MA_DOC_TOKEN_1__. Its useful"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:281
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Treat this as one focused future cycle with a stop point after Wave 1. The first"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:111
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Turn the existing System Integrations card into an author and CI tool."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:189
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Two read-only diagnostics may eventually earn a place:"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:104
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Types should cover surfaces, editor panels, design sources, cache purgers, spam"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:248
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Use __MA_DOC_TOKEN_1__ for __MA_DOC_TOKEN_2__, __MA_DOC_TOKEN_3__, __MA_DOC_TOKEN_4__, __MA_DOC_TOKEN_5__, __MA_DOC_TOKEN_6__"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:250
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Use stable IDs and raw values in machine formats. Humanized labels, relative"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:126
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Validate the raw registry. This command must not hide a bad descriptor because"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:256
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Verification plan"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:219
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "WP-CLI for stored content and Minimal's browser for Minimal's editing guarantees."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:1
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "WP-CLI roadmap: make Minimal's operational model scriptable"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:45
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Wave 1: read-only foundations"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:132
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Wave 2: narrow provider actions"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:181
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "Wave 3: editor diagnostics, only if support demand proves them"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:64
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "__MA_DOC_TOKEN_1__ adds the slower loopback and public REST probes. The current web"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:63
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "__MA_DOC_TOKEN_1__ also exits __MA_DOC_TOKEN_2__ on warnings."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:134
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "__MA_DOC_TOKEN_1__ and __MA_DOC_TOKEN_2__"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:241
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "__MA_DOC_TOKEN_1__ and __MA_DOC_TOKEN_2__."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:259
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "__MA_DOC_TOKEN_1__ binary. It does not need Chrome or __MA_DOC_TOKEN_2__."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:266
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "__MA_DOC_TOKEN_1__ exit codes distinguish pass, fail and strict-warning cases using"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:87
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "__MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__, __MA_DOC_TOKEN_3__, __MA_DOC_TOKEN_4__, __MA_DOC_TOKEN_5__. __MA_DOC_TOKEN_6__ is boolean only."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:234
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "__MA_DOC_TOKEN_1__, and register the __MA_DOC_TOKEN_2__ namespace plus"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:156
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "__MA_DOC_TOKEN_1__, plus the responsible providers. Mutations use the existing"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:226
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "__MA_DOC_TOKEN_1__; fleet orchestration belongs to the caller."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:224
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "a genuinely cross-provider judgment core lacks."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:229
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "a particular user can see must require __MA_DOC_TOKEN_1__ explicitly."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:169
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "activation is ever added, it must read secrets from stdin or an explicit file,"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:238
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "adapters over the same PHP domain functions."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:164
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "add a bulk \"verify everything\" command by default. Vendor checks can be slow,"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:249
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "and __MA_DOC_TOKEN_1__ output. Support the familiar __MA_DOC_TOKEN_2__ and __MA_DOC_TOKEN_3__ options."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:205
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "applicable Minimal editor panels;"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:168
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "argument or __MA_DOC_TOKEN_1__ leaks into shell history and process listings. If CLI"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:179
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "author expected, but it is less important than validation."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:216
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "automation protocol. Actions accept provider-specific bodies, conditional"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:70
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "backup freshness, visibility, license state, security posture, mail health,"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:187
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "behavior that make the editor safe."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:186
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "browser serializer, post-lock flow, local recovery net and real contenteditable"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:9
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "cache clearing and site-visibility state. It should not recreate the SPA at a"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:288
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "case identifies which compatibility facts would have shortened the investigation."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:210
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "client and server share one compatibility implementation. Rewriting the"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:222
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "commands."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:27
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "connection rows. Its integration validator reports no contract problems. The"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:206
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "current core edit lock and newer autosave state;"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:71
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "database hygiene, cron and cache posture. It should not print the full extension"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:221
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "deliberately read-only, and core WP-CLI already has purpose-built database"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:203
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "detected builder and whether it owns the content canvas;"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:89
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "exception message."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:143
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "explicit __MA_DOC_TOKEN_1__ flag. Continue after one provider fails, print one result row"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:235
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "explicit command classes for __MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__, __MA_DOC_TOKEN_3__, __MA_DOC_TOKEN_4__ and"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:246
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "exposing actions. Their validation, memory, update-cache and restore behavior"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:217
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "fields and per-user capabilities."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:267
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "fixture checks."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:287
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "fleet audit. Schedule the editor diagnostics separately, after a concrete support"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:282
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "four commands are coherent, read-only and high-leverage. They also force the"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:185
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "helpers and revision commands. A Minimal content-write command would bypass the"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:284
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "instead of REST-only behavior."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:277
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "intentionally fluid. Seed the fixture row each test needs and restore its state."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:125
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "invalid."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:13
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "least one of these things:"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:270
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "legitimate third-party surface remains accepted."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:207
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "links to the Minimal editor and the builder or block editor escape."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:254
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "manager already does, instead of making users remember __MA_DOC_TOKEN_1__."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:72
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "manifest unless a later __MA_DOC_TOKEN_1__ use case proves useful."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:122
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "missing routes. Keep attention-budget collapses as informational notes because"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:247
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "must have one implementation."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:170
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "never echo them, never retry a failure and preserve every provider's current"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:196
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "not auto-insertable. This would turn the editor's compatibility knowledge into a"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:28
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "numbers will change with installed plugins, but they demonstrate that the PHP"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:21
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "of the way."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:26
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "panels, 3 design sources, 43 detected license providers and 50 license or"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:194
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "parent/ancestor constraints, Minimal block-form descriptor, bare-comment render"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:144
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "per provider, and exit nonzero when any provider fails. The command must preserve"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:4
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "plan, not a commitment for the current development cycle.*"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:274
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "preserve fixture state and remain idempotent where the provider permits it."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:195
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "probe and auto-insert eligibility. Most importantly, state the reason a block is"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:105
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "providers, license providers, page builders, block forms and listener hooks."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:92
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "question is: \"Can every paid component on this site still receive updates?\""
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:165
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "rate-limited or side-effectful in their update caches."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:204
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "registered and unregistered block names in the post;"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:29
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "registries are already substantial enough to justify a command-line view."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:159
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "return to the exact mode that was disabled."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:283
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "right refactor: Minimal's System and integration judgments become domain services"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:172
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "seat-release language and an explicit confirmation."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:298
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "second interface for every button in the app."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:243
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "service that accepts a __MA_DOC_TOKEN_1__ or __MA_DOC_TOKEN_2__ context. Keep response formatting in"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:10
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "shell prompt."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:77
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "showing a secret."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:171
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "snapshot-and-restore guarantees. Deactivation also needs provider-specific"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:177
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "source owner or a boolean marker. Never serialize closures or expose captured"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:59
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "stable machine ID. Human labels are not an API."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:184
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "start the CLI. Core already has __MA_DOC_TOKEN_1__, __MA_DOC_TOKEN_2__, block parsing"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:8
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "state, integration-contract diagnostics, the System health model, provider-aware"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:178
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "state. This is useful when an integration renders differently from what its"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:264
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "synopsis."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:66
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "the CLI probes need their own honest implementation."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:244
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "the REST class and terminal formatting in the CLI class."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:145
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "the current Throwable isolation because cache purges can recycle the PHP worker."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:127
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "the current user lacks its capability."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:251
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "times and colored status words belong only in the default table output."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:130
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "to ship their own integrations."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:197
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "useful tool for block authors."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:228
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "work in the normal privileged CLI context. A future command that answers what"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:157
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "writer registry and require __MA_DOC_TOKEN_1__ because they change what visitors can see."
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:31
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "| Area | What is distinctive in Minimal | CLI verdict |"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:39
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "| Backups | Several providers appear in one family, but their start, status and restore models still differ | Report freshness through __MA_DOC_TOKEN_1__. Wait for a first-class backup provider contract before adding a generic runner |"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:36
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "| Cache | One registry clears page cache, CDN, object cache and generated CSS across many providers | Build in the second wave. Core __MA_DOC_TOKEN_1__ only covers the object cache |"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:41
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "| Content, users, media, terms and updates | Minimal provides a calmer UI over mostly core operations | Skip broad parity. Core WP-CLI already owns these jobs |"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:38
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "| Editor platform | Safe writing, block islands, builder fencing, block descriptors and render probes | Add diagnostics only when useful. Do not edit content through a Minimal command |"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:33
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "| Licenses and connections | One local-state inventory across vendor SDKs and dedicated adapters, with normalized valid, expired, invalid, missing and unknown states | Build first. This is Minimal's clearest unique command-line value |"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:40
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "| Notices | Extraction depends on a real wp-admin page load as the current user | Skip. A CLI version would not observe the same notice-registration paths |"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:34
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "| Plugin surfaces | Declarative surfaces, editor panels, design sources, providers, owner attribution and contract validation | Build first as inspection and validation. Do not build a generic surface executor |"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:35
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "| System | Minimal combines core health, database weight, cron, backups, visibility, security, mail, cache and license posture | Build first as __MA_DOC_TOKEN_1__, with stable check IDs and exit codes |"
+msgstr ""
+
+#: docs/wp-cli-roadmap.md:37
+msgctxt "docs/wp-cli-roadmap.md"
+msgid "| Visibility | One detector and writer registry understands maintenance, coming-soon, password and partial-store modes across plugins | Build in the second wave. It is useful for deploy checks and incident response |"
 msgstr ""

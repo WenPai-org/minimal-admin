@@ -67,188 +67,188 @@ Minimal Admin 是通往 WordPress 網站的第二個入口。它位於
 網站檢視連結、佈景主題切換（系統、淺色、深色）、通知，
 以及「新增」按鈕。只有在需要處理某些事項時，琥珀色標籤才會出現在這裡
 你：待處理的 WordPress 更新，或尚未完全公開的網站。
-
-## 寫作
-
+and network setup stay with WordPress. The palette knows the sites too: press
+寫作
+not appear when you belong to only one site. Its menu opens with search already
 按下 **新增**（或 ⌘K，「建立新文章」）並開始撰寫。編輯器是以
 用於撰寫內容，從快速文章到由群組組成的完整頁面，皆可
-欄；複雜的頁面設計仍應交由區塊編輯器處理，只需按一下
-離開：
 
-- **輸入 Markdown，即可取得格式。** `#` 用於標題，`-` 用於清單，
-  `>` 引用文字，`**bold**`、`` `code` ``, `[link](url)`, `---` 代表
-  分隔線、三個反引號表示程式碼區塊。所有變更都會在您輸入時套用。
-- **斜線選單**：在空白行輸入 `/`，即可使用標題、清單、
-  影像、嵌入內容、表格等。**⌘/** 可開啟完整區塊庫，
-  包括您外掛提供的區塊，以及您可以
-  直接放入。
-- **從任何地方貼上。** Word、Google 文件和網頁貼上後都會保持乾淨。
-  貼上的圖片或單獨的 tweet 或影片 URL 會變成真正的內容，
-  以及原始區塊標記（來自 AI 工具或教學）貼上後會成為真正的，
-  可編輯的區塊中。
-- **你的樣式會一併保留。** 你在 WordPress 中儲存的樣式（已同步或
-  是否）出現在斜線選單與區塊庫中，而「範本」
-  內容清單中的項目即可管理它們。同步的樣板會插入為
-  即時參照：只要編輯一次範本，所有使用它的文章都會跟著更新，
-  而 Minimal 會在您儲存前提醒您這個影響範圍。未同步的
-  範本會以獨立副本的形式加入，您可以自由編輯。
-- **版面配置區塊會開啟以供寫入。** 群組、欄、封面與
-  媒體與文字區塊都是可撰寫的區域，可無限層級巢狀：按一下
-  並輸入內容，Markdown、斜線選單與貼上功能都能正常運作
-  其中，每個欄位都有自己的編輯區域，排列方式就像前端畫面。
-  版面配置本身（寬度、色彩、間距）會完全保留，而
-  你未觸碰的任何內容都會逐位元組寫回，因此該區塊
-  編輯器每次都會乾淨地重新開啟頁面。
-- **複雜區塊會受到保護，不會被變更。** 如果文章包含區塊
-  Minimal 的編輯器原生無法編輯（外掛的特殊區塊、間隔區塊、
-  一排按鈕），它會顯示為以你的
-  網站的實際樣式，就在其所在位置呈現，即使位於群組內也一樣。
-  將滑鼠移到卡片上會顯示簡短說明，指出它受保護的原因，以及
-  編輯內容所在的位置。其文字與圖片通常可直接在原處編輯，
-  而 ⚙ 晶片包含其設定，以及複製與移動箭頭，因此
-  一則推薦文字可以跳進下一欄而無需離開 Minimal；其
-  結構會逐位元組保留。將滑鼠移到任何 ⚙ 標籤上，都會勾勒出
-  它所設定的區塊，因此巢狀區塊會呈現為不同的控制項。一
+離開：
+lists every site with its address, members and state, filters for archived
+and spam sites, and search; from a row you can open a site in Minimal, visit it,
+archive or restore it, mark it as spam, or delete it. Adding a site asks for
+分隔線、三個反引號表示程式碼區塊。所有變更都會在您輸入時套用。
+Network users lists every account on the network, shows how many sites each
+影像、嵌入內容、表格等。**⌘/** 可開啟完整區塊庫，
+包括您外掛提供的區塊，以及您可以
+直接放入。
+**從任何地方貼上。** Word、Google 文件和網頁貼上後都會保持乾淨。
+貼上的圖片或單獨的 tweet 或影片 URL 會變成真正的內容，
+以及原始區塊標記（來自 AI 工具或教學）貼上後會成為真正的，
+可編輯的區塊中。
+**你的樣式會一併保留。** 你在 WordPress 中儲存的樣式（已同步或
+是否）出現在斜線選單與區塊庫中，而「範本」
+
+即時參照：只要編輯一次範本，所有使用它的文章都會跟著更新，
+而 Minimal 會在您儲存前提醒您這個影響範圍。未同步的
+範本會以獨立副本的形式加入，您可以自由編輯。
+**版面配置區塊會開啟以供寫入。** 群組、欄、封面與
+
+並輸入內容，Markdown、斜線選單與貼上功能都能正常運作
+其中，每個欄位都有自己的編輯區域，排列方式就像前端畫面。
+版面配置本身（寬度、色彩、間距）會完全保留，而
+你未觸碰的任何內容都會逐位元組寫回，因此該區塊
+編輯器每次都會乾淨地重新開啟頁面。
+
+## Minimal 的編輯器原生無法編輯（外掛的特殊區塊、間隔區塊、
+
+網站的實際樣式，就在其所在位置呈現，即使位於群組內也一樣。
+將滑鼠移到卡片上會顯示簡短說明，指出它受保護的原因，以及
+編輯內容所在的位置。其文字與圖片通常可直接在原處編輯，
+而 ⚙ 晶片包含其設定，以及複製與移動箭頭，因此
+
+- **Type markdown, get formatting.** `#` for a heading, `-` for a list,
+  `>` for a quote, `**bold**`, `` `code` ``, `[link](url)`, `---` for a
   按一下「Block editor ↗」會在 Gutenberg 中開啟相同的文章，只要您
-  想要完整的工具組。使用頁面建構器（Elementor、）建立的文章
+- **The slash menu**: type `/` on an empty line for headings, lists,
   Bricks、Divi 與同類工具）會以唯讀模式開啟，並顯示「在你的建構器中編輯」
   按鈕，因為該內容由建構器負責。
-- **圖庫與滑桿會開啟圖片編輯器。** 將滑鼠移到圖庫形狀的
-  區塊，而卡片會命名該操作：點擊其中任何位置即可開啟圖格
+  **圖庫與滑桿會開啟圖片編輯器。** 將滑鼠移到圖庫形狀的
+- 區塊，而卡片會命名該操作：點擊其中任何位置即可開啟圖格
   網格中重新排序（拖曳或使用箭頭）、取代（按一下圖格）、新增，
   移除、複製照片並新增標題。將圖片檔案拖放到網格上
   將其上傳至該區塊。每張照片都會作為完整單位移動，因此其
-  標題與設定會隨之保留，這也涵蓋滑桿和
+- 標題與設定會隨之保留，這也涵蓋滑桿和
   輪播、具有固定開口集合的版面配置，以及會保留
   在設定中顯示其圖片。圖庫的 ⚙ 標籤也提供欄數、
   裁剪和隨機排序；連結、大小與燈箱選項會保留在
   區塊編輯器，而彈出視窗會如此說明。
-- **經過樣式設定的文字群組會開啟編輯內容視窗。** 容器
-  包含多個套用樣式的區塊（例如由標籤和值組成的統計列
+  **經過樣式設定的文字群組會開啟編輯內容視窗。** 容器
+- 包含多個套用樣式的區塊（例如由標籤和值組成的統計列
   段落等）會在寬敞的視窗中編輯：每個區塊各有一張卡片，並顯示其
   將文字置於中央，其他設定則收納在切換開關後方，
   以及重新排序、移除和新增。從容器的 ⚙ 標籤進入
   （「內容 · N 個區塊」），或在受保護卡片上點擊卡片
   本身；您按下的區塊會以醒目方式開啟。
-- **儲存會感知狀態。** 草稿會在你撰寫時自動儲存。已發佈的
-  文章不會在您不知情的情況下變更：編輯內容會靜默備份，而線上文章
+  **儲存會感知狀態。** 草稿會在你撰寫時自動儲存。已發佈的
+- 文章不會在您不知情的情況下變更：編輯內容會靜默備份，而線上文章
   只有在按下「更新」時才會更新。當機保護機制會在本機保存一份
   瀏覽器中的未儲存工作，並提供還原功能。
-- **歷程記錄**會顯示修訂版本並提供並排比較；復原需要
+  **歷程記錄**會顯示修訂版本並提供並排比較；復原需要
   只需點選一次即可。如果其他人已在 Minimal 或 wp-admin 中開啟該文章，您
   在你們兩人都能編輯之前，會先通知你。
-- **專注模式：** ⌘⇧D 會淡出除你正在撰寫的段落以外的所有內容；
+  **專注模式：** ⌘⇧D 會淡出除你正在撰寫的段落以外的所有內容；
   ⌘⇧O 將畫面縮減為文字與大綱。⌘⇧F 是尋找並
   取代。右下角有字數提示，點選它即可設定
   工作階段的寫作目標。
+  click on "Block editor ↗" opens the same post in Gutenberg whenever you
+  每日網站維護
+  Bricks, Divi and friends) open read-only with an "Edit in your builder"
+  **留言**：核准、回覆、直接編輯、標記為垃圾留言，或封鎖
+- 留言者（來自該地址的未來留言會直接進入垃圾桶，
+  搭配復原）。批次選取可跨越整個清單。
+  grid where you reorder (drag or arrows), replace (click a tile), add,
+  **媒體**：將檔案拖放到應用程式中的任何位置即可上傳。圖片可以
+  可直接在 Minimal 中裁切與旋轉影像，而重新產生縮圖只需一個
+  該外掛已安裝時顯示的按鈕。
+  carousels, layouts with a fixed set of openings, and blocks that keep
+  **通知**（鈴鐺）會收集真正需要處理的事項：
+  待審核留言、可用更新，以及通知。
+  block editor and the popover says so.
+- **關於通知**：其他外掛的 wp-admin 橫幅不會呈現在
+  Minimal。相反地，Minimal 會在背景讀取它們，並將每一項縮減為
+  保留按鈕的純文字，並標明發佈它的外掛
+  它。無需離開面板即可執行其中一個選項（「不用了」、「允許」），或按下
+  **隱藏**後，對你而言它就會保持消失，並提供復原功能。這是較平靜的
+  通知牆，而且這是永久政策：外掛無法購買
+  Minimal 的介面。
+- **Saving is status-aware.** Drafts autosave as you write. Published
+  **更新**：更新分頁會顯示所有待處理項目，而 **更新
+  所有內容**會依序執行外掛、佈景主題，然後執行 WordPress 核心，告訴您
+  在開始之前，會明確說明哪些內容將變更、哪些內容不會變更。在某個
+- 執行時，頂端列的進度提示會顯示目前階段，並
+  會在每個畫面上持續顯示，因此您可以關閉面板或四處瀏覽
+  Minimal，仍然可以看到更新正常運作；點選它即可返回
+- 面板。Minimal 也以相同方式自行更新：每個版本都會從
+  專案的 GitHub 發行版本，並在
+  允許安裝。
+  session writing goal.
 
-## 每日網站維護
+## Matomo、Independent Analytics、Jetpack Stats、Site Kit 等），
 
-**留言**：核准、回覆、直接編輯、標記為垃圾留言，或封鎖
-留言者（來自該地址的未來留言會直接進入垃圾桶，
-搭配復原）。批次選取可跨越整個清單。
-
-**媒體**：將檔案拖放到應用程式中的任何位置即可上傳。圖片可以
-可直接在 Minimal 中裁切與旋轉影像，而重新產生縮圖只需一個
-該外掛已安裝時顯示的按鈕。
-
-**通知**（鈴鐺）會收集真正需要處理的事項：
-待審核留言、可用更新，以及通知。
-
-**關於通知**：其他外掛的 wp-admin 橫幅不會呈現在
-Minimal。相反地，Minimal 會在背景讀取它們，並將每一項縮減為
-保留按鈕的純文字，並標明發佈它的外掛
-它。無需離開面板即可執行其中一個選項（「不用了」、「允許」），或按下
-**隱藏**後，對你而言它就會保持消失，並提供復原功能。這是較平靜的
-通知牆，而且這是永久政策：外掛無法購買
-Minimal 的介面。
-
-**更新**：更新分頁會顯示所有待處理項目，而 **更新
-所有內容**會依序執行外掛、佈景主題，然後執行 WordPress 核心，告訴您
-在開始之前，會明確說明哪些內容將變更、哪些內容不會變更。在某個
-執行時，頂端列的進度提示會顯示目前階段，並
-會在每個畫面上持續顯示，因此您可以關閉面板或四處瀏覽
-Minimal，仍然可以看到更新正常運作；點選它即可返回
-面板。Minimal 也以相同方式自行更新：每個版本都會從
-專案的 GitHub 發行版本，並在
-允許安裝。
-
-**流量**：啟用支援的分析外掛後（Koko Analytics、
-Matomo、Independent Analytics、Jetpack Stats、Site Kit 等），
-總覽圖表會顯示來自該外掛自身的每日訪客數與頁面瀏覽量
 數字。點選某一天即可查看該日的熱門頁面與引薦來源，並逐步瀏覽
 使用方向鍵瀏覽多天，不必關閉對話框。
+with Undo). Bulk-select works across the list.
 
-**快取與備份**：如果已啟用快取外掛或主機快取，⌘K
 「清除網站快取」會一次清除所有快取。如果備份外掛
 已安裝，「立即備份網站」也會顯示在此，而系統頁面會回報
 您上次備份距今多久。
 
-## 介面由您掌控
+介面由您掌控
+pending comments, available updates, and Notices.
 
-Minimal 選單中的任何項目都可以按使用者隱藏，而不影響
 網站本身：
+Minimal. Instead, Minimal reads them in the background and reduces each one to
+在任何側邊欄項目上按一下滑鼠右鍵，無論它是由外掛新增，還是
+Minimal 自有檢視畫面的其中一些項目（從未使用留言功能的網站中的「留言」、小工具
+你永遠不會接觸到），然後選擇 **為你隱藏**。隱藏僅是外觀上的：
+每個畫面都可以從命令面板及其
+地址。
 
-- 在任何側邊欄項目上按一下滑鼠右鍵，無論它是由外掛新增，還是
-  Minimal 自有檢視畫面的其中一些項目（從未使用留言功能的網站中的「留言」、小工具
-  你永遠不會接觸到），然後選擇 **為你隱藏**。隱藏僅是外觀上的：
-  每個畫面都可以從命令面板及其
-  地址。
-- 在區塊庫中以滑鼠右鍵按一下群組標題，即可隱藏該外掛的
-  從您的選單中移除區塊或設計。
-- 在通知分頁中隱藏任何通知。
-- 如果開發者已使用程式碼隱藏 wp-admin 中的管理選單（這很常見
-  客戶網站設定），Minimal 會顯示通知，並將這些項目排除在其
-  側邊欄也會自動顯示。和原本的 wp-admin 一樣，這是
-  僅是外觀上的改變；這些畫面仍可透過網址和調色盤存取。
-
+從您的選單中移除區塊或設計。
+在通知分頁中隱藏任何通知。
+如果開發者已使用程式碼隱藏 wp-admin 中的管理選單（這很常見
+客戶網站設定），Minimal 會顯示通知，並將這些項目排除在其
+側邊欄也會自動顯示。和原本的 wp-admin 一樣，這是
+僅是外觀上的改變；這些畫面仍可透過網址和調色盤存取。
+panel. Minimal updates itself the same way: each release is fetched from the
 所有隱藏的項目都會列在**你的個人檔案**下，只需點選一次
 將其復原，而管理員也能從您的
 使用者頁面上的項目。隱藏是個人設定：您的共同編輯者會看到他們自己的
 自己的版面配置。
-外掛也有嚴格的空間預算，限制它們可以在
+
 側邊欄、色盤與選單，因此您安裝
 更多項目。
+Overview chart shows daily visitors and pageviews from that plugin's own
+管理網站
+days with the arrow keys without closing the dialog.
 
-## 管理網站
+搜尋、上傳，或將 zip 拖放至對話框。切換、更新以及
+使用明確的確認提示進行刪除。每張外掛與佈景主題卡片都帶有一個
+WordPress 自動更新的自動切換鈕，與 wp-admin 中相同的設定
+管理，而未啟用的佈景主題提供即時預覽，讓您可以瀏覽
 
-- **擴充功能** — 三個分頁：外掛、佈景主題與授權。安裝方式為
-  搜尋、上傳，或將 zip 拖放至對話框。切換、更新以及
-  使用明確的確認提示進行刪除。每張外掛與佈景主題卡片都帶有一個
-  WordPress 自動更新的自動切換鈕，與 wp-admin 中相同的設定
-  管理，而未啟用的佈景主題提供即時預覽，讓您可以瀏覽
-  在切換前，先在候選佈景主題中預覽網站。「授權」分頁
-  會將所有外部服務關係集中在一處：付費外掛的
-  授權金鑰（啟用、驗證或停用，無需在
-  每個外掛的設定畫面）、Akismet 等服務金鑰、帳戶
-  例如 Envato Market 和 WPMU DEV 的連接，以及 AI 連接器金鑰
-  由 WordPress 本身管理的項目，會連結到「設定 → 連接器」，以便
-  編輯。小型標籤會標示哪些列是服務金鑰或連接
+## 會將所有外部服務關係集中在一處：付費外掛的
+
+每個外掛的設定畫面）、Akismet 等服務金鑰、帳戶
+例如 Envato Market 和 WPMU DEV 的連接，以及 AI 連接器金鑰
+
+- 編輯。小型標籤會標示哪些列是服務金鑰或連接
   而非授權。
-- **使用者** — 建立、編輯、批次變更角色、重設密碼、登入
+  **使用者** — 建立、編輯、批次變更角色、重設密碼、登入
   登出工作階段，並可（搭配 User Switching 外掛）切換至
   帳戶即可查看他們所看到的內容。開啟使用者後會顯示完整頁面：身分、
-  公開個人資料、語言、密碼與工作階段，以及其 Minimal
+- 公開個人資料、語言、密碼與工作階段，以及其 Minimal
   外觀。管理員可以設定其他使用者的配色方案，並
-  預設值會在那裡套用，因此客戶的 Minimal 在他們第一次
-  登入，並復原使用者從自己的選單中隱藏的任何項目。
+- 預設值會在那裡套用，因此客戶的 Minimal 在他們第一次
+- 登入，並復原使用者從自己的選單中隱藏的任何項目。
   淺色或深色模式是唯一會保留給每個人個人化的設定
   個人的裝置。
-- **設定** — 人們實際會變更的設定：網站識別與標誌、
-  閱讀與討論、固定網址、可見度（搜尋引擎、
-  維護模式，以及可直接關閉偵測到的即將推出或
-  維護外掛的模式（並提供「復原」）、網站語言、垃圾郵件
-  保護（搭配 Akismet，您可以直接在其卡片上貼上或變更金鑰），
-  自訂 CSS。較長的
-  少用選項的末端部分會刻意留在 wp-admin 中，一個
-  按一下即可離開。如果您尋找某項設定卻找不到，那就是
-  原因，而不是錯誤。
-- **系統** — 健康檢查（PHP、HTTPS、快取、備份、迴路回傳），
-  已安裝項目的活動檢視，以及有人需要時可使用的除錯工具
-  技術支援會要求您啟用記錄功能。
+  **設定** — 人們實際會變更的設定：網站識別與標誌、
+
+維護模式，以及可直接關閉偵測到的即將推出或
+維護外掛的模式（並提供「復原」）、網站語言、垃圾郵件
+保護（搭配 Akismet，您可以直接在其卡片上貼上或變更金鑰），
+自訂 CSS。較長的
+少用選項的末端部分會刻意留在 wp-admin 中，一個
+按一下即可離開。如果您尋找某項設定卻找不到，那就是
+原因，而不是錯誤。
+
+## 已安裝項目的活動檢視，以及有人需要時可使用的除錯工具
+
 - **結構** — 文章類型、分類法與詞彙：重新命名、合併與
   安全地重新指定分類與標籤的父項目。
-- **資料庫** — 瞭解網站實際儲存資料的位置。
+  **資料庫** — 瞭解網站實際儲存資料的位置。
   大多數網站都不需要它，因此它不會顯示在側邊欄中：您可以從
   系統頁面的「資料庫」卡片、指令面板（「瀏覽資料庫」），
   或 /minimal-admin/database 位址。它由三個部分組成。**資料表**會列出
@@ -259,8 +259,8 @@ Minimal 選單中的任何項目都可以按使用者隱藏，而不影響
   速度變慢。**健康狀態**會執行一系列儲存檢查：指向
   已不存在的文章或使用者、遺失的索引、使用
   舊儲存引擎、可回收的空間，以及像是
-  已過期的商店工作階段。
-
+- 已過期的商店工作階段。
+  out sessions, and (with the User Switching plugin) switch into an
   所有這些功能都有兩件事是真的。它是**唯讀**的：Minimal 絕不會
   變更或刪除資料庫中的任何內容，因為在
   外掛的後門會讓網站以無人能追查的方式故障。而當
@@ -270,51 +270,92 @@ Minimal 選單中的任何項目都可以按使用者隱藏，而不影響
   若要真正編輯資料庫，這是您主機工具或
   WP-CLI 命令列，而 Minimal 會明確說明這點，不會假裝
   否則。
+  protected from per-site role and removal controls.
+- 您的個人資料
+  reading and discussion, permalinks, visibility (search engines,
+  您的帳戶頁面涵蓋姓名與頭像、密碼與工作階段、
+  介面語言（每位使用者都能選擇自己的語言）、外觀，以及所有其他設定
+  你已隱藏的項目，以及 **AI Access**：用於連線的應用程式密碼
+  透過標準 WordPress 將 AI 助理或其他工具連接到您的網站
+  API，並依每個工具建立及撤銷。
+  click away. If you look for a setting and don't find it, that is the
+  鍵盤快速鍵
+- **System** — a health check (PHP, HTTPS, caching, backups, loopback),
+  | 按鍵 | 功能 |
+  technical asks you to turn on logging.
+- | **⌘K** | 命令面板（編輯器中選取文字時：連結） |
+  | **⌘S** | 儲存，保留目前狀態 |
+- | **⌘⏎** | 發布、更新或排程 |
+  | **⌘/** | 區塊庫 |
+  | **⌘⇧F** | 在文章中尋找並取代 |
+  | **⌘⇧D** | 專注模式 |
+  | **⌘⇧O** | 大綱模式 |
+  | **⌘.** | 顯示或隱藏導覽 |
+  | **← →** | 媒體或內容項目對話框中的上一個／下一個項目；流量對話框中的前一天／後一天 |
+  | **Esc** | 關閉選單與對話框 |
+  slow. **Health** runs a set of storage checks: leftover rows pointing at
+  在 Windows 和 Linux 上，⌘ 出現的地方請使用 Ctrl。
+  old storage engine, space that could be reclaimed, and backlogs like
+  如實說明的安全性
 
-## 您的個人資料
-
-您的帳戶頁面涵蓋姓名與頭像、密碼與工作階段、
-介面語言（每位使用者都能選擇自己的語言）、外觀，以及所有其他設定
-你已隱藏的項目，以及 **AI Access**：用於連線的應用程式密碼
-透過標準 WordPress 將 AI 助理或其他工具連接到您的網站
-API，並依每個工具建立及撤銷。
-
-## 鍵盤快速鍵
-
-| 按鍵 | 功能 |
-|---|---|
-| **⌘K** | 命令面板（編輯器中選取文字時：連結） |
-| **⌘S** | 儲存，保留目前狀態 |
-| **⌘⏎** | 發布、更新或排程 |
-| **⌘/** | 區塊庫 |
-| **⌘⇧F** | 在文章中尋找並取代 |
-| **⌘⇧D** | 專注模式 |
-| **⌘⇧O** | 大綱模式 |
-| **⌘.** | 顯示或隱藏導覽 |
-| **← →** | 媒體或內容項目對話框中的上一個／下一個項目；流量對話框中的前一天／後一天 |
-| **Esc** | 關閉選單與對話框 |
-
-在 Windows 和 Linux 上，⌘ 出現的地方請使用 Ctrl。
-
-## 如實說明的安全性
-
-- **我的內容會被鎖定嗎？** 不會。Minimal 會寫入標準 WordPress 資料
+  **我的內容會被鎖定嗎？** 不會。Minimal 會寫入標準 WordPress 資料
   以及其他任何內容。停用或刪除外掛不會改變任何
   關於您的內容、使用者或設定。
-- **更新如何送達？** 來自專案的 GitHub 發行版本，透過
+  **更新如何送達？** 來自專案的 GitHub 發行版本，透過
   一般 WordPress 更新畫面。自 v0.21.0 起，每次下載都會
   在發布前與隨版本發布的校驗和進行驗證
   安裝；遭竄改或損毀的下載內容會拒絕安裝。
-- **外掛可以在 Minimal 中執行異常嗎？** 不會以你習慣的方式
+  **外掛可以在 Minimal 中執行異常嗎？** 不會以你習慣的方式
   到。外掛會以純資料的形式向 Minimal 描述其畫面；它們自己的
-  程式碼永遠不會在應用程式內繪製，因此損壞或過於強勢的外掛無法
-  讓介面一併消失，或在介面上鋪滿橫幅。
-- **誰可以開啟 `/minimal-admin/`？** 只有網站現有的已登入使用者
-  信任其編輯內容，而每個人只能看到其角色
-  允許的範圍。每次操作時，伺服器都會重新檢查所有內容。
-- **多站點？** 目前尚不支援；Minimal 是為單一網站打造的。
-- **看起來不對？** 先執行強制重新整理（可能是快取的樣式表
-  更新後是最常見的原因），請查看系統頁面的健康
-  先移除第二個工具列，並在
+
+## 讓介面一併消失，或在介面上鋪滿橫幅。
+
+信任其編輯內容，而每個人只能看到其角色
+允許的範圍。每次操作時，伺服器都會重新檢查所有內容。
+**多站點？** 目前尚不支援；Minimal 是為單一網站打造的。
+**看起來不對？** 先執行強制重新整理（可能是快取的樣式表
+更新後是最常見的原因），請查看系統頁面的健康
+
+## Keyboard shortcuts
+
+| Keys | Does |
+|---|---|
+| **⌘K** | Command palette (with text selected in the editor: link) |
+| **⌘S** | Save, keeping the current status |
+| **⌘⏎** | Publish, Update or Schedule |
+| **⌘/** | Block library |
+| **⌘⇧F** | Find and replace in the post |
+| **⌘⇧D** | Focus mode |
+| **⌘⇧O** | Outline mode |
+| **⌘.** | Show or hide the navigation |
+| **← →** | Previous / next item in a media or entry dialog; previous / next day in the traffic dialog |
+| **Esc** | Close menus and dialogs |
+
+On Windows and Linux, use Ctrl wherever ⌘ appears.
+
+## Safety, honestly stated
+
+- **Is my content locked in?** No. Minimal writes standard WordPress data
+  and nothing else. Deactivating or deleting the plugin changes nothing
+  about your content, users or settings.
+- **How do updates arrive?** From the project's GitHub releases, through
+  the normal WordPress updates screen. Since v0.21.0 every download is
+  verified against a checksum published with the release before it
+  installs; a tampered or broken download refuses to install.
+- **Can a plugin misbehave inside Minimal?** Not in the ways you are used
+  to. Plugins describe their screens to Minimal as plain data; their own
+  code never draws inside the app, so a broken or pushy plugin cannot
+  take the interface down with it or plaster it with banners.
+- **Who can open `/minimal-admin/`?** Only logged-in users your site already
+  trusts to edit content, and each person sees only what their role
+  allows. Everything is re-checked on the server on every action.
+- **Multisite?** Yes. Site members can switch among the sites they may use,
+  subsite administrators can manage local membership, and network
+  administrators get daily Sites, Users, Settings, plugin and theme controls.
+  Account creation and deletion, the long settings tail and very-large-network
+  database upgrades stay in Network Admin.
+- **Something looks wrong?** Hard-refresh first (a cached stylesheet
+  after an update is the usual cause), check the System page's health
+  strip second, and report bugs at
   [feicode.com/WenPai-org/minimal-admin/issues](https://feicode.com/WenPai-org/minimal-admin/issues).
-  在任何問題釐清期間，wp-admin 始終保留為備援。
+  wp-admin always remains as the fallback while anything is sorted out.

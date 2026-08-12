@@ -38,10 +38,12 @@ Minimal Admin 的存在是因为 WordPress 管理后台将日常工作埋在二�
 - **设置页对等性。** Minimal 呈现人们实际会更改的设置。长尾
   始终停留在 wp-admin 中。
 - **暂时不支持多站点网络管理。**
-- **成为页面构建器。**
+  **成为页面构建器。**
+  in WordPress Network Admin.
+- 质量标准
 
-## 质量标准
+## 每项功能交付时都包括：在干净站点上进行浏览器级验证，*以及*生产规模的
 
-每项功能交付时都包括：在干净站点上进行浏览器级验证，*以及*生产规模的
-站点、零控制台错误、通过 UI 正确隐藏/显示来验证的能力检查，以及一个
 Emoji-Log 提交。如果一个功能无法端到端验证，就不算完成。
+site, zero console errors, capability checks proven by the UI hiding/showing correctly, and an
+Emoji-Log commit. If a feature can't be verified end-to-end, it isn't done.

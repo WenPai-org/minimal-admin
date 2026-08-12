@@ -206,68 +206,70 @@
 | 2026-08-06 | Elementor Pro 4.2.1 审查（Austin 已授权并在重扫期间更新） | 4.2.x 的变化是新增 **Atomic Form** 小工具（Atomic Editor）。从源码验证：其 `Collect_Submissions_Action` 通过与经典表单小工具相同的 `Modules\Forms\Submissions\Database\Query` + `Form_Snapshot_Repository` 写入，因此 Atomic Form 提交会进入 elementor-forms 适配器已列出的存储。**无需修改适配器。**4.2.1 本身：没有表单/提交变化。WC Subscriptions 仍受许可证阻塞，停留在 9.0.1。 |
 | 2026-08-06 | 适配器重扫（仅报告）：update-all + 上游快速浏览 | **插件：**minimaladmin 上 36/38 已更新。两项失败均受许可证门控：elementor-pro（仍为 4.1.2，目标现为 4.2.1）+ woocommerce-subscriptions 9.0.1。**WooCommerce 10.9.4→11.0.0（大版本）已顺利完成**——wc/v3 orders/products smoke 200；下一次发布截点前运行电商测试套件。Axis B 快速浏览：**FluentSMTP 2.3.0 是发现项**（三个切片，见待办）：其新增 `Logger::resendEmailFromLog()` 记录 `resent_count` + 一条 `extra['resends']` 轨迹，绕过 Minimal 仅使用 `wp_mail` 的重新发送；新增 `ConnectionHealth` 服务（`getReport()`/`getFailing()`，由选项支持）可直接作为状态卡片/System 行；新增 `fluent_mail/manage_capability` filter，取代适配器中三个硬编码的 `manage_options`。非事件：CFDB7 1.4.0（仅设置页，blob 格式不变——界面 200）、GenerateBlocks 2.4（动态标签加固；designs 路由 200，37 个模式）、Meta Box 5.14（Block Bindings = Gutenberg 侧）、Forminator 1.56.x（安全修复）、Disable Comments 2.8（Abilities API；Minimal 直接读取选项）、Simple History 5.30（停用 fixture，使用其 REST）。Smoke：10/10 路由 200（wc/v3、fluent-smtp ×3、cfdb7、gb + kadence designs、overview、plugin-updates）。**不交付。** |
 | 2026-08-10 | 发布前检查（切出 v0.27.0） | **插件：** 1/3 已更新——fluentform 6.2.11→6.2.12；perfmatters 2.6.7 + searchwp 4.6.1 均受许可证限制（符合预期）。快速检查 fluentform 6.2.12：条目列表新增 **Spam status filter**（待办：在 fluent-forms 适配器的条目视图中镜像为选项卡）；可选 MCP 服务器默认关闭（无适配器界面）；输出转义/授权加固与 v0.26 安全检查保持一致。无存储或 API 迁移。冒烟测试：更新后 fluent-forms 的条目/表单/状态均返回 200。**不发布。** |
+| 2026-08-11 | **Multisite security axis** (v0.28.0 network cycle, lab minimalms.localhost) | Graded every table-shim adapter for network-shared storage. **Fixed (shipped):** four adapters read a `base_prefix` table holding the WHOLE network's data with only a per-site cap — Wordfence (wfLogins), Duplicator (duplicator_packages), Solid Security (itsec_lockouts, one table no site column), and LLA-R in its network-options mode. Each now denies non-super-admins on multisite (the AIOS v0.28.0 scoping pattern; where scoping by site is possible AIOS already does it, where it isn't the data is super-admin-only). **Verified safe (no change):** stream/wp-activity-log/aryo already carry a `blog_id`/`site_id` WHERE clause; simple-history/most log shims + all forms/mail adapters use per-site `$wpdb->prefix` by definition; transients-manager reads per-site `$wpdb->options`; code-snippets is REST-native and owns its own network scoping. **No greenfield ship.** Lab fixtures: wordfence/duplicator/better-wp-security/limit-login-attempts-reloaded copied in, activated on store subsite. |
 
-### 排名待办事项（2026-08-06 扫描）
+### Ranked backlog (2026-08-06 sweep)
 
-| 排名 | 适配器 | 轴 | 缺口 | 工作量 | 为什么现在做 |
+| Rank | Adapter | Axis | Gap | Effort | Why now |
 |---|---|---|---|---|---|
-| ~~1~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~通过其 `Logger::resendEmailFromLog()` 重发 + 重发历史详情 + 「Resend to…」覆盖~~ | ~~S–M~~ | **已于 2026-08-06 发布**（mail-log 36） |
-| ~~2~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~ConnectionHealth 状态卡 + System 行~~ | ~~S~~ | **已于 2026-08-06 发布** |
-| ~~3~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~遵循 `fluent_mail/manage_capability`~~ | ~~S~~ | **已于 2026-08-06 发布** |
-| ~~1~~ | ~~**重新运行 ecommerce 套件，对比 WC 11.0**~~ | ~~ops~~ | ~~主版本深度检查~~ | ~~S~~ | **已于 2026-08-06 验证**：针对 WC 11.0.0，全部 10 个 WC 套件通过（orders、order-page、order-payment、order-refunds、products、coupons、customers、ecommerce-create、ecommerce-depth、wcs-subscriptions = 153/153），WC Subscriptions 9.0.1 运行于其上；11.0 更新日志中的移除项是产品区块编辑器 + 管理通知移至 Site Health，不涉及 wc/v3。没有代码变更 |
+| ~~1~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~Resend through their `Logger::resendEmailFromLog()` + resend-history detail + "Resend to…" override~~ | ~~S–M~~ | **Shipped 2026-08-06** (mail-log 36) |
+| ~~2~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~ConnectionHealth status-card + System rows~~ | ~~S~~ | **Shipped 2026-08-06** |
+| ~~3~~ | ~~**fluent-smtp**~~ | ~~B~~ | ~~Honor `fluent_mail/manage_capability`~~ | ~~S~~ | **Shipped 2026-08-06** |
 | ~~1~~ | ~~表单状态卡（fluent / ninja / forminator / flamingo）~~ | ~~A~~ | ~~与 SureForms 的状态卡一致性~~ | ~~每项 S~~ | **已于 2026-08-06 发布**（新增 everest-forms 作为第五项；套件 forms-status 12） |
-| ~~1~~ | ~~WPForms Pro 条目~~ | ~~B~~ | ~~表单系列~~ | ~~M–L~~ | **已于 2026-08-06 发布**（adapters/wpforms.php；套件 wpforms 16；forms-status 14）。夹具历史：**2026-08-06 已解除阻塞并准备好夹具。** Austin 提供了 WPForms Pro 2.0.0.2 zip（开发用途；GPL）。安装前已完成来源验证：823 个共享 PHP 文件与 wp.org Lite 2.0.0.2 完全相同，唯一差异是插件头部行；vendor 外无 eval/base64/异常主机模式；无破解水印；许可证代码完整；唯一构建日期为 2026-07-22。已在 minimaladmin 上启用；激活时创建全部 13 张表；已验证条目可通过其自身的 `wpforms()->obj('entry')->add()` 在未授权状态下存储（许可证限制更新/附加组件，不限制存储）。固定夹具：表单 5363 "Minimal Contact Form"（姓名/电子邮件/textarea）+ 2 条条目（Dana/Miguel）。存储：wpforms CPT（post_content 中的表单 JSON）、{prefix}wpforms_entries（status/viewed/starred + fields JSON）以及每个答案一行的 wpforms_entry_fields |
-| — | ~~woocommerce-subscriptions 更新~~ | ~~ops~~ | ~~在 9.0.1 处受许可证限制~~ | — | **已于 2026-08-06 解决**：Austin 提供了 9.1.0 zip；已完成来源扫描（模式干净、无破解标记、与已安装 9.0.1 相同的文件 474 个、连贯的 45 文件小版本差异、变更日志日期为 2026-08-05），已手动更新，wcs-subscriptions 18/18 通过（其「强化的 REST 权限检查」不影响 Minimal 的管理员 cookie+nonce 路径）。Elementor Pro 于当天早些时候已解决（已授权，4.2.1）。所有夹具更新欠账现已清除 |
+| ~~1~~ | ~~forms status cards (fluent / ninja / forminator / flamingo)~~ | ~~A~~ | ~~Status-card parity with SureForms~~ | ~~S each~~ | **Shipped 2026-08-06** (+ everest-forms as a fifth; suite forms-status 12) |
+| ~~1~~ | ~~WPForms Pro entries~~ | ~~B~~ | ~~Forms family~~ | ~~M–L~~ | **SHIPPED 2026-08-06** (adapters/wpforms.php; suite wpforms 16; forms-status 14). Fixture history: **UNBLOCKED + fixture ready 2026-08-06.** Austin supplied a WPForms Pro 2.0.0.2 zip (dev use; GPL). Provenance-verified before install: 823 shared PHP files byte-identical to wp.org Lite 2.0.0.2, only diff = plugin header line; no eval/base64/odd-host patterns outside vendor; no nulled watermarks; license code intact; single build date 2026-07-22. ACTIVE on minimaladmin; all 13 tables created on activation; entries VERIFIED to store unlicensed through their own `wpforms()->obj('entry')->add()` (license gates updates/addons, not storage). Standing fixture: form 5363 "Minimal Contact Form" (name/email/textarea) + 2 entries (Dana/Miguel). Storage: wpforms CPT (form JSON in post_content), {prefix}wpforms_entries (status/viewed/starred + fields JSON) + wpforms_entry_fields per-answer rows |
+| — | ~~woocommerce-subscriptions update~~ | ~~ops~~ | ~~License-gated at 9.0.1~~ | — | **Resolved 2026-08-06**: Austin supplied the 9.1.0 zip; provenance-scanned (pattern-clean, no nulled markers, 474 files identical to installed 9.0.1, coherent 45-file minor-release delta, changelog dated 2026-08-05), manually updated, wcs-subscriptions 18/18 green (their "hardened REST permission checks" don't affect Minimal's admin cookie+nonce path). Elementor Pro was resolved earlier the same day (licensed, 4.2.1). All fixture-update debt is now clear |
 
-排名第 1–3 项（FluentSMTP 2.3.0 追赶工作）已于 2026-08-06 作为一个单元发布。
+Ranks 1–3 (the FluentSMTP 2.3.0 catch-up) shipped as one unit on 2026-08-06.
 
-### 排名待办事项（2026-07-27，v0.22.0 扫描）
+### Ranked backlog (2026-07-27, v0.22.0 sweep)
 
-| 排名 | 适配器 | 轴 | 缺口 | 工作量 | 为什么现在做 |
+| Rank | Adapter | Axis | Gap | Effort | Why now |
 |---|---|---|---|---|---|
-| ~~1~~ | ~~**scrutoscope**~~ | ~~B~~ | ~~Cron 视图：「Profile this hook」~~ | ~~S~~ | **已于 2026-07-27 发布**（scrutoscope 套件；仅 Scrutoscope 1.4+） |
 | ~~2~~ | ~~**disembark**~~ | ~~B~~ | ~~状态卡深链接「恢复备份 ↗」~~ | ~~S~~ | **已于 2026-07-27 发布**（套件 disembark；仅支持 Disembark 2.8+） |
 | ~~3~~ | ~~**all-in-one-security**~~ | ~~B~~ | ~~登录失败/永久封禁状态~~ | ~~S–M~~ | **已于 2026-07-27 发布**（状态卡 + System 健康行；套件 aios-log） |
 | 1 | **表单状态卡**（fluent / ninja / forminator / flamingo） | A | 与 SureForms 的状态卡一致性 | 每项 S | 可选优化；GF 有意跳过图表/状态；仅在 dogfooding 需要一眼查看收件箱数量时发布 |
 | 2 | **WPForms Pro 条目** | B | 表单族 | M–L | 仍需要 Pro 许可证和 fixture；表单名称覆盖中最大的缺口 |
 | — | elementor-pro 更新 | ops | 许可证阻塞 4.2.0 | — | 免费版 Elementor 为 4.2.0；Pro 因许可证更新受阻，停留在 4.1.2；表单适配器仍为 200 |
+| — | elementor-pro update | ops | License-blocked 4.2.0 | — | Free Elementor is 4.2.0; Pro stuck on 4.1.2 until license updates; forms adapter still 200 |
 
-2026-07-17 的已取代开放事项（上方删除线内容）仍已发布。本轮未发现 Axis A 漂移的矩阵单元格。
+Superseded open items from 2026-07-17 (struck above) remain shipped. Matrix cells: no Axis A drift found this pass.
 
-### 排名待办事项（2026-07-17，v0.18.0 开放）
+### Ranked backlog (2026-07-17, v0.18.0 open)
 
-| 排名 | 适配器 | 轴 | 缺口 | 工作量 | 为什么现在做 |
+| Rank | Adapter | Axis | Gap | Effort | Why now |
 |---|---|---|---|---|---|
-| ~~1~~ | ~~sectionsRoute 行类型（`pill`、`code`、`html-preview` 沙箱化、`kv-table`）~~ | ~~A~~ | ~~共享详情基础组件~~ | ~~M~~ | **已于 2026-07-17 发布**（套件 detail-rows，19；GSMTP 日志详情是首个使用者） |
-| ~~2~~ | ~~redirection~~ | ~~A~~ | ~~`status` 卡~~ | ~~S~~ | **已于 2026-07-17 发布**（行 + 双重 redirects/404s 图表；套件 redirection-status，10） |
+| ~~1~~ | ~~sectionsRoute row types (`pill`, `code`, `html-preview` sandboxed, `kv-table`)~~ | ~~A~~ | ~~Shared detail primitive~~ | ~~M~~ | **Shipped 2026-07-17** (suite detail-rows, 19; GSMTP log detail is the first consumer) |
 | ~~3~~ | ~~code-snippets~~ | ~~A~~ | ~~`status` 卡~~ | ~~S~~ | **已于 2026-07-17 发布**（启用/停用/回收、运行范围、最近更改、安全模式行；套件 code-snippets 26）。更正：07-17 报告中「所有同系列项都有一个」的说法，是对 status 一词的 grep 误匹配；Redirection 和 Code Snippets 是各自系列中的首张卡。兄弟卡（wpcode、fluent-snippets、custom-css-js、hfcm、SRM、S301、EPS）现为合理的 S 工作量后续项 |
-| ~~4~~ | ~~All-In-One Security (AIOS)~~ | ~~B~~ | ~~活动日志 + 状态~~ | ~~M~~ | **已于 2026-07-17 发布**（审计流 + 级别标签页 + 状态卡；套件 `aios-log`；登录失败/永久封禁状态行留待后续添加） |
-| ~~5~~ | ~~GoSMTP / SureMails / Site Mailer~~ | ~~B~~ | ~~新增邮件日志提供商~~ | ~~M~~ | **已于 2026-07-17 解决**：SureMails + Site Mailer 已发布（完整邮件系列处理，套件 `wave-b-mail`）；GoSMTP 为有文档记录的跳过项（免费版本不存储日志） |
-| ~~6~~ | ~~Enable Media Replace + 核心媒体优化~~ | ~~B~~ | ~~Wave D 开篇（未附加/日期筛选、「附加到」、原位替换）~~ | ~~M~~ | **已于 2026-07-17 分两部分发布**：EMR ⇅ Replace file（套件 media-replace 12）+ 核心媒体优化（Unattached/月筛选、Attached to；套件 media-polish 15） |
+| ~~4~~ | ~~All-In-One Security (AIOS)~~ | ~~B~~ | ~~活动日志 + 状态~~ | ~~M~~ | **已于 2026-07-17 发布**（审计流 + 级别标签页 + 状态卡；套件 `status`；登录失败/永久封禁状态行留待后续添加） |
+| ~~5~~ | ~~GoSMTP / SureMails / Site Mailer~~ | ~~B~~ | ~~新增邮件日志提供商~~ | ~~M~~ | **已于 2026-07-17 解决**：SureMails + Site Mailer 已发布（完整邮件系列处理，套件 `aios-log`）；GoSMTP 为有文档记录的跳过项（免费版本不存储日志） |
+| ~~5~~ | ~~GoSMTP / SureMails / Site Mailer~~ | ~~B~~ | ~~New mail-log providers~~ | ~~M~~ | **Resolved 2026-07-17**: SureMails + Site Mailer shipped (full mail-family treatment, suite `wave-b-mail`); GoSMTP is a documented skip (free build stores no logs) |
 | 7 | WPForms Pro 条目 | B | 表单系列 | M–L | fixtures 需要 Pro 许可证；最大未覆盖表单产品名 |
 | ~~8~~ | ~~媒体文件夹提供商契约（首个为 FileBird）~~ | ~~B~~ | ~~Wave D，优先浏览~~ | ~~L~~ | **已于 2026-07-17 全部发布**（minimal_admin_media_folders + FileBird、RML Lite 和 Premio Folders 提供商 + Move to folder 批量操作；套件 media-folders 20） |
 | ~~9~~ | ~~fluent-smtp~~ | ~~B~~ | ~~设置映射器（连接）~~ | ~~M–L~~ | **已于 2026-07-17 解决**：杂项设置已接入（连接路由、日志记录、保留、模拟；套件 fsmtp-settings 8）；按提供商划分的连接向导属于画布部分，仍使用深链接 |
 | ~~10~~ | ~~GF 附加组件/Feed 设置~~ | ~~B~~ | ~~来自 full-ui-adapters 的 Schema 导出倍增器~~ | ~~L~~ | **已于 2026-07-17 解决**：Feeds 视图已发布（列表/切换/删除/深链接；套件 gf-feeds 10）；配置映射器延期，并已在书面结论中记录（full-ui-adapters.md） |
+| ~~10~~ | ~~GF add-on/feed settings~~ | ~~B~~ | ~~Schema-export multiplier from full-ui-adapters~~ | ~~L~~ | **Resolved 2026-07-17**: Feeds VIEW shipped (list/toggle/delete/deep-link; suite gf-feeds 10); config mapper deferred with a written verdict (full-ui-adapters.md) |
 
-### 排名待办事项（2026-07-15 Axis A 轮次，已取代）
+### Ranked backlog (2026-07-15 Axis A pass, superseded)
 
-| 排名 | 适配器 | 轴 | 缺口 | 工作量 | 为什么现在做 |
+| Rank | Adapter | Axis | Gap | Effort | Why now |
 |---|---|---|---|---|---|
-| ~~1~~ | ~~**gravity-smtp**~~ | ~~A~~ | ~~批量日志删除~~ | ~~S~~ | **已于 2026-07-15 发布** |
 | ~~1~~ | ~~**simple-history / wsal / stream / aryo**~~ | ~~A~~ | ~~**状态**卡~~ | ~~S–M~~ | **已于 2026-07-15 发布** |
-| 1 | sectionsRoute 行类型（`pill`、`code`、`html-preview`、`kv-table`） | A | 邮件日志详情保真度 | M | 共享原语；GSMTP/Fluent/Post 详情均受益 |
-| 3 | All-In-One Security (AIOS) | B | 活动日志 + 安全状态（LLA-R/Solid 模式） | M | Wave B 遗留项；minimaladmin **未安装**——先安装 |
+| ~~1~~ | ~~**simple-history / wsal / stream / aryo**~~ | ~~A~~ | ~~**status** cards~~ | ~~S–M~~ | **Shipped 2026-07-15** |
+| 1 | sectionsRoute row types (`pill`, `code`, `html-preview`, `kv-table`) | A | Email-log detail fidelity | M | Shared primitive; benefits GSMTP/Fluent/Post detail |
 | 4 | GoSMTP / SureMails / Site Mailer | B | 新邮件日志提供方 | M | **未安装**；先验证是否免费存储日志 |
 | 5 | WPForms Pro 条目 | B | 表单系列 | M–L | 需要 Pro 许可证 + fixtures；缺失的最大表单产品名 |
 | 6 | fluent-smtp | B | 设置映射器（连接） | M | GSMTP 有设置；Fluent 连接界面偏画布式 → 可能为 **L** |
+| 6 | fluent-smtp | B | Settings mapper (connections) | M | GSMTP has settings; Fluent connection UI is canvas-ish → likely **L** |
 
-**本轮矩阵修复：** gravity-smtp bulk → **Y**；cf7-flamingo / cfdb7 / ninja-forms bulk → **Y**（代码已有 bulk；单元格已过时）。
+**Matrix fixes this sweep:** gravity-smtp bulk → **Y**; cf7-flamingo / cfdb7 / ninja-forms bulk → **Y** (code already had bulk; cells were stale).
 
-**刻意不包含的目标：** GSMTP 路由树编写；GF 表单构建器 / 通知事件；备份恢复；没有 Pro 的 WP Mail SMTP Pro 日志；forminator 「status card」（收件箱插件不需要 GSMTP 风格的图表）；电子商务（v0.14 已发布）；不再提议 forminator/formidable 标签页（已接入）。
+**Deliberate non-goals:** GSMTP routing tree authoring; GF form builder / notifications events; backup restores; WP Mail SMTP Pro log without Pro; forminator "status card" (inbox plugins don't need GSMTP-style charts); ecommerce (shipped v0.14); re-proposing forminator/formidable tabs (already wired).
 
-**Fixtures 快照（minimaladmin）：** 邮件插件 FluentSMTP + WP Mail Logging + Gravity SMTP 已激活，Post SMTP + WP Mail SMTP 未激活；表单包已激活（grep 中未列出 GF，但通常存在，另有 Fluent Forms、Ninja、Forminator、Formidable、Everest、Flamingo、CFDB7、Elementor Pro）；活动日志 WSAL + LLA-R + **Solid 已激活**；重定向 Redirection 已激活，SRM/S301/EPS 未激活；备份 Updraft/WPvivid/Duplicator/Disembark/BackWPup 已激活。
+**Fixtures snapshot (minimaladmin):** mail residents FluentSMTP + WP Mail Logging + Gravity SMTP active, Post SMTP + WP Mail SMTP inactive; forms pack active (GF not listed in grep but usually is, Fluent Forms, Ninja, Forminator, Formidable, Everest, Flamingo, CFDB7, Elementor Pro); activity-log WSAL + LLA-R + **Solid active**; redirects Redirection active, SRM/S301/EPS inactive; backups Updraft/WPvivid/Duplicator/Disembark/BackWPup active.
 
-当扫描更新单元格或发布工作时，追加一行，并在其上设置 `Reviewed`
-涉及的适配器（或在适配器头部标记 `// last-sweep: YYYY-MM-DD`）。
-行是公开的：记录与适配器相关的事实（版本、差异、结论）
+涉及的适配器（或在适配器头部标记 `Reviewed`）。
+touched adapters (or stamp `// last-sweep: YYYY-MM-DD` in the adapter header).
 并将开发环境细节排除在其中。
+and keep development-environment details out of them.
+| 2026-08-12 | v0.28.0 release pre-flight | Fixture set already current: only perfmatters (2.6.6→2.6.7) and searchwp (4.6.0→4.6.1) had updates, both license-gated and unavailable, both patch bumps. No adapter-relevant deltas to skim, no smoke needed. Audit-of-the-audit over the release own three security fix classes found the form-entry ownership sweep complete (the six peer form plugins have no own/others split, so no lower-privileged role to leak to) and the network-shared table sweep complete (all five base_prefix adapters guarded; Solid Security denies where its table has no site column, AIOS scopes by site_id where it has one). One gap: the DISALLOW_FILE_EDIT pass covered WPCode and Custom CSS and JS but not Code Snippets, which shares the same Snippets surface and authors PHP. Fixed. |

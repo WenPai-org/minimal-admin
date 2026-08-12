@@ -1,6 +1,6 @@
 {
-  "translated": 4640,
-  "total": 4640,
+  "translated": 4485,
+  "total": 4886,
   "files": {
     "RELEASE.md": {
       "translated": 25,
@@ -13,8 +13,8 @@
       "state": "partial"
     },
     "adapter-coverage.md": {
-      "translated": 218,
-      "total": 218,
+      "translated": 190,
+      "total": 220,
       "state": "partial"
     },
     "block-inspector.md": {
@@ -43,8 +43,8 @@
       "state": "partial"
     },
     "core-gaps.md": {
-      "translated": 207,
-      "total": 207,
+      "translated": 134,
+      "total": 225,
       "state": "partial"
     },
     "editor-direction.md": {
@@ -58,7 +58,7 @@
       "state": "partial"
     },
     "for-plugin-authors.md": {
-      "translated": 792,
+      "translated": 791,
       "total": 792,
       "state": "partial"
     },
@@ -73,8 +73,8 @@
       "state": "partial"
     },
     "goals.md": {
-      "translated": 40,
-      "total": 40,
+      "translated": 39,
+      "total": 42,
       "state": "partial"
     },
     "license-manager.md": {
@@ -103,8 +103,8 @@
       "state": "partial"
     },
     "roadmap.md": {
-      "translated": 73,
-      "total": 73,
+      "translated": 51,
+      "total": 74,
       "state": "partial"
     },
     "shim-tutorial.md": {
@@ -113,14 +113,19 @@
       "state": "partial"
     },
     "user-guide.md": {
-      "translated": 279,
-      "total": 279,
+      "translated": 250,
+      "total": 317,
       "state": "partial"
     },
     "v1-readiness.md": {
-      "translated": 232,
-      "total": 232,
+      "translated": 231,
+      "total": 234,
       "state": "partial"
+    },
+    "wp-cli-roadmap.md": {
+      "translated": 0,
+      "total": 183,
+      "state": "pending"
     }
   }
 }

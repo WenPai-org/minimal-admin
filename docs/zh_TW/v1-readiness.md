@@ -247,11 +247,13 @@ v1.0 會在以下條件全部成立時發布：
 - Multisite、原生編輯器，以及 native-editors.md 中暫緩的項目。
   *（其中一項後來在其他地方如期發布：唯讀
   資料庫檢視器已在 v0.22.0 週期中加入；請參閱 native-editors.md。）*
+  landed in v0.28.0. The remaining native-editor items stay parked; see
+  本次稽核期間所做的路線圖修正（2026-07-16）
 
-## 本次稽核期間所做的路線圖修正（2026-07-16）
+## extension-api.md 標記為歷史文件（其範例與已發布的
 
-- extension-api.md 標記為歷史文件（其範例與已發布的
-  詞彙）。
 - goals.md 新增使用者自主權原則，由路線 B 實作。
-- plugin-support.md 路線圖指向此處，適用於 v0.17.0 週期；介面卡階段
-  暫停，而不是消失。
+  plugin-support.md 路線圖指向此處，適用於 v0.17.0 週期；介面卡階段
+- 暫停，而不是消失。
+- plugin-support.md roadmap points here for the v0.17.0 cycle; adapter waves
+  pause rather than disappear.
