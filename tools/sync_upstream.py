@@ -15,6 +15,13 @@ EXCLUDED_TOP = {".git", ".github", ".forgejo", ".gitignore", ".wp-playground", "
 MANAGED_INDEX = ".upstream-files.json"
 PROTECTED = {".gitignore", "NOTICE", "UPSTREAM.md", MANAGED_INDEX, "upstream-lock.json"}
 BRANDED_ASSETS = ("assets/images/screenshot-dark.png",)
+TRANSFORMATION_TOOLS = (
+    "sync_upstream.py",
+    "build_language_packs.py",
+    "derive_zh_tw.py",
+    "build_release.py",
+    "verify_release.py",
+)
 
 LITERAL_REPLACEMENTS = (
     ("https://raw.githubusercontent.com/austinginder/minn-admin/main/manifest.json", "https://feicode.com/WenPai-org/minimal-admin/raw/branch/main/manifest.json"),
@@ -49,6 +56,12 @@ def parse_args() -> argparse.Namespace:
 
 
 def renamed_path(relative: Path) -> Path:
+    # Upstream 0.30+ ships source catalogs as languages/<locale>.po. WordPress
+    # language packs, and our clean-fork text domain, require the plugin slug
+    # in the catalog filename. Do this at the managed-file boundary so the
+    # generic upstream names can never leak into the product package.
+    if len(relative.parts) == 2 and relative.parts[0] == "languages" and relative.suffix == ".po":
+        return Path("languages") / f"minimal-admin-{relative.stem}.po"
     parts = []
     for part in relative.parts:
         part = part.replace("MINN_ADMIN", "MINIMAL_ADMIN")
@@ -65,6 +78,21 @@ def source_digest(source: Path, files: list[Path]) -> str:
     for path in files:
         relative = path.relative_to(source).as_posix()
         digest.update(relative.encode() + b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def transformation_digest(output: Path) -> str:
+    digest = hashlib.sha256()
+    tools = Path(__file__).resolve().parent
+    inputs = [tools / name for name in TRANSFORMATION_TOOLS]
+    inputs.extend(output / name for name in BRANDED_ASSETS if (output / name).is_file())
+    for path in inputs:
+        if not path.is_file():
+            raise SystemExit(f"transformation input is missing: {path}")
+        label = path.name if path.parent == tools else path.relative_to(output).as_posix()
+        digest.update(label.encode() + b"\0")
         digest.update(path.read_bytes())
         digest.update(b"\0")
     return digest.hexdigest()
@@ -102,6 +130,25 @@ def customize_manifest(path: Path, version: str) -> None:
             "homepage": "https://feicode.com/WenPai-org/minimal-admin",
         }
     )
+    # The upstream package URLs and hashes describe artifacts whose filenames,
+    # text domain and contents still belong to Minn Admin. Preserve the locale
+    # inventory, but make every offer inert until build_language_packs.py has
+    # rebuilt and hashed a downstream package.
+    translations = []
+    for item in data.get("translations", []):
+        if not isinstance(item, dict) or not item.get("language"):
+            continue
+        translations.append(
+            {
+                "language": item["language"],
+                "version": version,
+                "updated": item.get("updated", data.get("last_updated", "")),
+                "package": "",
+                "sha256": "",
+                "catalog": item.get("catalog", ""),
+            }
+        )
+    data["translations"] = translations
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
 
 
@@ -125,6 +172,21 @@ def customize_updater(path: Path) -> None:
     text = text.replace("Checks the manifest.json on GitHub", "Checks manifest.json on FeiCode")
     text = text.replace("update package from GitHub Releases", "update package from FeiCode Releases")
     text = text.replace("zip comes from\n\t * GitHub's release CDN", "zip comes from\n\t * FeiCode release assets")
+    text = re.sub(
+        r"const PACKAGE_HOSTS = array\(.*?\);",
+        "const PACKAGE_HOSTS = array( 'feicode.com' );",
+        text,
+        count=1,
+    )
+    if "const PACKAGE_PATHS" in text:
+        text = re.sub(
+            r"const PACKAGE_PATHS = array\(.*?\);",
+            "const PACKAGE_PATHS = array( '/WenPai-org/minimal-admin/' );",
+            text,
+            count=1,
+        )
+    text = text.replace("on a\n\t * GitHub host", "on the\n\t * FeiCode host")
+    text = text.replace("on a GitHub host", "on the FeiCode host")
     path.write_text(text)
 
 
@@ -205,7 +267,7 @@ def main() -> int:
         target.write_bytes(content)
         os.chmod(target, mode)
 
-    transform_sha = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    transform_sha = transformation_digest(output)
     lock = {
         "schema_version": 1,
         "upstream_repository": "https://feicode.com/WPFork/minn-admin-upstream",

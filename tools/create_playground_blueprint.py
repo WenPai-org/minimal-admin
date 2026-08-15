@@ -15,6 +15,7 @@ def main() -> int:
     plugin_source.add_argument("--plugin-path", type=Path)
     parser.add_argument("--version", required=True)
     parser.add_argument("--locale", choices=("zh_CN", "zh_TW"))
+    parser.add_argument("--language-pack-path", type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
 
@@ -26,6 +27,14 @@ def main() -> int:
         raise SystemExit("plugin path must name an adjacent ZIP file")
     if args.plugin_path and args.plugin_path.suffix != ".zip":
         raise SystemExit("plugin path must be a ZIP file")
+    if args.language_pack_path and not args.locale:
+        raise SystemExit("language pack path requires a locale")
+    if args.language_pack_path and (
+        args.language_pack_path.is_absolute()
+        or args.language_pack_path.name != str(args.language_pack_path)
+        or args.language_pack_path.suffix != ".zip"
+    ):
+        raise SystemExit("language pack path must name an adjacent ZIP file")
 
     plugin_data = (
         {"resource": "url", "url": args.plugin_url}
@@ -60,6 +69,14 @@ def main() -> int:
         ],
     }
     if args.locale:
+        if args.language_pack_path:
+            blueprint["steps"].append(
+                {
+                    "step": "unzip",
+                    "zipFile": {"resource": "bundled", "path": str(args.language_pack_path)},
+                    "extractToPath": "/wordpress/wp-content/languages/plugins",
+                }
+            )
         blueprint["steps"].extend(
             [
                 {
@@ -81,6 +98,33 @@ def main() -> int:
                 },
             ]
         )
+        if args.language_pack_path:
+            blueprint["steps"].extend(
+                [
+                {
+                    "step": "wp-cli",
+                    "command": (
+                        "wp eval 'unload_textdomain( \"minimal-admin\" ); "
+                        f"$catalog = WP_LANG_DIR . \"/plugins/minimal-admin-{args.locale}.mo\"; "
+                        "if ( ! load_textdomain( \"minimal-admin\", $catalog ) ) { "
+                        "fwrite( STDERR, \"Plugin translation catalog did not load\\n\" ); exit( 1 ); } "
+                        "$value = __( \"Post not found.\", \"minimal-admin\" ); "
+                        "if ( \"Post not found.\" === $value ) { "
+                        "fwrite( STDERR, \"Plugin translation did not load\\n\" ); exit( 1 ); } "
+                        "echo $value;' --user=admin"
+                    ),
+                },
+                {
+                    "step": "wp-cli",
+                    "command": (
+                        "wp eval '$all = wp_get_installed_translations( \"plugins\" ); "
+                        f"if ( empty( $all[\"minimal-admin\"][\"{args.locale}\"] ) ) {{ "
+                        "fwrite( STDERR, \"Language pack was not registered\\n\" ); exit( 1 ); } "
+                        f"echo $all[\"minimal-admin\"][\"{args.locale}\"][\"Project-Id-Version\"] ?? \"\";'"
+                    ),
+                },
+                ]
+            )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(blueprint, indent=2) + "\n")
     return 0

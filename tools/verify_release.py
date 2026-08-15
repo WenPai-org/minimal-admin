@@ -45,6 +45,20 @@ def main() -> int:
         if marker not in main_file:
             raise SystemExit(f"missing plugin header marker: {marker}")
 
+    updater = (root / "includes/class-minimal-admin-updater.php").read_text()
+    if "const PACKAGE_HOSTS = array( 'feicode.com' );" not in updater:
+        raise SystemExit("updater package host allowlist is not pinned to FeiCode")
+    for item in manifest.get("translations", []):
+        locale = item.get("language", "")
+        expected = (
+            "https://feicode.com/WenPai-org/minimal-admin/releases/download/"
+            f"v{version}/minimal-admin-{locale}.zip"
+        )
+        if item.get("version") != version or item.get("package") != expected:
+            raise SystemExit(f"translation manifest is not downstream-pinned: {locale}")
+        if not re.fullmatch(r"[0-9a-f]{64}", str(item.get("sha256", ""))):
+            raise SystemExit(f"translation manifest has no valid sha256: {locale}")
+
     managed = json.loads((root / ".upstream-files.json").read_text())["files"]
     violations = []
     for relative in managed:
@@ -79,6 +93,8 @@ def main() -> int:
                 raise SystemExit("ZIP is missing the main plugin file")
             if any("/.forgejo/" in name or "/tests/" in name or "/tools/" in name for name in names):
                 raise SystemExit("ZIP contains maintainer or test files")
+            if any("/bin/" in name or re.search(r"/languages/(?!minimal-admin-(?:zh_CN|zh_TW))", name) for name in names):
+                raise SystemExit("ZIP contains upstream translation sources or release tooling")
     print(f"verified minimal-admin {version}: {len(php_files)} PHP files, {len(js_files)} JS files")
     return 0
 

@@ -15,33 +15,23 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout downstream repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
-      - name: Pull current GlotPress translations
+      - name: Pull current GlotPress documentation translations
         shell: bash
-        run: tools/pull_translations.sh
+        run: tools/pull_docs_translations.sh
 
       - name: Validate package contents
         shell: bash
         run: |
           set -euo pipefail
           python3 tests/docs_i18n_test.py
-          python3 tools/build_release.py --root "$GITHUB_WORKSPACE"
-          python3 tools/verify_release.py --root "$GITHUB_WORKSPACE"
-          ZIP="$GITHUB_WORKSPACE/dist/minimal-admin-$(jq -r .version manifest.json).zip"
-          unzip -Z1 "$ZIP" > "$RUNNER_TEMP/release-files.txt"
-          grep -Fxq 'minimal-admin/languages/minimal-admin-zh_CN.po' "$RUNNER_TEMP/release-files.txt"
-          grep -Fxq 'minimal-admin/languages/minimal-admin-zh_TW.po' "$RUNNER_TEMP/release-files.txt"
-          for LOCALE in zh_CN zh_TW; do
-            STATUS="$GITHUB_WORKSPACE/docs/$LOCALE/translation-status.json"
-            TRANSLATED=$(jq -r .translated "$STATUS")
-            TOTAL=$(jq -r .total "$STATUS")
-            if [ "$TRANSLATED" = "$TOTAL" ] && [ "$TOTAL" -gt 0 ]; then
-              grep -Fxq "minimal-admin/docs/$LOCALE/user-guide.md" "$RUNNER_TEMP/release-files.txt"
-            fi
-          done
+          python3 tests/plugin_i18n_test.py
+          # Translation commits are deliberately unpublished source. They do
+          # not rewrite a released manifest or attachment; the next upstream
+          # release rebuilds and publishes the approved catalogs.
 
       - name: Commit changed catalogs
         shell: bash

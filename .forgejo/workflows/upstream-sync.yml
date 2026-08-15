@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "17 */6 * * *"
   workflow_dispatch:
+  # A main-branch write (for example an approved translation sync) also checks
+  # for a missed upstream schedule. The resulting release commit triggers one
+  # harmless no-op run because upstream-lock.json is already current.
+  push:
+    branches:
+      - main
 
 concurrency:
   group: minimal-admin-upstream-sync
@@ -15,7 +21,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout downstream repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
@@ -53,6 +59,13 @@ jobs:
           COMMIT=$(git -C "$SOURCE" rev-parse HEAD)
           EXPECTED=$(git ls-remote --tags --refs \
             https://feicode.com/WPFork/minn-admin-upstream.git "refs/tags/$TAG" | awk '{print $1}')
+          CANONICAL=$(git ls-remote --tags --refs \
+            https://github.com/austinginder/minn-admin.git "refs/tags/$TAG" | awk '{print $1}')
+          [ -n "$CANONICAL" ] || { echo "Canonical upstream tag is missing: $TAG" >&2; exit 1; }
+          [ "$EXPECTED" = "$CANONICAL" ] || {
+            echo "Mirror tag target differs from canonical upstream: $TAG" >&2
+            exit 1
+          }
           [ "$COMMIT" = "$EXPECTED" ] || { echo "Pinned tag changed during fetch" >&2; exit 1; }
           if git show-ref --verify --quiet "refs/tags/v$VERSION"; then
             echo "Downstream tag v$VERSION already exists" >&2
@@ -61,9 +74,18 @@ jobs:
           python3 tools/sync_upstream.py \
             --source "$SOURCE" --output "$GITHUB_WORKSPACE" \
             --upstream-tag "$TAG" --upstream-commit "$COMMIT" --version "$VERSION"
+          if command -v opencc >/dev/null 2>&1; then
+            python3 tools/derive_zh_tw.py \
+              --source "$GITHUB_WORKSPACE/languages/minimal-admin-zh_CN.po" \
+              --output "$GITHUB_WORKSPACE/languages/minimal-admin-zh_TW.po"
+          else
+            echo "::warning::opencc is unavailable; preserving the existing zh_TW catalog"
+          fi
+          python3 tools/build_language_packs.py --root "$GITHUB_WORKSPACE" --update-manifest
           python3 tools/build_release.py --root "$GITHUB_WORKSPACE" --update-manifest
           python3 tools/verify_release.py --root "$GITHUB_WORKSPACE" \
             --zip "$GITHUB_WORKSPACE/dist/minimal-admin-$VERSION.zip"
+          python3 -m unittest discover -s tests -p '*_test.py'
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
 

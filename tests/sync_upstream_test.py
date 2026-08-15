@@ -32,9 +32,23 @@ class SyncUpstreamTest(unittest.TestCase):
                 " * Author URI: x\n * Text Domain: minn-admin\n"
                 "define( 'MINN_ADMIN_VERSION', '0.26.0' );\n"
             )
-            (source / "manifest.json").write_text(json.dumps({"version": "0.26.0"}))
+            (source / "languages").mkdir()
+            (source / "languages/zh_CN.po").write_text(
+                'msgid ""\nmsgstr ""\n"Project-Id-Version: Minn Admin\\n"\n'
+                '"Language: zh_CN\\n"\n\nmsgid "Minn Admin"\nmsgstr "Minn Admin"\n'
+            )
+            (source / "manifest.json").write_text(json.dumps({
+                "version": "0.26.0",
+                "translations": [{
+                    "language": "zh_CN", "version": "0.26.0", "updated": "now",
+                    "package": "https://github.com/austinginder/minn-admin/x.zip", "sha256": "a" * 64,
+                }],
+            }))
             (source / "readme.md").write_text("**Website:** https://minnadmin.com\n")
-            (source / "includes/class-minn-admin-updater.php").write_text("updater\n")
+            (source / "includes/class-minn-admin-updater.php").write_text(
+                "const PACKAGE_HOSTS = array( 'github.com' );\n"
+                "const PACKAGE_PATHS = array( '/austinginder/minn-admin/' );\n"
+            )
             (source / ".github/screenshot-dark.png").write_bytes(b"upstream Minn screenshot")
             branded = b"downstream Minimal screenshot"
             (output / "assets/images/screenshot-dark.png").write_bytes(branded)
@@ -51,6 +65,13 @@ class SyncUpstreamTest(unittest.TestCase):
                 self.assertEqual(0, SYNC_UPSTREAM.main())
 
             self.assertEqual(branded, (output / "assets/images/screenshot-dark.png").read_bytes())
+            self.assertTrue((output / "languages/minimal-admin-zh_CN.po").is_file())
+            self.assertFalse((output / "languages/zh_CN.po").exists())
+            manifest = json.loads((output / "manifest.json").read_text())
+            self.assertEqual("", manifest["translations"][0]["package"])
+            updater = (output / "includes/class-minimal-admin-updater.php").read_text()
+            self.assertIn("array( 'feicode.com' )", updater)
+            self.assertIn("/WenPai-org/minimal-admin/", updater)
             managed = json.loads((output / ".upstream-files.json").read_text())["files"]
             self.assertIn("assets/images/screenshot-dark.png", managed)
 
