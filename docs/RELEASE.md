@@ -9,9 +9,15 @@ a downstream version by appending `.1` (for example `0.25.0` becomes
 reproducible ZIP, updates `manifest.json`, commits the pinned provenance, tags
 the commit, and creates a FeiCode release with ZIP and SHA-256 assets.
 
+When a prepared release commit is merged through protected-branch review, the
+next `main` push run detects that its downstream tag is missing. It rebuilds and
+verifies the exact merged commit before creating the tag. This recovery path
+does not rewrite `main`; the tag push then starts the normal release workflow.
+
 Before publishing assets, the release workflow boots WordPress Playground,
-installs the locally built ZIP, verifies that `minimal-admin` is active, and
-checks that the runtime version matches the release tag.
+installs the locally built ZIP plus the Simplified and Traditional Chinese
+language packs, verifies that `minimal-admin` is active, and checks the runtime
+version, locale, translation registration, and a translated runtime string.
 
 Upstream synchronization does not contact GlotPress. It packages the latest
 translation catalogs already committed to the repository, if any. Translation

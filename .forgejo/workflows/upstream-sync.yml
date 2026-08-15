@@ -37,16 +37,27 @@ jobs:
             | sort -V | tail -1)
           [ -n "$TAG" ] || { echo "No stable upstream tag found" >&2; exit 1; }
           CURRENT=$(jq -r '.upstream_tag // ""' upstream-lock.json)
+          VERSION="${TAG#v}.1"
+          MANIFEST_VERSION=$(jq -r '.version // ""' manifest.json)
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          if [ "$TAG" = "$CURRENT" ]; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "Already synchronized: $TAG"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [ "$TAG" != "$CURRENT" ]; then
+            echo "mode=sync" >> "$GITHUB_OUTPUT"
+          elif git ls-remote --exit-code --tags --refs origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            echo "mode=none" >> "$GITHUB_OUTPUT"
+            echo "Already synchronized and tagged: $TAG -> v$VERSION"
+          elif [ "$MANIFEST_VERSION" = "$VERSION" ]; then
+            # Covers an approved release commit merged through a protected branch:
+            # validate the exact merged commit, then create its missing tag.
+            echo "mode=tag" >> "$GITHUB_OUTPUT"
+            echo "Release source is current but tag v$VERSION is missing"
           else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Lock is current for $TAG but manifest version is $MANIFEST_VERSION, expected $VERSION" >&2
+            exit 1
           fi
 
       - name: Fetch and transform pinned upstream source
-        if: ${{ steps.upstream.outputs.changed == 'true' }}
+        if: ${{ steps.upstream.outputs.mode == 'sync' }}
         id: transform
         shell: bash
         run: |
@@ -90,7 +101,7 @@ jobs:
           echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
 
       - name: Commit and tag verified source
-        if: ${{ steps.upstream.outputs.changed == 'true' }}
+        if: ${{ steps.upstream.outputs.mode == 'sync' }}
         shell: bash
         env:
           RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
@@ -119,3 +130,38 @@ jobs:
           git config --local --unset-all http.https://feicode.com/.extraheader || true
           GIT_CONFIG_GLOBAL=/dev/null GIT_ASKPASS="$ASKPASS" GIT_TERMINAL_PROMPT=0 \
             git push --atomic origin HEAD:main "refs/tags/v$VERSION"
+
+      - name: Validate and tag an approved release commit
+        if: ${{ steps.upstream.outputs.mode == 'tag' }}
+        shell: bash
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          [ -n "$RELEASE_TOKEN" ] || { echo "RELEASE_TOKEN is missing" >&2; exit 1; }
+          VERSION="${{ steps.upstream.outputs.version }}"
+          python3 tools/build_language_packs.py --root "$GITHUB_WORKSPACE"
+          python3 tools/build_release.py --root "$GITHUB_WORKSPACE"
+          python3 tools/verify_release.py --root "$GITHUB_WORKSPACE" \
+            --zip "$GITHUB_WORKSPACE/dist/minimal-admin-$VERSION.zip"
+          python3 -m unittest discover -s tests -p '*_test.py'
+          git diff --exit-code -- manifest.json languages || {
+            echo "Release source is not reproducible at the approved commit" >&2
+            exit 1
+          }
+          git config user.name "FeiCode Release Bot"
+          git config user.email "release-bot@wenpai.org"
+          git tag -a "v$VERSION" -m "Minimal Admin $VERSION"
+          ASKPASS=$(mktemp)
+          trap 'rm -f "$ASKPASS"' EXIT
+          cat > "$ASKPASS" <<'EOF'
+          #!/bin/sh
+          case "$1" in
+            *Username*) printf '%s\n' 'kekechong' ;;
+            *Password*) printf '%s\n' "$RELEASE_TOKEN" ;;
+          esac
+          EOF
+          chmod 700 "$ASKPASS"
+          git config --local --unset-all http.https://feicode.com/.extraheader || true
+          GIT_CONFIG_GLOBAL=/dev/null GIT_ASKPASS="$ASKPASS" GIT_TERMINAL_PROMPT=0 \
+            git push origin "refs/tags/v$VERSION"

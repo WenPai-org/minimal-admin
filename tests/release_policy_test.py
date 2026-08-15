@@ -19,6 +19,9 @@ class ReleasePolicyTest(unittest.TestCase):
         self.assertIn("git add -A\n", workflow)
         self.assertNotIn("git add -A ':!dist'", workflow)
         self.assertIn("git push --atomic", workflow)
+        self.assertIn("mode=tag", workflow)
+        self.assertIn("Validate and tag an approved release commit", workflow)
+        self.assertIn('git diff --exit-code -- manifest.json languages', workflow)
         self.assertIn("CANONICAL=$(git ls-remote", workflow)
         self.assertNotIn("actions/checkout@v4", workflow)
 
