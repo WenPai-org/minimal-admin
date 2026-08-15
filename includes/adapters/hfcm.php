@@ -126,6 +126,13 @@ function minimal_admin_hfcm_get( $id ) {
  * and any install using DISALLOW_UNFILTERED_HTML.
  */
 function minimal_admin_hfcm_can_write_code() {
+	// HFCM html_entity_decode()s these snippets into wp_head for every
+	// visitor, so authoring one is code editing and answers to the directive
+	// that forbids it — the guard the custom-css-js and WPCode peers already
+	// carry, which this adapter was not given.
+	if ( class_exists( 'Minimal_Admin' ) && ! Minimal_Admin::code_edits_allowed() ) {
+		return false;
+	}
 	if ( defined( 'DISALLOW_UNFILTERED_HTML' ) && DISALLOW_UNFILTERED_HTML ) {
 		return false;
 	}
@@ -136,7 +143,7 @@ function minimal_admin_hfcm_can_write_code() {
 function minimal_admin_hfcm_code_error() {
 	return new WP_Error(
 		'forbidden',
-		'Header Footer Code Manager snippets run as raw markup in the page head, so editing them needs the unfiltered_html capability on this site.',
+		__( 'Header Footer Code Manager snippets run as raw markup in the page head, so editing them needs the unfiltered_html capability on this site.', 'minimal-admin' ),
 		array( 'status' => 403 )
 	);
 }
@@ -154,32 +161,32 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	$location_options = array(
 		array( 'header', 'Header' ),
 		array( 'footer', 'Footer' ),
-		array( 'before_content', 'Before content' ),
-		array( 'after_content', 'After content' ),
+		array( 'before_content', __( 'Before content', 'minimal-admin' ) ),
+		array( 'after_content', __( 'After content', 'minimal-admin' ) ),
 	);
 	$device_options = array(
-		array( 'both', 'All devices' ),
+		array( 'both', __( 'All devices', 'minimal-admin' ) ),
 		array( 'desktop', 'Desktop' ),
 		array( 'mobile', 'Mobile' ),
 	);
 
 	$edit_fields = array(
-		array( 'key' => 'name', 'label' => 'Name', 'placeholder' => 'Analytics pixel' ),
+		array( 'key' => 'name', 'label' => __( 'Name', 'minimal-admin' ), 'placeholder' => __( 'Analytics pixel', 'minimal-admin' ) ),
 		array(
 			'key'         => 'code',
-			'label'       => 'Code',
+			'label'       => __( 'Code', 'minimal-admin' ),
 			'type'        => 'textarea',
 			'mono'        => true,
 			'rows'        => 14,
-			'placeholder' => '<!-- tracking snippet -->',
+			'placeholder' => __( '<!-- tracking snippet -->', 'minimal-admin' ),
 		),
-		array( 'key' => 'snippet_type', 'label' => 'Type', 'type' => 'select', 'options' => $type_options ),
-		array( 'key' => 'location', 'label' => 'Location', 'type' => 'select', 'options' => $location_options ),
-		array( 'key' => 'device_type', 'label' => 'Devices', 'type' => 'select', 'options' => $device_options ),
+		array( 'key' => 'snippet_type', 'label' => __( 'Type', 'minimal-admin' ), 'type' => 'select', 'options' => $type_options ),
+		array( 'key' => 'location', 'label' => __( 'Location', 'minimal-admin' ), 'type' => 'select', 'options' => $location_options ),
+		array( 'key' => 'device_type', 'label' => __( 'Devices', 'minimal-admin' ), 'type' => 'select', 'options' => $device_options ),
 	);
 
 	$surfaces['hfcm'] = array(
-		'label'      => 'Snippets',
+		'label'      => __( 'Snippets', 'minimal-admin' ),
 		'family'     => 'snippets',
 		'sub'        => 'Header Footer Code Manager',
 		'icon'       => 'code',
@@ -193,7 +200,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'totalKey'  => 'total',
 			'search'    => 'search={q}',
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'all', 'All' ),
 					array( '1', 'Active' ),
@@ -202,7 +209,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'query'   => 'active={v}',
 			),
 			'create'    => array(
-				'label'    => 'Add snippet',
+				'label'    => __( 'Add snippet', 'minimal-admin' ),
 				'route'    => 'minimal-admin/v1/hfcm/snippets',
 				'method'   => 'POST',
 				'defaults' => array(
@@ -215,10 +222,10 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'fields'   => $edit_fields,
 			),
 			'columns'   => array(
-				array( 'key' => 'name', 'label' => 'Snippet', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'scope', 'label' => 'Type · location', 'format' => 'mono', 'width' => 'minmax(0,1.2fr)' ),
-				array( 'key' => 'active', 'label' => 'Status', 'format' => 'pill', 'width' => '100px' ),
-				array( 'key' => 'modified', 'label' => 'Modified', 'format' => 'ago' ),
+				array( 'key' => 'name', 'label' => __( 'Snippet', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'scope', 'label' => __( 'Type · location', 'minimal-admin' ), 'format' => 'mono', 'width' => 'minmax(0,1.2fr)' ),
+				array( 'key' => 'active', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '100px' ),
+				array( 'key' => 'modified', 'label' => __( 'Modified', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'detailRoute' => 'minimal-admin/v1/hfcm/snippets/{id}',
@@ -232,51 +239,51 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/hfcm/snippets/{id}/active',
 					'body'   => array( 'active' => true ),
 					'when'   => array( 'key' => 'active', 'equals' => false ),
 				),
 				array(
-					'label'  => 'Deactivate',
+					'label'  => __( 'Deactivate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/hfcm/snippets/{id}/active',
 					'body'   => array( 'active' => false ),
 					'when'   => array( 'key' => 'active', 'equals' => true ),
 				),
 				array(
-					'label' => 'Edit in HFCM ↗',
+					'label' => __( 'Edit in HFCM ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=hfcm-update&id={id}' ),
 				),
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/hfcm/snippets/{id}',
-					'confirm' => 'Delete this snippet permanently?',
+					'confirm' => __( 'Delete this snippet permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/hfcm/snippets/{id}/active',
 					'body'   => array( 'active' => true ),
 					'when'   => array( 'key' => 'active', 'equals' => false ),
 				),
 				array(
-					'label'  => 'Deactivate',
+					'label'  => __( 'Deactivate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/hfcm/snippets/{id}/active',
 					'body'   => array( 'active' => false ),
 					'when'   => array( 'key' => 'active', 'equals' => true ),
 				),
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/hfcm/snippets/{id}',
-					'confirm' => 'Delete the selected snippets permanently?',
+					'confirm' => __( 'Delete the selected snippets permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -308,15 +315,15 @@ add_action( 'rest_api_init', function () {
 			$inactive = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status <> 'active'" ); // phpcs:ignore
 			$rows     = array(
 				array(
-					'label' => 'Active snippets',
+					'label' => __( 'Active snippets', 'minimal-admin' ),
 					'value' => (string) $active,
-					'hint'  => $inactive ? $inactive . ' inactive' : 'nothing inactive',
+					'hint'  => $inactive ? sprintf( /* translators: %d: number of inactive snippets. */ __( '%d inactive', 'minimal-admin' ), $inactive ) : __( 'nothing inactive', 'minimal-admin' ),
 				),
 			);
 			$types = $wpdb->get_results( "SELECT snippet_type AS t, COUNT(*) AS c FROM {$table} WHERE status = 'active' GROUP BY snippet_type ORDER BY c DESC LIMIT 3" ); // phpcs:ignore
 			if ( $types ) {
 				$rows[] = array(
-					'label' => 'Running types',
+					'label' => __( 'Running types', 'minimal-admin' ),
 					'value' => implode( ' · ', array_map( function ( $t ) {
 						return $t->c . ' ' . strtolower( (string) $t->t );
 					}, $types ) ),
@@ -325,7 +332,7 @@ add_action( 'rest_api_init', function () {
 			$last = $wpdb->get_row( "SELECT name, last_revision_date FROM {$table} ORDER BY last_revision_date DESC LIMIT 1" ); // phpcs:ignore
 			if ( $last && $last->last_revision_date ) {
 				$rows[] = array(
-					'label' => 'Last change',
+					'label' => __( 'Last change', 'minimal-admin' ),
 					'value' => (string) $last->name,
 					'hint'  => substr( (string) $last->last_revision_date, 0, 10 ),
 				);
@@ -367,7 +374,7 @@ add_action( 'rest_api_init', function () {
 				}
 				$name = isset( $body['name'] ) ? sanitize_text_field( $body['name'] ) : '';
 				if ( ! $name ) {
-					return new WP_Error( 'missing_name', 'Name is required.', array( 'status' => 400 ) );
+					return new WP_Error( 'missing_name', __( 'Name is required.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				$code = isset( $body['code'] ) ? (string) $body['code'] : '';
 				if ( ! minimal_admin_hfcm_can_write_code() ) {
@@ -401,7 +408,7 @@ add_action( 'rest_api_init', function () {
 					array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )
 				);
 				if ( ! $ok ) {
-					return new WP_Error( 'insert_failed', 'Could not create the snippet.', array( 'status' => 500 ) );
+					return new WP_Error( 'insert_failed', __( 'Could not create the snippet.', 'minimal-admin' ), array( 'status' => 500 ) );
 				}
 				return rest_ensure_response( minimal_admin_hfcm_get( (int) $wpdb->insert_id ) );
 			},
@@ -415,7 +422,7 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $request ) {
 				$item = minimal_admin_hfcm_get( (int) $request['id'] );
 				if ( ! $item ) {
-					return new WP_Error( 'not_found', 'Snippet not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Snippet not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				return rest_ensure_response( $item );
 			},
@@ -428,7 +435,7 @@ add_action( 'rest_api_init', function () {
 				$id   = (int) $request['id'];
 				$item = minimal_admin_hfcm_get( $id );
 				if ( ! $item ) {
-					return new WP_Error( 'not_found', 'Snippet not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Snippet not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$body = $request->get_json_params();
 				if ( ! is_array( $body ) ) {
@@ -482,7 +489,7 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $request ) {
 				$id = (int) $request['id'];
 				if ( ! minimal_admin_hfcm_get( $id ) ) {
-					return new WP_Error( 'not_found', 'Snippet not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Snippet not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				// Destroying a snippet is a write to the same raw-markup store.
 				if ( ! minimal_admin_hfcm_can_write_code() ) {
@@ -506,7 +513,7 @@ add_action( 'rest_api_init', function () {
 			$id   = (int) $request['id'];
 			$item = minimal_admin_hfcm_get( $id );
 			if ( ! $item ) {
-				return new WP_Error( 'not_found', 'Snippet not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Snippet not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$body   = $request->get_json_params();
 			$active = is_array( $body ) ? ! empty( $body['active'] ) : true;

@@ -57,7 +57,7 @@ function minimal_admin_aios_table() {
  * @return array{0:string,1:array} SQL fragment to append, and its args.
  */
 function minimal_admin_aios_site_scope() {
-	if ( ! is_multisite() || is_super_admin() ) {
+	if ( Minimal_Admin::network_owner() ) {
 		return array( '', array() );
 	}
 	return array( ' AND site_id = %d', array( get_current_blog_id() ) );
@@ -171,7 +171,7 @@ function minimal_admin_aios_checks() {
 	);
 	return array(
 		array(
-			'label'  => 'All-In-One Security',
+			'label'  => __( 'All-In-One Security', 'minimal-admin' ),
 			'status' => $status,
 			'detail' => implode( ' · ', $bits ),
 			'href'   => $p['locked'] > 0 ? minimal_admin_aios_lockout_url() : minimal_admin_aios_admin_url(),
@@ -199,7 +199,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['all-in-one-security'] = array(
-		'label'      => 'Activity Log',
+		'label'      => __( 'Activity Log', 'minimal-admin' ),
 		'family'     => 'activity-log',
 		'sub'        => 'All-In-One Security',
 		'icon'       => 'shield',
@@ -221,11 +221,11 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'allLabel' => 'All',
 			),
 			'columns'   => array(
-				array( 'key' => 'message', 'label' => 'Event', 'format' => 'title' ),
-				array( 'key' => 'username', 'label' => 'Who' ),
+				array( 'key' => 'message', 'label' => __( 'Event', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'username', 'label' => __( 'Who', 'minimal-admin' ) ),
 				array( 'key' => 'ip', 'label' => 'IP', 'format' => 'mono', 'width' => '130px' ),
-				array( 'key' => 'level', 'label' => 'Level', 'format' => 'pill', 'width' => '96px' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'level', 'label' => __( 'Level', 'minimal-admin' ), 'format' => 'pill', 'width' => '96px' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/aios/events/{id}',
@@ -310,21 +310,21 @@ add_action( 'rest_api_init', function () {
 				array_merge( array( (int) $request['id'] ), $scope_args )
 			) );
 			if ( ! $row ) {
-				return new WP_Error( 'not_found', 'Event not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Event not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$who   = (string) $row->username;
 			$event = array(
-				array( 'label' => 'Event', 'value' => minimal_admin_aios_event_label( $row->event_type ) ),
-				array( 'label' => 'When', 'value' => date_i18n( 'M j, Y g:i a', (int) $row->created + (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ) ),
-				array( 'label' => 'Level', 'value' => minimal_admin_aios_level( $row->level ), 'type' => 'pill' ),
-				array( 'label' => 'User', 'value' => '' !== $who ? $who : 'System' ),
+				array( 'label' => __( 'Event', 'minimal-admin' ), 'value' => minimal_admin_aios_event_label( $row->event_type ) ),
+				array( 'label' => __( 'When', 'minimal-admin' ), 'value' => date_i18n( 'M j, Y g:i a', (int) $row->created + (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ) ),
+				array( 'label' => __( 'Level', 'minimal-admin' ), 'value' => minimal_admin_aios_level( $row->level ), 'type' => 'pill' ),
+				array( 'label' => __( 'User', 'minimal-admin' ), 'value' => '' !== $who ? $who : 'System' ),
 				array( 'label' => 'IP', 'value' => (string) $row->ip ),
 			);
 			if ( ! empty( $row->country_code ) ) {
-				$event[] = array( 'label' => 'Country', 'value' => (string) $row->country_code );
+				$event[] = array( 'label' => __( 'Country', 'minimal-admin' ), 'value' => (string) $row->country_code );
 			}
 			$sections = array(
-				array( 'title' => 'Event', 'rows' => array_values( array_filter( $event, function ( $r ) {
+				array( 'title' => __( 'Event', 'minimal-admin' ), 'rows' => array_values( array_filter( $event, function ( $r ) {
 					return '' !== (string) $r['value'];
 				} ) ) ),
 			);
@@ -344,7 +344,7 @@ add_action( 'rest_api_init', function () {
 				foreach ( $decoded as $k => $v ) {
 					$label = ucfirst( trim( str_replace( array( '-', '_' ), ' ', (string) $k ) ) );
 					if ( is_bool( $v ) ) {
-						$context[] = array( 'label' => $label, 'value' => $v ? 'Yes' : 'No' );
+						$context[] = array( 'label' => $label, 'value' => $v ? __( 'Yes', 'minimal-admin' ) : __( 'No', 'minimal-admin' ) );
 					} elseif ( is_scalar( $v ) ) {
 						$val = (string) $v;
 						$context[] = array( 'label' => $label, 'value' => strlen( $val ) > 200 ? substr( $val, 0, 200 ) . '…' : $val );
@@ -355,7 +355,7 @@ add_action( 'rest_api_init', function () {
 					return '' !== (string) $r['value'];
 				} ) );
 				if ( $context ) {
-					$sections[] = array( 'title' => 'Context', 'rows' => $context );
+					$sections[] = array( 'title' => __( 'Context', 'minimal-admin' ), 'rows' => $context );
 				}
 			}
 
@@ -380,8 +380,8 @@ add_action( 'rest_api_init', function () {
 			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
 				return rest_ensure_response( array(
-					'rows'    => array( array( 'label' => 'Events', 'value' => '—', 'hint' => 'Audit log table not found' ) ),
-					'actions' => array( array( 'label' => 'Open All-In-One Security ↗', 'href' => minimal_admin_aios_admin_url() ) ),
+					'rows'    => array( array( 'label' => __( 'Events', 'minimal-admin' ), 'value' => '—', 'hint' => __( 'Audit log table not found', 'minimal-admin' ) ) ),
+					'actions' => array( array( 'label' => __( 'Open All-In-One Security ↗', 'minimal-admin' ), 'href' => minimal_admin_aios_admin_url() ) ),
 				) );
 			}
 			$now   = time();
@@ -401,44 +401,54 @@ add_action( 'rest_api_init', function () {
 			$posture = minimal_admin_aios_login_posture();
 			$rows    = array(
 				array(
-					'label' => 'Events (24h)',
+					'label' => __( 'Events (24h)', 'minimal-admin' ),
 					'value' => number_format_i18n( $day ),
-					'hint'  => number_format_i18n( $week ) . ' in the last 7 days',
+					'hint'  => sprintf(
+						/* translators: %s: number of events recorded in the last 7 days. */
+						__( '%s in the last 7 days', 'minimal-admin' ),
+						number_format_i18n( $week )
+					),
 				),
-				array( 'label' => 'Events all-time', 'value' => number_format_i18n( $total ) ),
+				array( 'label' => __( 'Events all-time', 'minimal-admin' ), 'value' => number_format_i18n( $total ) ),
 				array(
-					'label' => 'Warnings (7d)',
+					'label' => __( 'Warnings (7d)', 'minimal-admin' ),
 					'value' => number_format_i18n( $warn ),
-					'hint'  => $warn ? 'warning, error or fatal' : 'all clear',
+					'hint'  => $warn ? __( 'warning, error or fatal', 'minimal-admin' ) : __( 'all clear', 'minimal-admin' ),
 				),
 				array(
-					'label' => 'Failed logins (24h)',
+					'label' => __( 'Failed logins (24h)', 'minimal-admin' ),
 					'value' => number_format_i18n( $posture['failed_24h'] ),
-					'hint'  => 'from the audit log',
+					'hint'  => __( 'from the audit log', 'minimal-admin' ),
 				),
 				array(
-					'label' => 'Locked out now',
-					'value' => $posture['locked'] ? number_format_i18n( $posture['locked'] ) : 'Nobody',
-					'hint'  => $posture['locked'] ? 'temporary login lockdowns' : 'no active lockdowns',
+					'label' => __( 'Locked out now', 'minimal-admin' ),
+					'value' => $posture['locked'] ? number_format_i18n( $posture['locked'] ) : __( 'Nobody', 'minimal-admin' ),
+					'hint'  => $posture['locked'] ? __( 'temporary login lockdowns', 'minimal-admin' ) : __( 'no active lockdowns', 'minimal-admin' ),
 				),
 				array(
-					'label' => 'Permanent blocks',
+					'label' => __( 'Permanent blocks', 'minimal-admin' ),
 					'value' => number_format_i18n( $posture['blocks'] ),
-					'hint'  => $posture['blocks'] ? 'blocked IPs' : 'none',
+					'hint'  => $posture['blocks'] ? __( 'blocked IPs', 'minimal-admin' ) : __( 'none', 'minimal-admin' ),
 				),
 				array(
-					'label' => 'Last event',
-					'value' => $last ? human_time_diff( (int) $last, time() ) . ' ago' : '—',
+					'label' => __( 'Last event', 'minimal-admin' ),
+					'value' => $last
+						? sprintf(
+							/* translators: %s: human-readable time since the last event. */
+							__( '%s ago', 'minimal-admin' ),
+							human_time_diff( (int) $last, time() )
+						)
+						: '—',
 				),
 			);
 			$actions = array(
-				array( 'label' => 'Open All-In-One Security ↗', 'href' => minimal_admin_aios_admin_url() ),
+				array( 'label' => __( 'Open All-In-One Security ↗', 'minimal-admin' ), 'href' => minimal_admin_aios_admin_url() ),
 			);
 			if ( $posture['locked'] > 0 ) {
-				$actions[] = array( 'label' => 'View locked IPs ↗', 'href' => minimal_admin_aios_lockout_url() );
+				$actions[] = array( 'label' => __( 'View locked IPs ↗', 'minimal-admin' ), 'href' => minimal_admin_aios_lockout_url() );
 			}
 			if ( $posture['blocks'] > 0 ) {
-				$actions[] = array( 'label' => 'View permanent blocks ↗', 'href' => minimal_admin_aios_perm_block_url() );
+				$actions[] = array( 'label' => __( 'View permanent blocks ↗', 'minimal-admin' ), 'href' => minimal_admin_aios_perm_block_url() );
 			}
 			return rest_ensure_response( array(
 				'rows'    => $rows,

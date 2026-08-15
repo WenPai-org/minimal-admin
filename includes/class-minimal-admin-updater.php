@@ -18,7 +18,25 @@ class Minimal_Admin_Updater {
 	const MANIFEST_URL = 'https://feicode.com/WenPai-org/minimal-admin/raw/branch/main/manifest.json';
 
 	/** Hosts the update package may legitimately come from. */
-	const PACKAGE_HOSTS = array( 'github.com', 'objects.githubusercontent.com', 'codeload.github.com' );
+	const PACKAGE_HOSTS = array( 'feicode.com' );
+
+	/**
+	 * Repository paths packages may live under, as an ALLOWLIST rather than
+	 * one hardcoded prefix. Language packs are published alongside the plugin
+	 * today; if they ever move to their own repository, that is one more
+	 * entry here plus a manifest URL, not a rewrite of the download gate.
+	 *
+	 * Each entry is matched ANCHORED at the start of the URL path. Unanchored,
+	 * anyone could satisfy it with a repository of their own containing that
+	 * directory path.
+	 */
+	const PACKAGE_PATHS = array( '/WenPai-org/minimal-admin/' );
+
+	/**
+	 * Distinct user locales, cached a day. The query is cheap but it runs on
+	 * an update check, and update checks run on a schedule nobody asked for.
+	 */
+	const USER_LOCALES_KEY = 'minimal_admin_user_locales';
 
 	public function __construct() {
 		// Test the VALUE, not just the definition: define( 'MINIMAL_ADMIN_DEV_MODE',
@@ -63,8 +81,8 @@ class Minimal_Admin_Updater {
 	}
 
 	/**
-	 * Whether a URL is a plausible package URL for this plugin: https, on a
-	 * GitHub host, under this repo. The manifest is fetched over TLS from a
+	 * Whether a URL is a plausible package URL for this plugin: https, on the
+	 * FeiCode host, under this repo. The manifest is fetched over TLS from a
 	 * pinned URL, but its download_url was previously handed to the upgrader
 	 * with no check at all — a manifest naming an http:// URL would have
 	 * WordPress fetch executable code in the clear.
@@ -91,7 +109,46 @@ class Minimal_Admin_Updater {
 		// objects.githubusercontent.com is only ever reached as a redirect
 		// target inside download_url(), never as a manifest download_url, so it
 		// does not carry the owner/repo pair and legitimately never matches.
-		return 0 === strpos( (string) ( $parts['path'] ?? '' ), '/WenPai-org/minimal-admin/' );
+		$path = (string) ( $parts['path'] ?? '' );
+		foreach ( self::PACKAGE_PATHS as $prefix ) {
+			if ( 0 === strpos( $path, $prefix ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * The sha256 the manifest publishes for a given package URL.
+	 *
+	 * Three-state on purpose:
+	 *   null  the manifest does not claim this URL at all. The caller decides
+	 *         whether it is unrelated; verify_package() has already established
+	 *         ownership from the URL and therefore refuses this state.
+	 *   ''    the manifest claims it but publishes no hash. That is a refusal,
+	 *         not a pass: treating "no sha256" as "verification not required"
+	 *         makes integrity opt-out for whoever serves the manifest, and
+	 *         degrades silently if a release script forgets the field.
+	 *   hash  verify against this.
+	 *
+	 * @param object|null $remote  Decoded manifest.
+	 * @param string      $package Package URL being downloaded.
+	 * @return string|null
+	 */
+	public function hash_for_package( $remote, $package ) {
+		if ( ! is_object( $remote ) ) {
+			return null;
+		}
+		if ( ! empty( $remote->download_url ) && $package === $remote->download_url ) {
+			return isset( $remote->sha256 ) ? (string) $remote->sha256 : '';
+		}
+		foreach ( (array) ( $remote->translations ?? array() ) as $pack ) {
+			$pack = (object) $pack;
+			if ( ! empty( $pack->package ) && $package === $pack->package ) {
+				return isset( $pack->sha256 ) ? (string) $pack->sha256 : '';
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -119,17 +176,15 @@ class Minimal_Admin_Updater {
 			return $reply;
 		}
 		$remote = $this->request();
-		if ( empty( $remote->download_url ) || $package !== $remote->download_url ) {
-			return $reply;
-		}
-		// The hash is MANDATORY for our own package. Treating "manifest has no
-		// sha256" as "verification not required" makes integrity opt-out for
-		// whoever serves the manifest, and silently degrades if a release
-		// script ever forgets the field.
-		if ( empty( $remote->sha256 ) ) {
+		// Look the hash up BY PACKAGE URL. The manifest publishes one for the
+		// plugin zip and one for every language pack, and a translation
+		// package is a downloaded file like any other: skipping the check for
+		// it would make integrity opt-out for whoever serves the manifest.
+		$expected = $this->hash_for_package( $remote, $package );
+		if ( null === $expected || '' === $expected ) {
 			return new WP_Error(
 				'minimal_admin_missing_package_hash',
-				'Minimal Admin update rejected: the release manifest does not publish a sha256 for this package.'
+				__( 'Minimal Admin update rejected: the release manifest does not publish a sha256 for this package.', 'minimal-admin' )
 			);
 		}
 		if ( ! function_exists( 'download_url' ) ) {
@@ -140,11 +195,11 @@ class Minimal_Admin_Updater {
 			return $file;
 		}
 		$hash = (string) hash_file( 'sha256', $file );
-		if ( ! hash_equals( strtolower( (string) $remote->sha256 ), $hash ) ) {
+		if ( ! hash_equals( strtolower( $expected ), $hash ) ) {
 			wp_delete_file( $file );
 			return new WP_Error(
 				'minimal_admin_bad_package_hash',
-				'Minimal Admin update rejected: the downloaded package does not match the sha256 published in the release manifest.'
+				__( 'Minimal Admin update rejected: the downloaded package does not match the sha256 published in the release manifest.', 'minimal-admin' )
 			);
 		}
 		return $file;
@@ -237,7 +292,7 @@ class Minimal_Admin_Updater {
 
 		$remote = $this->request();
 		// Never offer an update whose package we would refuse to install: the
-		// URL has to be https on a GitHub host under this repo, and the
+		// URL has to be https on the FeiCode host under this repo, and the
 		// manifest has to publish a hash to check the download against.
 		if ( $remote && ! empty( $remote->download_url )
 			&& ( ! $this->is_our_package_url( $remote->download_url ) || empty( $remote->sha256 ) ) ) {
@@ -254,7 +309,183 @@ class Minimal_Admin_Updater {
 
 			$transient->response[ $response->plugin ] = $response;
 		}
+
+		$this->offer_translations( $transient, $remote );
 		return $transient;
+	}
+
+	/**
+	 * Offer language packs through core's own translation-update path.
+	 *
+	 * WordPress reads pending translation updates from the same transient it
+	 * reads plugin updates from, and Language_Pack_Upgrader::async_upgrade()
+	 * is already hooked to upgrader_process_complete: updating the plugin
+	 * installs its packs straight after, with no code from us. They also show
+	 * up under Dashboard, Updates, and they land in WP_LANG_DIR/plugins/,
+	 * which core checks BEFORE the plugin's own languages/ directory and
+	 * which survives a plugin reinstall.
+	 *
+	 * Only locales the site actually uses are offered. A site running one
+	 * language has no reason to download thirteen.
+	 *
+	 * @param object      $transient The update_plugins transient.
+	 * @param object|null $remote    Decoded manifest.
+	 */
+	protected function offer_translations( $transient, $remote ) {
+		if ( ! is_object( $remote ) || empty( $remote->translations ) ) {
+			return;
+		}
+		$wanted = $this->wanted_locales();
+		if ( ! $wanted ) {
+			return;
+		}
+		if ( ! isset( $transient->translations ) || ! is_array( $transient->translations ) ) {
+			$transient->translations = array();
+		}
+		$installed = $this->installed_translations();
+
+		foreach ( (array) $remote->translations as $pack ) {
+			$pack = (object) $pack;
+			if ( empty( $pack->language ) || empty( $pack->package ) ) {
+				continue;
+			}
+			if ( ! in_array( $pack->language, $wanted, true ) ) {
+				continue;
+			}
+			// Same refusal as the plugin package: never OFFER something we
+			// would refuse to install.
+			if ( ! $this->is_our_package_url( $pack->package ) || empty( $pack->sha256 ) ) {
+				continue;
+			}
+			// Skip a pack the site already has, comparing VERSIONS.
+			//
+			// PO-Revision-Date looks like the better key and is not: the
+			// catalog pipeline restamps that header on every run, so a
+			// regeneration that changed no strings would still re-offer
+			// thirteen packs. Packs ship with releases, one set per version,
+			// so the version is the honest question — and a translation-only
+			// fix is a patch release, which answers it.
+			//
+			// A pack with NO readable version is one installed before this
+			// shipped a .po to read it from; offering it replaces it with one
+			// that has the headers, which is what we want.
+			$have = $installed[ $pack->language ] ?? '';
+			$offered = isset( $pack->version ) ? (string) $pack->version : $this->version;
+			if ( '' !== $have && version_compare( $have, $offered, '>=' ) ) {
+				continue;
+			}
+			$transient->translations[] = array(
+				'type'       => 'plugin',
+				'slug'       => $this->plugin_slug,
+				'language'   => $pack->language,
+				'version'    => isset( $pack->version ) ? $pack->version : $this->version,
+				'updated'    => isset( $pack->updated ) ? $pack->updated : gmdate( 'Y-m-d H:i:s' ),
+				'package'    => $pack->package,
+				'autoupdate' => true,
+			);
+		}
+	}
+
+	/**
+	 * Locales this site actually READS Minimal Admin in.
+	 *
+	 * Deliberately narrower than get_available_languages(), which is every
+	 * language installed on the site: a site that once installed five core
+	 * languages and uses one has no business downloading five Minimal catalogs at
+	 * ~250KB each. What qualifies is the site language, a language some user
+	 * actually chose, and any Minimal pack already on disk (so an installed
+	 * translation keeps getting updates even if nobody currently has it set).
+	 *
+	 * @return string[]
+	 */
+	protected function wanted_locales() {
+		$locales = array( get_locale() );
+		if ( function_exists( 'get_user_locale' ) ) {
+			$locales[] = get_user_locale();
+		}
+		$locales = array_merge( $locales, $this->user_locales(), array_keys( $this->installed_translations() ) );
+		/**
+		 * Filter the locales language packs are offered for.
+		 *
+		 * @param string[] $locales Locale codes.
+		 */
+		$locales = apply_filters( 'minimal_admin_translation_locales', $locales );
+		return array_values( array_unique( array_filter( array_map( 'strval', (array) $locales ) ) ) );
+	}
+
+	/**
+	 * Every locale a user on this site has actually picked.
+	 *
+	 * One meta query rather than a user enumeration: on a site with thousands
+	 * of users, walking them to read one meta key each is not worth a
+	 * translation check. Distinct values only, and only ones that are really
+	 * installed — a stale meta value naming a language nobody has cannot pull
+	 * a pack down.
+	 *
+	 * @return string[]
+	 */
+	protected function user_locales() {
+		global $wpdb;
+		$cached = get_transient( self::USER_LOCALES_KEY );
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+		$found = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT meta_value FROM {$wpdb->usermeta} WHERE meta_key = %s AND meta_value != '' LIMIT 50",
+				'locale'
+			)
+		);
+		$available = get_available_languages();
+		$out = array_values( array_intersect( (array) $found, $available ) );
+		set_transient( self::USER_LOCALES_KEY, $out, DAY_IN_SECONDS );
+		return $out;
+	}
+
+	/**
+	 * Version of each language pack already on disk, keyed by locale.
+	 *
+	 * Read out of Project-Id-Version ("Minimal Admin 0.30.0"), the only one of
+	 * the four headers core surfaces that can carry a version at all
+	 * (wp_get_pomo_file_data). build-packs.sh stamps it.
+	 *
+	 * This depends on packs shipping their .po. wp_get_installed_translations()
+	 * reads headers from the .po and skips any .mo with no .po beside it, so a
+	 * .mo-only pack reports as NOT INSTALLED and gets re-offered on every
+	 * check for the life of the site.
+	 *
+	 * @return array<string,string> Locale => version, '' when unreadable.
+	 */
+	protected function installed_translations() {
+		$out = array();
+		if ( ! function_exists( 'wp_get_installed_translations' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/translation-install.php';
+		}
+		if ( ! function_exists( 'wp_get_installed_translations' ) ) {
+			return $out;
+		}
+		$installed = wp_get_installed_translations( 'plugins' );
+		foreach ( (array) ( $installed[ $this->plugin_slug ] ?? array() ) as $locale => $data ) {
+			$out[ $locale ] = self::version_from_project_id( $data['Project-Id-Version'] ?? '' );
+		}
+		return $out;
+	}
+
+	/**
+	 * The version out of a gettext Project-Id-Version header.
+	 *
+	 * The convention is "<project> <version>", so take the last whitespace
+	 * separated run that looks like one. Returns '' when there is none, which
+	 * the caller treats as "unknown, offer it".
+	 *
+	 * @param string $header Raw header value.
+	 * @return string
+	 */
+	protected static function version_from_project_id( $header ) {
+		if ( ! preg_match( '/([0-9]+(?:\.[0-9]+)*(?:[-+][0-9A-Za-z.]+)?)\s*$/', trim( (string) $header ), $m ) ) {
+			return '';
+		}
+		return $m[1];
 	}
 
 	public function purge( $upgrader, $options ) {

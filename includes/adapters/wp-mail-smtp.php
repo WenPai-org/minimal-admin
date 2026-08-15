@@ -43,7 +43,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['wp-mail-smtp'] = array(
-		'label'      => 'Email',
+		'label'      => __( 'Email', 'minimal-admin' ),
 		'sub'        => 'WP Mail SMTP',
 		'icon'       => 'send',
 		'cap'        => 'manage_options',
@@ -62,10 +62,10 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'allLabel' => 'All',
 			),
 			'columns'   => array(
-				array( 'key' => 'content', 'label' => 'Event', 'format' => 'title' ),
-				array( 'key' => 'initiator', 'label' => 'Initiator', 'format' => 'text' ),
-				array( 'key' => 'type', 'label' => 'Type', 'format' => 'pill' ),
-				array( 'key' => 'created_at', 'label' => 'Date', 'format' => 'ago' ),
+				array( 'key' => 'content', 'label' => __( 'Event', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'initiator', 'label' => __( 'Initiator', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'type', 'label' => __( 'Type', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'created_at', 'label' => __( 'Date', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'detailRoute' => 'minimal-admin/v1/wp-mail-smtp/events/{id}',
@@ -140,7 +140,7 @@ add_action( 'rest_api_init', function () {
 				(int) $request['id']
 			) );
 			if ( ! $row ) {
-				return new WP_Error( 'not_found', 'Event not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Event not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			return rest_ensure_response( array(
 				'id'         => (int) $row->id,

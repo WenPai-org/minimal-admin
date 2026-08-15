@@ -38,7 +38,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	$can_edit_forms = GFCommon::current_user_can_any( array( 'gravityforms_edit_forms', 'gform_full_access' ) );
 
 	$surfaces['gravity-forms'] = array(
-		'label'      => 'Forms',
+		'label'      => __( 'Forms', 'minimal-admin' ),
 		// Shared with Fluent Forms / Elementor / WPForms adapters when present;
 		// topbar becomes a provider switcher when family size > 1.
 		'family'     => 'forms',
@@ -49,7 +49,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'icon'       => 'inbox',
 		'cap'        => 'read',
 		'collection' => array(
-			'viewLabel' => 'Entries',
+			'viewLabel' => __( 'Entries', 'minimal-admin' ),
 			'route'     => 'gf/v2/forms/{tab}/entries',
 			'allRoute'  => 'gf/v2/entries',
 			'query'     => 'sorting[key]=date_created&sorting[direction]=DESC',
@@ -65,7 +65,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			// inside the same JSON `search` criteria the search box uses, so
 			// the json form merges with it instead of clobbering the param.
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'active', 'Received' ),
 					array( 'spam', 'Spam' ),
@@ -78,13 +78,13 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'route'    => 'gf/v2/forms',
 				'valueKey' => 'id',
 				'labelKey' => 'title',
-				'allLabel' => 'All entries',
+				'allLabel' => __( 'All entries', 'minimal-admin' ),
 			),
 			'columns'   => array(
-				array( 'key' => '_summary', 'label' => 'Entry', 'format' => 'entry-summary' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
+				array( 'key' => '_summary', 'label' => __( 'Entry', 'minimal-admin' ), 'format' => 'entry-summary' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
 				// GF stores entry dates in UTC (MySQL, no zone).
-				array( 'key' => 'date_created', 'label' => 'Date', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'date_created', 'label' => __( 'Date', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				// The shim returns the whole display model: answers with the
@@ -99,27 +99,27 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			// until Minimal grows a status filter dimension.
 			'actions'   => array(
 				array(
-					'label'  => 'Star',
+					'label'  => __( 'Star', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'gf/v2/entries/{id}/properties',
 					'body'   => array( 'is_starred' => 1 ),
 					'when'   => array( 'key' => 'is_starred', 'equals' => '0' ),
 				),
 				array(
-					'label'  => 'Unstar',
+					'label'  => __( 'Unstar', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'gf/v2/entries/{id}/properties',
 					'body'   => array( 'is_starred' => 0 ),
 					'when'   => array( 'key' => 'is_starred', 'equals' => '1' ),
 				),
 				array(
-					'label'   => 'Resend notifications',
+					'label'   => __( 'Resend notifications', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'gf/v2/entries/{id}/notifications',
-					'confirm' => 'Resend this entry’s notifications (all active ones for its form)?',
+					'confirm' => __( 'Resend this entry’s notifications (all active ones for its form)?', 'minimal-admin' ),
 				),
 				array(
-					'label'  => 'Add note',
+					'label'  => __( 'Add note', 'minimal-admin' ),
 					'method' => 'POST',
 					// Shimmed: gf/v2's notes POST creates the note but then 500s
 					// preparing its own response (prepare_note_for_response returns
@@ -127,108 +127,108 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					// never exercises this route). GFAPI::add_note is reliable.
 					'route'  => 'minimal-admin/v1/gf/entries/{id}/notes',
 					'fields' => array(
-						array( 'key' => 'value', 'label' => 'Note', 'type' => 'textarea', 'rows' => 3, 'placeholder' => 'Visible on the entry here and in Gravity Forms.' ),
+						array( 'key' => 'value', 'label' => __( 'Note', 'minimal-admin' ), 'type' => 'textarea', 'rows' => 3, 'placeholder' => __( 'Visible on the entry here and in Gravity Forms.', 'minimal-admin' ) ),
 					),
 				),
 				array(
-					'label'   => 'Mark as spam',
+					'label'   => __( 'Mark as spam', 'minimal-admin' ),
 					'method'  => 'PUT',
 					'route'   => 'gf/v2/entries/{id}/properties',
 					'body'    => array( 'status' => 'spam' ),
-					'confirm' => 'Mark this entry as spam? Find it under the Spam filter.',
+					'confirm' => __( 'Mark this entry as spam? Find it under the Spam filter.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'active' ),
 				),
 				array(
-					'label'  => 'Not spam',
+					'label'  => __( 'Not spam', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'gf/v2/entries/{id}/properties',
 					'body'   => array( 'status' => 'active' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'spam' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'gf/v2/entries/{id}/properties',
 					'body'   => array( 'status' => 'active' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Trash entry',
+					'label'   => __( 'Trash entry', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'gf/v2/entries/{id}',
-					'confirm' => 'Move this entry to trash?',
+					'confirm' => __( 'Move this entry to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'active' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'gf/v2/entries/{id}?force=1',
-					'confirm' => 'Delete this entry permanently? There is no undo.',
+					'confirm' => __( 'Delete this entry permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'gf/v2/entries/{id}?force=1',
-					'confirm' => 'Delete this entry permanently? There is no undo.',
+					'confirm' => __( 'Delete this entry permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'spam' ),
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'  => 'Star',
+					'label'  => __( 'Star', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'gf/v2/entries/{id}/properties',
 					'body'   => array( 'is_starred' => 1 ),
 					'when'   => array( 'key' => 'is_starred', 'equals' => '0' ),
 				),
 				array(
-					'label'  => 'Mark read',
+					'label'  => __( 'Mark read', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'gf/v2/entries/{id}/properties',
 					'body'   => array( 'is_read' => 1 ),
 					'when'   => array( 'key' => 'is_read', 'equals' => '0' ),
 				),
 				array(
-					'label'   => 'Spam',
+					'label'   => __( 'Spam', 'minimal-admin' ),
 					'method'  => 'PUT',
 					'route'   => 'gf/v2/entries/{id}/properties',
 					'body'    => array( 'status' => 'spam' ),
-					'confirm' => 'Mark the selected entries as spam?',
+					'confirm' => __( 'Mark the selected entries as spam?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'active' ),
 				),
 				array(
-					'label'  => 'Not spam',
+					'label'  => __( 'Not spam', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'gf/v2/entries/{id}/properties',
 					'body'   => array( 'status' => 'active' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'spam' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'gf/v2/entries/{id}/properties',
 					'body'   => array( 'status' => 'active' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Trash',
+					'label'   => __( 'Trash', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'gf/v2/entries/{id}',
-					'confirm' => 'Move the selected entries to trash?',
+					'confirm' => __( 'Move the selected entries to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'active' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'gf/v2/entries/{id}?force=1',
-					'confirm' => 'Delete the selected entries permanently? There is no undo.',
+					'confirm' => __( 'Delete the selected entries permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
@@ -238,32 +238,32 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		// builder — GF's editor (field types, conditional logic, feeds) is one
 		// click away; Minimal covers the daily moves: see, toggle, jump.
 		'manage'     => array(
-			'viewLabel' => 'Forms',
+			'viewLabel' => __( 'Forms', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/gf/forms',
 			'columns'   => array(
-				array( 'key' => 'title', 'label' => 'Form', 'format' => 'title' ),
-				array( 'key' => 'entries', 'label' => 'Entries', 'format' => 'num' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
-				array( 'key' => 'date_created', 'label' => 'Created', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'title', 'label' => __( 'Form', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'entries', 'label' => __( 'Entries', 'minimal-admin' ), 'format' => 'num' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date_created', 'label' => __( 'Created', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(),
 			'actions'   => array(
 				array(
-					'label'  => 'Deactivate',
+					'label'  => __( 'Deactivate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/gf/forms/{id}/active',
 					'body'   => array( 'active' => false ),
 					'when'   => array( 'key' => 'status', 'equals' => 'active' ),
 				),
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/gf/forms/{id}/active',
 					'body'   => array( 'active' => true ),
 					'when'   => array( 'key' => 'status', 'equals' => 'inactive' ),
 				),
 				array(
-					'label' => 'Edit in Gravity Forms ↗',
+					'label' => __( 'Edit in Gravity Forms ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=gf_edit_forms&id={id}' ),
 				),
 			),
@@ -281,17 +281,17 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		// never from the view switcher. The schema is read from GF's own
 		// Settings framework at request time (the mapper below).
 		$surfaces['gravity-forms']['settings'] = array(
-			'label' => 'Form settings',
-			'tabs'  => array( array( 'id' => 'form', 'label' => 'Form settings' ) ),
+			'label' => __( 'Form settings', 'minimal-admin' ),
+			'tabs'  => array( array( 'id' => 'form', 'label' => __( 'Form settings', 'minimal-admin' ) ) ),
 			'route' => 'minimal-admin/v1/gf/forms/{id}/settings/{tab}',
 		);
 		array_unshift(
 			$surfaces['gravity-forms']['manage']['actions'],
-			array( 'label' => 'Form settings', 'settingsItem' => true )
+			array( 'label' => __( 'Form settings', 'minimal-admin' ), 'settingsItem' => true )
 		);
 		$surfaces['gravity-forms']['views'] = array(
 			array(
-				'viewLabel' => 'Notifications',
+				'viewLabel' => __( 'Notifications', 'minimal-admin' ),
 				'route'     => 'minimal-admin/v1/gf/forms/{tab}/notifications',
 				'allRoute'  => 'minimal-admin/v1/gf/notifications',
 				'pageQuery' => 'per_page=25&page={page}',
@@ -301,44 +301,44 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					'route'    => 'gf/v2/forms',
 					'valueKey' => 'id',
 					'labelKey' => 'title',
-					'allLabel' => 'All notifications',
+					'allLabel' => __( 'All notifications', 'minimal-admin' ),
 				),
 				'columns'   => array(
-					array( 'key' => 'name', 'label' => 'Notification', 'format' => 'title' ),
-					array( 'key' => 'form', 'label' => 'Form' ),
-					array( 'key' => 'event', 'label' => 'Event' ),
-					array( 'key' => 'to', 'label' => 'To' ),
-					array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
+					array( 'key' => 'name', 'label' => __( 'Notification', 'minimal-admin' ), 'format' => 'title' ),
+					array( 'key' => 'form', 'label' => __( 'Form', 'minimal-admin' ) ),
+					array( 'key' => 'event', 'label' => __( 'Event', 'minimal-admin' ) ),
+					array( 'key' => 'to', 'label' => __( 'To', 'minimal-admin' ) ),
+					array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
 				),
 				'detail'    => array(
 					'skip' => array( 'form_id', 'nid' ),
 					'edit' => array(
 						'route'  => 'minimal-admin/v1/gf/notifications/{id}',
 						'fields' => array(
-							array( 'key' => 'name', 'label' => 'Name' ),
-							array( 'key' => 'to_email', 'label' => 'Send to', 'required' => false, 'placeholder' => 'address@example.com, {admin_email} — email-type notifications only' ),
-							array( 'key' => 'subject', 'label' => 'Subject' ),
-							array( 'key' => 'message', 'label' => 'Message', 'type' => 'textarea', 'rows' => 8 ),
+							array( 'key' => 'name', 'label' => __( 'Name', 'minimal-admin' ) ),
+							array( 'key' => 'to_email', 'label' => __( 'Send to', 'minimal-admin' ), 'required' => false, 'placeholder' => __( 'address@example.com, {admin_email} — email-type notifications only', 'minimal-admin' ) ),
+							array( 'key' => 'subject', 'label' => __( 'Subject', 'minimal-admin' ) ),
+							array( 'key' => 'message', 'label' => __( 'Message', 'minimal-admin' ), 'type' => 'textarea', 'rows' => 8 ),
 						),
 					),
 				),
 				'actions'   => array(
 					array(
-						'label'  => 'Deactivate',
+						'label'  => __( 'Deactivate', 'minimal-admin' ),
 						'method' => 'POST',
 						'route'  => 'minimal-admin/v1/gf/notifications/{id}/active',
 						'body'   => array( 'active' => false ),
 						'when'   => array( 'key' => 'status', 'equals' => 'active' ),
 					),
 					array(
-						'label'  => 'Activate',
+						'label'  => __( 'Activate', 'minimal-admin' ),
 						'method' => 'POST',
 						'route'  => 'minimal-admin/v1/gf/notifications/{id}/active',
 						'body'   => array( 'active' => true ),
 						'when'   => array( 'key' => 'status', 'equals' => 'inactive' ),
 					),
 					array(
-						'label' => 'Edit in Gravity Forms ↗',
+						'label' => __( 'Edit in Gravity Forms ↗', 'minimal-admin' ),
 						'href'  => admin_url( 'admin.php?page=gf_edit_forms&view=settings&subview=notification&id={form_id}&nid={nid}' ),
 					),
 				),
@@ -358,7 +358,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			}
 		) ) {
 			$surfaces['gravity-forms']['views'][] = array(
-				'viewLabel' => 'Feeds',
+				'viewLabel' => __( 'Feeds', 'minimal-admin' ),
 				'route'     => 'minimal-admin/v1/gf/forms/{tab}/feeds',
 				'allRoute'  => 'minimal-admin/v1/gf/feeds',
 				'pageQuery' => 'per_page=25&page={page}',
@@ -368,41 +368,41 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					'route'    => 'gf/v2/forms',
 					'valueKey' => 'id',
 					'labelKey' => 'title',
-					'allLabel' => 'All feeds',
+					'allLabel' => __( 'All feeds', 'minimal-admin' ),
 				),
 				'columns'   => array(
-					array( 'key' => 'name', 'label' => 'Feed', 'format' => 'title' ),
-					array( 'key' => 'addon', 'label' => 'Add-on' ),
-					array( 'key' => 'form', 'label' => 'Form' ),
-					array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
+					array( 'key' => 'name', 'label' => __( 'Feed', 'minimal-admin' ), 'format' => 'title' ),
+					array( 'key' => 'addon', 'label' => __( 'Add-on', 'minimal-admin' ) ),
+					array( 'key' => 'form', 'label' => __( 'Form', 'minimal-admin' ) ),
+					array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
 				),
 				'detail'    => array(
 					'skip' => array( 'form_id', 'slug' ),
 				),
 				'actions'   => array(
 					array(
-						'label'  => 'Deactivate',
+						'label'  => __( 'Deactivate', 'minimal-admin' ),
 						'method' => 'POST',
 						'route'  => 'minimal-admin/v1/gf/feeds/{id}/active',
 						'body'   => array( 'active' => false ),
 						'when'   => array( 'key' => 'status', 'equals' => 'active' ),
 					),
 					array(
-						'label'  => 'Activate',
+						'label'  => __( 'Activate', 'minimal-admin' ),
 						'method' => 'POST',
 						'route'  => 'minimal-admin/v1/gf/feeds/{id}/active',
 						'body'   => array( 'active' => true ),
 						'when'   => array( 'key' => 'status', 'equals' => 'inactive' ),
 					),
 					array(
-						'label'   => 'Delete',
+						'label'   => __( 'Delete', 'minimal-admin' ),
 						'method'  => 'DELETE',
 						'route'   => 'minimal-admin/v1/gf/feeds/{id}',
-						'confirm' => 'Delete this feed permanently? The add-on stops running for its form.',
+						'confirm' => __( 'Delete this feed permanently? The add-on stops running for its form.', 'minimal-admin' ),
 						'danger'  => true,
 					),
 					array(
-						'label' => 'Edit in Gravity Forms ↗',
+						'label' => __( 'Edit in Gravity Forms ↗', 'minimal-admin' ),
 						'href'  => admin_url( 'admin.php?page=gf_edit_forms&view=settings&subview={slug}&id={form_id}&fid={id}' ),
 					),
 				),
@@ -432,7 +432,7 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$entry = GFAPI::get_entry( (int) $request['id'] );
 			if ( is_wp_error( $entry ) ) {
-				return new WP_Error( 'not_found', 'Entry not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Entry not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$form    = GFAPI::get_form( $entry['form_id'] );
 			$answers = array();
@@ -454,21 +454,21 @@ add_action( 'rest_api_init', function () {
 
 			$meta   = array();
 			$meta[] = array(
-				'label' => 'Submitted',
+				'label' => __( 'Submitted', 'minimal-admin' ),
 				'value' => date_i18n( 'M j, Y g:i a', strtotime( get_date_from_gmt( $entry['date_created'] ) ) ),
 			);
 			if ( ! empty( $entry['source_url'] ) ) {
-				$meta[] = array( 'label' => 'Source', 'value' => $entry['source_url'], 'type' => 'url' );
+				$meta[] = array( 'label' => __( 'Source', 'minimal-admin' ), 'value' => $entry['source_url'], 'type' => 'url' );
 			}
 			if ( ! empty( $entry['ip'] ) ) {
 				$meta[] = array( 'label' => 'IP', 'value' => $entry['ip'] );
 			}
 			if ( ! empty( $entry['created_by'] ) ) {
 				$user   = get_userdata( (int) $entry['created_by'] );
-				$meta[] = array( 'label' => 'User', 'value' => $user ? $user->display_name : '#' . $entry['created_by'] );
+				$meta[] = array( 'label' => __( 'User', 'minimal-admin' ), 'value' => $user ? $user->display_name : '#' . $entry['created_by'] );
 			}
 			if ( ! empty( $entry['payment_status'] ) ) {
-				$meta[] = array( 'label' => 'Payment', 'value' => trim( $entry['payment_status'] . ' ' . rgar( $entry, 'payment_amount' ) ) );
+				$meta[] = array( 'label' => __( 'Payment', 'minimal-admin' ), 'value' => trim( $entry['payment_status'] . ' ' . rgar( $entry, 'payment_amount' ) ) );
 			}
 
 			// Notes (admin + notification logs). Notification notes store raw
@@ -501,11 +501,11 @@ add_action( 'rest_api_init', function () {
 			}
 
 			$sections = array(
-				array( 'title' => 'Responses', 'rows' => $answers ),
-				array( 'title' => 'Submission', 'rows' => $meta ),
+				array( 'title' => __( 'Responses', 'minimal-admin' ), 'rows' => $answers ),
+				array( 'title' => __( 'Submission', 'minimal-admin' ), 'rows' => $meta ),
 			);
 			if ( $note_rows ) {
-				$sections[] = array( 'title' => 'Notes', 'rows' => $note_rows );
+				$sections[] = array( 'title' => __( 'Notes', 'minimal-admin' ), 'rows' => $note_rows );
 			}
 
 			return rest_ensure_response( array(
@@ -530,12 +530,12 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$entry = GFAPI::get_entry( (int) $request['id'] );
 			if ( is_wp_error( $entry ) ) {
-				return new WP_Error( 'not_found', 'Entry not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Entry not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$body  = $request->get_json_params();
 			$value = sanitize_textarea_field( (string) ( isset( $body['value'] ) ? $body['value'] : '' ) );
 			if ( '' === $value ) {
-				return new WP_Error( 'empty_note', 'Write a note first.', array( 'status' => 400 ) );
+				return new WP_Error( 'empty_note', __( 'Write a note first.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			$user    = wp_get_current_user();
 			$note_id = GFAPI::add_note( (int) $entry['id'], $user->ID, $user->display_name, $value );
@@ -583,14 +583,15 @@ add_action( 'rest_api_init', function () {
 			$to    = 'Field: ' . ( $field ? wp_strip_all_tags( GFCommon::get_label( $field ) ) : '#' . ( isset( $n['to'] ) ? $n['to'] : '?' ) );
 		} elseif ( 'routing' === $to_type ) {
 			$rules = isset( $n['routing'] ) && is_array( $n['routing'] ) ? count( $n['routing'] ) : 0;
-			$to    = sprintf( 'Routing (%d rule%s)', $rules, 1 === $rules ? '' : 's' );
+			/* translators: %d: number of routing rules on the notification. */
+			$to    = sprintf( _n( 'Routing (%d rule)', 'Routing (%d rules)', $rules, 'minimal-admin' ), $rules );
 		} else {
 			$to = '—';
 		}
 		$events = array(
-			'form_submission'           => 'Form is submitted',
-			'form_saved'                => 'Draft is saved',
-			'form_save_email_requested' => 'Draft link is requested',
+			'form_submission'           => __( 'Form is submitted', 'minimal-admin' ),
+			'form_saved'                => __( 'Draft is saved', 'minimal-admin' ),
+			'form_save_email_requested' => __( 'Draft link is requested', 'minimal-admin' ),
 		);
 		$event  = isset( $n['event'] ) && '' !== $n['event'] ? (string) $n['event'] : 'form_submission';
 		return array(
@@ -620,7 +621,7 @@ add_action( 'rest_api_init', function () {
 		if ( $form_id ) {
 			$form = GFAPI::get_form( $form_id );
 			if ( ! $form ) {
-				return new WP_Error( 'not_found', 'Form not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Form not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$forms = array( $form );
 		} else {
@@ -686,25 +687,25 @@ add_action( 'rest_api_init', function () {
 			$nid     = (string) $request['nid'];
 			$form    = GFFormsModel::get_form_meta( $form_id );
 			if ( ! $form || ! isset( $form['notifications'][ $nid ] ) ) {
-				return new WP_Error( 'not_found', 'Notification not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Notification not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$body = $request->get_json_params();
 			$n    = $form['notifications'][ $nid ];
 
 			$name = sanitize_text_field( (string) ( isset( $body['name'] ) ? $body['name'] : '' ) );
 			if ( '' === $name ) {
-				return new WP_Error( 'empty_name', 'Give the notification a name.', array( 'status' => 400 ) );
+				return new WP_Error( 'empty_name', __( 'Give the notification a name.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			// GF enforces unique names per form (its is_unique_name check).
 			foreach ( $form['notifications'] as $other_id => $other ) {
 				if ( $other_id !== $nid && isset( $other['name'] ) && strtolower( $other['name'] ) === strtolower( $name ) ) {
-					return new WP_Error( 'dup_name', 'Another notification on this form already uses that name.', array( 'status' => 400 ) );
+					return new WP_Error( 'dup_name', __( 'Another notification on this form already uses that name.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 			}
 			$n['name']    = $name;
 			$n['subject'] = sanitize_text_field( (string) ( isset( $body['subject'] ) ? $body['subject'] : '' ) );
 			if ( '' === $n['subject'] ) {
-				return new WP_Error( 'empty_subject', 'Give the notification a subject.', array( 'status' => 400 ) );
+				return new WP_Error( 'empty_subject', __( 'Give the notification a subject.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			// Message is email-body HTML; kses keeps normal markup and GF
 			// merge tags ({all_fields}) are plain text that passes untouched.
@@ -714,13 +715,14 @@ add_action( 'rest_api_init', function () {
 			$to      = trim( (string) ( isset( $body['to_email'] ) ? $body['to_email'] : '' ) );
 			if ( '' !== $to ) {
 				if ( 'email' !== $to_type ) {
-					return new WP_Error( 'not_email_type', 'This notification routes by ' . $to_type . '; edit its recipients in Gravity Forms.', array( 'status' => 400 ) );
+					return new WP_Error( 'not_email_type', __( 'This notification routes by ', 'minimal-admin' ) . $to_type . '; edit its recipients in Gravity Forms.', array( 'status' => 400 ) );
 				}
 				// GF accepts comma-separated addresses and merge tags
 				// ({admin_email}, {Email:2}) in the To field.
 				foreach ( array_map( 'trim', explode( ',', $to ) ) as $piece ) {
 					if ( ! is_email( $piece ) && ! preg_match( '/^\{[^{}]+\}$/', $piece ) ) {
-						return new WP_Error( 'bad_to', '"' . $piece . '" is not an email address or merge tag.', array( 'status' => 400 ) );
+						/* translators: %s: the rejected send-to entry. */
+						return new WP_Error( 'bad_to', sprintf( __( '"%s" is not an email address or merge tag.', 'minimal-admin' ), $piece ), array( 'status' => 400 ) );
 					}
 				}
 				$n['to'] = $to;
@@ -745,7 +747,7 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $request ) {
 				$form = GFAPI::get_form( (int) $request['id'] );
 				if ( ! $form ) {
-					return new WP_Error( 'not_found', 'Form not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Form not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				return rest_ensure_response( minimal_admin_gf_form_settings_shape( $form ) );
 			},
@@ -768,7 +770,7 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$id = (int) $request['id'];
 			if ( ! GFAPI::form_id_exists( $id ) ) {
-				return new WP_Error( 'not_found', 'Form not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Form not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			GFAPI::update_forms_property( array( $id ), 'is_active', $request['active'] ? '1' : '0' );
 			return rest_ensure_response( array( 'id' => $id, 'status' => $request['active'] ? 'active' : 'inactive' ) );
@@ -861,12 +863,12 @@ add_action( 'rest_api_init', function () {
 			$id    = (int) $request['id'];
 			$feeds = GFAPI::get_feeds( array( $id ), null, null, null );
 			if ( is_wp_error( $feeds ) || empty( $feeds ) ) {
-				return new WP_Error( 'not_found', 'Feed not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Feed not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			// GF's own property write (their model, their column).
 			$ok = GFFormsModel::update_feed_property( $id, 'is_active', $request['active'] ? 1 : 0 );
 			if ( ! $ok ) {
-				return new WP_Error( 'toggle_failed', 'Gravity Forms refused the change.', array( 'status' => 500 ) );
+				return new WP_Error( 'toggle_failed', __( 'Gravity Forms refused the change.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
 			return rest_ensure_response( array( 'id' => $id, 'status' => $request['active'] ? 'active' : 'inactive' ) );
 		},
@@ -878,7 +880,7 @@ add_action( 'rest_api_init', function () {
 			$id    = (int) $request['id'];
 			$feeds = GFAPI::get_feeds( array( $id ), null, null, null );
 			if ( is_wp_error( $feeds ) || empty( $feeds ) ) {
-				return new WP_Error( 'not_found', 'Feed not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Feed not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$deleted = GFAPI::delete_feed( $id );
 			if ( is_wp_error( $deleted ) ) {
@@ -1106,7 +1108,7 @@ function minimal_admin_gf_map_form_settings( $form ) {
 						$sname            = (string) $select['name'];
 						$options          = $options_of( isset( $select['choices'] ) ? $select['choices'] : array() );
 						if ( $options ) {
-							$outs = array( 'key' => $sname, 'label' => 'Period', 'type' => 'select', 'options' => $options );
+							$outs = array( 'key' => $sname, 'label' => __( 'Period', 'minimal-admin' ), 'type' => 'select', 'options' => $options );
 							if ( $show ) {
 								$outs['showWhen'] = $show;
 							}
@@ -1161,7 +1163,7 @@ function minimal_admin_gf_form_settings_shape( $form ) {
 function minimal_admin_gf_form_settings_save( WP_REST_Request $request ) {
 	$form = GFAPI::get_form( (int) $request['id'] );
 	if ( ! $form ) {
-		return new WP_Error( 'not_found', 'Form not found.', array( 'status' => 404 ) );
+		return new WP_Error( 'not_found', __( 'Form not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 	$body = $request->get_json_params();
 	$vals = isset( $body['values'] ) && is_array( $body['values'] ) ? $body['values'] : array();
@@ -1174,11 +1176,11 @@ function minimal_admin_gf_form_settings_save( WP_REST_Request $request ) {
 	if ( array_key_exists( 'title', $vals ) ) {
 		$title = sanitize_text_field( (string) $vals['title'] );
 		if ( '' === $title ) {
-			return new WP_Error( 'empty_title', 'Give the form a title.', array( 'status' => 400 ) );
+			return new WP_Error( 'empty_title', __( 'Give the form a title.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		foreach ( GFFormsModel::get_forms() as $f ) {
 			if ( (int) $f->id !== (int) $form['id'] && strtolower( $f->title ) === strtolower( $title ) ) {
-				return new WP_Error( 'dup_title', 'Another form already uses that title.', array( 'status' => 400 ) );
+				return new WP_Error( 'dup_title', __( 'Another form already uses that title.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 		}
 		$vals['title'] = $title;
@@ -1200,7 +1202,8 @@ function minimal_admin_gf_form_settings_save( WP_REST_Request $request ) {
 				break;
 			case 'select':
 				if ( ! in_array( (string) $value, array_map( 'strval', $s['options'] ), true ) ) {
-					return new WP_Error( 'bad_choice', '"' . $value . '" is not one of the choices for ' . $key . '.', array( 'status' => 400 ) );
+					/* translators: 1: the rejected value, 2: the setting key. */
+					return new WP_Error( 'bad_choice', sprintf( __( '"%1$s" is not one of the choices for %2$s.', 'minimal-admin' ), $value, $key ), array( 'status' => 400 ) );
 				}
 				$value = (string) $value;
 				break;

@@ -75,7 +75,7 @@ function minimal_admin_elementor_forms_item( $sub ) {
 
 	return array(
 		'id'        => (int) $sub['id'],
-		'summary'   => $parts ? implode( ' · ', $parts ) : '(empty submission)',
+		'summary'   => $parts ? implode( ' · ', $parts ) : __( '(empty submission)', 'minimal-admin' ),
 		'form_name' => $form_name ?: 'Form',
 		'form_key'  => $form_key,
 		'status'    => $status,
@@ -95,14 +95,14 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['elementor-forms'] = array(
-		'label'      => 'Forms',
+		'label'      => __( 'Forms', 'minimal-admin' ),
 		'family'     => 'forms',
 		'group'      => 'workspace', // inbox-shaped (see gravity-forms.php)
 		'sub'        => 'Elementor',
 		'icon'       => 'inbox',
 		'cap'        => 'read', // real gating above + in the shim.
 		'collection' => array(
-			'viewLabel' => 'Entries',
+			'viewLabel' => __( 'Entries', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/elementor/submissions',
 			'pageQuery' => 'per_page=25&page={page}',
 			'search'    => 'search={q}',
@@ -113,11 +113,11 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'valueKey' => 'id',
 				'labelKey' => 'title',
 				'param'    => 'form',
-				'allLabel' => 'All entries',
+				'allLabel' => __( 'All entries', 'minimal-admin' ),
 			),
 			// Their Query filter_status: all (not trash) / unread / read / trash.
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'all', 'Received' ),
 					array( 'unread', 'Unread' ),
@@ -127,68 +127,68 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'query'   => 'status={v}',
 			),
 			'columns'   => array(
-				array( 'key' => 'summary', 'label' => 'Entry', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'form_name', 'label' => 'Form' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill', 'width' => '100px' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'summary', 'label' => __( 'Entry', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'form_name', 'label' => __( 'Form', 'minimal-admin' ) ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '100px' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/elementor/submissions/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Mark as read',
+					'label'  => __( 'Mark as read', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/elementor/submissions/{id}/read',
 					'when'   => array( 'key' => 'status', 'equals' => 'unread' ),
 				),
 				array(
-					'label'   => 'Trash submission',
+					'label'   => __( 'Trash submission', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/elementor/submissions/{id}/trash',
-					'confirm' => 'Move this submission to trash?',
+					'confirm' => __( 'Move this submission to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'inbox' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/elementor/submissions/{id}/restore',
 					'when'   => array( 'key' => 'bucket', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/elementor/submissions/{id}',
-					'confirm' => 'Delete this submission permanently? There is no undo.',
+					'confirm' => __( 'Delete this submission permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'trash' ),
 				),
 				array(
-					'label' => 'Open in Elementor ↗',
+					'label' => __( 'Open in Elementor ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=e-form-submissions#/form-submissions/{id}' ),
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'   => 'Trash',
+					'label'   => __( 'Trash', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/elementor/submissions/{id}/trash',
-					'confirm' => 'Move the selected submissions to trash?',
+					'confirm' => __( 'Move the selected submissions to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'inbox' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/elementor/submissions/{id}/restore',
 					'when'   => array( 'key' => 'bucket', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/elementor/submissions/{id}',
-					'confirm' => 'Delete the selected submissions permanently?',
+					'confirm' => __( 'Delete the selected submissions permanently?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'trash' ),
 				),
@@ -287,7 +287,7 @@ add_action( 'rest_api_init', function () {
 				$query = \ElementorPro\Modules\Forms\Submissions\Database\Query::get_instance();
 				$raw   = $query->get_submission( (int) $request['id'] );
 				if ( ! $raw || empty( $raw['data'] ) ) {
-					return new WP_Error( 'not_found', 'Submission not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Submission not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$sub = $raw['data'];
 
@@ -322,17 +322,17 @@ add_action( 'rest_api_init', function () {
 
 				$meta   = array();
 				$meta[] = array(
-					'label' => 'Submitted',
+					'label' => __( 'Submitted', 'minimal-admin' ),
 					'value' => ! empty( $sub['created_at'] )
 						? date_i18n( 'M j, Y g:i a', strtotime( $sub['created_at'] ) )
 						: '',
 				);
 				if ( ! empty( $sub['form']['name'] ) ) {
-					$meta[] = array( 'label' => 'Form', 'value' => $sub['form']['name'] );
+					$meta[] = array( 'label' => __( 'Form', 'minimal-admin' ), 'value' => $sub['form']['name'] );
 				}
 				if ( ! empty( $sub['referer'] ) ) {
 					$meta[] = array(
-						'label' => 'Page',
+						'label' => __( 'Page', 'minimal-admin' ),
 						'value' => ! empty( $sub['referer_title'] )
 							? $sub['referer_title'] . ' · ' . $sub['referer']
 							: $sub['referer'],
@@ -343,7 +343,7 @@ add_action( 'rest_api_init', function () {
 					$meta[] = array( 'label' => 'IP', 'value' => $sub['user_ip'] );
 				}
 				if ( ! empty( $sub['user_name'] ) ) {
-					$meta[] = array( 'label' => 'User', 'value' => $sub['user_name'] );
+					$meta[] = array( 'label' => __( 'User', 'minimal-admin' ), 'value' => $sub['user_name'] );
 				}
 
 				$item = minimal_admin_elementor_forms_item( $sub );
@@ -360,8 +360,8 @@ add_action( 'rest_api_init', function () {
 					'title'    => $item['form_name'] ?: 'Submission',
 					'status'   => $item['status'],
 					'sections' => array(
-						array( 'title' => 'Responses', 'rows' => $answers ),
-						array( 'title' => 'Submission', 'rows' => $meta ),
+						array( 'title' => __( 'Responses', 'minimal-admin' ), 'rows' => $answers ),
+						array( 'title' => __( 'Submission', 'minimal-admin' ), 'rows' => $meta ),
 					),
 					'adminUrl' => admin_url( 'admin.php?page=e-form-submissions#/form-submissions/' . (int) $sub['id'] ),
 				) );
@@ -375,17 +375,17 @@ add_action( 'rest_api_init', function () {
 				$id    = (int) $request['id'];
 				$raw   = $query->get_submission( $id );
 				if ( ! $raw || empty( $raw['data'] ) ) {
-					return new WP_Error( 'not_found', 'Submission not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Submission not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				// Permanent delete only for trashed rows (Received → Trash first).
 				if ( empty( $raw['data']['status'] ) || 'trash' !== $raw['data']['status'] ) {
-					return new WP_Error( 'not_trashed', 'Move the submission to trash before deleting permanently.', array( 'status' => 400 ) );
+					return new WP_Error( 'not_trashed', __( 'Move the submission to trash before deleting permanently.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				$ok = $query->delete_submission( $id );
 				if ( false === $ok ) {
-					return new WP_Error( 'delete_failed', 'Could not delete submission.', array( 'status' => 500 ) );
+					return new WP_Error( 'delete_failed', __( 'Could not delete submission.', 'minimal-admin' ), array( 'status' => 500 ) );
 				}
-				return rest_ensure_response( array( 'id' => $id, 'deleted' => true, 'message' => 'Submission deleted permanently.' ) );
+				return rest_ensure_response( array( 'id' => $id, 'deleted' => true, 'message' => __( 'Submission deleted permanently.', 'minimal-admin' ) ) );
 			},
 		),
 	) );
@@ -398,13 +398,13 @@ add_action( 'rest_api_init', function () {
 			$id    = (int) $request['id'];
 			$raw   = $query->get_submission( $id );
 			if ( ! $raw || empty( $raw['data'] ) ) {
-				return new WP_Error( 'not_found', 'Submission not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Submission not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$ok = $query->move_to_trash_submission( $id );
 			if ( false === $ok ) {
-				return new WP_Error( 'trash_failed', 'Could not trash submission.', array( 'status' => 500 ) );
+				return new WP_Error( 'trash_failed', __( 'Could not trash submission.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
-			return rest_ensure_response( array( 'id' => $id, 'status' => 'trash', 'message' => 'Moved to trash.' ) );
+			return rest_ensure_response( array( 'id' => $id, 'status' => 'trash', 'message' => __( 'Moved to trash.', 'minimal-admin' ) ) );
 		},
 	) );
 
@@ -416,13 +416,13 @@ add_action( 'rest_api_init', function () {
 			$id    = (int) $request['id'];
 			$raw   = $query->get_submission( $id );
 			if ( ! $raw || empty( $raw['data'] ) ) {
-				return new WP_Error( 'not_found', 'Submission not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Submission not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$ok = $query->restore( $id );
 			if ( false === $ok ) {
-				return new WP_Error( 'restore_failed', 'Could not restore submission.', array( 'status' => 500 ) );
+				return new WP_Error( 'restore_failed', __( 'Could not restore submission.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
-			return rest_ensure_response( array( 'id' => $id, 'status' => 'unread', 'message' => 'Submission restored.' ) );
+			return rest_ensure_response( array( 'id' => $id, 'status' => 'unread', 'message' => __( 'Submission restored.', 'minimal-admin' ) ) );
 		},
 	) );
 
@@ -434,10 +434,10 @@ add_action( 'rest_api_init', function () {
 			$id    = (int) $request['id'];
 			$raw   = $query->get_submission( $id );
 			if ( ! $raw || empty( $raw['data'] ) ) {
-				return new WP_Error( 'not_found', 'Submission not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Submission not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$query->update_submission( $id, array( 'is_read' => 1 ) );
-			return rest_ensure_response( array( 'id' => $id, 'status' => 'read', 'message' => 'Marked as read.' ) );
+			return rest_ensure_response( array( 'id' => $id, 'status' => 'read', 'message' => __( 'Marked as read.', 'minimal-admin' ) ) );
 		},
 	) );
 } );

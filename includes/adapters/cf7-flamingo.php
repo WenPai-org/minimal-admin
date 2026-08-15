@@ -78,22 +78,30 @@ function minimal_admin_flamingo_status_model() {
 	$forms  = count( minimal_admin_flamingo_channels() );
 	$bits   = array();
 	if ( $spam ) {
-		$bits[] = number_format_i18n( $spam ) . ' spam';
+		$bits[] = sprintf(
+			/* translators: %s: number of spam messages. */
+			__( '%s spam', 'minimal-admin' ),
+			number_format_i18n( $spam )
+		);
 	}
 	if ( $trash ) {
-		$bits[] = number_format_i18n( $trash ) . ' in trash';
+		$bits[] = sprintf(
+			/* translators: %s: number of messages in the trash. */
+			__( '%s in trash', 'minimal-admin' ),
+			number_format_i18n( $trash )
+		);
 	}
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Inbox messages',
+				'label' => __( 'Inbox messages', 'minimal-admin' ),
 				'value' => number_format_i18n( $inbox ),
-				'hint'  => $bits ? implode( ', ', $bits ) : 'All stored messages',
+				'hint'  => $bits ? implode( ', ', $bits ) : __( 'All stored messages', 'minimal-admin' ),
 			),
-			array( 'label' => 'Forms', 'value' => number_format_i18n( $forms ) ),
+			array( 'label' => __( 'Forms', 'minimal-admin' ), 'value' => number_format_i18n( $forms ) ),
 		),
 		'actions' => array(
-			array( 'label' => 'Open Flamingo ↗', 'href' => admin_url( 'admin.php?page=flamingo_inbound' ) ),
+			array( 'label' => __( 'Open Flamingo ↗', 'minimal-admin' ), 'href' => admin_url( 'admin.php?page=flamingo_inbound' ) ),
 		),
 	);
 }
@@ -105,7 +113,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	$cf7 = defined( 'WPCF7_VERSION' );
 
 	$surfaces['cf7'] = array(
-		'label'      => 'Forms',
+		'label'      => __( 'Forms', 'minimal-admin' ),
 		'family'     => 'forms',
 		'group'      => 'workspace', // inbox-shaped (see gravity-forms.php)
 		'sub'        => $cf7 ? 'Contact Form 7' : 'Flamingo',
@@ -113,7 +121,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'icon'       => 'inbox',
 		'cap'        => 'read',
 		'collection' => array(
-			'viewLabel' => 'Messages',
+			'viewLabel' => __( 'Messages', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/cf7/messages',
 			'pageQuery' => 'per_page=25&page={page}',
 			'search'    => 'search={q}',
@@ -124,11 +132,11 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'valueKey' => 'id',
 				'labelKey' => 'title',
 				'param'    => 'channel_id',
-				'allLabel' => 'All messages',
+				'allLabel' => __( 'All messages', 'minimal-admin' ),
 			),
 			// flamingo-spam is exclude_from_search; trash is core trash — three buckets.
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'inbox', 'Received' ),
 					array( 'spam', 'Spam' ),
@@ -137,89 +145,89 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'query'   => 'status={v}',
 			),
 			'columns'   => array(
-				array( 'key' => 'from', 'label' => 'From', 'format' => 'title', 'width' => 'minmax(0,1.2fr)' ),
-				array( 'key' => 'subject', 'label' => 'Subject', 'width' => 'minmax(0,1.4fr)' ),
-				array( 'key' => 'form', 'label' => 'Form' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill', 'width' => '96px' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'from', 'label' => __( 'From', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.2fr)' ),
+				array( 'key' => 'subject', 'label' => __( 'Subject', 'minimal-admin' ), 'width' => 'minmax(0,1.4fr)' ),
+				array( 'key' => 'form', 'label' => __( 'Form', 'minimal-admin' ) ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '96px' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/cf7/messages/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Mark as spam',
+					'label'  => __( 'Mark as spam', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/cf7/messages/{id}/spam',
 					'when'   => array( 'key' => 'bucket', 'equals' => 'inbox' ),
 				),
 				array(
-					'label'  => 'Not spam',
+					'label'  => __( 'Not spam', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/cf7/messages/{id}/unspam',
 					'when'   => array( 'key' => 'bucket', 'equals' => 'spam' ),
 				),
 				array(
-					'label'   => 'Trash message',
+					'label'   => __( 'Trash message', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/cf7/messages/{id}/trash',
-					'confirm' => 'Move this message to trash?',
+					'confirm' => __( 'Move this message to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'inbox' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/cf7/messages/{id}/restore',
 					'when'   => array( 'key' => 'bucket', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/cf7/messages/{id}?force=1',
-					'confirm' => 'Delete this message permanently? There is no undo.',
+					'confirm' => __( 'Delete this message permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/cf7/messages/{id}?force=1',
-					'confirm' => 'Delete this message permanently? There is no undo.',
+					'confirm' => __( 'Delete this message permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'spam' ),
 				),
 				array(
-					'label' => 'Open in Flamingo ↗',
+					'label' => __( 'Open in Flamingo ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=flamingo_inbound&post={id}&action=edit' ),
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'  => 'Mark as spam',
+					'label'  => __( 'Mark as spam', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/cf7/messages/{id}/spam',
 					'when'   => array( 'key' => 'bucket', 'equals' => 'inbox' ),
 				),
 				array(
-					'label'   => 'Trash',
+					'label'   => __( 'Trash', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/cf7/messages/{id}/trash',
-					'confirm' => 'Move the selected messages to trash?',
+					'confirm' => __( 'Move the selected messages to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'inbox' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/cf7/messages/{id}/restore',
 					'when'   => array( 'key' => 'bucket', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/cf7/messages/{id}?force=1',
-					'confirm' => 'Delete the selected messages permanently?',
+					'confirm' => __( 'Delete the selected messages permanently?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'trash' ),
 				),
@@ -229,20 +237,20 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 
 	if ( $cf7 ) {
 		$surfaces['cf7']['manage'] = array(
-			'viewLabel' => 'Forms',
+			'viewLabel' => __( 'Forms', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/cf7/forms',
 			'itemsKey'  => 'items',
 			'totalKey'  => 'total',
 			'columns'   => array(
-				array( 'key' => 'title', 'label' => 'Form', 'format' => 'title' ),
-				array( 'key' => 'shortcode', 'label' => 'Shortcode', 'format' => 'mono', 'width' => 'minmax(0,1fr)' ),
-				array( 'key' => 'messages', 'label' => 'Messages', 'format' => 'num' ),
-				array( 'key' => 'date', 'label' => 'Updated', 'format' => 'ago' ),
+				array( 'key' => 'title', 'label' => __( 'Form', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'shortcode', 'label' => __( 'Shortcode', 'minimal-admin' ), 'format' => 'mono', 'width' => 'minmax(0,1fr)' ),
+				array( 'key' => 'messages', 'label' => __( 'Messages', 'minimal-admin' ), 'format' => 'num' ),
+				array( 'key' => 'date', 'label' => __( 'Updated', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(),
 			'actions'   => array(
 				array(
-					'label' => 'Edit in Contact Form 7 ↗',
+					'label' => __( 'Edit in Contact Form 7 ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=wpcf7&post={id}&action=edit' ),
 				),
 			),
@@ -347,8 +355,8 @@ add_action( 'rest_api_init', function () {
 				$status = 'trash' === $bucket ? 'trash' : minimal_admin_flamingo_status( $msg );
 				$items[] = array(
 					'id'      => (int) $msg->id(),
-					'from'    => $msg->from_name ?: ( $msg->from_email ?: '(unknown sender)' ),
-					'subject' => $msg->subject ?: '(no subject)',
+					'from'    => $msg->from_name ?: ( $msg->from_email ?: __( '(unknown sender)', 'minimal-admin' ) ),
+					'subject' => $msg->subject ?: __( '(no subject)', 'minimal-admin' ),
 					'form'    => $channel_names[ (string) $msg->channel ] ?? (string) $msg->channel,
 					'status'  => $status,
 					'bucket'  => $bucket,
@@ -373,7 +381,7 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $request ) {
 				$post = get_post( (int) $request['id'] );
 				if ( ! $post || Flamingo_Inbound_Message::post_type !== $post->post_type ) {
-					return new WP_Error( 'not_found', 'Message not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Message not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$msg = new Flamingo_Inbound_Message( $post );
 
@@ -400,7 +408,7 @@ add_action( 'rest_api_init', function () {
 
 				$meta = array(
 					array(
-						'label' => 'Submitted',
+						'label' => __( 'Submitted', 'minimal-admin' ),
 						'value' => date_i18n( 'M j, Y g:i a', strtotime( $post->post_date ) ),
 					),
 				);
@@ -409,20 +417,20 @@ add_action( 'rest_api_init', function () {
 					$channel_names[ $c['slug'] ] = $c['title'];
 				}
 				if ( $msg->channel ) {
-					$meta[] = array( 'label' => 'Form', 'value' => $channel_names[ (string) $msg->channel ] ?? (string) $msg->channel );
+					$meta[] = array( 'label' => __( 'Form', 'minimal-admin' ), 'value' => $channel_names[ (string) $msg->channel ] ?? (string) $msg->channel );
 				}
 				if ( $msg->from ) {
-					$meta[] = array( 'label' => 'From', 'value' => (string) $msg->from );
+					$meta[] = array( 'label' => __( 'From', 'minimal-admin' ), 'value' => (string) $msg->from );
 				}
 				$extra = (array) $msg->meta; // CF7's special mail tags: url, remote_ip, user_agent…
 				if ( ! empty( $extra['url'] ) ) {
-					$meta[] = array( 'label' => 'Source', 'value' => (string) $extra['url'], 'type' => 'url' );
+					$meta[] = array( 'label' => __( 'Source', 'minimal-admin' ), 'value' => (string) $extra['url'], 'type' => 'url' );
 				}
 				if ( ! empty( $extra['remote_ip'] ) ) {
 					$meta[] = array( 'label' => 'IP', 'value' => (string) $extra['remote_ip'] );
 				}
 				if ( ! empty( $extra['user_agent'] ) ) {
-					$meta[] = array( 'label' => 'Client', 'value' => (string) $extra['user_agent'] );
+					$meta[] = array( 'label' => __( 'Client', 'minimal-admin' ), 'value' => (string) $extra['user_agent'] );
 				}
 				if ( $msg->spam ) {
 					$log = array();
@@ -431,7 +439,7 @@ add_action( 'rest_api_init', function () {
 							$log[] = (string) $entry['reason'];
 						}
 					}
-					$meta[] = array( 'label' => 'Spam', 'value' => $log ? implode( ' · ', $log ) : 'Marked as spam' );
+					$meta[] = array( 'label' => __( 'Spam', 'minimal-admin' ), 'value' => $log ? implode( ' · ', $log ) : 'Marked as spam' );
 				}
 
 				return rest_ensure_response( array(
@@ -439,8 +447,8 @@ add_action( 'rest_api_init', function () {
 					'title'    => $msg->subject ?: 'Message',
 					'status'   => minimal_admin_flamingo_status( $msg ),
 					'sections' => array(
-						array( 'title' => 'Responses', 'rows' => $answers ),
-						array( 'title' => 'Submission', 'rows' => $meta ),
+						array( 'title' => __( 'Responses', 'minimal-admin' ), 'rows' => $answers ),
+						array( 'title' => __( 'Submission', 'minimal-admin' ), 'rows' => $meta ),
 					),
 					'adminUrl' => admin_url( 'admin.php?page=flamingo_inbound&post=' . (int) $msg->id() . '&action=edit' ),
 				) );
@@ -454,17 +462,17 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $request ) {
 				$post = get_post( (int) $request['id'] );
 				if ( ! $post || Flamingo_Inbound_Message::post_type !== $post->post_type ) {
-					return new WP_Error( 'not_found', 'Message not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Message not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$msg   = new Flamingo_Inbound_Message( $post );
 				$force = ! empty( $request['force'] ) || 'trash' === $post->post_status || ! empty( $msg->spam );
 				if ( $force ) {
 					// Permanent delete (their delete() / force-delete post).
 					$msg->delete();
-					return rest_ensure_response( array( 'id' => (int) $request['id'], 'deleted' => true, 'message' => 'Message deleted permanently.' ) );
+					return rest_ensure_response( array( 'id' => (int) $request['id'], 'deleted' => true, 'message' => __( 'Message deleted permanently.', 'minimal-admin' ) ) );
 				}
 				$msg->trash();
-				return rest_ensure_response( array( 'id' => (int) $request['id'], 'trashed' => true, 'message' => 'Moved to trash.' ) );
+				return rest_ensure_response( array( 'id' => (int) $request['id'], 'trashed' => true, 'message' => __( 'Moved to trash.', 'minimal-admin' ) ) );
 			},
 		),
 	) );
@@ -478,7 +486,7 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $request ) use ( $op ) {
 				$post = get_post( (int) $request['id'] );
 				if ( ! $post || Flamingo_Inbound_Message::post_type !== $post->post_type ) {
-					return new WP_Error( 'not_found', 'Message not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Message not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$msg = new Flamingo_Inbound_Message( $post );
 				// Their own handlers (Akismet submit rides along like their UI).
@@ -486,7 +494,7 @@ add_action( 'rest_api_init', function () {
 				return rest_ensure_response( array(
 					'id'      => (int) $request['id'],
 					'ok'      => true,
-					'message' => 'spam' === $op ? 'Marked as spam.' : 'Marked not spam.',
+					'message' => __( 'spam', 'minimal-admin' ) === $op ? 'Marked as spam.' : 'Marked not spam.',
 				) );
 			},
 		) );
@@ -500,11 +508,11 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$post = get_post( (int) $request['id'] );
 			if ( ! $post || Flamingo_Inbound_Message::post_type !== $post->post_type ) {
-				return new WP_Error( 'not_found', 'Message not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Message not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$msg = new Flamingo_Inbound_Message( $post );
 			$msg->trash();
-			return rest_ensure_response( array( 'id' => (int) $request['id'], 'ok' => true, 'message' => 'Moved to trash.' ) );
+			return rest_ensure_response( array( 'id' => (int) $request['id'], 'ok' => true, 'message' => __( 'Moved to trash.', 'minimal-admin' ) ) );
 		},
 	) );
 
@@ -517,14 +525,14 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$post = get_post( (int) $request['id'] );
 			if ( ! $post || Flamingo_Inbound_Message::post_type !== $post->post_type ) {
-				return new WP_Error( 'not_found', 'Message not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Message not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			if ( 'trash' !== $post->post_status ) {
-				return new WP_Error( 'not_trashed', 'Only trashed messages can be restored.', array( 'status' => 400 ) );
+				return new WP_Error( 'not_trashed', __( 'Only trashed messages can be restored.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			$msg = new Flamingo_Inbound_Message( $post );
 			$msg->untrash();
-			return rest_ensure_response( array( 'id' => (int) $request['id'], 'ok' => true, 'message' => 'Message restored.' ) );
+			return rest_ensure_response( array( 'id' => (int) $request['id'], 'ok' => true, 'message' => __( 'Message restored.', 'minimal-admin' ) ) );
 		},
 	) );
 
@@ -560,7 +568,7 @@ add_action( 'rest_api_init', function () {
 			foreach ( $query->posts as $post ) {
 				$items[] = array(
 					'id'        => (int) $post->ID,
-					'title'     => $post->post_title ?: '(untitled form)',
+					'title'     => $post->post_title ?: __( '(untitled form)', 'minimal-admin' ),
 					'shortcode' => sprintf( '[contact-form-7 id="%d"]', $post->ID ),
 					'messages'  => $counts[ $post->post_name ] ?? 0,
 					'date'      => str_replace( ' ', 'T', $post->post_modified ),

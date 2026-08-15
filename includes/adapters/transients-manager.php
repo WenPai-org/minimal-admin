@@ -81,8 +81,13 @@ function minimal_admin_tm_type( $raw ) {
 		return 'serialized';
 	}
 	$trim = trim( $raw );
-	if ( ( '{' === $trim[0] || '[' === $trim[0] ) && null !== json_decode( $trim ) ) {
-		return 'json';
+	// A whitespace-only value survives the empty check above but trims to '',
+	// and indexing offset 0 of that warns on PHP 8. With display_errors on
+	// that warning prepends to the REST body and breaks the JSON parse.
+	if ( 0 === strpos( $trim, '{' ) || 0 === strpos( $trim, '[' ) ) {
+		if ( null !== json_decode( $trim ) ) {
+			return 'json';
+		}
 	}
 	if ( is_numeric( $raw ) ) {
 		if ( 10 === strlen( $raw ) && (int) $raw > 1000000000 ) {
@@ -238,7 +243,7 @@ function minimal_admin_tm_detail( $id ) {
 		(int) $id
 	) );
 	if ( ! $row || false === strpos( $row->option_name, '_transient_' ) || false !== strpos( $row->option_name, '_timeout_' ) ) {
-		return new WP_Error( 'not_found', 'Transient not found.', array( 'status' => 404 ) );
+		return new WP_Error( 'not_found', __( 'Transient not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 
 	$now     = time();
@@ -252,25 +257,26 @@ function minimal_admin_tm_detail( $id ) {
 	}
 	if ( in_array( $item['type'], array( 'array', 'object', 'serialized' ), true ) ) {
 		// Opaque by design — length only, so Minimal never materializes the payload.
-		$show = '(serialized ' . $item['type'] . ', ' . number_format_i18n( strlen( $raw ) ) . ' bytes — open Transients Manager to inspect)';
+		/* translators: 1: value type (array, object or serialized), 2: formatted byte count. */
+		$show = sprintf( __( '(serialized %1$s, %2$s bytes — open Transients Manager to inspect)', 'minimal-admin' ), $item['type'], number_format_i18n( strlen( $raw ) ) );
 	}
 
 	$meta = array(
-		array( 'label' => 'Name', 'value' => $item['name'] ),
-		array( 'label' => 'Scope', 'value' => $item['scope'] ),
-		array( 'label' => 'Type', 'value' => $item['type'] ),
-		array( 'label' => 'Size', 'value' => $item['size'] ),
-		array( 'label' => 'Status', 'value' => $item['status'] ),
-		array( 'label' => 'Expires', 'value' => $item['date'] ? $item['date'] : 'Never (persistent)' ),
-		array( 'label' => 'Option key', 'value' => $row->option_name ),
-		array( 'label' => 'Value', 'value' => $show ),
+		array( 'label' => __( 'Name', 'minimal-admin' ), 'value' => $item['name'] ),
+		array( 'label' => __( 'Scope', 'minimal-admin' ), 'value' => $item['scope'] ),
+		array( 'label' => __( 'Type', 'minimal-admin' ), 'value' => $item['type'] ),
+		array( 'label' => __( 'Size', 'minimal-admin' ), 'value' => $item['size'] ),
+		array( 'label' => __( 'Status', 'minimal-admin' ), 'value' => $item['status'] ),
+		array( 'label' => __( 'Expires', 'minimal-admin' ), 'value' => $item['date'] ? $item['date'] : 'Never (persistent)' ),
+		array( 'label' => __( 'Option key', 'minimal-admin' ), 'value' => $row->option_name ),
+		array( 'label' => __( 'Value', 'minimal-admin' ), 'value' => $show ),
 	);
 
 	return array(
 		'title'    => $item['name'],
 		'status'   => $item['status'],
 		'sections' => array(
-			array( 'title' => 'Transient', 'rows' => $meta ),
+			array( 'title' => __( 'Transient', 'minimal-admin' ), 'rows' => $meta ),
 		),
 		'adminUrl' => minimal_admin_tm_admin_url(),
 	);
@@ -303,39 +309,39 @@ function minimal_admin_tm_status_model() {
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Transients',
+				'label' => __( 'Transients', 'minimal-admin' ),
 				'value' => number_format_i18n( $total ),
-				'hint'  => 'In the options table (blog-level)',
+				'hint'  => __( 'In the options table (blog-level)', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'Expired',
+				'label' => __( 'Expired', 'minimal-admin' ),
 				'value' => number_format_i18n( $expired ),
-				'hint'  => $expired ? 'Safe to purge' : 'None past due',
+				'hint'  => $expired ? __( 'Safe to purge', 'minimal-admin' ) : __( 'None past due', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'Auto-cleanup',
-				'value' => $next_cron ? gmdate( 'Y-m-d H:i', $next_cron ) . ' UTC' : 'Not scheduled',
-				'hint'  => 'WordPress delete_expired_transients cron',
+				'label' => __( 'Auto-cleanup', 'minimal-admin' ),
+				'value' => $next_cron ? gmdate( 'Y-m-d H:i', $next_cron ) . ' UTC' : __( 'Not scheduled', 'minimal-admin' ),
+				'hint'  => __( 'WordPress delete_expired_transients cron', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'Writes',
+				'label' => __( 'Writes', 'minimal-admin' ),
 				'value' => $suspended ? 'Suspended' : 'Allowed',
-				'hint'  => $suspended ? 'Transients Manager is blocking sets' : 'Normal',
+				'hint'  => $suspended ? __( 'Transients Manager is blocking sets', 'minimal-admin' ) : 'Normal',
 			),
 			array(
-				'label' => 'Transients Manager',
+				'label' => __( 'Transients Manager', 'minimal-admin' ),
 				'value' => (string) $ver,
 			),
 		),
 		'actions' => array(
 			array(
-				'label'   => 'Delete expired',
+				'label'   => __( 'Delete expired', 'minimal-admin' ),
 				'method'  => 'POST',
 				'route'   => 'minimal-admin/v1/transients/delete-expired',
-				'confirm' => 'Delete all expired transients? Active ones are kept.',
+				'confirm' => __( 'Delete all expired transients? Active ones are kept.', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'Open Transients Manager ↗',
+				'label' => __( 'Open Transients Manager ↗', 'minimal-admin' ),
 				'href'  => minimal_admin_tm_admin_url(),
 			),
 		),
@@ -348,7 +354,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['transients-manager'] = array(
-		'label'      => 'Diagnostics',
+		'label'      => __( 'Diagnostics', 'minimal-admin' ),
 		'sub'        => 'Transients',
 		'family'     => 'diagnostics',
 		'icon'       => 'activity',
@@ -356,7 +362,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'group'      => 'tools',
 		'status'     => array( 'route' => 'minimal-admin/v1/transients/status' ),
 		'collection' => array(
-			'viewLabel' => 'Transients',
+			'viewLabel' => __( 'Transients', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/transients',
 			'pageQuery' => 'per_page=25&page={page}',
 			'search'    => 'search={q}',
@@ -372,32 +378,32 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'allLabel' => 'All',
 			),
 			'columns'   => array(
-				array( 'key' => 'name', 'label' => 'Name', 'format' => 'title' ),
-				array( 'key' => 'type', 'label' => 'Type', 'format' => 'text' ),
-				array( 'key' => 'scope', 'label' => 'Scope', 'format' => 'text' ),
-				array( 'key' => 'size', 'label' => 'Size', 'format' => 'text' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
-				array( 'key' => 'date', 'label' => 'Expires', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'name', 'label' => __( 'Name', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'type', 'label' => __( 'Type', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'scope', 'label' => __( 'Scope', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'size', 'label' => __( 'Size', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date', 'label' => __( 'Expires', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/transients/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/transients/{id}',
-					'confirm' => 'Delete this transient? Plugins may recreate it on the next request.',
+					'confirm' => __( 'Delete this transient? Plugins may recreate it on the next request.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 				array(
-					'label' => 'Open Transients Manager ↗',
+					'label' => __( 'Open Transients Manager ↗', 'minimal-admin' ),
 					'href'  => minimal_admin_tm_admin_url(),
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'   => 'Delete selected',
+					'label'   => __( 'Delete selected', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/transients/{id}',
 					'danger'  => true,
@@ -443,7 +449,7 @@ add_action( 'rest_api_init', function () {
 					$id
 				) );
 				if ( ! $row || false === strpos( $row->option_name, '_transient_' ) || false !== strpos( $row->option_name, '_timeout_' ) ) {
-					return new WP_Error( 'not_found', 'Transient not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Transient not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$name = minimal_admin_tm_name( $row->option_name );
 				$ok   = minimal_admin_tm_is_site( $row->option_name )
@@ -452,7 +458,7 @@ add_action( 'rest_api_init', function () {
 				// delete_* returns false when the key was already gone — still treat as done.
 				return rest_ensure_response( array(
 					'ok'      => true,
-					'message' => $ok ? 'Transient deleted.' : 'Transient removed (or was already gone).',
+					'message' => $ok ? __( 'Transient deleted.', 'minimal-admin' ) : __( 'Transient removed (or was already gone).', 'minimal-admin' ),
 				) );
 			},
 		),
@@ -479,7 +485,7 @@ add_action( 'rest_api_init', function () {
 			$tm->delete_expired_transients();
 			return rest_ensure_response( array(
 				'ok'      => true,
-				'message' => 'Expired transients deleted.',
+				'message' => __( 'Expired transients deleted.', 'minimal-admin' ),
 			) );
 		},
 	) );

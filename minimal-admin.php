@@ -3,7 +3,7 @@
  * Plugin Name:       Minimal Admin
  * Plugin URI:        https://feicode.com/WenPai-org/minimal-admin
  * Description:       A reimagined WordPress admin experience. Fast, focused and beautiful. Served at /minimal-admin/.
- * Version:           0.28.0.1
+ * Version:           0.30.0.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            WenPai.org
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MINIMAL_ADMIN_VERSION', '0.28.0.1' );
+define( 'MINIMAL_ADMIN_VERSION', '0.30.0.1' );
 define( 'MINIMAL_ADMIN_FILE', __FILE__ );
 define( 'MINIMAL_ADMIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MINIMAL_ADMIN_URL', plugin_dir_url( __FILE__ ) );
@@ -50,6 +50,7 @@ require_once MINIMAL_ADMIN_DIR . 'includes/adapters/post-smtp.php';
 require_once MINIMAL_ADMIN_DIR . 'includes/adapters/wp-mail-logging.php';
 require_once MINIMAL_ADMIN_DIR . 'includes/adapters/suremails.php';
 require_once MINIMAL_ADMIN_DIR . 'includes/adapters/site-mailer.php';
+require_once MINIMAL_ADMIN_DIR . 'includes/adapters/ottokit.php';
 require_once MINIMAL_ADMIN_DIR . 'includes/adapters/acf.php';
 require_once MINIMAL_ADMIN_DIR . 'includes/adapters/meta-box.php';
 require_once MINIMAL_ADMIN_DIR . 'includes/adapters/pods.php';
@@ -131,6 +132,19 @@ register_activation_hook( __FILE__, function ( $network_wide ) {
 	flush_rewrite_rules();
 	if ( $network_wide ) {
 		Minimal_Admin::invalidate_network_rewrites();
+	}
+	// Prime language packs. A fresh install ships no catalogs (packs are
+	// separate downloads), so a non-English site would read English until
+	// the next scheduled update check noticed the manifest's translations
+	// and cron installed them, up to half a day later. Clearing the
+	// updater's manifest cache and re-running the plugin update check here
+	// puts the packs into the transient immediately; core's translation
+	// auto-updater installs them on its next pass, and the Updates screen
+	// offers them right away either way. English sites fetch a manifest and
+	// download nothing.
+	delete_transient( 'minimal_admin_updater' );
+	if ( function_exists( 'wp_update_plugins' ) ) {
+		wp_update_plugins();
 	}
 } );
 

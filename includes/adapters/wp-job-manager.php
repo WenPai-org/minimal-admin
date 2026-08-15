@@ -166,7 +166,7 @@ add_filter( 'minimal_admin_editor_panels', function ( $panels ) {
 		return $panels;
 	}
 	$panels['wpjm'] = array(
-		'label'       => 'Job listing',
+		'label'       => __( 'Job listing', 'minimal-admin' ),
 		'sub'         => 'WP Job Manager',
 		'cap'         => 'edit_posts',
 		'fieldsRoute' => 'minimal-admin/v1/wpjm/fields?post_id={id}&post_type={type}',
@@ -207,12 +207,12 @@ add_action( 'rest_api_init', function () {
 				return rest_ensure_response( array( 'groups' => array() ) );
 			}
 			if ( $post_id && ! current_user_can( 'edit_post', $post_id ) ) {
-				return new WP_Error( 'rest_forbidden', 'You cannot edit this listing.', array( 'status' => 403 ) );
+				return new WP_Error( 'rest_forbidden', __( 'You cannot edit this listing.', 'minimal-admin' ), array( 'status' => 403 ) );
 			}
 			$mapped = minimal_admin_wpjm_mapped_fields();
 			return rest_ensure_response( array(
 				'groups' => array(
-					array( 'group' => 'Listing details', 'fields' => $mapped['fields'], 'locked' => $mapped['locked'] ),
+					array( 'group' => __( 'Listing details', 'minimal-admin' ), 'fields' => $mapped['fields'], 'locked' => $mapped['locked'] ),
 				),
 			) );
 		},
@@ -239,7 +239,7 @@ add_action( 'rest_api_init', function () {
 				minimal_admin_wpjm_write_values( $post->ID, $value );
 			},
 			'schema'          => array(
-				'description' => 'WP Job Manager listing fields for Minimal Admin.',
+				'description' => __( 'WP Job Manager listing fields for Minimal Admin.', 'minimal-admin' ),
 				'type'        => 'object',
 				'context'     => array( 'edit' ),
 			),

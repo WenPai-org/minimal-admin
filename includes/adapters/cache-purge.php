@@ -15,6 +15,12 @@
  *       );
  *       return $purgers;
  *   } );
+ *
+ * Set `'network' => true` when the purge reaches beyond the calling site, as
+ * a shared object cache or a host-wide CDN purge does. Those providers are
+ * offered only to the network owner on multisite, so one tenant cannot cold
+ * every other tenant's cache; their own native screens are network-admin
+ * screens there for the same reason. A per-site page cache needs no flag.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -31,8 +37,11 @@ function minimal_admin_cache_purgers() {
 	// object cache and OPcache. `true` bypasses its once-per-request guard.
 	if ( class_exists( '\Kinsta\KMP' ) && ! empty( $GLOBALS['kinsta_muplugin']->kinsta_cache_purge ) ) {
 		$purgers[] = array(
-			'id'    => 'kinsta',
-			'name'  => 'Kinsta',
+			'id'      => 'kinsta',
+			'name'    => 'Kinsta',
+			// Host-wide: page cache, CDN, object cache and OPcache for the
+			// whole install, not just this site.
+			'network' => true,
 			'purge' => function () {
 				$GLOBALS['kinsta_muplugin']->kinsta_cache_purge->purge_complete_caches( true );
 			},
@@ -43,6 +52,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'litespeed',
 			'name'  => 'LiteSpeed Cache',
+			'network' => true,
 			'purge' => function () {
 				do_action( 'litespeed_purge_all' );
 			},
@@ -53,6 +63,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'wp-super-cache',
 			'name'  => 'WP Super Cache',
+			'network' => true,
 			'purge' => function () {
 				wp_cache_clear_cache();
 			},
@@ -63,6 +74,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'w3-total-cache',
 			'name'  => 'W3 Total Cache',
+			'network' => true,
 			'purge' => function () {
 				w3tc_flush_all();
 			},
@@ -86,6 +98,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'wp-fastest-cache',
 			'name'  => 'WP Fastest Cache',
+			'network' => true,
 			'purge' => function () {
 				$GLOBALS['wp_fastest_cache']->deleteCache( true );
 			},
@@ -96,6 +109,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'sg-optimizer',
 			'name'  => 'SiteGround Optimizer',
+			'network' => true,
 			'purge' => function () {
 				sg_cachepress_purge_everything();
 			},
@@ -104,6 +118,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'sg-optimizer',
 			'name'  => 'SiteGround Optimizer',
+			'network' => true,
 			'purge' => function () {
 				sg_cachepress_purge_cache();
 			},
@@ -114,6 +129,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'autoptimize',
 			'name'  => 'Autoptimize',
+			'network' => true,
 			'purge' => function () {
 				autoptimizeCache::clearall();
 			},
@@ -124,6 +140,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'wp-optimize',
 			'name'  => 'WP-Optimize',
+			'network' => true,
 			'purge' => function () {
 				wpo_cache_flush();
 			},
@@ -134,6 +151,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'cache-enabler',
 			'name'  => 'Cache Enabler',
+			'network' => true,
 			'purge' => function () {
 				do_action( 'cache_enabler_clear_complete_cache' );
 			},
@@ -144,6 +162,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'hummingbird',
 			'name'  => 'Hummingbird',
+			'network' => true,
 			'purge' => function () {
 				do_action( 'wphb_clear_page_cache' );
 			},
@@ -172,6 +191,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'speedycache',
 			'name'  => 'SpeedyCache',
+			'network' => true,
 			'purge' => function () {
 				\SpeedyCache\Delete::run( array( 'minified' => true ) );
 			},
@@ -183,8 +203,10 @@ function minimal_admin_cache_purgers() {
 	// a System health row (minimal_admin_redis_object_cache_checks).
 	if ( defined( 'WP_REDIS_VERSION' ) ) {
 		$purgers[] = array(
-			'id'    => 'redis-object-cache',
-			'name'  => 'Redis Object Cache',
+			'id'      => 'redis-object-cache',
+			'name'    => 'Redis Object Cache',
+			// One object cache backs every site on the network.
+			'network' => true,
 			'purge' => function () {
 				// Prefer the plugin's own flush path when its drop-in is valid
 				// (same as its admin "Flush cache" button); otherwise no-op
@@ -209,6 +231,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'breeze',
 			'name'  => 'Breeze',
+			'network' => true,
 			'purge' => function () {
 				do_action( 'breeze_clear_all_cache' );
 			},
@@ -221,6 +244,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'nginx-helper',
 			'name'  => 'Nginx Helper',
+			'network' => true,
 			'purge' => function () {
 				do_action( 'rt_nginx_helper_purge_all' );
 			},
@@ -235,6 +259,7 @@ function minimal_admin_cache_purgers() {
 		$purgers[] = array(
 			'id'    => 'cloudflare',
 			'name'  => 'Cloudflare',
+			'network' => true,
 			'purge' => function () {
 				$hooks = new \Cloudflare\APO\WordPress\Hooks();
 				$hooks->purgeCacheEverything();
@@ -242,7 +267,19 @@ function minimal_admin_cache_purgers() {
 		);
 	}
 
-	return apply_filters( 'minimal_admin_cache_purgers', $purgers );
+	$purgers = apply_filters( 'minimal_admin_cache_purgers', $purgers );
+
+	// Filtered AFTER the hook so a third party's network-wide provider is
+	// covered too. On multisite manage_options is per site, so without this a
+	// single tenant could cold the shared object cache and the host's CDN for
+	// every neighbour on demand.
+	if ( ! Minimal_Admin::network_owner() ) {
+		$purgers = array_values( array_filter( $purgers, function ( $p ) {
+			return empty( $p['network'] );
+		} ) );
+	}
+
+	return $purgers;
 }
 
 /**
@@ -262,16 +299,20 @@ function minimal_admin_redis_object_cache_checks() {
 
 	if ( true === $redis ) {
 		$status = 'pass';
-		$detail = 'Drop-in active · ' . $human;
+		$detail = sprintf(
+			/* translators: %s: connection status reported by Redis Object Cache. */
+			__( 'Drop-in active · %s', 'minimal-admin' ),
+			$human
+		);
 	} elseif ( ! $plugin->object_cache_dropin_exists() ) {
 		$status = 'warn';
-		$detail = 'Plugin installed; drop-in not enabled';
+		$detail = __( 'Plugin installed; drop-in not enabled', 'minimal-admin' );
 	} elseif ( $plugin->object_cache_dropin_outdated() ) {
 		$status = 'warn';
-		$detail = 'Drop-in is outdated — update it from Redis Object Cache';
+		$detail = __( 'Drop-in is outdated — update it from Redis Object Cache', 'minimal-admin' );
 	} elseif ( false === $redis ) {
 		$status = 'fail';
-		$detail = 'Drop-in present but Redis is not connected';
+		$detail = __( 'Drop-in present but Redis is not connected', 'minimal-admin' );
 	} else {
 		$status = 'warn';
 		$detail = $human;
@@ -280,7 +321,7 @@ function minimal_admin_redis_object_cache_checks() {
 	return array(
 		array(
 			'id'     => 'redis-object-cache',
-			'label'  => 'Redis Object Cache',
+			'label'  => __( 'Redis Object Cache', 'minimal-admin' ),
 			'status' => $status,
 			'detail' => $detail . ' · v' . WP_REDIS_VERSION,
 		),

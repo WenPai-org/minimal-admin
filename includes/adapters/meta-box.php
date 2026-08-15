@@ -254,7 +254,7 @@ add_filter( 'minimal_admin_editor_panels', function ( $panels ) {
 		return $panels;
 	}
 	$panels['meta-box'] = array(
-		'label'       => 'Custom fields',
+		'label'       => __( 'Custom fields', 'minimal-admin' ),
 		'sub'         => 'Meta Box',
 		'cap'         => 'edit_posts',
 		'fieldsRoute' => 'minimal-admin/v1/meta-box/fields?post_id={id}&post_type={type}',
@@ -283,10 +283,23 @@ add_action( 'rest_api_init', function () {
 			$post_type = minimal_admin_meta_box_resolve_type( $request['post_type'] );
 			if ( $post_id ) {
 				$post = get_post( $post_id );
-				if ( $post && current_user_can( 'edit_post', $post_id ) ) {
-					$post_type = $post->post_type;
-				} elseif ( $post ) {
-					return new WP_Error( 'rest_forbidden', 'You cannot edit this post.', array( 'status' => 403 ) );
+				// A missing post used to fall THROUGH with the caller's own
+				// post_type intact, which is the same hole as post_id=0.
+				if ( ! $post ) {
+					return new WP_Error( 'not_found', __( 'Post not found.', 'minimal-admin' ), array( 'status' => 404 ) );
+				}
+				if ( ! current_user_can( 'edit_post', $post_id ) ) {
+					return new WP_Error( 'rest_forbidden', __( 'You cannot edit this post.', 'minimal-admin' ), array( 'status' => 403 ) );
+				}
+				$post_type = $post->post_type;
+			} else {
+				// No post to authorize against, so authorize against the TYPE.
+				// edit_posts alone let a Contributor enumerate field labels,
+				// names, types and choice lists for types they cannot edit —
+				// internal naming and credential field ids are common there.
+				$type_obj = get_post_type_object( $post_type );
+				if ( ! $type_obj || ! current_user_can( $type_obj->cap->edit_posts ) ) {
+					return new WP_Error( 'rest_forbidden', __( 'You cannot edit that post type.', 'minimal-admin' ), array( 'status' => 403 ) );
 				}
 			}
 			return rest_ensure_response( minimal_admin_meta_box_fields_payload( $post_id, $post_type ) );
@@ -324,7 +337,7 @@ add_action( 'rest_api_init', function () {
 					minimal_admin_meta_box_write_values( $post->ID, $value );
 				},
 				'schema'          => array(
-					'description' => 'Meta Box simple field values for Minimal Admin.',
+					'description' => __( 'Meta Box simple field values for Minimal Admin.', 'minimal-admin' ),
 					'type'        => 'object',
 					'context'     => array( 'edit' ),
 				),

@@ -181,19 +181,24 @@ const fs = require( 'fs' );
 		pref: localStorage.getItem( 'minimal-theme' ),
 	} ) );
 	t.check( 'theme menu System follows OS again', systemAgain.theme === 'dark' && systemAgain.pref === 'system', JSON.stringify( systemAgain ) );
-	// Click cycles System → Light → Dark → System.
+	// Click is light ↔ dark only; System is right-click only. OS is dark
+	// from the previous step, so the first click from System locks Light.
 	await page.click( '#minimal-theme-btn' );
 	await page.waitForTimeout( 50 );
-	const cycledLight = await page.evaluate( () => localStorage.getItem( 'minimal-theme' ) );
+	const toggled = await page.evaluate( () => ( {
+		pref: localStorage.getItem( 'minimal-theme' ),
+		theme: document.documentElement.getAttribute( 'data-theme' ),
+	} ) );
+	t.check( 'click from System locks the opposite of the current paint',
+		toggled.pref === 'light' && toggled.theme === 'light', JSON.stringify( toggled ) );
 	await page.click( '#minimal-theme-btn' );
 	await page.waitForTimeout( 50 );
-	const cycledDark = await page.evaluate( () => localStorage.getItem( 'minimal-theme' ) );
+	const toDark = await page.evaluate( () => localStorage.getItem( 'minimal-theme' ) );
 	await page.click( '#minimal-theme-btn' );
 	await page.waitForTimeout( 50 );
-	const cycledSystem = await page.evaluate( () => localStorage.getItem( 'minimal-theme' ) );
-	t.check( 'click cycles System → Light → Dark → System',
-		cycledLight === 'light' && cycledDark === 'dark' && cycledSystem === 'system',
-		`${ cycledLight } → ${ cycledDark } → ${ cycledSystem }` );
+	const toLight = await page.evaluate( () => localStorage.getItem( 'minimal-theme' ) );
+	t.check( 'click toggles light and dark and never returns to System',
+		toDark === 'dark' && toLight === 'light', `${ toDark } → ${ toLight }` );
 
 	/* ===== Nav item + copy report ===== */
 	t.check( 'System nav item present', !! ( await page.$( '.minimal-nav-btn[data-nav="system"]' ) ) );
@@ -269,7 +274,7 @@ const fs = require( 'fs' );
 	}
 
 	/* ===== Autoload + Cron health cards expand to detail modals ===== */
-	// The health CARDS are the primary entry (Austin) and wear a corner
+	// The health CARDS are the primary entry and wear a corner
 	// expand icon; the grid rows below share the same data-sysdetail
 	// binding. querySelector hits the card first (checks render first).
 	t.check( 'autoload + cron health cards carry the expand affordance', await page.evaluate( () =>

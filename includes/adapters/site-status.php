@@ -173,9 +173,9 @@ function minimal_admin_site_visibility() {
 	// Minimal's own maintenance mode (class-minimal-admin.php serves a 503 page).
 	if ( get_option( 'minimal_admin_maintenance' ) ) {
 		$providers[] = array(
-			'name' => 'Minimal maintenance mode',
+			'name' => __( 'Minimal maintenance mode', 'minimal-admin' ),
 			'kind' => 'maintenance',
-			'note' => 'Visitors get a 503 holding page',
+			'note' => __( 'Visitors get a 503 holding page', 'minimal-admin' ),
 			'minimal' => true, // toggled in Minimal's own Settings, not a wp-admin screen
 		);
 	}
@@ -276,10 +276,10 @@ function minimal_admin_site_visibility() {
 	if ( class_exists( 'WooCommerce' ) && 'yes' === get_option( 'woocommerce_coming_soon' ) ) {
 		$store_only  = 'yes' === get_option( 'woocommerce_store_pages_only' );
 		$providers[] = array(
-			'name'    => 'WooCommerce coming soon',
+			'name'    => __( 'WooCommerce coming soon', 'minimal-admin' ),
 			'id'      => 'wc',
 			'kind'    => 'coming-soon',
-			'note'    => $store_only ? 'Only store pages are hidden; the rest of the site is public' : 'Visitors see the coming-soon page instead of the site',
+			'note'    => $store_only ? __( 'Only store pages are hidden; the rest of the site is public', 'minimal-admin' ) : __( 'Visitors see the coming-soon page instead of the site', 'minimal-admin' ),
 			'url'     => admin_url( 'admin.php?page=wc-settings&tab=site-visibility' ),
 			'partial' => $store_only,
 		);
@@ -291,7 +291,7 @@ function minimal_admin_site_visibility() {
 		$el_mode = get_option( 'elementor_maintenance_mode_mode' );
 		if ( 'maintenance' === $el_mode || 'coming_soon' === $el_mode ) {
 			$providers[] = array(
-				'name' => 'Elementor maintenance mode',
+				'name' => __( 'Elementor maintenance mode', 'minimal-admin' ),
 				'id'   => 'elementor',
 				'kind' => 'maintenance' === $el_mode ? 'maintenance' : 'coming-soon',
 				'url'  => admin_url( 'admin.php?page=elementor-tools#tab-maintenance_mode' ),
@@ -309,7 +309,7 @@ function minimal_admin_site_visibility() {
 			'name' => 'Password Protected',
 			'id'   => 'password-protected',
 			'kind' => 'password',
-			'note' => 'The whole site is behind a password',
+			'note' => __( 'The whole site is behind a password', 'minimal-admin' ),
 			'url'  => admin_url( 'options-reading.php' ),
 		);
 	}
@@ -391,30 +391,34 @@ function minimal_admin_visibility_check() {
 
 	if ( 'hidden' === $v['state'] ) {
 		return array(
-			'label'  => 'Site visibility',
+			'key'    => 'visibility',
+			'label'  => __( 'Site visibility', 'minimal-admin' ),
 			'status' => 'warn',
-			'detail' => 'Hidden from the public by ' . implode( ', ', $names ) . ' — visitors cannot see the site',
+			'detail' => __( 'Hidden from the public by ', 'minimal-admin' ) . implode( ', ', $names ) . ' — visitors cannot see the site',
 		);
 	}
 	if ( 'password' === $v['state'] ) {
 		return array(
-			'label'  => 'Site visibility',
+			'key'    => 'visibility',
+			'label'  => __( 'Site visibility', 'minimal-admin' ),
 			'status' => 'warn',
-			'detail' => 'The whole site is password-protected (' . implode( ', ', $names ) . ')',
+			'detail' => __( 'The whole site is password-protected (', 'minimal-admin' ) . implode( ', ', $names ) . ')',
 		);
 	}
 	if ( 'partial' === $v['state'] ) {
 		return array(
-			'label'  => 'Site visibility',
+			'key'    => 'visibility',
+			'label'  => __( 'Site visibility', 'minimal-admin' ),
 			'status' => 'warn',
-			'detail' => 'Part of the site is hidden by ' . implode( ', ', $names ) . ' — some pages show a coming-soon page',
+			'detail' => __( 'Part of the site is hidden by ', 'minimal-admin' ) . implode( ', ', $names ) . ' — some pages show a coming-soon page',
 		);
 	}
 	if ( 'search-discouraged' === $v['state'] ) {
 		return array(
-			'label'  => 'Site visibility',
+			'key'    => 'visibility',
+			'label'  => __( 'Site visibility', 'minimal-admin' ),
 			'status' => 'warn',
-			'detail' => 'Search engines are discouraged (Settings → Reading) — the site is public but asks not to be indexed',
+			'detail' => __( 'Search engines are discouraged (Settings → Reading) — the site is public but asks not to be indexed', 'minimal-admin' ),
 		);
 	}
 	// Fully public: no row. Like the backup/licenses checks, the visibility
@@ -438,16 +442,16 @@ function minimal_admin_rsssl_check() {
 	$enabled = (bool) rsssl_get_option( 'ssl_enabled' );
 	if ( ! $enabled ) {
 		return array(
-			'label'  => 'SSL enforcement',
+			'label'  => __( 'SSL enforcement', 'minimal-admin' ),
 			'status' => 'warn',
-			'detail' => 'Really Simple SSL is installed but SSL is not enabled yet — finish its setup',
+			'detail' => __( 'Really Simple SSL is installed but SSL is not enabled yet — finish its setup', 'minimal-admin' ),
 		);
 	}
 	$fixer = (bool) rsssl_get_option( 'mixed_content_fixer' );
 	return array(
-		'label'  => 'SSL enforcement',
+		'label'  => __( 'SSL enforcement', 'minimal-admin' ),
 		'status' => 'pass',
-		'detail' => 'Really Simple SSL is enforcing HTTPS' . ( $fixer ? ', mixed-content fixer on' : '' ),
+		'detail' => __( 'Really Simple SSL is enforcing HTTPS', 'minimal-admin' ) . ( $fixer ? ', mixed-content fixer on' : '' ),
 	);
 }
 
@@ -486,7 +490,7 @@ add_action( 'rest_api_init', function () {
 				$on      = ! empty( $request['on'] );
 				$toggles = minimal_admin_visibility_toggles();
 				if ( '' === $id || ! isset( $toggles[ $id ] ) ) {
-					return new WP_Error( 'minimal_no_toggle', 'No visibility toggle is registered for that provider.', array( 'status' => 404 ) );
+					return new WP_Error( 'minimal_no_toggle', __( 'No visibility toggle is registered for that provider.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$mem = get_option( 'minimal_admin_vis_restore', array() );
 				if ( ! is_array( $mem ) ) {

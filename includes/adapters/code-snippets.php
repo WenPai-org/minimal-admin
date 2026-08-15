@@ -31,29 +31,29 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	// Free-tier scopes from Snippet::get_all_scopes(). Pro CSS/JS scopes still
 	// round-trip via preserve if present; the select covers the common set.
 	$scope_options = array(
-		array( 'global', 'Global (everywhere)' ),
-		array( 'admin', 'Admin only' ),
-		array( 'front-end', 'Front-end only' ),
-		array( 'single-use', 'Single use' ),
-		array( 'content', 'Content (shortcode)' ),
-		array( 'head-content', 'Site head' ),
-		array( 'footer-content', 'Site footer' ),
+		array( 'global', __( 'Global (everywhere)', 'minimal-admin' ) ),
+		array( 'admin', __( 'Admin only', 'minimal-admin' ) ),
+		array( 'front-end', __( 'Front-end only', 'minimal-admin' ) ),
+		array( 'single-use', __( 'Single use', 'minimal-admin' ) ),
+		array( 'content', __( 'Content (shortcode)', 'minimal-admin' ) ),
+		array( 'head-content', __( 'Site head', 'minimal-admin' ) ),
+		array( 'footer-content', __( 'Site footer', 'minimal-admin' ) ),
 	);
 
 	$edit_fields = array(
-		array( 'key' => 'name', 'label' => 'Name', 'placeholder' => 'Disable emojis' ),
-		array( 'key' => 'desc', 'label' => 'Description', 'type' => 'textarea', 'rows' => 2, 'required' => false ),
+		array( 'key' => 'name', 'label' => __( 'Name', 'minimal-admin' ), 'placeholder' => __( 'Disable emojis', 'minimal-admin' ) ),
+		array( 'key' => 'desc', 'label' => __( 'Description', 'minimal-admin' ), 'type' => 'textarea', 'rows' => 2, 'required' => false ),
 		array(
 			'key'         => 'code',
-			'label'       => 'Code',
+			'label'       => __( 'Code', 'minimal-admin' ),
 			'type'        => 'textarea',
 			'mono'        => true,
 			'rows'        => 14,
 			'placeholder' => "add_filter( '…', '…' );",
 		),
-		array( 'key' => 'scope', 'label' => 'Scope', 'type' => 'select', 'options' => $scope_options ),
-		array( 'key' => 'priority', 'label' => 'Priority', 'type' => 'number' ),
-		array( 'key' => 'tags', 'label' => 'Tags', 'type' => 'tags', 'required' => false, 'placeholder' => 'media, sample' ),
+		array( 'key' => 'scope', 'label' => __( 'Scope', 'minimal-admin' ), 'type' => 'select', 'options' => $scope_options ),
+		array( 'key' => 'priority', 'label' => __( 'Priority', 'minimal-admin' ), 'type' => 'number' ),
+		array( 'key' => 'tags', 'label' => __( 'Tags', 'minimal-admin' ), 'type' => 'tags', 'required' => false, 'placeholder' => __( 'media, sample', 'minimal-admin' ) ),
 	);
 
 	// A Code Snippets snippet is PHP the plugin eval()s, so authoring one is code
@@ -64,7 +64,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	$code_edits = ! class_exists( 'Minimal_Admin' ) || Minimal_Admin::code_edits_allowed();
 
 	$surfaces['code-snippets'] = array(
-		'label'      => 'Snippets',
+		'label'      => __( 'Snippets', 'minimal-admin' ),
 		// Surfaces that share a family collapse to one sidebar item; the topbar
 		// sub badge becomes a provider switcher when more than one is active.
 		'family'     => 'snippets',
@@ -80,7 +80,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			// Their list endpoint has no free-text search; names are scannable
 			// in the title column and full code is editable in the detail.
 			'create'    => array(
-				'label'    => 'Add snippet',
+				'label'    => __( 'Add snippet', 'minimal-admin' ),
 				'route'    => 'code-snippets/v1/snippets',
 				'method'   => 'POST',
 				'defaults' => array(
@@ -92,12 +92,12 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'fields'   => $edit_fields,
 			),
 			'columns'   => array(
-				array( 'key' => 'name', 'label' => 'Snippet', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'scope', 'label' => 'Scope', 'format' => 'mono', 'width' => '100px' ),
-				array( 'key' => 'active', 'label' => 'Status', 'format' => 'pill', 'width' => '100px' ),
-				array( 'key' => 'priority', 'label' => 'Priority', 'format' => 'num', 'width' => '80px' ),
+				array( 'key' => 'name', 'label' => __( 'Snippet', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'scope', 'label' => __( 'Scope', 'minimal-admin' ), 'format' => 'mono', 'width' => '100px' ),
+				array( 'key' => 'active', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '100px' ),
+				array( 'key' => 'priority', 'label' => __( 'Priority', 'minimal-admin' ), 'format' => 'num', 'width' => '80px' ),
 				// Code Snippets stores/returns modified via gmdate (UTC, no Z).
-				array( 'key' => 'modified', 'label' => 'Modified', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'modified', 'label' => __( 'Modified', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				// Re-fetch so the modal always has full code + fresh active flag.
@@ -123,52 +123,52 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				// /activate|/deactivate routes exist but return an unprepared
 				// Snippet object that can 500 under rest_ensure_response.
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'code-snippets/v1/snippets/{id}',
 					'body'   => array( 'active' => true ),
 					'when'   => array( 'key' => 'active', 'equals' => false ),
 				),
 				array(
-					'label'  => 'Deactivate',
+					'label'  => __( 'Deactivate', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'code-snippets/v1/snippets/{id}',
 					'body'   => array( 'active' => false ),
 					'when'   => array( 'key' => 'active', 'equals' => true ),
 				),
 				array(
-					'label' => 'Edit in Code Snippets ↗',
+					'label' => __( 'Edit in Code Snippets ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=edit-snippet&id={id}' ),
 				),
 				array(
-					'label'   => 'Delete snippet',
+					'label'   => __( 'Delete snippet', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'code-snippets/v1/snippets/{id}',
-					'confirm' => 'Delete this snippet permanently? Its code will be gone.',
+					'confirm' => __( 'Delete this snippet permanently? Its code will be gone.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			// Their list has no active= filter, so bulk is the multi-item win.
 			'bulk'      => array(
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'code-snippets/v1/snippets/{id}',
 					'body'   => array( 'active' => true ),
 					'when'   => array( 'key' => 'active', 'equals' => false ),
 				),
 				array(
-					'label'  => 'Deactivate',
+					'label'  => __( 'Deactivate', 'minimal-admin' ),
 					'method' => 'PUT',
 					'route'  => 'code-snippets/v1/snippets/{id}',
 					'body'   => array( 'active' => false ),
 					'when'   => array( 'key' => 'active', 'equals' => true ),
 				),
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'code-snippets/v1/snippets/{id}',
-					'confirm' => 'Delete the selected snippets permanently?',
+					'confirm' => __( 'Delete the selected snippets permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -230,22 +230,30 @@ add_action( 'rest_api_init', function () {
 			}
 			$hint = array();
 			if ( $inactive ) {
-				$hint[] = $inactive . ' inactive';
+				$hint[] = sprintf(
+					/* translators: %d: number of inactive snippets. */
+					__( '%d inactive', 'minimal-admin' ),
+					$inactive
+				);
 			}
 			if ( $trashed ) {
-				$hint[] = $trashed . ' trashed';
+				$hint[] = sprintf(
+					/* translators: %d: number of trashed snippets. */
+					__( '%d trashed', 'minimal-admin' ),
+					$trashed
+				);
 			}
 			$rows = array(
 				array(
-					'label' => 'Active snippets',
+					'label' => __( 'Active snippets', 'minimal-admin' ),
 					'value' => (string) $active,
-					'hint'  => $hint ? implode( ' · ', $hint ) : 'nothing inactive',
+					'hint'  => $hint ? implode( ' · ', $hint ) : __( 'nothing inactive', 'minimal-admin' ),
 				),
 			);
 			$scopes = $wpdb->get_results( "SELECT scope, COUNT(*) AS c FROM {$table} WHERE active = 1 GROUP BY scope ORDER BY c DESC LIMIT 3" ); // phpcs:ignore
 			if ( $scopes ) {
 				$rows[] = array(
-					'label' => 'Running scopes',
+					'label' => __( 'Running scopes', 'minimal-admin' ),
 					'value' => implode( ' · ', array_map( function ( $s ) {
 						return $s->c . ' ' . $s->scope;
 					}, $scopes ) ),
@@ -254,16 +262,16 @@ add_action( 'rest_api_init', function () {
 			$last = $wpdb->get_row( "SELECT name, modified FROM {$table} WHERE active >= 0 ORDER BY modified DESC LIMIT 1" ); // phpcs:ignore
 			if ( $last && $last->modified && '0000-00-00 00:00:00' !== $last->modified ) {
 				$rows[] = array(
-					'label' => 'Last change',
+					'label' => __( 'Last change', 'minimal-admin' ),
 					'value' => (string) $last->name,
 					'hint'  => substr( (string) $last->modified, 0, 10 ),
 				);
 			}
 			if ( defined( 'CODE_SNIPPETS_SAFE_MODE' ) && CODE_SNIPPETS_SAFE_MODE ) {
 				$rows[] = array(
-					'label' => 'Safe mode',
-					'value' => 'On',
-					'hint'  => 'No snippets are executing while safe mode is armed',
+					'label' => __( 'Safe mode', 'minimal-admin' ),
+					'value' => __( 'On', 'minimal-admin' ),
+					'hint'  => __( 'No snippets are executing while safe mode is armed', 'minimal-admin' ),
 				);
 			}
 			return rest_ensure_response( array( 'rows' => $rows ) );

@@ -12,6 +12,7 @@ class Minimal_Admin {
 	const QUERY_VAR = 'minimal_admin';
 
 	public static function init() {
+		add_filter( 'determine_locale', array( __CLASS__, 'route_locale' ) );
 		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
 		add_action( 'init', array( __CLASS__, 'register_route' ) );
 		add_action( 'wp_loaded', array( __CLASS__, 'maybe_heal_rewrites' ), 20 );
@@ -46,7 +47,7 @@ class Minimal_Admin {
 		$id     = isset( $_POST['plugin'] ) ? sanitize_text_field( wp_unslash( $_POST['plugin'] ) ) : '';
 		$status = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : '';
 		if ( '' === $id || validate_file( $id ) || ! in_array( $status, array( 'active', 'inactive' ), true ) ) {
-			wp_send_json_error( array( 'message' => 'Invalid plugin or status.' ), 400 );
+			wp_send_json_error( array( 'message' => __( 'Invalid plugin or status.', 'minimal-admin' ) ), 400 );
 		}
 		$file = $id . '.php';
 		if ( ! function_exists( 'get_plugins' ) ) {
@@ -54,17 +55,82 @@ class Minimal_Admin {
 		}
 		$all = get_plugins();
 		if ( ! isset( $all[ $file ] ) ) {
-			wp_send_json_error( array( 'message' => 'Plugin not found.' ), 404 );
+			wp_send_json_error( array( 'message' => __( 'Plugin not found.', 'minimal-admin' ) ), 404 );
+		}
+		$denied = self::plugin_toggle_denied( $file );
+		if ( $denied ) {
+			wp_send_json_error( array( 'message' => $denied->get_error_message() ), 403 );
 		}
 		if ( 'active' === $status ) {
-			$result = activate_plugin( $file );
+			$result = activate_plugin( $file, '', self::plugin_toggle_is_network( $file, true ) );
 			if ( is_wp_error( $result ) ) {
 				wp_send_json_error( array( 'message' => wp_strip_all_tags( $result->get_error_message() ) ), 500 );
 			}
 		} else {
-			deactivate_plugins( $file );
+			deactivate_plugins( $file, false, self::plugin_toggle_is_network( $file, false ) );
 		}
 		wp_send_json_success( array( 'plugin' => $id, 'status' => $status ) );
+	}
+
+	/**
+	 * May the current user flip THIS plugin's activation from a per-site surface?
+	 *
+	 * The per-object `activate_plugin` meta cap is not enough on its own. Core
+	 * only folds manage_network_plugins into it when the network HIDES the
+	 * plugins menu (capabilities.php reads menu_items['plugins']), so on a
+	 * network that grants subsite administrators that menu the meta cap passes
+	 * for a network-active plugin too. wp-admin still refuses — plugins.php
+	 * redirects away when ! is_network_admin() && is_plugin_active_for_network()
+	 * and passes is_network_admin() as $network_wide — and core's REST
+	 * controller answers rest_cannot_manage_network_plugins / rest_network_only_plugin.
+	 * These are those guards, so one tenant cannot disable a plugin for every
+	 * site on the network, or force a network-only plugin on to all of them.
+	 *
+	 * @param string $file Plugin file relative to the plugins directory.
+	 * @return WP_Error|null Error to answer with, or null when the change is allowed.
+	 */
+	public static function plugin_toggle_denied( $file ) {
+		if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		if ( ! current_user_can( 'activate_plugin', $file ) ) {
+			return new WP_Error( 'forbidden', __( 'Sorry, you are not allowed to manage this plugin.', 'minimal-admin' ) );
+		}
+		if ( ! is_multisite() || current_user_can( 'manage_network_plugins' ) ) {
+			return null;
+		}
+		if ( is_plugin_active_for_network( $file ) ) {
+			return new WP_Error( 'network_active', __( 'That plugin is turned on for the whole network, so only a network administrator can change it.', 'minimal-admin' ) );
+		}
+		if ( is_network_only_plugin( $file ) ) {
+			return new WP_Error( 'network_only', __( 'That plugin can only run network-wide, so only a network administrator can turn it on.', 'minimal-admin' ) );
+		}
+		return null;
+	}
+
+	/**
+	 * The explicit $network_wide to hand activate_plugin()/deactivate_plugins().
+	 *
+	 * Never leave it at the default: deactivate_plugins() reads null as "yes,
+	 * network-wide" for a network-active plugin, and activate_plugin() lets
+	 * is_network_only_plugin() force it true. Passing the value outright means
+	 * a per-site request can only ever become a network write for someone who
+	 * holds manage_network_plugins, which plugin_toggle_denied() has confirmed.
+	 *
+	 * @param string $file       Plugin file relative to the plugins directory.
+	 * @param bool   $activating True when turning the plugin on.
+	 * @return bool
+	 */
+	public static function plugin_toggle_is_network( $file, $activating ) {
+		if ( ! is_multisite() || ! current_user_can( 'manage_network_plugins' ) ) {
+			return false;
+		}
+		if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		return $activating
+			? is_network_only_plugin( $file )
+			: is_plugin_active_for_network( $file );
 	}
 
 	/**
@@ -177,6 +243,31 @@ class Minimal_Admin {
 	}
 
 	/**
+	 * REST bases of the post types where this user may edit only their own
+	 * items. Keyed by rest_base so the client can look one up by the route it
+	 * is about to call. Values are always true; absence means "no restriction".
+	 */
+	public static function own_only_types() {
+		$out = array();
+		foreach ( get_post_types( array( 'show_in_rest' => true ), 'objects' ) as $pt ) {
+			$base = $pt->rest_base ? $pt->rest_base : $pt->name;
+			// A type with no edit_others_* cap declared (some CPTs map every
+			// cap to the same string) can't be reasoned about — leave it alone
+			// rather than silently hiding other authors' rows.
+			if ( empty( $pt->cap->edit_others_posts ) || empty( $pt->cap->edit_posts ) ) {
+				continue;
+			}
+			if ( $pt->cap->edit_others_posts === $pt->cap->edit_posts ) {
+				continue;
+			}
+			if ( ! current_user_can( $pt->cap->edit_others_posts ) ) {
+				$out[ $base ] = true;
+			}
+		}
+		return (object) $out;
+	}
+
+	/**
 	 * Minimal editor URL for a post, or '' when the type isn't REST-editable in Minimal.
 	 */
 	public static function editor_url_for_post( $post_id ) {
@@ -239,6 +330,18 @@ class Minimal_Admin {
 		if ( ! is_array( $rules ) || ! $rules || isset( $rules['^minimal-admin(/.*)?$'] ) ) {
 			return;
 		}
+		// Latch it. This runs on wp_loaded for EVERY request, including
+		// unauthenticated front-end hits, so on a site where the rule cannot
+		// persist — another plugin filtering it out of rewrite_rules_array, a
+		// read-only or racing options store — the condition never clears and
+		// every uncached request rebuilds the whole ruleset and rewrites an
+		// autoloaded option. One attempt per version is enough to heal the
+		// case this exists for; anything else degrades to a 404 at
+		// /minimal-admin/, which is recoverable from the permalinks screen.
+		if ( get_option( 'minimal_admin_rewrites_healed' ) === MINIMAL_ADMIN_VERSION ) {
+			return;
+		}
+		update_option( 'minimal_admin_rewrites_healed', MINIMAL_ADMIN_VERSION, false );
 		flush_rewrite_rules( false );
 	}
 
@@ -596,6 +699,40 @@ class Minimal_Admin {
 		return true;
 	}
 
+	/**
+	 * Whether the caller owns network-shared state.
+	 *
+	 * A plugin that keeps ONE store for the whole network — a backup archive
+	 * directory, a base_prefix table, a site option — holds every tenant's
+	 * data in it, so on multisite that is the network owner's, whatever
+	 * per-site capability the plugin's own screens happen to ask for. The
+	 * capability alone can never draw this line: core's multisite pass over
+	 * map_meta_cap strips install_plugins, update_plugins and edit_files from
+	 * a subsite administrator but leaves export, manage_options and every
+	 * plugin-defined capability untouched. Most of these plugins say the same
+	 * thing themselves by registering their admin under network_admin_menu,
+	 * which shows a subsite administrator nothing at all.
+	 *
+	 * Call this in the adapter's *_active() check AND in every route's
+	 * permission callback: an adapter whose surface is hidden but whose routes
+	 * still answer is not gated, it is only quiet.
+	 */
+	public static function network_owner() {
+		return ! is_multisite() || is_super_admin();
+	}
+
+	/**
+	 * The capability meaning "may change settings", widened to the network.
+	 *
+	 * manage_options is PER SITE on multisite, so it is the wrong gate for
+	 * anything the whole network shares. Use this where the state is
+	 * site-wide-or-broader; use network_owner() where a per-site capability
+	 * still has to be checked alongside it.
+	 */
+	public static function manage_cap() {
+		return is_multisite() ? 'manage_network_options' : 'manage_options';
+	}
+
 	public static function app_url() {
 		if ( get_option( 'permalink_structure' ) ) {
 			return home_url( '/minimal-admin/' );
@@ -630,8 +767,35 @@ class Minimal_Admin {
 	 *
 	 * @return int[]
 	 */
+	/**
+	 * Site visibility as the CURRENT user is allowed to see it.
+	 *
+	 * manage_options gets the full picture, the same as the REST route.
+	 * Everyone else gets the state and the search-engine flag, which is what
+	 * the banner renders, with the provider identities stripped: which
+	 * maintenance, coming-soon or password plugin a site runs is
+	 * reconnaissance, and it is not something a lower tier can act on anyway.
+	 *
+	 * @return array|null
+	 */
+	public static function visibility_for_current_user() {
+		$v = minimal_admin_site_visibility();
+		if ( ! is_array( $v ) || current_user_can( 'manage_options' ) ) {
+			return $v;
+		}
+		$v['providers'] = array();
+		unset( $v['toggles'] );
+		return $v;
+	}
+
 	public static function user_site_ids() {
 		if ( ! is_multisite() ) {
+			return array();
+		}
+		// The switcher's docblock promises this, and it was never implemented:
+		// get_blogs_of_user() is an unbounded usermeta scan, which core's own
+		// large-network threshold exists to keep off the hot path.
+		if ( wp_is_large_network() ) {
 			return array();
 		}
 		$uid = get_current_user_id();
@@ -749,7 +913,7 @@ class Minimal_Admin {
 		$bar->add_node(
 			array(
 				'id'    => 'minimal-admin',
-				'title' => 'Minimal Admin',
+				'title' => __( 'Minimal Admin', 'minimal-admin' ),
 				'href'  => self::app_url(),
 			)
 		);
@@ -803,12 +967,13 @@ class Minimal_Admin {
 			'minimal-admin',
 			function () {
 				printf(
-					'<script>window.location.href = %s;</script><p><a href="%s">Open Minimal Admin</a></p>',
+					'<script>window.location.href = %s;</script><p><a href="%s">%s</a></p>',
 					// JSON_HEX_TAG or a home_url containing </script> closes the
 					// element and everything after it parses as HTML. Same flag
 					// set the app shell uses in template.php.
 					wp_json_encode( self::app_url(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ),
-					esc_url( self::app_url() )
+					esc_url( self::app_url() ),
+					esc_html__( 'Open Minimal Admin', 'minimal-admin' )
 				);
 			},
 			'dashicons-superhero-alt',
@@ -829,7 +994,10 @@ class Minimal_Admin {
 		status_header( 503 );
 		header( 'Retry-After: 3600' );
 		$title = esc_html( get_bloginfo( 'name' ) );
-		echo "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>{$title} — Coming soon</title><style>body{font-family:system-ui,sans-serif;background:#0b0b0d;color:#ececed;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}div{text-align:center}h1{font-size:22px;letter-spacing:-0.3px}p{color:#9d9da7}</style></head><body><div><h1>{$title}</h1><p>We&rsquo;re making some improvements. Back soon.</p></div></body></html>";
+		/* translators: %s: the site title. */
+		$page_title = esc_html( sprintf( __( '%s — Coming soon', 'minimal-admin' ), get_bloginfo( 'name' ) ) );
+		$message    = esc_html__( 'We’re making some improvements. Back soon.', 'minimal-admin' );
+		echo "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>{$page_title}</title><style>body{font-family:system-ui,sans-serif;background:#0b0b0d;color:#ececed;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}div{text-align:center}h1{font-size:22px;letter-spacing:-0.3px}p{color:#9d9da7}</style></head><body><div><h1>{$title}</h1><p>{$message}</p></div></body></html>";
 		exit;
 	}
 
@@ -850,6 +1018,23 @@ class Minimal_Admin {
 		nocache_headers();
 		header( 'X-Robots-Tag: noindex' );
 
+		$boot = self::boot_payload();
+
+		include MINIMAL_ADMIN_DIR . 'includes/template.php';
+		exit;
+	}
+
+	/**
+	 * The `window.MINIMAL` boot payload.
+	 *
+	 * Extracted from maybe_render_app() so the locale slice can be rebuilt on
+	 * demand: switching language without a reload means re-deriving exactly
+	 * what the server rendered the first time, and a second hand-maintained
+	 * copy of these keys would drift the moment either side gained one.
+	 *
+	 * @return array
+	 */
+	public static function boot_payload() {
 		$user  = wp_get_current_user();
 		$roles = array_values( $user->roles );
 		$role  = $roles ? wp_roles()->role_names[ $roles[0] ] ?? $roles[0] : '';
@@ -878,20 +1063,22 @@ class Minimal_Admin {
 			// Scheme slot metadata for the profile custom editor (key + CSS var + label).
 			'appearanceSlots' => array_map(
 				function ( $css, $key ) {
+					// Shown in Your profile's colour-scheme editor, one label
+					// per swatch, so they are interface text like any other.
 					$labels = array(
-						'bg'       => 'Background',
-						'bg2'      => 'Background elevated',
-						'panel'    => 'Panel',
-						'panel2'   => 'Panel elevated',
-						'hover'    => 'Hover',
-						'border'   => 'Border',
-						'border2'  => 'Border strong',
-						'text'     => 'Text',
-						'text2'    => 'Text secondary',
-						'text3'    => 'Text muted',
-						'accent'   => 'Accent',
-						'accent2'  => 'Accent hover / links',
-						'accentFg' => 'Text on accent',
+						'bg'       => __( 'Background', 'minimal-admin' ),
+						'bg2'      => __( 'Background elevated', 'minimal-admin' ),
+						'panel'    => __( 'Panel', 'minimal-admin' ),
+						'panel2'   => __( 'Panel elevated', 'minimal-admin' ),
+						'hover'    => __( 'Hover', 'minimal-admin' ),
+						'border'   => __( 'Border', 'minimal-admin' ),
+						'border2'  => __( 'Border strong', 'minimal-admin' ),
+						'text'     => __( 'Text', 'minimal-admin' ),
+						'text2'    => __( 'Text secondary', 'minimal-admin' ),
+						'text3'    => __( 'Text muted', 'minimal-admin' ),
+						'accent'   => __( 'Accent', 'minimal-admin' ),
+						'accent2'  => __( 'Accent hover / links', 'minimal-admin' ),
+						'accentFg' => __( 'Text on accent', 'minimal-admin' ),
 					);
 					return array(
 						'key'   => $key,
@@ -926,7 +1113,20 @@ class Minimal_Admin {
 			'gmtOffset' => (float) get_option( 'gmt_offset' ),
 			// SPA translation map for the client's __()/_n() (empty for
 			// English; object cast so an empty map serializes as {}).
+			// The reader's effective locale and writing direction. The client
+			// keeps these to tell whether a language save actually changed
+			// anything FOR THEM — a site-language change leaves a user with a
+			// personal override exactly where they were, and repainting the
+			// app in that case would be a visible no-op with a real cost.
+			'locale'   => get_user_locale(),
+			'rtl'      => (bool) is_rtl(),
 			'i18n'     => (object) self::js_translations(),
+			// The locale's Plural-Forms rule, verbatim from the catalog. The
+			// client evaluates it: "n != 1" is right for English and wrong
+			// for most of the world (Japanese has one form, Russian and
+			// Polish three, Arabic six), so a hardcoded rule silently prints
+			// the wrong plural in the majority of shipped locales.
+			'i18nPlural' => self::js_plural_forms(),
 			// Installed admin languages for Your profile's Language picker.
 			'languages' => self::available_languages(),
 			'caps'     => array(
@@ -942,6 +1142,12 @@ class Minimal_Admin {
 				'updateLanguages' => current_user_can( 'update_languages' ),
 				'installThemes' => current_user_can( 'install_themes' ),
 				'settings'     => current_user_can( 'manage_options' ),
+				// Licences are network-scoped on multisite (see
+				// minimal_admin_licenses_can_manage): the Licenses tab would 403
+				// for a subsite administrator, so don't offer it to them.
+				'licenses'     => function_exists( 'minimal_admin_licenses_can_manage' )
+					? minimal_admin_licenses_can_manage()
+					: current_user_can( 'manage_options' ),
 				'moderate'     => current_user_can( 'moderate_comments' ),
 				'terms'        => current_user_can( 'manage_categories' ),
 				'upload'       => current_user_can( 'upload_files' ),
@@ -983,6 +1189,13 @@ class Minimal_Admin {
 				// from unfiltered_html; multisite keeps it super-admin-only.
 				'editCss'      => current_user_can( 'edit_css' ),
 			),
+			// Post types (by REST base) whose OTHER authors' items this user
+			// cannot edit. wp/v2/<type>?context=edit drops those rows from the
+			// body but still counts them in X-WP-Total, so an author would see
+			// "16 items" above their own two. The client scopes those requests
+			// to author=<me> instead, which makes header and body agree.
+			// Empty for anyone holding edit_others_* everywhere (admins).
+			'ownOnly'  => self::own_only_types(),
 			// Multisite context: users are network-shared (delete becomes
 			// remove-from-site, profile edits need network caps), plugins can
 			// be network-activated. Client views branch on this.
@@ -996,6 +1209,21 @@ class Minimal_Admin {
 			'wc'       => class_exists( 'WooCommerce' ),
 			// WooCommerce Subscriptions extension (wc/v3/subscriptions REST).
 			'wcs'      => class_exists( 'WooCommerce' ) && class_exists( 'WC_Subscriptions' ),
+			// Order status labels keyed by REST slug (WC stores them 'wc-'
+			// prefixed). WC owns this vocabulary, translations and all, and
+			// plugins register their own statuses into it — badges and the
+			// status picker read it instead of humanizing the slug.
+			'wcOrderStatuses' => function_exists( 'wc_get_order_statuses' )
+				? (object) array_combine(
+					array_map(
+						static function ( $slug ) {
+							return preg_replace( '/^wc-/', '', $slug );
+						},
+						array_keys( wc_get_order_statuses() )
+					),
+					array_values( wc_get_order_statuses() )
+				)
+				: (object) array(),
 			// WooCommerce low-stock threshold (Settings → Products → Inventory).
 			// Used by the Products "Low stock" filter fallback when Analytics
 			// lookup tables lag a fresh write.
@@ -1143,11 +1371,54 @@ class Minimal_Admin {
 			 * Overview banner warning when a maintenance/coming-soon/password
 			 * plugin or "discourage search engines" is hiding the site.
 			 */
-			'visibility' => function_exists( 'minimal_admin_site_visibility' ) ? minimal_admin_site_visibility() : null,
+			// The /visibility ROUTE is manage_options, but this payload rides
+			// the SPA's own edit_posts gate, so the two disagreed and an author
+			// was handed the provider identities (which maintenance or
+			// password plugin is in use) that REST withholds from them. Ship
+			// the state to everyone — the banner needs it — and the provider
+			// list only to the tier that can act on it.
+			'visibility' => function_exists( 'minimal_admin_site_visibility' )
+				? self::visibility_for_current_user()
+				: null,
 		);
 
-		include MINIMAL_ADMIN_DIR . 'includes/template.php';
-		exit;
+		return $boot;
+	}
+
+	/**
+	 * The subset of the boot payload that changes with the reader's locale.
+	 *
+	 * Everything here is text the SERVER translated: the JED catalog the app
+	 * itself renders from, plus labels other code already resolved through
+	 * __() before the payload was built (role names, surface descriptors,
+	 * post formats). None of it re-translates on the client, so a language
+	 * switch has to fetch it again or the nav keeps the old language while
+	 * the views change.
+	 *
+	 * Served by GET minimal-admin/v1/boot-locale, which route_locale() has
+	 * already scoped to the user's language — so simply building the payload
+	 * in that request yields the new locale.
+	 *
+	 * @return array
+	 */
+	public static function locale_payload() {
+		$boot = self::boot_payload();
+		$keys = array(
+			'i18n', 'i18nPlural', 'roles', 'surfaces', 'editorPanels', 'hidden',
+			'menuRemoved', 'builders', 'designs', 'editorCommands', 'blockForms',
+			'insertBlocks', 'imageBlocks', 'postFormats', 'visibility', 'languages',
+			'appearanceSlots',
+		);
+		$out = array_intersect_key( $boot, array_flip( $keys ) );
+
+		// Only the ROLE is taken from the user block. Sending the whole thing
+		// would also send appearance, which the client may have changed since
+		// boot, and patching it back would silently revert their colour scheme.
+		$out['userRole'] = isset( $boot['user']['role'] ) ? $boot['user']['role'] : '';
+		$out['locale']   = get_user_locale();
+		$out['rtl']      = (bool) is_rtl();
+
+		return $out;
 	}
 
 	/**
@@ -1551,6 +1822,56 @@ class Minimal_Admin {
 	 *
 	 * @return bool
 	 */
+	/**
+	 * Serve Minimal's own route in the USER's language.
+	 *
+	 * core's determine_locale() uses the user's language only when
+	 * is_admin(), and Minimal deliberately is not wp-admin: it renders at
+	 * /minimal-admin/ on the front end. Without this the two halves of the same
+	 * screen disagree. Someone who picks German in Your profile on an English
+	 * site gets a German app (js_translations() reads get_user_locale()) with
+	 * every PHP string still in English, and is_rtl() never becomes true for
+	 * them, so a Persian or Arabic user never gets a right-to-left layout no
+	 * matter what they choose.
+	 *
+	 * Scoped to Minimal's own requests. Widening it would change the language of
+	 * the front end for everybody.
+	 *
+	 * @param string $locale Locale core determined.
+	 * @return string
+	 */
+	public static function route_locale( $locale ) {
+		// This filter runs during locale setup, long before the query is
+		// parsed and possibly before pluggable functions exist, so the route
+		// is matched on the request URI and every dependency is guarded.
+		if ( is_admin() || wp_doing_cron() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
+			return $locale;
+		}
+		if ( ! function_exists( 'wp_get_current_user' ) || ! function_exists( 'get_user_locale' ) ) {
+			return $locale;
+		}
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		if ( '' === $uri ) {
+			return $locale;
+		}
+		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+		$route = isset( $_GET['rest_route'] ) ? (string) wp_unslash( $_GET['rest_route'] ) : '';
+		// Minimal's app route and Minimal's OWN REST namespace only. Widening this
+		// to every /wp-json/ request would re-language other plugins'
+		// endpoints on this site, which is not Minimal's call to make.
+		$is_app = (bool) preg_match( '#(^|/)minimal-admin(/|$)#', $path );
+		$is_rest = false !== strpos( $path, '/wp-json/minimal-admin/' )
+			|| 0 === strpos( $route, '/minimal-admin/' );
+		if ( ! $is_app && ! $is_rest ) {
+			return $locale;
+		}
+		if ( ! is_user_logged_in() ) {
+			return $locale;
+		}
+		$user_locale = get_user_locale();
+		return $user_locale ? $user_locale : $locale;
+	}
+
 	public static function load_textdomain() {
 		load_plugin_textdomain( 'minimal-admin', false, dirname( plugin_basename( MINIMAL_ADMIN_FILE ) ) . '/languages' );
 	}
@@ -1560,24 +1881,44 @@ class Minimal_Admin {
 	 * string (English is the source vocabulary — a missing catalog or entry
 	 * falls through to the literal, so the app runs with zero tooling).
 	 *
-	 * Files are the standard JED JSON that `wp i18n make-json` emits into
-	 * languages/ from a translated .po (one file per locale; the suffix is
-	 * the md5 of the script path). Values are a string, or an array of
-	 * plural forms for _n() entries. The filter lets sites and fixtures
-	 * inject or override entries without shipping files.
+	 * Files are the standard JED JSON that `wp i18n make-json` emits from a
+	 * translated .po (one file per locale; the suffix is the md5 of the
+	 * script path). Values are a string, or an array of plural forms for
+	 * _n() entries. The filter lets sites and fixtures inject or override
+	 * entries without shipping files.
+	 *
+	 * TWO directories, in core's own precedence order. Language packs
+	 * installed through the update system land in WP_LANG_DIR/plugins/,
+	 * NOT in the plugin's own languages/ — and WP_Textdomain_Registry
+	 * checks WP_LANG_DIR/plugins FIRST, so a pack wins over anything
+	 * bundled. Reading only the plugin directory (as this did) left PHP
+	 * translated while the whole app stayed English, which is the exact
+	 * half-translated state a locale is supposed to avoid.
 	 */
 	public static function js_translations() {
 		$locale = get_user_locale();
 		$map    = array();
-		if ( 0 !== strpos( $locale, 'en' ) ) {
-			foreach ( glob( MINIMAL_ADMIN_DIR . 'languages/minimal-admin-' . $locale . '-*.json' ) ?: array() as $file ) {
-				$jed     = json_decode( (string) file_get_contents( $file ), true );
-				$entries = $jed['locale_data']['messages'] ?? array();
-				foreach ( (array) $entries as $key => $forms ) {
-					if ( '' === $key || ! is_array( $forms ) || '' === (string) ( $forms[0] ?? '' ) ) {
-						continue;
+		// Only en_US is the source vocabulary and needs no catalog. The other
+		// English variants DO: en_GB (plus en_AU/en_CA/en_NZ/en_ZA) carry a
+		// real spelling catalog, so this must not skip every locale starting
+		// with "en".
+		if ( 'en_US' !== $locale ) {
+			// Later directories override earlier ones, so the bundled
+			// fallback is read first and the language pack lands on top.
+			$dirs = array(
+				MINIMAL_ADMIN_DIR . 'languages',
+				WP_LANG_DIR . '/plugins',
+			);
+			foreach ( $dirs as $dir ) {
+				foreach ( glob( $dir . '/minimal-admin-' . $locale . '-*.json' ) ?: array() as $file ) {
+					$jed     = json_decode( (string) file_get_contents( $file ), true );
+					$entries = $jed['locale_data']['messages'] ?? array();
+					foreach ( (array) $entries as $key => $forms ) {
+						if ( '' === $key || ! is_array( $forms ) || '' === (string) ( $forms[0] ?? '' ) ) {
+							continue;
+						}
+						$map[ $key ] = count( $forms ) > 1 ? array_values( $forms ) : (string) $forms[0];
 					}
-					$map[ $key ] = count( $forms ) > 1 ? array_values( $forms ) : (string) $forms[0];
 				}
 			}
 		}
@@ -1588,6 +1929,45 @@ class Minimal_Admin {
 		 * @param string $locale The user locale being served.
 		 */
 		return apply_filters( 'minimal_admin_js_translations', $map, $locale );
+	}
+
+	/**
+	 * The locale's Plural-Forms expression, read from the same JED files
+	 * js_translations() uses. JED keeps it on the reserved '' entry, which
+	 * that method skips because it carries no message.
+	 *
+	 * Returned verbatim (for example
+	 * "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : …);") and evaluated on
+	 * the client by a small parser, never by eval: a catalog is a
+	 * supply-chain input like any other download.
+	 *
+	 * @return string Empty when the locale has no catalog (English falls
+	 *                through to the source strings anyway).
+	 */
+	public static function js_plural_forms() {
+		$locale = get_user_locale();
+		$rule   = '';
+		if ( 'en_US' === $locale ) {
+			return apply_filters( 'minimal_admin_js_plural_forms', $rule, $locale );
+		}
+		foreach ( array( MINIMAL_ADMIN_DIR . 'languages', WP_LANG_DIR . '/plugins' ) as $dir ) {
+			foreach ( glob( $dir . '/minimal-admin-' . $locale . '-*.json' ) ?: array() as $file ) {
+				$jed  = json_decode( (string) file_get_contents( $file ), true );
+				$head = $jed['locale_data']['messages'][''] ?? array();
+				if ( ! empty( $head['plural-forms'] ) ) {
+					$rule = (string) $head['plural-forms'];
+				} elseif ( ! empty( $head['plural_forms'] ) ) {
+					$rule = (string) $head['plural_forms'];
+				}
+			}
+		}
+		/**
+		 * Filter the SPA plural-forms rule.
+		 *
+		 * @param string $rule   The gettext Plural-Forms expression.
+		 * @param string $locale The user locale being served.
+		 */
+		return apply_filters( 'minimal_admin_js_plural_forms', $rule, $locale );
 	}
 
 	public static function comments_enabled() {

@@ -33,6 +33,39 @@ function minimal_admin_simple_history_admin_url() {
 }
 
 /**
+ * The `logger IN (...)` fragment Simple History itself appends to every query.
+ *
+ * Their Log_Query never reads the table without it: each logger declares a
+ * capability, so an Editor is shown posts and media but never the user,
+ * options, plugin or core-update loggers. The collection route rides their own
+ * REST endpoint and inherits that for free. Anything here that queries the
+ * table directly has to reproduce it, or it reports on rows the same caller is
+ * refused when they ask for them one by one.
+ *
+ * Returns null when their API is missing, so the caller can fall back to
+ * refusing rather than to counting everything.
+ *
+ * @return string|null SQL fragment, already escaped by Simple History.
+ */
+function minimal_admin_simple_history_logger_scope() {
+	if ( ! class_exists( 'Simple_History\\Simple_History' ) ) {
+		return null;
+	}
+	try {
+		$sh = Simple_History\Simple_History::get_instance();
+		if ( ! method_exists( $sh, 'get_loggers_that_user_can_read' ) ) {
+			return null;
+		}
+		$sql = (string) $sh->get_loggers_that_user_can_read( get_current_user_id(), 'sql' );
+		// They return "(NULL)" when the user may read nothing, which matches no
+		// rows — the correct answer, not an empty filter.
+		return '' !== $sql ? $sql : null;
+	} catch ( \Throwable $e ) {
+		return null;
+	}
+}
+
+/**
  * Status-card model: 24h / 7d / all-time counts + level mix + last event.
  *
  * @return array{rows:array,actions:array}
@@ -43,27 +76,41 @@ function minimal_admin_simple_history_status_model() {
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- prefix-derived table.
 	if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
 		return array(
-			'rows'    => array( array( 'label' => 'Events', 'value' => '—', 'hint' => 'History table not found' ) ),
-			'actions' => array( array( 'label' => 'Open Simple History ↗', 'href' => minimal_admin_simple_history_admin_url() ) ),
+			'rows'    => array( array( 'label' => __( 'Events', 'minimal-admin' ), 'value' => '—', 'hint' => __( 'History table not found', 'minimal-admin' ) ) ),
+			'actions' => array( array( 'label' => __( 'Open Simple History ↗', 'minimal-admin' ), 'href' => minimal_admin_simple_history_admin_url() ) ),
 		);
 	}
+	// Count only what this caller is allowed to read, exactly as their own
+	// Log_Query does. Without it an Editor gets a live failed-login counter
+	// and an administrator-activity timeline from a screen the plugin blanks
+	// for them: failed logins are recorded by SimpleUserLogger, which asks
+	// for edit_users.
+	$scope = minimal_admin_simple_history_logger_scope();
+	if ( null === $scope ) {
+		return array(
+			'rows'    => array( array( 'label' => __( 'Events', 'minimal-admin' ), 'value' => '—', 'hint' => __( 'Cannot determine which loggers you may read', 'minimal-admin' ) ) ),
+			'actions' => array( array( 'label' => __( 'Open Simple History ↗', 'minimal-admin' ), 'href' => minimal_admin_simple_history_admin_url() ) ),
+		);
+	}
+	$readable = " AND logger IN {$scope}";
+
 	// SH stores `date` as site-local MySQL datetime (matches list date_local).
 	$now_ts    = current_time( 'timestamp' );
 	$since_24h = wp_date( 'Y-m-d H:i:s', $now_ts - DAY_IN_SECONDS );
 	$since_7d  = wp_date( 'Y-m-d H:i:s', $now_ts - ( 7 * DAY_IN_SECONDS ) );
 
-	$total   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
-	$day     = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE date >= %s", $since_24h ) );
-	$week    = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE date >= %s", $since_7d ) );
+	$total   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE 1=1{$readable}" );
+	$day     = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE date >= %s{$readable}", $since_24h ) );
+	$week    = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE date >= %s{$readable}", $since_7d ) );
 	$errors  = (int) $wpdb->get_var( $wpdb->prepare(
-		"SELECT COUNT(*) FROM {$table} WHERE date >= %s AND level IN ('emergency','alert','critical','error')",
+		"SELECT COUNT(*) FROM {$table} WHERE date >= %s AND level IN ('emergency','alert','critical','error'){$readable}",
 		$since_7d
 	) );
 	$warns   = (int) $wpdb->get_var( $wpdb->prepare(
-		"SELECT COUNT(*) FROM {$table} WHERE date >= %s AND level = 'warning'",
+		"SELECT COUNT(*) FROM {$table} WHERE date >= %s AND level = 'warning'{$readable}",
 		$since_7d
 	) );
-	$last    = $wpdb->get_var( "SELECT date FROM {$table} ORDER BY id DESC LIMIT 1" );
+	$last    = $wpdb->get_var( "SELECT date FROM {$table} WHERE 1=1{$readable} ORDER BY id DESC LIMIT 1" );
 	// phpcs:enable
 
 	$last_label = '—';
@@ -71,7 +118,11 @@ function minimal_admin_simple_history_status_model() {
 		try {
 			$dt = date_create( $last, wp_timezone() );
 			if ( $dt ) {
-				$last_label = human_time_diff( $dt->getTimestamp(), time() ) . ' ago';
+				$last_label = sprintf(
+					/* translators: %s: human-readable time since the last event. */
+					__( '%s ago', 'minimal-admin' ),
+					human_time_diff( $dt->getTimestamp(), time() )
+				);
 			}
 		} catch ( \Throwable $e ) {
 			$last_label = (string) $last;
@@ -89,25 +140,26 @@ function minimal_admin_simple_history_status_model() {
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Events (24h)',
+				'label' => __( 'Events (24h)', 'minimal-admin' ),
 				'value' => number_format_i18n( $day ),
-				'hint'  => number_format_i18n( $week ) . ' in the last 7 days',
+				/* translators: %s: number of events logged in the last 7 days. */
+				'hint'  => sprintf( __( '%s in the last 7 days', 'minimal-admin' ), number_format_i18n( $week ) ),
 			),
 			array(
-				'label' => 'Events all-time',
+				'label' => __( 'Events all-time', 'minimal-admin' ),
 				'value' => number_format_i18n( $total ),
 			),
 			array(
-				'label' => 'Last event',
+				'label' => __( 'Last event', 'minimal-admin' ),
 				'value' => $last_label,
 			),
 			array(
-				'label' => 'Severity (7d)',
-				'value' => $mix ? implode( ' · ', $mix ) : 'No errors or warnings',
+				'label' => __( 'Severity (7d)', 'minimal-admin' ),
+				'value' => $mix ? implode( ' · ', $mix ) : __( 'No errors or warnings', 'minimal-admin' ),
 			),
 		),
 		'actions' => array(
-			array( 'label' => 'Open Simple History ↗', 'href' => minimal_admin_simple_history_admin_url() ),
+			array( 'label' => __( 'Open Simple History ↗', 'minimal-admin' ), 'href' => minimal_admin_simple_history_admin_url() ),
 		),
 	);
 }
@@ -118,7 +170,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['simple-history'] = array(
-		'label'      => 'Activity Log',
+		'label'      => __( 'Activity Log', 'minimal-admin' ),
 		'family'     => 'activity-log',
 		'sub'        => 'Simple History',
 		'icon'       => 'clock',
@@ -139,12 +191,12 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'allLabel' => 'All',
 			),
 			'columns'   => array(
-				array( 'key' => 'message', 'label' => 'Event', 'format' => 'title' ),
-				array( 'key' => 'initiator_data.user_login', 'altKey' => 'initiator', 'label' => 'Who' ),
-				array( 'key' => 'loglevel', 'label' => 'Level', 'format' => 'pill' ),
+				array( 'key' => 'message', 'label' => __( 'Event', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'initiator_data.user_login', 'altKey' => 'initiator', 'label' => __( 'Who', 'minimal-admin' ) ),
+				array( 'key' => 'loglevel', 'label' => __( 'Level', 'minimal-admin' ), 'format' => 'pill' ),
 				// date_local is site-local (matches parseWpDate). date_gmt
 				// without a zone suffix used to render "in 4h" on EDT.
-				array( 'key' => 'date_local', 'altKey' => 'date_gmt', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'date_local', 'altKey' => 'date_gmt', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'skip' => array(

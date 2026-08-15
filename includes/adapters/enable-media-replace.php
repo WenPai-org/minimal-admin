@@ -50,13 +50,13 @@ function minimal_admin_emr_replace( $req ) {
 	$post_id = (int) $req['id'];
 	$post    = get_post( $post_id );
 	if ( ! $post || 'attachment' !== $post->post_type ) {
-		return new WP_Error( 'minimal_emr_not_attachment', 'Not a media item.', array( 'status' => 404 ) );
+		return new WP_Error( 'minimal_emr_not_attachment', __( 'Not a media item.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 
 	$files = $req->get_file_params();
 	$file  = isset( $files['file'] ) ? $files['file'] : null;
 	if ( ! $file || ! empty( $file['error'] ) || empty( $file['tmp_name'] ) || ! is_uploaded_file( $file['tmp_name'] ) ) {
-		return new WP_Error( 'minimal_emr_no_file', 'The upload did not arrive. Try again.', array( 'status' => 400 ) );
+		return new WP_Error( 'minimal_emr_no_file', __( 'The upload did not arrive. Try again.', 'minimal-admin' ), array( 'status' => 400 ) );
 	}
 
 	// Validate the upload the way core does, then hold EMR's plain-replace
@@ -64,13 +64,14 @@ function minimal_admin_emr_replace( $req ) {
 	// the same type or the extension would lie about what it serves.
 	$check = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'] );
 	if ( empty( $check['ext'] ) || empty( $check['type'] ) ) {
-		return new WP_Error( 'minimal_emr_bad_type', 'That file type is not allowed here.', array( 'status' => 400 ) );
+		return new WP_Error( 'minimal_emr_bad_type', __( 'That file type is not allowed here.', 'minimal-admin' ), array( 'status' => 400 ) );
 	}
 	$current_mime = get_post_mime_type( $post_id );
 	if ( $current_mime && $check['type'] !== $current_mime ) {
 		return new WP_Error(
 			'minimal_emr_type_mismatch',
-			sprintf( 'Replacing in place keeps the same URL, so the new file must stay %s. To swap the type, upload it as a new file.', $current_mime ),
+			/* translators: %s: MIME type of the current attachment (e.g. image/jpeg). */
+			sprintf( __( 'Replacing in place keeps the same URL, so the new file must stay %s. To swap the type, upload it as a new file.', 'minimal-admin' ), $current_mime ),
 			array( 'status' => 400 )
 		);
 	}
@@ -95,14 +96,14 @@ function minimal_admin_emr_replace( $req ) {
 		if ( false === $controller->setupParams( $params ) ) {
 			return new WP_Error(
 				'minimal_emr_setup_failed',
-				'Enable Media Replace refused the file (error ' . (int) $controller->returnLastError() . ').',
+				__( 'Enable Media Replace refused the file (error ', 'minimal-admin' ) . (int) $controller->returnLastError() . ').',
 				array( 'status' => 400 )
 			);
 		}
 		$controller->run();
 		$err = $controller->returnLastError();
 		if ( $err ) {
-			return new WP_Error( 'minimal_emr_failed', 'The replace did not complete (error ' . (int) $err . ').', array( 'status' => 500 ) );
+			return new WP_Error( 'minimal_emr_failed', __( 'The replace did not complete (error ', 'minimal-admin' ) . (int) $err . ').', array( 'status' => 500 ) );
 		}
 	} catch ( \Throwable $e ) {
 		return new WP_Error( 'minimal_emr_failed', $e->getMessage(), array( 'status' => 500 ) );

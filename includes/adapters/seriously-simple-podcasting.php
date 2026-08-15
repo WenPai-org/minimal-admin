@@ -151,7 +151,7 @@ add_filter( 'minimal_admin_editor_panels', function ( $panels ) {
 		return $panels;
 	}
 	$panels['ssp'] = array(
-		'label'       => 'Podcast episode',
+		'label'       => __( 'Podcast episode', 'minimal-admin' ),
 		'sub'         => 'Seriously Simple Podcasting',
 		'cap'         => 'edit_posts',
 		'fieldsRoute' => 'minimal-admin/v1/ssp/fields?post_id={id}&post_type={type}',
@@ -190,7 +190,7 @@ add_action( 'rest_api_init', function () {
 			if ( $post_id ) {
 				$post = get_post( $post_id );
 				if ( $post && ! current_user_can( 'edit_post', $post_id ) ) {
-					return new WP_Error( 'rest_forbidden', 'You cannot edit this post.', array( 'status' => 403 ) );
+					return new WP_Error( 'rest_forbidden', __( 'You cannot edit this post.', 'minimal-admin' ), array( 'status' => 403 ) );
 				}
 				if ( $post ) {
 					$post_type = $post->post_type;
@@ -205,7 +205,7 @@ add_action( 'rest_api_init', function () {
 			return rest_ensure_response( array(
 				'groups' => array(
 					array(
-						'group'  => 'Episode details',
+						'group'  => __( 'Episode details', 'minimal-admin' ),
 						'fields' => $mapped['fields'],
 						'locked' => $mapped['locked'],
 					),
@@ -241,7 +241,7 @@ add_action( 'rest_api_init', function () {
 					minimal_admin_ssp_write_values( $post->ID, $value );
 				},
 				'schema'          => array(
-					'description' => 'Seriously Simple Podcasting episode fields for Minimal Admin.',
+					'description' => __( 'Seriously Simple Podcasting episode fields for Minimal Admin.', 'minimal-admin' ),
 					'type'        => 'object',
 					'context'     => array( 'edit' ),
 				),

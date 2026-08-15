@@ -66,7 +66,7 @@ add_filter( 'minimal_admin_editor_panels', function ( $panels ) {
 		return $panels;
 	}
 	$panels['tec'] = array(
-		'label'       => 'Event details',
+		'label'       => __( 'Event details', 'minimal-admin' ),
 		'sub'         => 'The Events Calendar',
 		'cap'         => 'edit_posts',
 		'fieldsRoute' => 'minimal-admin/v1/tec/fields?post_id={id}&post_type={type}',
@@ -98,29 +98,29 @@ add_action( 'rest_api_init', function () {
 				return rest_ensure_response( array( 'groups' => array() ) );
 			}
 			if ( $post_id && ! current_user_can( 'edit_post', $post_id ) ) {
-				return new WP_Error( 'rest_forbidden', 'You cannot edit this event.', array( 'status' => 403 ) );
+				return new WP_Error( 'rest_forbidden', __( 'You cannot edit this event.', 'minimal-admin' ), array( 'status' => 403 ) );
 			}
 			$fields = array(
-				array( 'name' => 'start', 'label' => 'Starts', 'type' => 'text', 'placeholder' => 'YYYY-MM-DD HH:MM' ),
-				array( 'name' => 'end', 'label' => 'Ends', 'type' => 'text', 'placeholder' => 'YYYY-MM-DD HH:MM' ),
-				array( 'name' => 'all_day', 'label' => 'All-day event', 'type' => 'true_false' ),
-				array( 'name' => 'venue', 'label' => 'Venue', 'type' => 'suggest', 'route' => 'minimal-admin/v1/tec/suggest?kind=venue', 'placeholder' => 'Search venues…' ),
+				array( 'name' => 'start', 'label' => __( 'Starts', 'minimal-admin' ), 'type' => 'text', 'placeholder' => __( 'YYYY-MM-DD HH:MM', 'minimal-admin' ) ),
+				array( 'name' => 'end', 'label' => __( 'Ends', 'minimal-admin' ), 'type' => 'text', 'placeholder' => __( 'YYYY-MM-DD HH:MM', 'minimal-admin' ) ),
+				array( 'name' => 'all_day', 'label' => __( 'All-day event', 'minimal-admin' ), 'type' => 'true_false' ),
+				array( 'name' => 'venue', 'label' => __( 'Venue', 'minimal-admin' ), 'type' => 'suggest', 'route' => 'minimal-admin/v1/tec/suggest?kind=venue', 'placeholder' => __( 'Search venues…', 'minimal-admin' ) ),
 			);
 			$locked = 0;
 			if ( $post_id && minimal_admin_tec_multi_organizer( $post_id ) ) {
 				// Several organizers: single-pick would silently drop the rest.
 				$locked++;
 			} else {
-				$fields[] = array( 'name' => 'organizer', 'label' => 'Organizer', 'type' => 'suggest', 'route' => 'minimal-admin/v1/tec/suggest?kind=organizer', 'placeholder' => 'Search organizers…' );
+				$fields[] = array( 'name' => 'organizer', 'label' => __( 'Organizer', 'minimal-admin' ), 'type' => 'suggest', 'route' => 'minimal-admin/v1/tec/suggest?kind=organizer', 'placeholder' => __( 'Search organizers…', 'minimal-admin' ) );
 			}
-			$fields[] = array( 'name' => 'cost', 'label' => 'Cost', 'type' => 'text', 'placeholder' => 'e.g. 25 or Free' );
-			$fields[] = array( 'name' => 'website', 'label' => 'Event website', 'type' => 'url' );
+			$fields[] = array( 'name' => 'cost', 'label' => __( 'Cost', 'minimal-admin' ), 'type' => 'text', 'placeholder' => __( 'e.g. 25 or Free', 'minimal-admin' ) );
+			$fields[] = array( 'name' => 'website', 'label' => __( 'Event website', 'minimal-admin' ), 'type' => 'url' );
 			// Recurrence / tickets / timezone stay TEC's (plus the organizer
 			// row when locked above).
 			$locked += 1;
 			return rest_ensure_response( array(
 				'groups' => array(
-					array( 'group' => 'Event details', 'fields' => $fields, 'locked' => $locked ),
+					array( 'group' => __( 'Event details', 'minimal-admin' ), 'fields' => $fields, 'locked' => $locked ),
 				),
 			) );
 		},
@@ -233,7 +233,8 @@ add_action( 'rest_api_init', function () {
 					}
 					$ts = strtotime( $raw );
 					if ( ! $ts ) {
-						return new WP_Error( 'minimal_tec_bad_date', sprintf( 'Could not read the %s date — use YYYY-MM-DD HH:MM.', strtolower( $side ) ), array( 'status' => 400 ) );
+						/* translators: %s: which date could not be parsed, "start" or "end". */
+						return new WP_Error( 'minimal_tec_bad_date', sprintf( __( 'Could not read the %s date — use YYYY-MM-DD HH:MM.', 'minimal-admin' ), strtolower( $side ) ), array( 'status' => 400 ) );
 					}
 					// The exact shape TEC's own REST endpoint sends.
 					$data[ "Event{$side}Date" ] = date( 'Y-m-d', $ts );
@@ -265,12 +266,12 @@ add_action( 'rest_api_init', function () {
 				}
 				if ( false === $ok ) {
 					// Their invalid-meta path (e.g. end before start).
-					return new WP_Error( 'minimal_tec_refused', 'The Events Calendar refused those event details (check that the end is after the start).', array( 'status' => 400 ) );
+					return new WP_Error( 'minimal_tec_refused', __( 'The Events Calendar refused those event details (check that the end is after the start).', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				return null;
 			},
 			'schema'          => array(
-				'description' => 'The Events Calendar event details for Minimal Admin.',
+				'description' => __( 'The Events Calendar event details for Minimal Admin.', 'minimal-admin' ),
 				'type'        => 'object',
 				'context'     => array( 'edit' ),
 			),

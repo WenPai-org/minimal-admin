@@ -308,6 +308,32 @@ class Minimal_Admin_Notices {
 	}
 
 	/**
+	 * Visible control text without screen-reader-only accessibility suffixes.
+	 *
+	 * WordPress and plugins commonly append text such as "(opens in a new
+	 * tab)" inside .screen-reader-text. Minimal supplies its own accessible
+	 * control and external-link marker, so copying that hidden suffix into
+	 * the visible button duplicates the affordance and can leave English in
+	 * an otherwise translated panel.
+	 */
+	private static function control_text_of( $node ) {
+		$parts = array();
+		$xpath = new DOMXPath( $node->ownerDocument );
+		$query = './/text()['
+			. 'not(ancestor::*[contains(concat(" ", normalize-space(@class), " "), " screen-reader-text ")])'
+			. ' and not(ancestor::*[@aria-hidden="true"])'
+			. ']';
+		foreach ( $xpath->query( $query, $node ) as $text ) {
+			$chunk = preg_replace( '/\s+/u', ' ', trim( (string) $text->nodeValue ) );
+			if ( '' !== $chunk ) {
+				$parts[] = $chunk;
+			}
+		}
+		$label = implode( ' ', $parts );
+		return function_exists( 'mb_substr' ) ? mb_substr( $label, 0, 80 ) : substr( $label, 0, 80 );
+	}
+
+	/**
 	 * Up to 3 action links, absolutized; text and URL only.
 	 *
 	 * Links carrying our capture params are notices that built their href
@@ -337,12 +363,7 @@ class Minimal_Admin_Notices {
 			}
 			$class = (string) $a->getAttribute( 'class' );
 			$id    = (string) $a->getAttribute( 'id' );
-			$label = preg_replace( '/\s+/u', ' ', trim( (string) $a->textContent ) );
-			if ( function_exists( 'mb_substr' ) ) {
-				$label = mb_substr( $label, 0, 80 );
-			} else {
-				$label = substr( $label, 0, 80 );
-			}
+			$label = self::control_text_of( $a );
 
 			// A button element IS a control (anchors can be decoration), but
 			// only ones Minimal can honestly answer are surfaced: a whitelisted
@@ -376,7 +397,7 @@ class Minimal_Admin_Notices {
 			}
 
 			$href = trim( (string) $a->getAttribute( 'href' ) );
-			$label = $label ?: 'Open';
+			$label = $label ?: __( 'Open', 'minimal-admin' );
 
 			// JS-only button CTAs (href="#" / empty / javascript:).
 			$is_hash = ( '' === $href || '#' === $href || 0 === strpos( $href, '#' ) || 0 === stripos( $href, 'javascript:' ) );
@@ -572,6 +593,9 @@ class Minimal_Admin_Notices {
 				'args' => array(
 					'allow_usage_tracking' => array( 'true', 'false' ),
 				),
+				// The handler re-checks this itself; declaring it here is what
+				// the dispatcher enforces before the handler is reached.
+				'cap'  => 'manage_options',
 				// Mirror the plugin handler: no arbitrary POST keys.
 				'run'  => array( __CLASS__, 'run_everest_allow_usage' ),
 			),
@@ -579,13 +603,18 @@ class Minimal_Admin_Notices {
 				'args' => array(
 					'consent' => array( 'yes', 'no' ),
 				),
+				'cap'  => 'manage_options',
 				'run'  => array( __CLASS__, 'run_sbi_review_consent' ),
 			),
 		);
 		/**
 		 * Filter the whitelist of notice admin-ajax actions Minimal may run.
 		 *
-		 * @param array $map action => { args, run }.
+		 * `cap` is REQUIRED: the route this reaches is only edit_posts, so the
+		 * dispatcher refuses any entry that does not declare the capability
+		 * its handler needs, and checks it before calling `run`.
+		 *
+		 * @param array $map action => { args, cap, run }.
 		 */
 		return apply_filters( 'minimal_admin_notice_ajax_actions', $map );
 	}
@@ -600,9 +629,21 @@ class Minimal_Admin_Notices {
 	public static function run_ajax( $action, $args = array() ) {
 		$map = self::ajax_whitelist();
 		if ( ! isset( $map[ $action ] ) || ! is_callable( $map[ $action ]['run'] ) ) {
-			return new WP_Error( 'unknown_action', 'That notice action is not supported.', array( 'status' => 400 ) );
+			return new WP_Error( 'unknown_action', __( 'That notice action is not supported.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
-		$def  = $map[ $action ];
+		$def = $map[ $action ];
+		// Every entry must declare the capability its handler needs, and the
+		// dispatcher enforces it here. The route itself is only edit_posts,
+		// and the whitelist is filterable with the docs pointing third parties
+		// at it, so without this a registrant that mirrors a plugin's
+		// admin-ajax handler and forgets its own check would hand a
+		// contributor a privileged option write.
+		if ( empty( $def['cap'] ) || ! is_string( $def['cap'] ) ) {
+			return new WP_Error( 'no_cap', __( 'That notice action does not declare a capability.', 'minimal-admin' ), array( 'status' => 500 ) );
+		}
+		if ( ! current_user_can( $def['cap'] ) ) {
+			return new WP_Error( 'forbidden', __( 'You cannot run that notice action.', 'minimal-admin' ), array( 'status' => 403 ) );
+		}
 		$safe = array();
 		foreach ( (array) ( $def['args'] ?? array() ) as $key => $allowed ) {
 			if ( ! isset( $args[ $key ] ) ) {
@@ -621,7 +662,7 @@ class Minimal_Admin_Notices {
 	/** Everest Forms allow-usage notice — mirrors allow_usage_dismiss without wp_die(). */
 	public static function run_everest_allow_usage( $args ) {
 		if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'manage_everest_forms' ) ) {
-			return new WP_Error( 'forbidden', 'You cannot dismiss this notice.', array( 'status' => 403 ) );
+			return new WP_Error( 'forbidden', __( 'You cannot dismiss this notice.', 'minimal-admin' ), array( 'status' => 403 ) );
 		}
 		update_option( 'everest_forms_allow_usage_notice_shown', true );
 		if ( isset( $args['allow_usage_tracking'] ) && 'true' === $args['allow_usage_tracking'] ) {
@@ -640,7 +681,7 @@ class Minimal_Admin_Notices {
 		$cap = current_user_can( 'manage_instagram_feed_options' ) ? 'manage_instagram_feed_options' : 'manage_options';
 		$cap = apply_filters( 'sbi_settings_pages_capability', $cap );
 		if ( ! current_user_can( $cap ) ) {
-			return new WP_Error( 'forbidden', 'You cannot answer this notice.', array( 'status' => 403 ) );
+			return new WP_Error( 'forbidden', __( 'You cannot answer this notice.', 'minimal-admin' ), array( 'status' => 403 ) );
 		}
 		$consent = ( isset( $args['consent'] ) && 'yes' === $args['consent'] ) ? 'yes' : 'no';
 		update_option( 'sbi_review_consent', $consent );

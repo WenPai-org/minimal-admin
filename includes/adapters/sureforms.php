@@ -84,7 +84,7 @@ function minimal_admin_sureforms_summary( array $data ) {
 	if ( strlen( $summary ) > 80 ) {
 		$summary = substr( $summary, 0, 80 ) . '…';
 	}
-	return $summary ?: '(empty entry)';
+	return $summary ?: __( '(empty entry)', 'minimal-admin' );
 }
 
 add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
@@ -94,7 +94,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		return $surfaces;
 	}
 	$surfaces['sureforms'] = array(
-		'label'      => 'Forms',
+		'label'      => __( 'Forms', 'minimal-admin' ),
 		'family'     => 'forms',
 		'group'      => 'workspace',
 		'sub'        => 'SureForms',
@@ -102,7 +102,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'cap'        => 'read', // real gate is minimal_admin_sureforms_can().
 		'status'     => array( 'route' => 'minimal-admin/v1/sureforms/status' ),
 		'collection' => array(
-			'viewLabel' => 'Entries',
+			'viewLabel' => __( 'Entries', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/sureforms/entries',
 			'pageQuery' => 'per_page=25&page={page}',
 			'search'    => 'search={q}',
@@ -113,10 +113,10 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'valueKey' => 'id',
 				'labelKey' => 'title',
 				'param'    => 'form_id',
-				'allLabel' => 'All entries',
+				'allLabel' => __( 'All entries', 'minimal-admin' ),
 			),
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'unread', 'Unread' ),
 					array( 'read', 'Read' ),
@@ -125,54 +125,54 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'query'   => 'status={v}',
 			),
 			'columns'   => array(
-				array( 'key' => 'summary', 'label' => 'Entry', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'form_title', 'label' => 'Form' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill', 'width' => '96px' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'summary', 'label' => __( 'Entry', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'form_title', 'label' => __( 'Form', 'minimal-admin' ) ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '96px' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/sureforms/entries/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Mark read',
+					'label'  => __( 'Mark read', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/sureforms/entries/{id}/status',
 					'body'   => array( 'status' => 'read' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'unread' ),
 				),
 				array(
-					'label'  => 'Mark unread',
+					'label'  => __( 'Mark unread', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/sureforms/entries/{id}/status',
 					'body'   => array( 'status' => 'unread' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'read' ),
 				),
 				array(
-					'label'   => 'Trash',
+					'label'   => __( 'Trash', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/sureforms/entries/{id}/status',
 					'body'    => array( 'status' => 'trash' ),
 					'when'    => array( 'key' => 'status', 'equals' => 'read' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/sureforms/entries/{id}',
-					'confirm' => 'Delete this entry permanently? There is no undo.',
+					'confirm' => __( 'Delete this entry permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'  => 'Mark read',
+					'label'  => __( 'Mark read', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/sureforms/entries/{id}/status',
 					'body'   => array( 'status' => 'read' ),
 				),
 				array(
-					'label'   => 'Trash',
+					'label'   => __( 'Trash', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/sureforms/entries/{id}/status',
 					'body'    => array( 'status' => 'trash' ),
@@ -274,7 +274,7 @@ add_action( 'rest_api_init', function () {
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE ID = %d", (int) $request['id'] ) );
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$data   = json_decode( (string) $row->form_data, true );
 				$data   = is_array( $data ) ? $data : array();
@@ -290,19 +290,19 @@ add_action( 'rest_api_init', function () {
 				}
 				$titles = minimal_admin_sureforms_form_titles();
 				$meta   = array(
-					array( 'label' => 'Form', 'value' => isset( $titles[ (int) $row->form_id ] ) ? $titles[ (int) $row->form_id ] : ( '#' . (int) $row->form_id ) ),
-					array( 'label' => 'Entry', 'value' => '#' . (int) $row->ID ),
-					array( 'label' => 'Status', 'value' => (string) $row->status ),
+					array( 'label' => __( 'Form', 'minimal-admin' ), 'value' => isset( $titles[ (int) $row->form_id ] ) ? $titles[ (int) $row->form_id ] : ( '#' . (int) $row->form_id ) ),
+					array( 'label' => __( 'Entry', 'minimal-admin' ), 'value' => '#' . (int) $row->ID ),
+					array( 'label' => __( 'Status', 'minimal-admin' ), 'value' => (string) $row->status ),
 				);
 				$iso = minimal_admin_db_local_to_utc_iso( $row->created_at );
 				if ( '' !== $iso ) {
-					$meta[] = array( 'label' => 'Submitted', 'value' => $iso );
+					$meta[] = array( 'label' => __( 'Submitted', 'minimal-admin' ), 'value' => $iso );
 				}
 				return rest_ensure_response( array(
 					'kind'     => 'entry',
 					'sections' => array(
-						array( 'title' => 'Answers', 'rows' => $answers ),
-						array( 'title' => 'Submission', 'rows' => $meta ),
+						array( 'title' => __( 'Answers', 'minimal-admin' ), 'rows' => $answers ),
+						array( 'title' => __( 'Submission', 'minimal-admin' ), 'rows' => $meta ),
 					),
 					'adminUrl' => admin_url( 'admin.php?page=sureforms_entries&entry_id=' . (int) $row->ID ),
 				) );
@@ -317,9 +317,9 @@ add_action( 'rest_api_init', function () {
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$deleted = $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE ID = %d", (int) $request['id'] ) );
 				if ( ! $deleted ) {
-					return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
-				return rest_ensure_response( array( 'deleted' => true, 'message' => 'Entry deleted.' ) );
+				return rest_ensure_response( array( 'deleted' => true, 'message' => __( 'Entry deleted.', 'minimal-admin' ) ) );
 			},
 		),
 	) );
@@ -330,14 +330,14 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$status = sanitize_key( (string) $request->get_param( 'status' ) );
 			if ( ! in_array( $status, array( 'read', 'unread', 'trash' ), true ) ) {
-				return new WP_Error( 'bad_status', 'Unknown status', array( 'status' => 400 ) );
+				return new WP_Error( 'bad_status', __( 'Unknown status', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			global $wpdb;
 			$table   = minimal_admin_sureforms_table();
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$updated = $wpdb->update( $table, array( 'status' => $status ), array( 'ID' => (int) $request['id'] ), array( '%s' ), array( '%d' ) );
 			if ( false === $updated ) {
-				return new WP_Error( 'update_failed', 'Could not update the entry.', array( 'status' => 500 ) );
+				return new WP_Error( 'update_failed', __( 'Could not update the entry.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
 			return rest_ensure_response( array( 'ok' => true, 'status' => $status ) );
 		},
@@ -350,8 +350,8 @@ add_action( 'rest_api_init', function () {
 			$admin_url = admin_url( 'admin.php?page=sureforms_entries' );
 			if ( ! $has_table() ) {
 				return rest_ensure_response( array(
-					'rows'    => array( array( 'label' => 'Entries', 'value' => '—', 'hint' => 'No submissions yet' ) ),
-					'actions' => array( array( 'label' => 'Open SureForms ↗', 'href' => $admin_url ) ),
+					'rows'    => array( array( 'label' => __( 'Entries', 'minimal-admin' ), 'value' => '—', 'hint' => __( 'No submissions yet', 'minimal-admin' ) ) ),
+					'actions' => array( array( 'label' => __( 'Open SureForms ↗', 'minimal-admin' ), 'href' => $admin_url ) ),
 				) );
 			}
 			global $wpdb;
@@ -362,13 +362,13 @@ add_action( 'rest_api_init', function () {
 			return rest_ensure_response( array(
 				'rows'    => array(
 					array(
-						'label' => 'Unread entries',
+						'label' => __( 'Unread entries', 'minimal-admin' ),
 						'value' => number_format_i18n( $unread ),
 						'hint'  => number_format_i18n( $total ) . ' total',
 					),
-					array( 'label' => 'Forms', 'value' => number_format_i18n( $forms ) ),
+					array( 'label' => __( 'Forms', 'minimal-admin' ), 'value' => number_format_i18n( $forms ) ),
 				),
-				'actions' => array( array( 'label' => 'Open SureForms ↗', 'href' => $admin_url ) ),
+				'actions' => array( array( 'label' => __( 'Open SureForms ↗', 'minimal-admin' ), 'href' => $admin_url ) ),
 			) );
 		},
 	) );

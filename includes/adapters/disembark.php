@@ -22,6 +22,12 @@
 defined( 'ABSPATH' ) || exit;
 
 function minimal_admin_disembark_active() {
+	// The connect token pulls the database, and Disembark's pull routes build
+	// their table list from an unscoped SHOW TABLES, so on a network that token
+	// reaches every tenant's tables however per-site the option storing it is.
+	if ( ! Minimal_Admin::network_owner() ) {
+		return false;
+	}
 	return class_exists( '\\Disembark\\Token' );
 }
 
@@ -120,47 +126,52 @@ function minimal_admin_disembark_status_model() {
 
 	$rows = array(
 		array(
-			'label' => 'Last scan',
+			'label' => __( 'Last scan', 'minimal-admin' ),
 			'value' => is_array( $scan ) && ! empty( $scan['timestamp'] )
-				? human_time_diff( (int) $scan['timestamp'] ) . ' ago'
+				? sprintf(
+					/* translators: %s: human-readable time since the last scan. */
+					__( '%s ago', 'minimal-admin' ),
+					human_time_diff( (int) $scan['timestamp'] )
+				)
 				: 'Never',
 			'hint'  => is_array( $scan ) && ! empty( $scan['timestamp'] )
 				? number_format_i18n( (int) ( $scan['total_files'] ?? 0 ) ) . ' files · ' . size_format( (int) ( $scan['total_size'] ?? 0 ) )
 				: 'Run one from the CLI or Tools → Disembark',
 		),
 		array(
-			'label' => 'Database',
+			'label' => __( 'Database', 'minimal-admin' ),
 			'value' => $db ? size_format( $db ) : '—',
-			'hint'  => 'exported with every backup',
+			'hint'  => __( 'exported with every backup', 'minimal-admin' ),
 		),
 		array(
-			'label' => 'Working files',
+			'label' => __( 'Working files', 'minimal-admin' ),
 			'value' => $bytes ? size_format( $bytes ) : 'None',
 			'hint'  => $bytes
 				/* translators: %s: number of Disembark scan sessions. */
 				? sprintf( _n( '%s scan session on disk', '%s scan sessions on disk', count( $sessions ), 'minimal-admin' ), number_format_i18n( count( $sessions ) ) )
-				: 'Nothing left behind',
+				: __( 'Nothing left behind', 'minimal-admin' ),
 		),
 	);
 
 	$actions = array();
 	if ( $bytes ) {
 		$actions[] = array(
-			'label'   => 'Clean up working files',
+			'label'   => __( 'Clean up working files', 'minimal-admin' ),
 			'route'   => 'minimal-admin/v1/disembark/cleanup',
 			'method'  => 'POST',
 			'confirm' => sprintf(
-				'Delete %s of Disembark working files (manifests, exports, zips)? Backups you already downloaded are unaffected.',
+				/* translators: %s: total size of Disembark working files on disk. */
+				__( 'Delete %s of Disembark working files (manifests, exports, zips)? Backups you already downloaded are unaffected.', 'minimal-admin' ),
 				size_format( $bytes )
 			),
 			'danger'  => true,
 		);
 	}
 	$actions[] = array(
-		'label'   => 'Regenerate token',
+		'label'   => __( 'Regenerate token', 'minimal-admin' ),
 		'route'   => 'minimal-admin/v1/disembark/regenerate-token',
 		'method'  => 'POST',
-		'confirm' => 'Regenerate the site token? The current CLI command and any saved connections stop working.',
+		'confirm' => __( 'Regenerate the site token? The current CLI command and any saved connections stop working.', 'minimal-admin' ),
 	);
 	// Disembark 2.8+ dashboard restore (upload zip or pull from a live site).
 	// Same Tools page as Open Disembark — the Restore button is the first
@@ -168,21 +179,21 @@ function minimal_admin_disembark_status_model() {
 	if ( class_exists( '\\Disembark\\Import' ) ) {
 		$actions[] = array(
 			// ↗ is in the label (same-host Tools link — hrefLabel only marks off-site).
-			'label' => 'Restore a backup ↗',
+			'label' => __( 'Restore a backup ↗', 'minimal-admin' ),
 			'href'  => admin_url( 'tools.php?page=disembark' ),
 		);
 	}
 	$actions[] = array(
-		'label' => 'Open Disembark ↗',
+		'label' => __( 'Open Disembark ↗', 'minimal-admin' ),
 		'href'  => admin_url( 'tools.php?page=disembark' ),
 	);
 
 	return array(
 		'rows'    => $rows,
 		'command' => array(
-			'label' => 'Back up from any terminal',
+			'label' => __( 'Back up from any terminal', 'minimal-admin' ),
 			'text'  => minimal_admin_disembark_command(),
-			'hint'  => 'Requires the Disembark CLI; disembark.host runs the same flow from a browser.',
+			'hint'  => __( 'Requires the Disembark CLI; disembark.host runs the same flow from a browser.', 'minimal-admin' ),
 		),
 		'actions' => $actions,
 	);
@@ -193,7 +204,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		return $surfaces;
 	}
 	$surfaces['disembark'] = array(
-		'label'      => 'Backups',
+		'label'      => __( 'Backups', 'minimal-admin' ),
 		'sub'        => 'Disembark',
 		'icon'       => 'database',
 		'cap'        => 'manage_options',
@@ -204,19 +215,19 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'pageQuery' => 'per_page=25&page={page}',
 			'itemsKey'  => 'items',
 			'totalKey'  => 'total',
-			'viewLabel' => 'Scan sessions',
+			'viewLabel' => __( 'Scan sessions', 'minimal-admin' ),
 			'columns'   => array(
-				array( 'key' => 'name', 'label' => 'Scan session', 'format' => 'title' ),
-				array( 'key' => 'chunks', 'label' => 'Chunks', 'format' => 'num' ),
-				array( 'key' => 'size', 'label' => 'On disk', 'format' => 'text' ),
-				array( 'key' => 'date', 'label' => 'Scanned', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'name', 'label' => __( 'Scan session', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'chunks', 'label' => __( 'Chunks', 'minimal-admin' ), 'format' => 'num' ),
+				array( 'key' => 'size', 'label' => __( 'On disk', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'date', 'label' => __( 'Scanned', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Delete session files',
+					'label'   => __( 'Delete session files', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/disembark/sessions/{id}/delete',
-					'confirm' => 'Delete this scan session\'s files from the server?',
+					'confirm' => __( 'Delete this scan session\'s files from the server?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -230,7 +241,8 @@ add_action( 'rest_api_init', function () {
 		return;
 	}
 	$perm = function () {
-		return current_user_can( 'manage_options' );
+		// Network-reaching connect token (see minimal_admin_disembark_active).
+		return current_user_can( 'manage_options' ) && Minimal_Admin::network_owner();
 	};
 
 	register_rest_route( 'minimal-admin/v1', '/disembark/status', array(
@@ -265,7 +277,7 @@ add_action( 'rest_api_init', function () {
 			$dir  = realpath( $base . $request['id'] );
 			$root = realpath( $base );
 			if ( ! $dir || ! $root || 0 !== strpos( $dir, $root . DIRECTORY_SEPARATOR ) || ! is_dir( $dir ) ) {
-				return new WP_Error( 'not_found', 'No such session.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'No such session.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			minimal_admin_disembark_rm_contents( $dir );
 			@rmdir( $dir );

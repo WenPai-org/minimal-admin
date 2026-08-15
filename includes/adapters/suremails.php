@@ -102,7 +102,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		return $surfaces;
 	}
 	$surfaces['suremails'] = array(
-		'label'      => 'Email',
+		'label'      => __( 'Email', 'minimal-admin' ),
 		'family'     => 'mail',
 		'sub'        => 'SureMails',
 		'icon'       => 'send',
@@ -123,29 +123,29 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'allLabel' => 'All',
 			),
 			'columns'   => array(
-				array( 'key' => 'subject', 'label' => 'Subject', 'format' => 'title' ),
-				array( 'key' => 'to', 'label' => 'To', 'format' => 'text' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
-				array( 'key' => 'created_at', 'label' => 'Date', 'format' => 'ago' ),
+				array( 'key' => 'subject', 'label' => __( 'Subject', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'to', 'label' => __( 'To', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'created_at', 'label' => __( 'Date', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/suremails/emails/{id}/view',
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/suremails/emails/{id}',
 					'method'  => 'DELETE',
-					'confirm' => 'Delete this log entry permanently? There is no trash.',
+					'confirm' => __( 'Delete this log entry permanently? There is no trash.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/suremails/emails/{id}',
 					'method'  => 'DELETE',
-					'confirm' => 'Delete the selected log entries permanently?',
+					'confirm' => __( 'Delete the selected log entries permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -225,38 +225,38 @@ add_action( 'rest_api_init', function () {
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", (int) $request['id'] ) );
 			if ( ! $row ) {
-				return new WP_Error( 'not_found', 'Email not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Email not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$delivery = array(
-				array( 'label' => 'Status', 'value' => (string) $row->status, 'type' => 'pill' ),
-				array( 'label' => 'To', 'value' => minimal_admin_suremails_recipients( $row->email_to ) ),
-				array( 'label' => 'From', 'value' => (string) $row->email_from ),
+				array( 'label' => __( 'Status', 'minimal-admin' ), 'value' => (string) $row->status, 'type' => 'pill' ),
+				array( 'label' => __( 'To', 'minimal-admin' ), 'value' => minimal_admin_suremails_recipients( $row->email_to ) ),
+				array( 'label' => __( 'From', 'minimal-admin' ), 'value' => (string) $row->email_from ),
 			);
 			if ( '' !== (string) $row->connection ) {
-				$delivery[] = array( 'label' => 'Connection', 'value' => (string) $row->connection );
+				$delivery[] = array( 'label' => __( 'Connection', 'minimal-admin' ), 'value' => (string) $row->connection );
 			}
 			$iso = minimal_admin_db_local_to_utc_iso( $row->created_at );
 			if ( '' !== $iso ) {
-				$delivery[] = array( 'label' => 'Date', 'value' => $iso );
+				$delivery[] = array( 'label' => __( 'Date', 'minimal-admin' ), 'value' => $iso );
 			}
 			$body     = (string) $row->body;
 			$sections = array(
-				array( 'title' => 'Delivery', 'rows' => $delivery ),
+				array( 'title' => __( 'Delivery', 'minimal-admin' ), 'rows' => $delivery ),
 				array(
-					'title' => 'Message',
+					'title' => __( 'Message', 'minimal-admin' ),
 					'rows'  => array(
-						array( 'label' => 'Subject', 'value' => (string) $row->subject ),
+						array( 'label' => __( 'Subject', 'minimal-admin' ), 'value' => (string) $row->subject ),
 						preg_match( '/<\/?[a-z][^>]*>/i', $body )
-							? array( 'label' => 'Body', 'value' => $body, 'type' => 'html-preview' )
-							: array( 'label' => 'Body', 'value' => $body, 'type' => 'code' ),
+							? array( 'label' => __( 'Body', 'minimal-admin' ), 'value' => $body, 'type' => 'html-preview' )
+							: array( 'label' => __( 'Body', 'minimal-admin' ), 'value' => $body, 'type' => 'code' ),
 					),
 				),
 			);
 			$peek = minimal_admin_suremails_response_peek( $row->response );
 			if ( '' !== $peek ) {
 				$sections[] = array(
-					'title' => 'Provider reply',
-					'rows'  => array( array( 'label' => 'Response', 'value' => $peek ) ),
+					'title' => __( 'Provider reply', 'minimal-admin' ),
+					'rows'  => array( array( 'label' => __( 'Response', 'minimal-admin' ), 'value' => $peek ) ),
 				);
 			}
 			return rest_ensure_response( array( 'sections' => $sections ) );
@@ -272,9 +272,9 @@ add_action( 'rest_api_init', function () {
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$deleted = $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE id = %d", (int) $request['id'] ) );
 			if ( ! $deleted ) {
-				return new WP_Error( 'not_found', 'Email not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Email not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
-			return rest_ensure_response( array( 'deleted' => true, 'message' => 'Log entry deleted.' ) );
+			return rest_ensure_response( array( 'deleted' => true, 'message' => __( 'Log entry deleted.', 'minimal-admin' ) ) );
 		},
 	) );
 
@@ -285,8 +285,8 @@ add_action( 'rest_api_init', function () {
 			$admin_url = admin_url( 'admin.php?page=suremails' );
 			if ( ! $has_table() ) {
 				return rest_ensure_response( array(
-					'rows'    => array( array( 'label' => 'Email log', 'value' => '—', 'hint' => 'SureMails has not logged any sends yet' ) ),
-					'actions' => array( array( 'label' => 'Open SureMails ↗', 'href' => $admin_url ) ),
+					'rows'    => array( array( 'label' => __( 'Email log', 'minimal-admin' ), 'value' => '—', 'hint' => __( 'SureMails has not logged any sends yet', 'minimal-admin' ) ) ),
+					'actions' => array( array( 'label' => __( 'Open SureMails ↗', 'minimal-admin' ), 'href' => $admin_url ) ),
 				) );
 			}
 			global $wpdb;
@@ -323,18 +323,21 @@ add_action( 'rest_api_init', function () {
 			return rest_ensure_response( array(
 				'rows'    => array(
 					array(
-						'label' => 'Logged emails',
+						'label' => __( 'Logged emails', 'minimal-admin' ),
 						'value' => number_format_i18n( $total ),
-						'hint'  => $failed ? number_format_i18n( $failed ) . ' failed' : 'All logged sends',
+						'hint'  => $failed
+							/* translators: %s: number of failed emails. */
+							? sprintf( __( '%s failed', 'minimal-admin' ), number_format_i18n( $failed ) )
+							: __( 'All logged sends', 'minimal-admin' ),
 					),
 				),
 				'chart'   => array(
-					'title'     => 'Last 14 days',
+					'title'     => __( 'Last 14 days', 'minimal-admin' ),
 					'primary'   => 'Sent',
 					'secondary' => 'Failed',
 					'points'    => array_values( $byday ),
 				),
-				'actions' => array( array( 'label' => 'Open SureMails ↗', 'href' => $admin_url ) ),
+				'actions' => array( array( 'label' => __( 'Open SureMails ↗', 'minimal-admin' ), 'href' => $admin_url ) ),
 			) );
 		},
 	) );

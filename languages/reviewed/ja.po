@@ -1,0 +1,20 @@
+# Reviewed Japanese corrections. See reviewed/README.md.
+msgid ""
+msgstr ""
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# Carried both a full stop and a Latin period.
+msgid "No activity yet."
+msgstr "アクティビティがありません。"
+
+# A label for the autoload column, not the English database value itself.
+msgid "Autoload"
+msgstr "自動読み込み"
+
+# Works for both immediate and older relative timestamps without adding an
+# unnatural particle after たった今.
+msgid "Generated %s"
+msgstr "生成: %s"

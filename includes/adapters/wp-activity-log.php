@@ -37,61 +37,88 @@ function minimal_admin_wsal_admin_url() {
 }
 
 /**
+ * SQL predicate for the WSAL tenant visible in the current site context.
+ *
+ * WP Activity Log uses site_id=0 for a single site's log and for the distinct
+ * network/global stream on multisite. Including zero on a subsite therefore
+ * crosses the tenant boundary; single-site installs still need it for their
+ * ordinary events.
+ *
+ * @return string Placeholder-bearing SQL generated only from WordPress state.
+ */
+function minimal_admin_wsal_site_scope_sql() {
+	return is_multisite() ? 'site_id = %d' : 'site_id IN (0, %d)';
+}
+
+/**
  * Status-card model for WP Activity Log (created_on is a UTC float epoch).
  *
  * @return array{rows:array,actions:array}
  */
 function minimal_admin_wsal_status_model() {
 	global $wpdb;
-	$table = $wpdb->prefix . 'wsal_occurrences';
+	$table = $wpdb->base_prefix . 'wsal_occurrences';
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
 		return array(
-			'rows'    => array( array( 'label' => 'Events', 'value' => '—', 'hint' => 'Log table not found' ) ),
-			'actions' => array( array( 'label' => 'Open WP Activity Log ↗', 'href' => minimal_admin_wsal_admin_url() ) ),
+			'rows'    => array( array( 'label' => __( 'Events', 'minimal-admin' ), 'value' => '—', 'hint' => __( 'Log table not found', 'minimal-admin' ) ) ),
+			'actions' => array( array( 'label' => __( 'Open WP Activity Log ↗', 'minimal-admin' ), 'href' => minimal_admin_wsal_admin_url() ) ),
 		);
 	}
 	$now     = time();
 	$since_d = $now - DAY_IN_SECONDS;
 	$since_w = $now - ( 7 * DAY_IN_SECONDS );
-	$total   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
-	$day     = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE created_on >= %f", $since_d ) );
-	$week    = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE created_on >= %f", $since_w ) );
+	// WSAL keeps ONE occurrences table for the whole network with site_id as
+	// the tenant column, which is why the list and detail routes both scope to
+	// this site. Counting without it reported every other tenant's event
+	// volume, their critical/high volume and their last-event time to a main
+	// site administrator who is not a super admin.
+	$blog  = get_current_blog_id();
+	$scope = minimal_admin_wsal_site_scope_sql();
+	$total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE {$scope}", $blog ) );
+	$day   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE created_on >= %f AND {$scope}", $since_d, $blog ) );
+	$week  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE created_on >= %f AND {$scope}", $since_w, $blog ) );
 	// 500 critical + 400 high in the last week.
 	$hot = (int) $wpdb->get_var( $wpdb->prepare(
-		"SELECT COUNT(*) FROM {$table} WHERE created_on >= %f AND severity IN (500, 400)",
-		$since_w
+		"SELECT COUNT(*) FROM {$table} WHERE created_on >= %f AND severity IN (500, 400) AND {$scope}",
+		$since_w,
+		$blog
 	) );
-	$last = $wpdb->get_var( "SELECT created_on FROM {$table} ORDER BY id DESC LIMIT 1" );
+	$last = $wpdb->get_var( $wpdb->prepare( "SELECT created_on FROM {$table} WHERE {$scope} ORDER BY id DESC LIMIT 1", $blog ) );
 	// phpcs:enable
 
 	$last_label = '—';
 	if ( $last ) {
-		$last_label = human_time_diff( (int) floatval( $last ), time() ) . ' ago';
+		$last_label = sprintf(
+			/* translators: %s: human-readable time since the last event. */
+			__( '%s ago', 'minimal-admin' ),
+			human_time_diff( (int) floatval( $last ), time() )
+		);
 	}
 
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Events (24h)',
+				'label' => __( 'Events (24h)', 'minimal-admin' ),
 				'value' => number_format_i18n( $day ),
-				'hint'  => number_format_i18n( $week ) . ' in the last 7 days',
+				/* translators: %s: formatted number of events. */
+				'hint'  => sprintf( __( '%s in the last 7 days', 'minimal-admin' ), number_format_i18n( $week ) ),
 			),
 			array(
-				'label' => 'Events all-time',
+				'label' => __( 'Events all-time', 'minimal-admin' ),
 				'value' => number_format_i18n( $total ),
 			),
 			array(
-				'label' => 'Last event',
+				'label' => __( 'Last event', 'minimal-admin' ),
 				'value' => $last_label,
 			),
 			array(
-				'label' => 'High + critical (7d)',
+				'label' => __( 'High + critical (7d)', 'minimal-admin' ),
 				'value' => number_format_i18n( $hot ),
 			),
 		),
 		'actions' => array(
-			array( 'label' => 'Open WP Activity Log ↗', 'href' => minimal_admin_wsal_admin_url() ),
+			array( 'label' => __( 'Open WP Activity Log ↗', 'minimal-admin' ), 'href' => minimal_admin_wsal_admin_url() ),
 		),
 	);
 }
@@ -105,7 +132,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['wp-activity-log'] = array(
-		'label'      => 'Activity Log',
+		'label'      => __( 'Activity Log', 'minimal-admin' ),
 		'family'     => 'activity-log',
 		'sub'        => 'WP Activity Log',
 		'icon'       => 'clock',
@@ -129,10 +156,10 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'allLabel' => 'All',
 			),
 			'columns'   => array(
-				array( 'key' => 'message', 'label' => 'Event', 'format' => 'title' ),
-				array( 'key' => 'username', 'label' => 'Who' ),
-				array( 'key' => 'severity', 'label' => 'Severity', 'format' => 'pill' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'message', 'label' => __( 'Event', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'username', 'label' => __( 'Who', 'minimal-admin' ) ),
+				array( 'key' => 'severity', 'label' => __( 'Severity', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/wsal/events/{id}',
@@ -169,10 +196,10 @@ add_action( 'rest_api_init', function () {
 		'permission_callback' => 'minimal_admin_wsal_can_view',
 		'callback'            => function ( WP_REST_Request $request ) use ( $severity_label, $alert_title ) {
 			global $wpdb;
-			$table    = $wpdb->prefix . 'wsal_occurrences';
+			$table    = $wpdb->base_prefix . 'wsal_occurrences';
 			$per_page = min( 100, max( 1, (int) ( $request['per_page'] ?: 25 ) ) );
 			$page     = max( 1, (int) ( $request['page'] ?: 1 ) );
-			$where    = array( 'site_id IN (0, %d)' );
+			$where    = array( minimal_admin_wsal_site_scope_sql() );
 			$args     = array( get_current_blog_id() );
 
 			if ( $request['severity'] ) {
@@ -226,8 +253,9 @@ add_action( 'rest_api_init', function () {
 		'permission_callback' => 'minimal_admin_wsal_can_view',
 		'callback'            => function ( WP_REST_Request $request ) use ( $severity_label, $alert_title ) {
 			global $wpdb;
-			$occ  = $wpdb->prefix . 'wsal_occurrences';
-			$meta = $wpdb->prefix . 'wsal_metadata';
+			$occ   = $wpdb->base_prefix . 'wsal_occurrences';
+			$meta  = $wpdb->base_prefix . 'wsal_metadata';
+			$scope = minimal_admin_wsal_site_scope_sql();
 			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			// Scope to this site, exactly like the list route above. Without
 			// it, a subsite administrator on a network-activated install can
@@ -237,12 +265,12 @@ add_action( 'rest_api_init', function () {
 			// the same shape for the same reason; 404 rather than 403 so the
 			// endpoint does not confirm out-of-scope ids exist.)
 			$row = $wpdb->get_row( $wpdb->prepare(
-				"SELECT * FROM {$occ} WHERE id = %d AND site_id IN (0, %d)",
+				"SELECT * FROM {$occ} WHERE id = %d AND {$scope}",
 				(int) $request['id'],
 				get_current_blog_id()
 			) );
 			if ( ! $row ) {
-				return new WP_Error( 'not_found', 'Event not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Event not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$pairs = $wpdb->get_results( $wpdb->prepare(
 				"SELECT name, value FROM {$meta} WHERE occurrence_id = %d ORDER BY name", (int) $request['id']
@@ -250,12 +278,12 @@ add_action( 'rest_api_init', function () {
 			// phpcs:enable
 
 			$event = array(
-				array( 'label' => 'Event', 'value' => $alert_title( $row->alert_id ) . ' (' . (int) $row->alert_id . ')' ),
-				array( 'label' => 'When', 'value' => date_i18n( 'M j, Y g:i a', (int) $row->created_on + (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ) ),
-				array( 'label' => 'Severity', 'value' => $severity_label( $row->severity ) ),
-				array( 'label' => 'Object', 'value' => $row->object ),
-				array( 'label' => 'Type', 'value' => $row->event_type ),
-				array( 'label' => 'User', 'value' => $row->username ?: 'System' ),
+				array( 'label' => __( 'Event', 'minimal-admin' ), 'value' => $alert_title( $row->alert_id ) . ' (' . (int) $row->alert_id . ')' ),
+				array( 'label' => __( 'When', 'minimal-admin' ), 'value' => date_i18n( 'M j, Y g:i a', (int) $row->created_on + (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ) ),
+				array( 'label' => __( 'Severity', 'minimal-admin' ), 'value' => $severity_label( $row->severity ) ),
+				array( 'label' => __( 'Object', 'minimal-admin' ), 'value' => $row->object ),
+				array( 'label' => __( 'Type', 'minimal-admin' ), 'value' => $row->event_type ),
+				array( 'label' => __( 'User', 'minimal-admin' ), 'value' => $row->username ?: 'System' ),
 				array( 'label' => 'IP', 'value' => $row->client_ip ),
 			);
 
@@ -273,8 +301,8 @@ add_action( 'rest_api_init', function () {
 			return rest_ensure_response( array(
 				'title'    => $alert_title( $row->alert_id ),
 				'sections' => array_filter( array(
-					array( 'title' => 'Event', 'rows' => array_values( array_filter( $event, function ( $r ) { return '' !== (string) $r['value']; } ) ) ),
-					$context ? array( 'title' => 'Context', 'rows' => $context ) : null,
+					array( 'title' => __( 'Event', 'minimal-admin' ), 'rows' => array_values( array_filter( $event, function ( $r ) { return '' !== (string) $r['value']; } ) ) ),
+					$context ? array( 'title' => __( 'Context', 'minimal-admin' ), 'rows' => $context ) : null,
 				) ),
 				'adminUrl' => admin_url( 'admin.php?page=wsal-auditlog' ),
 			) );

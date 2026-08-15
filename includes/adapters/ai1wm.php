@@ -22,6 +22,16 @@
 defined( 'ABSPATH' ) || exit;
 
 function minimal_admin_ai1wm_active() {
+	// AI1WM_BACKUPS_PATH is ONE wp-content/ai1wm-backups directory for the
+	// whole network and those archives hold every tenant's database, so on
+	// multisite this is the network owner's surface. The plugin says so
+	// itself: without the paid Multisite Extension it registers no admin
+	// menu on a subsite at all. `export` would otherwise let every subsite
+	// administrator through, since core's multisite capability pass never
+	// strips it.
+	if ( ! Minimal_Admin::network_owner() ) {
+		return false;
+	}
 	return defined( 'AI1WM_BACKUPS_PATH' )
 		&& class_exists( 'Ai1wm_Backups' )
 		&& method_exists( 'Ai1wm_Backups', 'get_files' );
@@ -95,30 +105,35 @@ function minimal_admin_ai1wm_status_model() {
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Newest export',
-				'value' => $newest ? $newest['title'] : 'None yet',
+				'label' => __( 'Newest export', 'minimal-admin' ),
+				'value' => $newest ? $newest['title'] : __( 'None yet', 'minimal-admin' ),
 				'hint'  => $newest && $newest['ts']
-					? human_time_diff( $newest['ts'] ) . ' ago · ' . $newest['size']
-					: 'Exports are built manually from All-in-One WP Migration\'s screen.',
+					? sprintf(
+						/* translators: 1: human-readable time since the newest export was created. 2: export file size. */
+						__( '%1$s ago · %2$s', 'minimal-admin' ),
+						human_time_diff( $newest['ts'] ),
+						$newest['size']
+					)
+					: __( 'Exports are built manually from All-in-One WP Migration\'s screen.', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'Exports',
+				'label' => __( 'Exports', 'minimal-admin' ),
 				'value' => (string) count( $rows ),
-				'hint'  => 'Manual exports; Minimal makes no freshness claims for All-in-One WP Migration.',
+				'hint'  => __( 'Manual exports; Minimal makes no freshness claims for All-in-One WP Migration.', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'On disk',
+				'label' => __( 'On disk', 'minimal-admin' ),
 				'value' => $disk ? size_format( $disk ) : '0 B',
 				'hint'  => $hint,
 			),
 		),
 		'actions' => array(
 			array(
-				'label' => 'Export site ↗',
+				'label' => __( 'Export site ↗', 'minimal-admin' ),
 				'href'  => admin_url( 'admin.php?page=ai1wm_export' ),
 			),
 			array(
-				'label' => 'Open backups ↗',
+				'label' => __( 'Open backups ↗', 'minimal-admin' ),
 				'href'  => admin_url( 'admin.php?page=ai1wm_backups' ),
 			),
 		),
@@ -134,7 +149,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['ai1wm'] = array(
-		'label'      => 'Backups',
+		'label'      => __( 'Backups', 'minimal-admin' ),
 		'sub'        => 'All-in-One WP Migration',
 		'icon'       => 'database',
 		'cap'        => 'export',
@@ -146,19 +161,19 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'itemsKey'  => 'items',
 			'totalKey'  => 'total',
 			'columns'   => array(
-				array( 'key' => 'title', 'label' => 'Export', 'format' => 'title' ),
-				array( 'key' => 'size', 'label' => 'Size', 'format' => 'text' ),
-				array( 'key' => 'date', 'label' => 'Created', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'title', 'label' => __( 'Export', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'size', 'label' => __( 'Size', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'date', 'label' => __( 'Created', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				'skip' => array( 'title', 'size_raw', 'ts', 'label' ),
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Delete export',
+					'label'   => __( 'Delete export', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/ai1wm/exports/{id}',
-					'confirm' => 'Delete this .wpress export permanently?',
+					'confirm' => __( 'Delete this .wpress export permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -172,7 +187,8 @@ add_action( 'rest_api_init', function () {
 		return;
 	}
 	$perm = function () {
-		return current_user_can( 'export' );
+		// Network-shared archive directory (see minimal_admin_ai1wm_active).
+		return current_user_can( 'export' ) && Minimal_Admin::network_owner();
 	};
 
 	register_rest_route( 'minimal-admin/v1', '/ai1wm/exports', array(
@@ -202,7 +218,7 @@ add_action( 'rest_api_init', function () {
 				|| false !== strpos( $filename, '..' )
 				|| ( function_exists( 'ai1wm_is_filename_supported' ) && ! ai1wm_is_filename_supported( $filename ) )
 			) {
-				return new WP_Error( 'bad_id', 'Invalid export id.', array( 'status' => 400 ) );
+				return new WP_Error( 'bad_id', __( 'Invalid export id.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			try {
 				$ok = Ai1wm_Backups::delete_file( $filename );
@@ -210,13 +226,13 @@ add_action( 'rest_api_init', function () {
 					Ai1wm_Backups::delete_label( $filename );
 				}
 			} catch ( \Throwable $e ) {
-				return new WP_Error( 'delete_failed', 'All-in-One WP Migration could not delete: ' . $e->getMessage(), array( 'status' => 500 ) );
+				return new WP_Error( 'delete_failed', __( 'All-in-One WP Migration could not delete: ', 'minimal-admin' ) . $e->getMessage(), array( 'status' => 500 ) );
 			}
 			if ( ! $ok ) {
 				// Already gone counts as success (idempotent).
 				foreach ( minimal_admin_ai1wm_rows() as $r ) {
 					if ( $r['filename'] === $filename ) {
-						return new WP_Error( 'delete_failed', 'Could not delete the export.', array( 'status' => 500 ) );
+						return new WP_Error( 'delete_failed', __( 'Could not delete the export.', 'minimal-admin' ), array( 'status' => 500 ) );
 					}
 				}
 			}

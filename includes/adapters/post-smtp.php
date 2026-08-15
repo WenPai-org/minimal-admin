@@ -56,9 +56,9 @@ function minimal_admin_post_smtp_status_model() {
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
 		return array(
-			'rows'    => array( array( 'label' => 'Email log', 'value' => 'Not ready', 'hint' => 'Post SMTP has not created its log table yet' ) ),
+			'rows'    => array( array( 'label' => __( 'Email log', 'minimal-admin' ), 'value' => 'Not ready', 'hint' => __( 'Post SMTP has not created its log table yet', 'minimal-admin' ) ) ),
 			'actions' => array(
-				array( 'label' => 'Open Post SMTP ↗', 'href' => admin_url( 'admin.php?page=postman_email_log' ) ),
+				array( 'label' => __( 'Open Post SMTP ↗', 'minimal-admin' ), 'href' => admin_url( 'admin.php?page=postman_email_log' ) ),
 			),
 		);
 	}
@@ -104,25 +104,28 @@ function minimal_admin_post_smtp_status_model() {
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Logged emails',
+				'label' => __( 'Logged emails', 'minimal-admin' ),
 				'value' => number_format_i18n( $total ),
-				'hint'  => $failed ? number_format_i18n( $failed ) . ' failed' : 'All logged sends',
+				'hint'  => $failed
+					/* translators: %s: number of failed sends. */
+					? sprintf( _n( '%s failed', '%s failed', $failed, 'minimal-admin' ), number_format_i18n( $failed ) )
+					: __( 'All logged sends', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'Transport',
+				'label' => __( 'Transport', 'minimal-admin' ),
 				'value' => $transport ? $transport : '—',
-				'hint'  => 'Configured in Post SMTP',
+				'hint'  => __( 'Configured in Post SMTP', 'minimal-admin' ),
 			),
 		),
 		'chart'   => array(
-			'title'     => 'Last 14 days',
+			'title'     => __( 'Last 14 days', 'minimal-admin' ),
 			'primary'   => 'Sent',
 			'secondary' => 'Failed',
 			'points'    => array_values( $by_day ),
 		),
 		'actions' => array(
 			array(
-				'label' => 'Open Post SMTP ↗',
+				'label' => __( 'Open Post SMTP ↗', 'minimal-admin' ),
 				'href'  => admin_url( 'admin.php?page=postman' ),
 			),
 		),
@@ -135,7 +138,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['post-smtp'] = array(
-		'label'      => 'Email',
+		'label'      => __( 'Email', 'minimal-admin' ),
 		'sub'        => 'Post SMTP',
 		'icon'       => 'send',
 		'cap'        => 'manage_options',
@@ -156,10 +159,10 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'allLabel' => 'All',
 			),
 			'columns'   => array(
-				array( 'key' => 'subject', 'label' => 'Subject', 'format' => 'title' ),
-				array( 'key' => 'to', 'label' => 'To', 'format' => 'text' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
-				array( 'key' => 'date', 'label' => 'Date', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'subject', 'label' => __( 'Subject', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'to', 'label' => __( 'To', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date', 'label' => __( 'Date', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				// v0.18.0: server-built sections (status pill, sandboxed HTML
@@ -168,25 +171,25 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Resend',
+					'label'   => __( 'Resend', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/post-smtp/emails/{id}/resend',
 					'method'  => 'POST',
-					'confirm' => 'Resend this email to the original recipients?',
+					'confirm' => __( 'Resend this email to the original recipients?', 'minimal-admin' ),
 				),
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/post-smtp/emails/{id}',
 					'method'  => 'DELETE',
-					'confirm' => 'Delete this log entry permanently? There is no trash.',
+					'confirm' => __( 'Delete this log entry permanently? There is no trash.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/post-smtp/emails/{id}',
 					'method'  => 'DELETE',
-					'confirm' => 'Delete the selected log entries permanently?',
+					'confirm' => __( 'Delete the selected log entries permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -248,7 +251,7 @@ add_action( 'rest_api_init', function () {
 			$items = array_map( function ( $row ) {
 				return array(
 					'id'      => (int) $row->id,
-					'subject' => $row->original_subject ? $row->original_subject : '(no subject)',
+					'subject' => $row->original_subject ? $row->original_subject : __( '(no subject)', 'minimal-admin' ),
 					'to'      => minimal_admin_post_smtp_recipients( $row->original_to ?: $row->to_header ),
 					'status'  => minimal_admin_post_smtp_status( $row->success ),
 					'date'    => minimal_admin_post_smtp_iso( $row->time ),
@@ -271,37 +274,37 @@ add_action( 'rest_api_init', function () {
 				(int) $request['id']
 			) );
 			if ( ! $row ) {
-				return new WP_Error( 'not_found', 'Email not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Email not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$status   = minimal_admin_post_smtp_status( $row->success );
 			$delivery = array(
-				array( 'label' => 'Status', 'value' => $status, 'type' => 'pill' ),
-				array( 'label' => 'To', 'value' => minimal_admin_post_smtp_recipients( $row->original_to ?: $row->to_header ) ),
-				array( 'label' => 'From', 'value' => minimal_admin_post_smtp_recipients( $row->from_header ) ),
+				array( 'label' => __( 'Status', 'minimal-admin' ), 'value' => $status, 'type' => 'pill' ),
+				array( 'label' => __( 'To', 'minimal-admin' ), 'value' => minimal_admin_post_smtp_recipients( $row->original_to ?: $row->to_header ) ),
+				array( 'label' => __( 'From', 'minimal-admin' ), 'value' => minimal_admin_post_smtp_recipients( $row->from_header ) ),
 			);
 			if ( '' !== (string) $row->transport_uri ) {
-				$delivery[] = array( 'label' => 'Transport', 'value' => (string) $row->transport_uri );
+				$delivery[] = array( 'label' => __( 'Transport', 'minimal-admin' ), 'value' => (string) $row->transport_uri );
 			}
-			$delivery[] = array( 'label' => 'Date', 'value' => minimal_admin_post_smtp_iso( $row->time ) );
+			$delivery[] = array( 'label' => __( 'Date', 'minimal-admin' ), 'value' => minimal_admin_post_smtp_iso( $row->time ) );
 			$body     = (string) $row->original_message;
 			$sections = array(
-				array( 'title' => 'Delivery', 'rows' => $delivery ),
+				array( 'title' => __( 'Delivery', 'minimal-admin' ), 'rows' => $delivery ),
 				array(
-					'title' => 'Message',
+					'title' => __( 'Message', 'minimal-admin' ),
 					'rows'  => array(
-						array( 'label' => 'Subject', 'value' => (string) $row->original_subject ),
+						array( 'label' => __( 'Subject', 'minimal-admin' ), 'value' => (string) $row->original_subject ),
 						preg_match( '/<\/?[a-z][^>]*>/i', $body )
-							? array( 'label' => 'Body', 'value' => $body, 'type' => 'html-preview' )
-							: array( 'label' => 'Body', 'value' => $body, 'type' => 'code' ),
+							? array( 'label' => __( 'Body', 'minimal-admin' ), 'value' => $body, 'type' => 'html-preview' )
+							: array( 'label' => __( 'Body', 'minimal-admin' ), 'value' => $body, 'type' => 'code' ),
 					),
 				),
 			);
 			if ( 'failed' === $status ) {
-				$fail = array( array( 'label' => 'Error', 'value' => (string) $row->success, 'type' => 'code' ) );
+				$fail = array( array( 'label' => __( 'Error', 'minimal-admin' ), 'value' => (string) $row->success, 'type' => 'code' ) );
 				if ( '' !== (string) $row->solution ) {
-					$fail[] = array( 'label' => 'Suggested fix', 'value' => (string) $row->solution );
+					$fail[] = array( 'label' => __( 'Suggested fix', 'minimal-admin' ), 'value' => (string) $row->solution );
 				}
-				$sections[] = array( 'title' => 'Failure', 'rows' => $fail );
+				$sections[] = array( 'title' => __( 'Failure', 'minimal-admin' ), 'rows' => $fail );
 			}
 			return rest_ensure_response( array( 'sections' => $sections ) );
 		},
@@ -318,7 +321,7 @@ add_action( 'rest_api_init', function () {
 					(int) $request['id']
 				) );
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Email not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Email not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$status = minimal_admin_post_smtp_status( $row->success );
 				return rest_ensure_response( array(
@@ -347,9 +350,9 @@ add_action( 'rest_api_init', function () {
 					(int) $request['id']
 				) );
 				if ( ! $deleted ) {
-					return new WP_Error( 'not_found', 'Email not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Email not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
-				return rest_ensure_response( array( 'deleted' => true, 'message' => 'Log entry deleted.' ) );
+				return rest_ensure_response( array( 'deleted' => true, 'message' => __( 'Log entry deleted.', 'minimal-admin' ) ) );
 			},
 		),
 	) );
@@ -364,11 +367,11 @@ add_action( 'rest_api_init', function () {
 				(int) $request['id']
 			) );
 			if ( ! $row ) {
-				return new WP_Error( 'not_found', 'Email not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Email not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			// Addresses only — never unserialize their recipient blobs.
 			if ( ! preg_match_all( '/[\w.+\-]+@[\w.\-]+\.[A-Za-z]{2,}/', (string) ( $row->original_to ?: $row->to_header ), $m ) ) {
-				return new WP_Error( 'no_recipients', 'No recipient address on record for this email.', array( 'status' => 422 ) );
+				return new WP_Error( 'no_recipients', __( 'No recipient address on record for this email.', 'minimal-admin' ), array( 'status' => 422 ) );
 			}
 			$to      = array_values( array_unique( array_filter( $m[0], 'is_email' ) ) );
 			$is_html = (bool) preg_match( '/<\/?[a-z][\s\S]*>/i', (string) $row->original_message );
@@ -380,7 +383,7 @@ add_action( 'rest_api_init', function () {
 			return rest_ensure_response( array(
 				'resent'  => true,
 				'to'      => implode( ', ', $to ),
-				'message' => 'Resent to ' . implode( ', ', $to ),
+				'message' => __( 'Resent to ', 'minimal-admin' ) . implode( ', ', $to ),
 			) );
 		},
 	) );

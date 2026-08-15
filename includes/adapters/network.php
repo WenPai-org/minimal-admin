@@ -294,7 +294,7 @@ function minimal_admin_network_user_row( $user, $site_counts = array(), $super_c
 		'username'   => $user->user_login,
 		'sites'      => isset( $site_counts[ $id ] ) ? (int) $site_counts[ $id ] : 0,
 		'registered' => mysql_to_rfc3339( $user->user_registered ),
-		'status'     => $super ? 'network admin' : 'member',
+		'status'     => $super ? __( 'network admin', 'minimal-admin' ) : __( 'member', 'minimal-admin' ),
 		// Gates (the routes re-derive all of these):
 		// never grant twice, never revoke your own status (that is a
 		// self-lockout) and never revoke the last network administrator.
@@ -405,7 +405,7 @@ function minimal_admin_network_settings_spec() {
 					'store'       => 'types',
 					'rows'        => 4,
 					'mono'        => true,
-					'placeholder' => 'jpg jpeg png gif pdf',
+					'placeholder' => __( 'jpg jpeg png gif pdf', 'minimal-admin' ),
 				),
 			),
 		),
@@ -496,7 +496,25 @@ function minimal_admin_network_settings_save( $tab, $values ) {
 				if ( ! is_email( $email ) ) {
 					return new WP_Error( 'bad_email', __( 'Enter a valid email address.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
-				update_site_option( $key, $email );
+				// Core does not change this in place: wp-admin/network/settings.php
+				// parks the address in new_admin_email and only commits it when
+				// the confirmation link is followed, so someone riding a super
+				// admin's session cannot silently redirect the network's mail
+				// with no notice to the current address.
+				if ( get_site_option( 'admin_email' ) !== $email ) {
+					update_site_option( 'new_admin_email', $email );
+					// The confirmation mailer is hooked in
+					// wp-admin/includes/ms-admin-filters.php, which a REST
+					// request never loads — so writing the option alone would
+					// send nothing and the change would go nowhere. The
+					// function itself lives in wp-includes/ms-functions.php and
+					// is always available; call it when the hook is absent, and
+					// do not double-send when it is not.
+					if ( ! has_action( 'update_site_option_new_admin_email', 'update_network_option_new_admin_email' )
+						&& function_exists( 'update_network_option_new_admin_email' ) ) {
+						update_network_option_new_admin_email( get_site_option( 'admin_email' ), $email );
+					}
+				}
 				break;
 			case 'types':
 				// Core's own normalization: a space-separated lowercase list.
@@ -615,7 +633,16 @@ add_action( 'rest_api_init', function () {
 
 	register_rest_route( 'minimal-admin/v1', '/network/users/(?P<id>\d+)/super', array(
 		'methods'             => 'POST',
-		'permission_callback' => $users,
+		// NOT $users. Core gates the Super Admin checkbox on
+		// manage_network_options (wp-admin/user-edit.php), not on
+		// manage_network_users. The two coincide on stock multisite, where
+		// only a super admin holds either, but operators and role plugins do
+		// split them to make a "network user manager" who administers accounts
+		// without changing network configuration. That principal must not be
+		// able to POST their own id and become super admin.
+		'permission_callback' => function () {
+			return minimal_admin_network_can( 'manage_network_options' );
+		},
 		'callback'            => 'minimal_admin_network_user_super',
 		'args'                => array(
 			'on' => array( 'type' => 'boolean', 'required' => true ),
@@ -814,7 +841,13 @@ function minimal_admin_my_sites( WP_REST_Request $request ) {
 	$per_page = min( 50, max( 1, (int) ( $request['per_page'] ?: 20 ) ) );
 	$page     = max( 1, (int) ( $request['page'] ?: 1 ) );
 	$search   = trim( (string) $request['search'] );
-	if ( '' !== $search ) {
+	// get_blogs_of_user() is an unbounded usermeta scan, and every match that
+	// reaches describe_sites() costs a switch_to_blog cycle. That is fine for
+	// an ordinary membership and is not a query to run on a large network,
+	// which is the guard core provides and Minimal's own docblock already
+	// promises. Above the threshold, fall through to the bounded listing
+	// below rather than letting any edit_posts holder drive the scan.
+	if ( '' !== $search && ! wp_is_large_network() ) {
 		$matches = array();
 		foreach ( (array) get_blogs_of_user( get_current_user_id() ) as $blog ) {
 			if ( (int) $blog->site_id !== (int) get_current_network_id()
@@ -965,11 +998,19 @@ function minimal_admin_network_sites_create( WP_REST_Request $request ) {
 			array( 'status' => 404 )
 		);
 	}
-	// Core's own reserved-name rules (subdirectory installs reserve wp-admin,
-	// files, feed and friends), plus the site-exists check below.
+	// Core's own reserved-name rules, plus the site-exists check below.
+	// illegal_names is only half of it: core keeps a SEPARATE subdirectory
+	// list (get_subdirectory_reserved_names — wp-admin, wp-json, wp-content,
+	// feed, files…) and enforces it in wpmu_validate_blog_signup(), which
+	// this path does not call. wp_validate_site_data() does not catch it
+	// either, so a site at /wp-json/ would be created and get_site_by_path()
+	// would then route the whole network's REST traffic into it.
 	if ( ! is_subdomain_install() ) {
-		$illegal = get_network_option( null, 'illegal_names', array() );
-		if ( in_array( $address, (array) $illegal, true ) ) {
+		$illegal  = (array) get_network_option( null, 'illegal_names', array() );
+		$reserved = function_exists( 'get_subdirectory_reserved_names' )
+			? (array) get_subdirectory_reserved_names()
+			: array();
+		if ( in_array( $address, $illegal, true ) || in_array( $address, $reserved, true ) ) {
 			return new WP_Error( 'reserved', __( 'That address is reserved. Choose another.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 	}

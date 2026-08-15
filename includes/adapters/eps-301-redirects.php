@@ -60,7 +60,7 @@ function minimal_admin_eps301_payload( WP_REST_Request $request ) {
 	$to     = trim( (string) $request['to'] );
 	$status = trim( (string) $request['status'] );
 	if ( '' === $from || '' === $to ) {
-		return new WP_Error( 'invalid', 'Source and target are both required.', array( 'status' => 400 ) );
+		return new WP_Error( 'invalid', __( 'Source and target are both required.', 'minimal-admin' ), array( 'status' => 400 ) );
 	}
 	if ( ! in_array( $status, array( '301', '302', '307', 'inactive' ), true ) ) {
 		$status = '301';
@@ -88,7 +88,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		array( 'inactive', 'Inactive' ),
 	);
 	$surfaces['eps-301-redirects'] = array(
-		'label'      => 'Redirects',
+		'label'      => __( 'Redirects', 'minimal-admin' ),
 		'family'     => 'redirects',
 		'sub'        => '301 Redirects',
 		'icon'       => 'shuffle',
@@ -101,19 +101,19 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'totalKey' => 'total',
 			'search'   => 'search={q}',
 			'columns'  => array(
-				array( 'key' => 'from', 'label' => 'Source', 'format' => 'title', 'width' => 'minmax(0,1.3fr)' ),
-				array( 'key' => 'target', 'label' => 'Target', 'format' => 'mono', 'width' => 'minmax(0,1.3fr)' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill', 'width' => '110px' ),
-				array( 'key' => 'hits', 'label' => 'Hits', 'format' => 'num', 'width' => '70px' ),
+				array( 'key' => 'from', 'label' => __( 'Source', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.3fr)' ),
+				array( 'key' => 'target', 'label' => __( 'Target', 'minimal-admin' ), 'format' => 'mono', 'width' => 'minmax(0,1.3fr)' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '110px' ),
+				array( 'key' => 'hits', 'label' => __( 'Hits', 'minimal-admin' ), 'format' => 'num', 'width' => '70px' ),
 			),
 			'create'   => array(
-				'label'  => 'Add redirect',
+				'label'  => __( 'Add redirect', 'minimal-admin' ),
 				'route'  => 'minimal-admin/v1/eps301/redirects',
 				'method' => 'POST',
 				'fields' => array(
-					array( 'key' => 'from', 'label' => 'Source URL', 'mono' => true, 'placeholder' => '/old-page' ),
-					array( 'key' => 'to', 'label' => 'Target URL', 'mono' => true, 'placeholder' => '/new-page, https://… or a post ID' ),
-					array( 'key' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $status_options ),
+					array( 'key' => 'from', 'label' => __( 'Source URL', 'minimal-admin' ), 'mono' => true, 'placeholder' => __( '/old-page', 'minimal-admin' ) ),
+					array( 'key' => 'to', 'label' => __( 'Target URL', 'minimal-admin' ), 'mono' => true, 'placeholder' => __( '/new-page, https://… or a post ID', 'minimal-admin' ) ),
+					array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'type' => 'select', 'options' => $status_options ),
 				),
 			),
 			'detail'   => array(
@@ -122,27 +122,27 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					'route'  => 'minimal-admin/v1/eps301/redirects/{id}',
 					'method' => 'PUT',
 					'fields' => array(
-						array( 'key' => 'from', 'label' => 'Source URL', 'mono' => true ),
-						array( 'key' => 'to', 'label' => 'Target URL', 'mono' => true ),
-						array( 'key' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $status_options ),
+						array( 'key' => 'from', 'label' => __( 'Source URL', 'minimal-admin' ), 'mono' => true ),
+						array( 'key' => 'to', 'label' => __( 'Target URL', 'minimal-admin' ), 'mono' => true ),
+						array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'type' => 'select', 'options' => $status_options ),
 					),
 				),
 			),
 			'actions'  => array(
 				array(
-					'label'   => 'Delete redirect',
+					'label'   => __( 'Delete redirect', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/eps301/redirects/{id}',
-					'confirm' => 'Delete this redirect permanently?',
+					'confirm' => __( 'Delete this redirect permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'     => array(
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/eps301/redirects/{id}',
-					'confirm' => 'Delete the selected redirects permanently?',
+					'confirm' => __( 'Delete the selected redirects permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -181,21 +181,21 @@ add_action( 'rest_api_init', function () {
 			$misses   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$t} WHERE status = '404'" ); // phpcs:ignore
 			$rows     = array(
 				array(
-					'label' => 'Redirect rules',
+					'label' => __( 'Redirect rules', 'minimal-admin' ),
 					'value' => (string) $active,
-					'hint'  => $inactive ? $inactive . ' inactive' : 'all enabled',
+					'hint'  => $inactive ? $inactive . ' inactive' : __( 'all enabled', 'minimal-admin' ),
 				),
-				array( 'label' => 'Hits, all time', 'value' => number_format_i18n( $hits ) ),
+				array( 'label' => __( 'Hits, all time', 'minimal-admin' ), 'value' => number_format_i18n( $hits ) ),
 			);
 			$top = $wpdb->get_row( "SELECT url_from, count FROM {$t} WHERE status IN ('301','302','307') AND count > 0 ORDER BY count DESC LIMIT 1" ); // phpcs:ignore
 			if ( $top ) {
 				$rows[] = array(
-					'label' => 'Top redirect',
+					'label' => __( 'Top redirect', 'minimal-admin' ),
 					'value' => '/' . ltrim( (string) $top->url_from, '/' ),
 					'hint'  => number_format_i18n( (int) $top->count ) . ' hits',
 				);
 			}
-			$rows[] = array( 'label' => '404 log', 'value' => number_format_i18n( $misses ) );
+			$rows[] = array( 'label' => __( '404 log', 'minimal-admin' ), 'value' => number_format_i18n( $misses ) );
 			return rest_ensure_response( array( 'rows' => $rows ) );
 		},
 	) );
@@ -253,7 +253,7 @@ add_action( 'rest_api_init', function () {
 				$id  = (int) $request['id'];
 				$row = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . $table() . ' WHERE id = %d', $id ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Redirect not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Redirect not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$data = minimal_admin_eps301_payload( $request );
 				if ( is_wp_error( $data ) ) {

@@ -194,7 +194,7 @@ add_filter( 'minimal_admin_editor_panels', function ( $panels ) {
 		return $panels;
 	}
 	$panels['powerpress'] = array(
-		'label'       => 'Podcast episode',
+		'label'       => __( 'Podcast episode', 'minimal-admin' ),
 		'sub'         => 'PowerPress',
 		'cap'         => 'edit_posts',
 		'fieldsRoute' => 'minimal-admin/v1/powerpress/fields?post_id={id}&post_type={type}',
@@ -227,25 +227,25 @@ add_action( 'rest_api_init', function () {
 				return rest_ensure_response( array( 'groups' => array() ) );
 			}
 			if ( $post_id && ! current_user_can( 'edit_post', $post_id ) ) {
-				return new WP_Error( 'rest_forbidden', 'You cannot edit this post.', array( 'status' => 403 ) );
+				return new WP_Error( 'rest_forbidden', __( 'You cannot edit this post.', 'minimal-admin' ), array( 'status' => 403 ) );
 			}
 			return rest_ensure_response( array(
 				'groups' => array(
 					array(
-						'group'  => 'Episode (default channel)',
+						'group'  => __( 'Episode (default channel)', 'minimal-admin' ),
 						'fields' => array(
-							array( 'name' => 'url', 'label' => 'Media file URL', 'type' => 'url', 'placeholder' => 'https://example.com/episode.mp3 — clearing this removes the episode' ),
-							array( 'name' => 'size', 'label' => 'File size (bytes)', 'type' => 'text', 'placeholder' => 'Detected by PowerPress when blank' ),
-							array( 'name' => 'duration', 'label' => 'Duration', 'type' => 'text', 'placeholder' => 'HH:MM:SS' ),
-							array( 'name' => 'subtitle', 'label' => 'Subtitle', 'type' => 'text' ),
-							array( 'name' => 'episode_title', 'label' => 'Episode title (Apple)', 'type' => 'text' ),
-							array( 'name' => 'episode_no', 'label' => 'Episode number', 'type' => 'number' ),
-							array( 'name' => 'season', 'label' => 'Season', 'type' => 'number' ),
+							array( 'name' => 'url', 'label' => __( 'Media file URL', 'minimal-admin' ), 'type' => 'url', 'placeholder' => __( 'https://example.com/episode.mp3 — clearing this removes the episode', 'minimal-admin' ) ),
+							array( 'name' => 'size', 'label' => __( 'File size (bytes)', 'minimal-admin' ), 'type' => 'text', 'placeholder' => __( 'Detected by PowerPress when blank', 'minimal-admin' ) ),
+							array( 'name' => 'duration', 'label' => __( 'Duration', 'minimal-admin' ), 'type' => 'text', 'placeholder' => __( 'HH:MM:SS', 'minimal-admin' ) ),
+							array( 'name' => 'subtitle', 'label' => __( 'Subtitle', 'minimal-admin' ), 'type' => 'text' ),
+							array( 'name' => 'episode_title', 'label' => __( 'Episode title (Apple)', 'minimal-admin' ), 'type' => 'text' ),
+							array( 'name' => 'episode_no', 'label' => __( 'Episode number', 'minimal-admin' ), 'type' => 'number' ),
+							array( 'name' => 'season', 'label' => __( 'Season', 'minimal-admin' ), 'type' => 'number' ),
 							array(
 								'name'    => 'episode_type',
-								'label'   => 'Episode type',
+								'label'   => __( 'Episode type', 'minimal-admin' ),
 								'type'    => 'select',
-								'choices' => array( '' => 'Full (default)', 'full' => 'Full Episode', 'trailer' => 'Trailer', 'bonus' => 'Bonus' ),
+								'choices' => array( '' => __( 'Full (default)', 'minimal-admin' ), 'full' => __( 'Full Episode', 'minimal-admin' ), 'trailer' => __( 'Trailer', 'minimal-admin' ), 'bonus' => __( 'Bonus', 'minimal-admin' ) ),
 							),
 						),
 						// Artwork, explicit/block, chapters, transcripts stay on
@@ -278,7 +278,7 @@ add_action( 'rest_api_init', function () {
 				minimal_admin_powerpress_write_values( $post->ID, $value );
 			},
 			'schema'          => array(
-				'description' => 'PowerPress default-channel episode fields for Minimal Admin.',
+				'description' => __( 'PowerPress default-channel episode fields for Minimal Admin.', 'minimal-admin' ),
 				'type'        => 'object',
 				'context'     => array( 'edit' ),
 			),

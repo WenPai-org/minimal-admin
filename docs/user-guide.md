@@ -4,7 +4,7 @@
 checking on things, keeping plugins current. No code in here. If you build
 plugins, you want [for-plugin-authors.md](for-plugin-authors.md) instead.*
 
-*Current as of v0.28.0. This file ships inside the plugin, so the copy you
+*Current as of v0.30.0. This file ships inside the plugin, so the copy you
 are reading always matches the version you have installed.*
 
 ## What Minimal is (and is not)
@@ -41,6 +41,10 @@ Three things to know before anything else:
 
 Group headings collapse when clicked, and the sidebar remembers your
 arrangement. Counts on Content, Comments and Orders show pending work.
+Lists show recent dates as a day and month and add the year once a date
+is from a different year, so an old site's content list reads in order at
+a glance. On Content you can sort by clicking the Title or Date heading,
+and clicking the same heading again reverses it.
 Clicking the sidebar item for the view you are already on refreshes its
 list in place, so a tab left open all day stays current without a page
 reload.
@@ -70,8 +74,10 @@ creation and deletion, the long tail of network settings, restores, exports
 and network setup stay with WordPress. The palette knows the sites too: press
 ⌘K and type "switch", or just start typing a site's name. The chevron does
 not appear when you belong to only one site. Its menu opens with search already
-focused, fuzzy-matches site names and addresses, and shows no more than five
-matches at once even on a large network.
+focused and lists up to eight sites. Typing fuzzy-matches names and addresses
+across every site you can use, not just the ones already listed, and narrows to
+the five closest, so a shorthand like "tm10" still finds Team 10 on a large
+network.
 
 **If you run the network**, a fourth sidebar group appears: Network. Sites
 lists every site with its address, members and state, filters for archived
@@ -96,7 +102,7 @@ and Minimal will not offer to deactivate itself network-wide from inside Minimal
 
 **The topbar** carries the page title, a button that shows or hides the
 sidebar (⌘. does the same), the version badge (click it for what's new),
-a View site link, the theme toggle (system, light, dark), notifications,
+a View site link, the theme toggle (click switches light and dark; right-click to follow the system), notifications,
 and the New button. Amber chips appear here only when something needs
 you: a pending WordPress update, or a site that is not fully public.
 
@@ -165,7 +171,9 @@ away:
 - **Saving is status-aware.** Drafts autosave as you write. Published
   posts never change under you: edits back up silently, and the live post
   only updates when you press Update. A crash net keeps a local copy of
-  unsaved work in your browser and offers to restore it.
+  unsaved work in your browser and offers to restore it. A live post
+  holding edits you never published wears a small amber dot on its status
+  in the content list, and the Modified filter there shows only those.
 - **History** shows revisions with side-by-side comparisons; restore takes
   one click. If someone else has the post open (in Minimal or wp-admin), you
   will be told before you can both edit it.
@@ -196,8 +204,12 @@ the notice wall, and it is permanent policy: plugins cannot buy space in
 Minimal's interface.
 
 **Updates**: the Updates tab shows everything pending, and **Update
-everything** runs plugins, then themes, then WordPress core, telling you
-exactly what will change and what is untouched before it starts. While a
+everything** runs plugins, then themes, then any waiting translations, then
+WordPress core, telling you exactly what will change and what is untouched
+before it starts. Translations are worth calling out because WordPress keeps
+language packs apart from everything else: a site can be current on plugins,
+themes and core and still owe translations, so they are counted here rather
+than left for the WordPress updates screen to mention. While a
 run is going, a progress pill in the top bar names the current phase and
 stays visible on every screen, so you can close the panel or move around
 Minimal and still see that updates are working; click it to come back to the
@@ -243,6 +255,80 @@ own layout.
 Plugins also have hard budgets for how much space they may claim in the
 sidebar, palette and menus, so the interface stays calm as you install
 more of them.
+
+## Minimal in your language
+
+Pick a language on **Your profile** and all of Minimal follows: buttons,
+table headings, empty states, confirmations, error messages, counts.
+Twenty-three languages ship with the plugin, and a language you have not
+installed yet is downloaded for you when you save the choice. Your pick
+is yours alone; it never changes what anybody else sees.
+
+Right-to-left languages such as Arabic, Hebrew and Persian get a
+genuinely mirrored interface: the sidebar, menus and settings move to
+the correct side, while addresses, file paths and version numbers stay
+readable left to right inside the surrounding text.
+
+Translations arrive as WordPress language packs through the same
+Updates screen as everything else and update alongside the plugin, so
+there is nothing extra to install or maintain.
+
+## Your store
+
+With WooCommerce active, the sidebar gains Orders, Products, Coupons and
+Customers, and with WooCommerce Subscriptions it gains Subscriptions too.
+
+- **Orders** open as their own page, at their own address, so an order can
+  be linked to or kept in a second tab. The main column holds the work:
+  items with the money broken down, status, payment, refunds, mail and the
+  timeline. The sidebar holds the context: customer, shipping,
+  attribution and other orders from the same customer, each card showing
+  text until its pencil opens the form. You can take a payment by hand,
+  refund whole lines or an arbitrary amount, apply or remove a coupon,
+  resend an email and read the order's notes without leaving Minimal, and
+  the Back button returns you to wherever the visit started.
+- **The orders list filters like a storefront back office.** One row
+  holds a status view, the search box and Add filter; active filters sit
+  beneath as removable chips. Status accepts more than one at a time, and
+  a date window, customer or product filter narrows on the server, so it
+  survives paging. Filters live in the address, so a filtered list can be
+  reloaded or pasted to someone else. Orders that belong to a
+  subscription carry a small badge that opens a summary of it.
+- **Subscriptions** open on their own page in the order page's shape,
+  with editable items and schedule, coupons, a notes timeline and a quick
+  view of related orders. The subscriptions list wears the same filter
+  bar with its own status vocabulary.
+- **Products** open as a page too. It holds on one screen what WooCommerce
+  spreads across the tabs of its Product data box: name and status, pricing
+  with an optional sale schedule and tax class, inventory (SKU, GTIN,
+  whether you track quantity, backorders, a low stock threshold, the
+  one-per-order limit), shipping (weight, dimensions, shipping class),
+  images, organization (categories, tags, brands, the address slug,
+  featured), attributes, upsells and cross-sells, and a purchase note.
+  Everything saves together with one Save changes.
+
+  A few things follow the product rather than sitting there always. Marking
+  a product virtual removes the shipping fields, because nothing ships.
+  Marking it downloadable adds a Downloads card where you name each file
+  and either paste a URL or pick it from your media library. An external
+  product asks for the address and button text that send shoppers away. A
+  variable product gains a Variations card: give an attribute some values
+  and turn on its Variations switch, then Generate from attributes builds
+  every combination you do not already have, each with its own SKU, price
+  and stock.
+
+  Images are tiles you drag to reorder. The first one is the picture your
+  shop shows, so promoting a gallery photo is a drag rather than a trip to
+  WooCommerce. Click a tile to swap it, hover it for the × that removes it.
+
+  The long description opens in Minimal's own editor, with blocks, autosave
+  and revisions, rather than sending you elsewhere. If you would rather see
+  a product without leaving the list, hover its row and click the eye for a
+  quick look with the same fields.
+
+  Two jobs stay in WooCommerce on purpose: creating a brand new store-wide
+  attribute, which belongs to the whole shop rather than to one product,
+  and the children of a grouped product.
 
 ## Managing the site
 

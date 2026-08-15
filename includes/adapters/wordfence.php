@@ -23,7 +23,7 @@ function minimal_admin_wordfence_active() {
 	// Wordfence keeps ONE table set on base_prefix for the whole network
 	// (wfDB) and its own UI lives in Network Admin there — the login log
 	// holds every site's events, so on multisite it is super-admin data.
-	if ( is_multisite() && ! is_super_admin() ) {
+	if ( ! Minimal_Admin::network_owner() ) {
 		return false;
 	}
 	// Case-insensitive existence check: on case-folding MySQL setups
@@ -38,16 +38,16 @@ function minimal_admin_wordfence_active() {
 /** Human label for a wfLogins action code. */
 function minimal_admin_wordfence_action_label( $action, $fail ) {
 	$map = array(
-		'loginOK'                 => 'Signed in',
-		'loginFailValidUsername'  => 'Failed login (valid user)',
-		'loginFailInvalidUsername'=> 'Failed login (unknown user)',
-		'lockedOut'               => 'Locked out',
+		'loginOK'                 => __( 'Signed in', 'minimal-admin' ),
+		'loginFailValidUsername'  => __( 'Failed login (valid user)', 'minimal-admin' ),
+		'loginFailInvalidUsername'=> __( 'Failed login (unknown user)', 'minimal-admin' ),
+		'lockedOut'               => __( 'Locked out', 'minimal-admin' ),
 		'blocked'                 => 'Blocked',
 	);
 	if ( isset( $map[ $action ] ) ) {
 		return $map[ $action ];
 	}
-	return $fail ? 'Failed login' : 'Signed in';
+	return $fail ? __( 'Failed login', 'minimal-admin' ) : __( 'Signed in', 'minimal-admin' );
 }
 
 add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
@@ -56,7 +56,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['wordfence'] = array(
-		'label'      => 'Activity Log',
+		'label'      => __( 'Activity Log', 'minimal-admin' ),
 		'family'     => 'activity-log',
 		'sub'        => 'Wordfence',
 		'icon'       => 'shield',
@@ -75,14 +75,14 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					array( 'failed', 'Failed' ),
 					array( 'success', 'Successful' ),
 				),
-				'allLabel' => 'All logins',
+				'allLabel' => __( 'All logins', 'minimal-admin' ),
 			),
 			'columns'   => array(
-				array( 'key' => 'message', 'label' => 'Event', 'format' => 'title' ),
-				array( 'key' => 'who', 'label' => 'User' ),
+				array( 'key' => 'message', 'label' => __( 'Event', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'who', 'label' => __( 'User', 'minimal-admin' ) ),
 				array( 'key' => 'ip', 'label' => 'IP' ),
-				array( 'key' => 'result', 'label' => 'Result', 'format' => 'pill' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'result', 'label' => __( 'Result', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				'skip' => array( 'message' ),
@@ -109,26 +109,28 @@ function minimal_admin_wordfence_status_model() {
 
 	$rows = array(
 		array(
-			'label' => 'Failed logins (24h)',
+			'label' => __( 'Failed logins (24h)', 'minimal-admin' ),
 			'value' => number_format_i18n( $failed_24h ),
-			'hint'  => $ok_24h ? number_format_i18n( $ok_24h ) . ' successful' : 'No successful logins in the window',
+			/* translators: %s: number of successful logins. */
+			'hint'  => $ok_24h ? sprintf( __( '%s successful', 'minimal-admin' ), number_format_i18n( $ok_24h ) ) : __( 'No successful logins in the window', 'minimal-admin' ),
 		),
 	);
 	// Reuse the System posture helpers so the card and health strip never drift.
 	foreach ( minimal_admin_wordfence_checks() as $check ) {
 		$rows[] = array(
 			'label' => $check['label'],
-			'value' => 'pass' === $check['status'] ? 'OK' : ( 'fail' === $check['status'] ? 'Attention' : 'Watch' ),
+			'value' => 'pass' === $check['status'] ? __( 'OK', 'minimal-admin' ) : ( 'fail' === $check['status'] ? __( 'Attention', 'minimal-admin' ) : __( 'Watch', 'minimal-admin' ) ),
 			'hint'  => $check['detail'],
 		);
 	}
 
 	$actions = array(
-		array( 'label' => 'Open Wordfence ↗', 'href' => admin_url( 'admin.php?page=Wordfence' ) ),
+		array( 'label' => __( 'Open Wordfence ↗', 'minimal-admin' ), 'href' => admin_url( 'admin.php?page=Wordfence' ) ),
 	);
 	foreach ( minimal_admin_wordfence_checks() as $check ) {
-		if ( ! empty( $check['href'] ) && false !== strpos( $check['label'], 'scan' ) ) {
-			$actions[] = array( 'label' => 'Scan ↗', 'href' => $check['href'] );
+		// Route on the destination, never the label: the label is translated.
+		if ( ! empty( $check['href'] ) && false !== strpos( $check['href'], 'WordfenceScan' ) ) {
+			$actions[] = array( 'label' => __( 'Scan ↗', 'minimal-admin' ), 'href' => $check['href'] );
 			break;
 		}
 	}
@@ -148,7 +150,7 @@ add_action( 'rest_api_init', function () {
 		'methods'             => 'GET',
 		'permission_callback' => function () {
 			// Network-shared table (see minimal_admin_wordfence_active).
-			return current_user_can( 'manage_options' ) && ( ! is_multisite() || is_super_admin() );
+			return current_user_can( 'manage_options' ) && Minimal_Admin::network_owner();
 		},
 		'callback'            => function ( WP_REST_Request $request ) {
 			global $wpdb;
@@ -204,7 +206,7 @@ add_action( 'rest_api_init', function () {
 		'methods'             => 'GET',
 		'permission_callback' => function () {
 			// Network-shared table (see minimal_admin_wordfence_active).
-			return current_user_can( 'manage_options' ) && ( ! is_multisite() || is_super_admin() );
+			return current_user_can( 'manage_options' ) && Minimal_Admin::network_owner();
 		},
 		'callback'            => function () {
 			return rest_ensure_response( minimal_admin_wordfence_status_model() );
@@ -223,6 +225,12 @@ add_action( 'rest_api_init', function () {
  * @return array[] of { label, status, detail }
  */
 function minimal_admin_wordfence_checks() {
+	// The System page reads this directly at manage_options, which is per
+	// site on multisite. Firewall mode, scan age and unresolved-issue counts
+	// describe the network, so gate here rather than at the call site.
+	if ( ! Minimal_Admin::network_owner() ) {
+		return array();
+	}
 	if ( ! defined( 'WORDFENCE_VERSION' ) ) {
 		return array();
 	}
@@ -233,12 +241,13 @@ function minimal_admin_wordfence_checks() {
 		if ( class_exists( 'wfFirewall' ) ) {
 			$mode = ( new wfFirewall() )->firewallMode();
 			$map  = array(
-				'enabled'       => array( 'pass', 'Enabled and blocking' ),
-				'learning-mode' => array( 'warn', 'In learning mode — it is watching traffic but not blocking yet' ),
-				'disabled'      => array( 'warn', 'The firewall is turned off' ),
+				'enabled'       => array( 'pass', __( 'Enabled and blocking', 'minimal-admin' ) ),
+				'learning-mode' => array( 'warn', __( 'In learning mode — it is watching traffic but not blocking yet', 'minimal-admin' ) ),
+				'disabled'      => array( 'warn', __( 'The firewall is turned off', 'minimal-admin' ) ),
 			);
-			$m = isset( $map[ $mode ] ) ? $map[ $mode ] : array( 'warn', 'Mode: ' . (string) $mode );
-			$rows[] = array( 'label' => 'Wordfence firewall', 'status' => $m[0], 'detail' => $m[1], 'href' => admin_url( 'admin.php?page=WordfenceWAF' ) );
+			/* translators: %s: the firewall mode Wordfence reports. */
+			$m = isset( $map[ $mode ] ) ? $map[ $mode ] : array( 'warn', sprintf( __( 'Mode: %s', 'minimal-admin' ), (string) $mode ) );
+			$rows[] = array( 'label' => __( 'Wordfence firewall', 'minimal-admin' ), 'status' => $m[0], 'detail' => $m[1], 'href' => admin_url( 'admin.php?page=WordfenceWAF' ) );
 		}
 	} catch ( \Throwable $e ) {
 		// A version mismatch just drops the row.
@@ -250,15 +259,20 @@ function minimal_admin_wordfence_checks() {
 			$last   = wfScanner::shared()->lastScanTime();
 			$issues = (int) ( new wfIssues() )->getIssueCount();
 			if ( ! $last ) {
-				$rows[] = array( 'label' => 'Wordfence scan', 'status' => 'warn', 'detail' => 'No malware scan has run yet' , 'href' => admin_url( 'admin.php?page=WordfenceScan' ) );
+				$rows[] = array( 'label' => __( 'Wordfence scan', 'minimal-admin' ), 'status' => 'warn', 'detail' => __( 'No malware scan has run yet', 'minimal-admin' ) , 'href' => admin_url( 'admin.php?page=WordfenceScan' ) );
 			} else {
-				$when = human_time_diff( (int) $last ) . ' ago';
+				/* translators: %s: human-readable time difference (e.g. "5 mins"). */
+				$when = sprintf( __( '%s ago', 'minimal-admin' ), human_time_diff( (int) $last ) );
 				if ( $issues > 0 ) {
-					$rows[] = array( 'label' => 'Wordfence scan', 'status' => 'fail', 'detail' => $issues . ' unresolved issue' . ( 1 === $issues ? '' : 's' ) . ' from the last scan (' . $when . ')' , 'href' => admin_url( 'admin.php?page=WordfenceScan' ) );
+					/* translators: 1: number of unresolved issues, 2: how long ago the scan ran. */
+					$detail = sprintf( _n( '%1$s unresolved issue from the last scan (%2$s)', '%1$s unresolved issues from the last scan (%2$s)', $issues, 'minimal-admin' ), number_format_i18n( $issues ), $when );
+					$rows[] = array( 'label' => __( 'Wordfence scan', 'minimal-admin' ), 'status' => 'fail', 'detail' => $detail, 'href' => admin_url( 'admin.php?page=WordfenceScan' ) );
 				} elseif ( time() - (int) $last > 14 * DAY_IN_SECONDS ) {
-					$rows[] = array( 'label' => 'Wordfence scan', 'status' => 'warn', 'detail' => 'Last scan was ' . $when . ' — run a fresh one' , 'href' => admin_url( 'admin.php?page=WordfenceScan' ) );
+					/* translators: %s: how long ago the last scan ran. */
+					$rows[] = array( 'label' => __( 'Wordfence scan', 'minimal-admin' ), 'status' => 'warn', 'detail' => sprintf( __( 'Last scan was %s. Run a fresh one.', 'minimal-admin' ), $when ), 'href' => admin_url( 'admin.php?page=WordfenceScan' ) );
 				} else {
-					$rows[] = array( 'label' => 'Wordfence scan', 'status' => 'pass', 'detail' => 'Last scan ' . $when . ', no issues found' , 'href' => admin_url( 'admin.php?page=WordfenceScan' ) );
+					/* translators: %s: how long ago the last scan ran. */
+					$rows[] = array( 'label' => __( 'Wordfence scan', 'minimal-admin' ), 'status' => 'pass', 'detail' => sprintf( __( 'Last scan %s, no issues found', 'minimal-admin' ), $when ), 'href' => admin_url( 'admin.php?page=WordfenceScan' ) );
 				}
 			}
 		}

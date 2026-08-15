@@ -233,23 +233,23 @@ function minimal_admin_crontrol_list( WP_REST_Request $request ) {
 function minimal_admin_crontrol_detail( $id ) {
 	$parts = minimal_admin_crontrol_parse_id( $id );
 	if ( ! $parts ) {
-		return new WP_Error( 'bad_id', 'Invalid event id.', array( 'status' => 400 ) );
+		return new WP_Error( 'bad_id', __( 'Invalid event id.', 'minimal-admin' ), array( 'status' => 400 ) );
 	}
 	$ev = \Crontrol\Event\find( $parts['h'], $parts['t'], $parts['s'] );
 	if ( ! $ev ) {
-		return new WP_Error( 'not_found', 'Cron event not found.', array( 'status' => 404 ) );
+		return new WP_Error( 'not_found', __( 'Cron event not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 
 	$row     = minimal_admin_crontrol_row( $ev );
 	$meta    = array(
-		array( 'label' => 'Hook', 'value' => $ev->hook ),
-		array( 'label' => 'Next run (UTC)', 'value' => $ev->get_next_run_utc( 'Y-m-d H:i:s' ) . ' UTC' ),
-		array( 'label' => 'Next run (site)', 'value' => $ev->get_next_run_local( 'Y-m-d H:i:s' ) ),
-		array( 'label' => 'Schedule', 'value' => $row['schedule'] ),
-		array( 'label' => 'Interval', 'value' => $row['interval'] ),
-		array( 'label' => 'Status', 'value' => $row['status'] ),
-		array( 'label' => 'Arguments', 'value' => $row['args'] ?: '—' ),
-		array( 'label' => 'Signature', 'value' => $ev->sig ),
+		array( 'label' => __( 'Hook', 'minimal-admin' ), 'value' => $ev->hook ),
+		array( 'label' => __( 'Next run (UTC)', 'minimal-admin' ), 'value' => $ev->get_next_run_utc( 'Y-m-d H:i:s' ) . ' UTC' ),
+		array( 'label' => __( 'Next run (site)', 'minimal-admin' ), 'value' => $ev->get_next_run_local( 'Y-m-d H:i:s' ) ),
+		array( 'label' => __( 'Schedule', 'minimal-admin' ), 'value' => $row['schedule'] ),
+		array( 'label' => __( 'Interval', 'minimal-admin' ), 'value' => $row['interval'] ),
+		array( 'label' => __( 'Status', 'minimal-admin' ), 'value' => $row['status'] ),
+		array( 'label' => __( 'Arguments', 'minimal-admin' ), 'value' => $row['args'] ?: '—' ),
+		array( 'label' => __( 'Signature', 'minimal-admin' ), 'value' => $ev->sig ),
 	);
 
 	$cb_rows = array();
@@ -265,7 +265,7 @@ function minimal_admin_crontrol_detail( $id ) {
 			}
 			$pri = isset( $cb['priority'] ) ? (int) $cb['priority'] : 10;
 			$cb_rows[] = array(
-				'label' => 'Priority ' . $pri,
+				'label' => __( 'Priority ', 'minimal-admin' ) . $pri,
 				'value' => $fn ?: '—',
 			);
 		}
@@ -274,10 +274,10 @@ function minimal_admin_crontrol_detail( $id ) {
 	}
 
 	$sections = array_values( array_filter( array(
-		array( 'title' => 'Event', 'rows' => array_values( array_filter( $meta, function ( $r ) {
+		array( 'title' => __( 'Event', 'minimal-admin' ), 'rows' => array_values( array_filter( $meta, function ( $r ) {
 			return '' !== (string) $r['value'];
 		} ) ) ),
-		$cb_rows ? array( 'title' => 'Callbacks', 'rows' => $cb_rows ) : null,
+		$cb_rows ? array( 'title' => __( 'Callbacks', 'minimal-admin' ), 'rows' => $cb_rows ) : null,
 	) ) );
 
 	return array(
@@ -291,7 +291,7 @@ function minimal_admin_crontrol_detail( $id ) {
 function minimal_admin_crontrol_status_model() {
 	if ( ! minimal_admin_crontrol_ready() ) {
 		return array(
-			'rows'    => array( array( 'label' => 'WP Crontrol', 'value' => 'Unavailable' ) ),
+			'rows'    => array( array( 'label' => __( 'WP Crontrol', 'minimal-admin' ), 'value' => 'Unavailable' ) ),
 			'actions' => array(),
 		);
 	}
@@ -326,37 +326,38 @@ function minimal_admin_crontrol_status_model() {
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Events',
+				'label' => __( 'Events', 'minimal-admin' ),
 				'value' => number_format_i18n( $total ),
-				'hint'  => $once ? ( number_format_i18n( $once ) . ' one-off' ) : '',
+				/* translators: %s: formatted number of one-off events. */
+				'hint'  => $once ? sprintf( __( '%s one-off', 'minimal-admin' ), number_format_i18n( $once ) ) : '',
 			),
 			array(
-				'label' => 'Overdue',
+				'label' => __( 'Overdue', 'minimal-admin' ),
 				'value' => number_format_i18n( $overdue ),
-				'hint'  => $overdue ? 'Past next-run time' : 'None past due',
+				'hint'  => $overdue ? __( 'Past next-run time', 'minimal-admin' ) : __( 'None past due', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'Paused',
+				'label' => __( 'Paused', 'minimal-admin' ),
 				'value' => number_format_i18n( $paused ),
-				'hint'  => 'Hook-level pause via WP Crontrol',
+				'hint'  => __( 'Hook-level pause via WP Crontrol', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'WP-Cron spawn',
+				'label' => __( 'WP-Cron spawn', 'minimal-admin' ),
 				'value' => $spawn,
-				'hint'  => 'Site uses page-load spawn unless disabled',
+				'hint'  => __( 'Site uses page-load spawn unless disabled', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'WP Crontrol',
+				'label' => __( 'WP Crontrol', 'minimal-admin' ),
 				'value' => is_string( $ver ) ? $ver : '—',
 			),
 		),
 		'actions' => array(
 			array(
-				'label' => 'Open WP Crontrol ↗',
+				'label' => __( 'Open WP Crontrol ↗', 'minimal-admin' ),
 				'href'  => minimal_admin_crontrol_admin_url(),
 			),
 			array(
-				'label' => 'Add event ↗',
+				'label' => __( 'Add event ↗', 'minimal-admin' ),
 				'href'  => admin_url( 'tools.php?page=wp-crontrol&crontrol_action=new-cron' ),
 			),
 		),
@@ -369,7 +370,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['wp-crontrol'] = array(
-		'label'      => 'Diagnostics',
+		'label'      => __( 'Diagnostics', 'minimal-admin' ),
 		'sub'        => 'WP Crontrol',
 		'family'     => 'diagnostics',
 		'icon'       => 'activity',
@@ -377,7 +378,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'group'      => 'tools',
 		'status'     => array( 'route' => 'minimal-admin/v1/crontrol/status' ),
 		'collection' => array(
-			'viewLabel' => 'Events',
+			'viewLabel' => __( 'Events', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/crontrol/events',
 			'pageQuery' => 'per_page=50&page={page}',
 			'search'    => 'search={q}',
@@ -391,47 +392,47 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					array( 'recurring', 'Recurring' ),
 					array( 'once', 'One-off' ),
 				),
-				'allLabel' => 'All events',
+				'allLabel' => __( 'All events', 'minimal-admin' ),
 			),
 			'columns'   => array(
-				array( 'key' => 'hook', 'label' => 'Hook', 'format' => 'title' ),
-				array( 'key' => 'schedule', 'label' => 'Schedule', 'format' => 'text' ),
-				array( 'key' => 'interval', 'label' => 'Every', 'format' => 'text' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
-				array( 'key' => 'date', 'label' => 'Next run', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'hook', 'label' => __( 'Hook', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'schedule', 'label' => __( 'Schedule', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'interval', 'label' => __( 'Every', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date', 'label' => __( 'Next run', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/crontrol/events/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Run now',
+					'label'  => __( 'Run now', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/crontrol/events/{id}/run',
 					'when'   => array( 'key' => 'can_run', 'equals' => true ),
 				),
 				array(
-					'label'  => 'Pause hook',
+					'label'  => __( 'Pause hook', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/crontrol/events/{id}/pause',
 					'when'   => array( 'key' => 'can_pause', 'equals' => true ),
 				),
 				array(
-					'label'  => 'Resume hook',
+					'label'  => __( 'Resume hook', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/crontrol/events/{id}/resume',
 					'when'   => array( 'key' => 'can_resume', 'equals' => true ),
 				),
 				array(
-					'label'   => 'Delete event',
+					'label'   => __( 'Delete event', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/crontrol/events/{id}',
-					'confirm' => 'Delete this scheduled cron event? Recurring hooks can be re-added by their plugin.',
+					'confirm' => __( 'Delete this scheduled cron event? Recurring hooks can be re-added by their plugin.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'can_delete', 'equals' => true ),
 				),
 				array(
-					'label' => 'Open WP Crontrol ↗',
+					'label' => __( 'Open WP Crontrol ↗', 'minimal-admin' ),
 					'href'  => minimal_admin_crontrol_admin_url(),
 				),
 			),
@@ -470,16 +471,16 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $request ) {
 				$parts = minimal_admin_crontrol_parse_id( (string) $request['id'] );
 				if ( ! $parts ) {
-					return new WP_Error( 'bad_id', 'Invalid event id.', array( 'status' => 400 ) );
+					return new WP_Error( 'bad_id', __( 'Invalid event id.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				$ev = \Crontrol\Event\find( $parts['h'], $parts['t'], $parts['s'] );
 				if ( ! $ev ) {
-					return new WP_Error( 'not_found', 'Cron event not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Cron event not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$user     = minimal_admin_crontrol_user_ctx();
 				$features = minimal_admin_crontrol_feature_ctx();
 				if ( ! $ev->deletable( $user, $features ) || $ev->persistent() ) {
-					return new WP_Error( 'forbidden', 'This event cannot be deleted.', array( 'status' => 403 ) );
+					return new WP_Error( 'forbidden', __( 'This event cannot be deleted.', 'minimal-admin' ), array( 'status' => 403 ) );
 				}
 				$result = \Crontrol\Event\delete( $parts['h'], $parts['s'], (string) $parts['t'] );
 				if ( is_wp_error( $result ) ) {
@@ -487,7 +488,7 @@ add_action( 'rest_api_init', function () {
 				}
 				return rest_ensure_response( array(
 					'ok'      => true,
-					'message' => 'Event deleted.',
+					'message' => __( 'Event deleted.', 'minimal-admin' ),
 				) );
 			},
 		),
@@ -499,16 +500,16 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$parts = minimal_admin_crontrol_parse_id( (string) $request['id'] );
 			if ( ! $parts ) {
-				return new WP_Error( 'bad_id', 'Invalid event id.', array( 'status' => 400 ) );
+				return new WP_Error( 'bad_id', __( 'Invalid event id.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			$ev = \Crontrol\Event\find( $parts['h'], $parts['t'], $parts['s'] );
 			if ( ! $ev ) {
-				return new WP_Error( 'not_found', 'Cron event not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Cron event not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$user     = minimal_admin_crontrol_user_ctx();
 			$features = minimal_admin_crontrol_feature_ctx();
 			if ( ! $ev->runnable( $user, $features ) || $ev->is_paused() ) {
-				return new WP_Error( 'forbidden', 'This event cannot be run now.', array( 'status' => 403 ) );
+				return new WP_Error( 'forbidden', __( 'This event cannot be run now.', 'minimal-admin' ), array( 'status' => 403 ) );
 			}
 			// Their run() schedules an immediate spawn and sleeps 1s.
 			$result = \Crontrol\Event\run( $parts['h'], $parts['s'] );
@@ -517,7 +518,7 @@ add_action( 'rest_api_init', function () {
 			}
 			return rest_ensure_response( array(
 				'ok'      => true,
-				'message' => 'Run scheduled — WP-Cron was spawned to execute it.',
+				'message' => __( 'Run scheduled — WP-Cron was spawned to execute it.', 'minimal-admin' ),
 			) );
 		},
 	) );
@@ -528,14 +529,14 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$parts = minimal_admin_crontrol_parse_id( (string) $request['id'] );
 			if ( ! $parts ) {
-				return new WP_Error( 'bad_id', 'Invalid event id.', array( 'status' => 400 ) );
+				return new WP_Error( 'bad_id', __( 'Invalid event id.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			$ev = \Crontrol\Event\find( $parts['h'], $parts['t'], $parts['s'] );
 			if ( ! $ev ) {
-				return new WP_Error( 'not_found', 'Cron event not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Cron event not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			if ( ! $ev->pausable() ) {
-				return new WP_Error( 'forbidden', 'This hook cannot be paused.', array( 'status' => 403 ) );
+				return new WP_Error( 'forbidden', __( 'This hook cannot be paused.', 'minimal-admin' ), array( 'status' => 403 ) );
 			}
 			$result = \Crontrol\Event\pause( $parts['h'] );
 			if ( is_wp_error( $result ) ) {
@@ -543,7 +544,7 @@ add_action( 'rest_api_init', function () {
 			}
 			return rest_ensure_response( array(
 				'ok'      => true,
-				'message' => 'Hook paused — all events on this hook are skipped.',
+				'message' => __( 'Hook paused — all events on this hook are skipped.', 'minimal-admin' ),
 			) );
 		},
 	) );
@@ -554,7 +555,18 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$parts = minimal_admin_crontrol_parse_id( (string) $request['id'] );
 			if ( ! $parts ) {
-				return new WP_Error( 'bad_id', 'Invalid event id.', array( 'status' => 400 ) );
+				return new WP_Error( 'bad_id', __( 'Invalid event id.', 'minimal-admin' ), array( 'status' => 400 ) );
+			}
+			// Symmetric with pause: resolve the event, 404 when it is gone and
+			// refuse a hook Crontrol does not consider pausable. Without this
+			// a hook the pause route would have refused could still be
+			// un-paused, re-enabling a callback the owner suspended.
+			$ev = \Crontrol\Event\find( $parts['h'], $parts['t'], $parts['s'] );
+			if ( ! $ev ) {
+				return new WP_Error( 'not_found', __( 'Cron event not found.', 'minimal-admin' ), array( 'status' => 404 ) );
+			}
+			if ( ! $ev->pausable() ) {
+				return new WP_Error( 'forbidden', __( 'This hook cannot be paused or resumed.', 'minimal-admin' ), array( 'status' => 403 ) );
 			}
 			$result = \Crontrol\Event\resume( $parts['h'] );
 			if ( is_wp_error( $result ) ) {
@@ -562,7 +574,7 @@ add_action( 'rest_api_init', function () {
 			}
 			return rest_ensure_response( array(
 				'ok'      => true,
-				'message' => 'Hook resumed.',
+				'message' => __( 'Hook resumed.', 'minimal-admin' ),
 			) );
 		},
 	) );

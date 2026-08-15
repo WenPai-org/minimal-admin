@@ -8,7 +8,7 @@
  * mu-plugins can add their own via the `minimal_admin_log_sources` filter:
  *
  *   id => array(
- *     'label' => 'My log',
+ *     'label' => __( 'My log', 'minimal-admin' ),
  *     'group' => 'My Plugin',
  *     'stat'  => callable(): { exists, size, modified },   // cheap, for lists
  *     'read'  => callable(): { exists, path, size, size_human, truncated, content, note? },
@@ -75,14 +75,14 @@ class Minimal_Admin_Logs {
 		$sources = array();
 
 		$debug            = self::debug_log_path();
-		$sources['debug'] = self::file_source( 'Debug log', 'WordPress', $debug, true );
+		$sources['debug'] = self::file_source( __( 'Debug log', 'minimal-admin' ), 'WordPress', $debug, true );
 
 		// The PHP error log, when it is a separate real file (not syslog,
 		// not already the debug path).
 		$ini = ini_get( 'error_log' );
 		if ( $ini && 'syslog' !== $ini && '/' === substr( $ini, 0, 1 ) && $ini !== $debug && file_exists( $ini )
 			&& self::site_owned( $ini ) ) {
-			$sources['php-error'] = self::file_source( 'PHP error log', 'Server', $ini, true );
+			$sources['php-error'] = self::file_source( __( 'PHP error log', 'minimal-admin' ), __( 'Server', 'minimal-admin' ), $ini, true );
 		}
 
 		// One source per WooCommerce log channel, via WC's own controller.
@@ -160,12 +160,12 @@ class Minimal_Admin_Logs {
 	public static function read( $id ) {
 		$sources = self::sources();
 		if ( ! isset( $sources[ $id ] ) || ! is_callable( $sources[ $id ]['read'] ) ) {
-			return new WP_Error( 'unknown_log', 'Unknown log source.', array( 'status' => 404 ) );
+			return new WP_Error( 'unknown_log', __( 'Unknown log source.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		try {
 			$payload = call_user_func( $sources[ $id ]['read'] );
 		} catch ( \Throwable $e ) {
-			return new WP_Error( 'log_read_failed', 'Could not read this log.', array( 'status' => 500 ) );
+			return new WP_Error( 'log_read_failed', __( 'Could not read this log.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		if ( is_wp_error( $payload ) ) {
 			return $payload;
@@ -185,15 +185,15 @@ class Minimal_Admin_Logs {
 	public static function clear( $id ) {
 		$sources = self::sources();
 		if ( ! isset( $sources[ $id ] ) ) {
-			return new WP_Error( 'unknown_log', 'Unknown log source.', array( 'status' => 404 ) );
+			return new WP_Error( 'unknown_log', __( 'Unknown log source.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		if ( empty( $sources[ $id ]['clear'] ) || ! is_callable( $sources[ $id ]['clear'] ) ) {
-			return new WP_Error( 'not_clearable', 'This log cannot be cleared from here.', array( 'status' => 400 ) );
+			return new WP_Error( 'not_clearable', __( 'This log cannot be cleared from here.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		try {
 			$result = call_user_func( $sources[ $id ]['clear'] );
 		} catch ( \Throwable $e ) {
-			return new WP_Error( 'clear_failed', 'Could not clear the log.', array( 'status' => 500 ) );
+			return new WP_Error( 'clear_failed', __( 'Could not clear the log.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		return is_wp_error( $result ) ? $result : true;
 	}
@@ -263,11 +263,11 @@ class Minimal_Admin_Logs {
 					return true;
 				}
 				if ( ! wp_is_writable( $path ) ) {
-					return new WP_Error( 'not_writable', 'This log is not writable.', array( 'status' => 400 ) );
+					return new WP_Error( 'not_writable', __( 'This log is not writable.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				$fh = @fopen( $path, 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 				if ( ! $fh ) {
-					return new WP_Error( 'clear_failed', 'Could not clear the log.', array( 'status' => 500 ) );
+					return new WP_Error( 'clear_failed', __( 'Could not clear the log.', 'minimal-admin' ), array( 'status' => 500 ) );
 				}
 				fclose( $fh ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 				return true;

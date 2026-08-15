@@ -23,6 +23,15 @@ body {
   font-size: 15px;
   background: var(--bg);
   color: var(--text);
+  /* JetBrains Mono ships programming ligatures on contextual alternates, and
+     one of them kerns the colon away from the slashes in `://` so a typed URL
+     reads as "https: /anchor.localhost" — it looks like Minimal mangled the value
+     while the stored string was always correct.
+     Minimal renders mono for DATA (urls, paths, versions, ip addresses), not for
+     code authoring, so contextual alternates are off. `no-contextual` is
+     deliberate rather than `none`: it leaves the sans face's ordinary prose
+     ligatures (fi, fl) alone. Inherited, so it covers every mono surface. */
+  font-variant-ligatures: no-contextual;
 }
 
 /*
@@ -149,6 +158,7 @@ body {
 @keyframes minimalFadeUp { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: none; } }
 @keyframes minimalScaleIn { from { opacity:0; transform: translateY(-6px) scale(0.98); } to { opacity:1; transform: none; } }
 @keyframes minimalSlideIn { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes minimalSlideInRtl { from { transform: translateX(-100%); } to { transform: none; } }
 /* Keep the translateX(-50%) centering in every frame — without it the toast
    animates in un-centered and snaps left at the end (reads as a sideways flash). */
 @keyframes minimalToastIn { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
@@ -189,7 +199,7 @@ a { color: var(--accent2); text-decoration: none; }
 
 /* ===== Sidebar ===== */
 .minimal-sidebar {
-  width: 240px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border);
+  width: 240px; flex-shrink: 0; background: var(--bg2); border-inline-end: 1px solid var(--border);
   display: flex; flex-direction: column; padding: 14px 12px; gap: 2px;
 }
 .minimal-logo { display: flex; align-items: center; gap: 10px; padding: 8px 8px 16px; }
@@ -240,7 +250,7 @@ a { color: var(--accent2); text-decoration: none; }
 /* Site picker (networks with more sites than the switcher menu holds). */
 .minimal-sp-list { max-height: 52vh; overflow-y: auto; padding: 0 10px 12px; }
 .minimal-sp-row {
-  display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left;
+  display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: start;
   padding: 9px 11px; border: none; border-radius: 9px; background: none;
   color: var(--text); cursor: pointer;
 }
@@ -248,9 +258,9 @@ a { color: var(--accent2); text-decoration: none; }
 .minimal-sp-row:disabled { cursor: default; }
 .minimal-sp-name { font-weight: 600; font-size: 14px; }
 .minimal-sp-url { color: var(--text3); font-size: 12px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.minimal-sp-here { margin-left: auto; color: var(--accent2); font-size: 11.5px; font-weight: 600; flex: none; }
+.minimal-sp-here { margin-inline-start: auto; color: var(--accent2); font-size: 11.5px; font-weight: 600; flex: none; }
 /* Version + changelog live in the topbar actions (GH #5: a badge beside the
-   logo truncated longer site names; Austin moved it up by the view-site
+   logo truncated longer site names, so it moved up beside the view-site
    button). Sized to sit flush with the .minimal-icon-btn row. */
 .minimal-topbar-ver { height: 34px; padding: 0 11px; display: flex; align-items: center; font-size: 12px; font-family: inherit; color: var(--text3); background: transparent; border: 1px solid var(--border); border-radius: 9px; cursor: pointer; white-space: nowrap; }
 .minimal-topbar-ver:hover { color: var(--text); border-color: var(--accent); }
@@ -261,8 +271,8 @@ a { color: var(--accent2); text-decoration: none; }
    beside one release at a time; the rail becomes a horizontal chip strip on
    small screens, scrolling in its OWN overflow so the modal never widens. */
 .minimal-cl-layout { display: grid; grid-template-columns: 172px minmax(0, 1fr); min-height: 0; }
-.minimal-cl-rail { border-right: 1px solid var(--border); max-height: 64vh; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 2px; }
-.minimal-cl-ver { text-align: left; background: none; border: 1px solid transparent; border-radius: 8px; padding: 7px 10px; cursor: pointer; font-family: inherit; flex-shrink: 0; }
+.minimal-cl-rail { border-inline-end: 1px solid var(--border); max-height: 64vh; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+.minimal-cl-ver { text-align: start; background: none; border: 1px solid transparent; border-radius: 8px; padding: 7px 10px; cursor: pointer; font-family: inherit; flex-shrink: 0; }
 .minimal-cl-ver-v { display: block; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--text); }
 .minimal-cl-ver-d { display: block; font-size: 11.5px; color: var(--text3); margin-top: 1px; }
 .minimal-cl-ver:hover { background: var(--hover); }
@@ -270,7 +280,7 @@ a { color: var(--accent2); text-decoration: none; }
 .minimal-cl-ver.sel .minimal-cl-ver-v { color: var(--accent2); }
 @media (max-width: 640px) {
   .minimal-cl-layout { display: flex; flex-direction: column; }
-  .minimal-cl-rail { flex-direction: row; overflow-x: auto; overflow-y: hidden; max-height: none; border-right: 0; border-bottom: 1px solid var(--border); padding: 8px 10px; gap: 6px; }
+  .minimal-cl-rail { flex-direction: row; overflow-x: auto; overflow-y: hidden; max-height: none; border-inline-end: 0; border-bottom: 1px solid var(--border); padding: 8px 10px; gap: 6px; }
   .minimal-cl-ver { padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px; }
   .minimal-cl-ver.sel { border-color: var(--accent); }
   .minimal-cl-ver-d { display: none; }
@@ -280,14 +290,14 @@ a { color: var(--accent2); text-decoration: none; }
 .minimal-changelog h3:first-child { margin-top: 6px; padding-top: 0; border-top: 0; }
 /* The user-guide modal shares the changelog reader shell, plus the guide's
    richer vocabulary: ordered lists, italics and the shortcuts table. */
-.minimal-guide ol, .minimal-guide ul { margin: 8px 0 12px; padding-left: 22px; }
+.minimal-guide ol, .minimal-guide ul { margin: 8px 0 12px; padding-inline-start: 22px; }
 .minimal-guide li { margin: 4px 0; }
 .minimal-guide i { color: var(--text2); }
 .minimal-guide table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; }
-.minimal-guide th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text3); border-bottom: 1px solid var(--border2); padding: 4px 10px 4px 0; }
+.minimal-guide th { text-align: start; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text3); border-bottom: 1px solid var(--border2); padding: 4px 10px 4px 0; }
 .minimal-guide td { border-bottom: 1px solid var(--border); padding: 6px 10px 6px 0; vertical-align: top; }
 .minimal-changelog h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); margin: 14px 0 4px; }
-.minimal-changelog ul { margin: 4px 0 10px; padding-left: 20px; }
+.minimal-changelog ul { margin: 4px 0 10px; padding-inline-start: 20px; }
 .minimal-changelog li { margin: 4px 0; }
 .minimal-changelog code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
 .minimal-changelog a { color: var(--accent2); }
@@ -301,7 +311,7 @@ a { color: var(--accent2); text-decoration: none; }
 }
 .minimal-search-btn:hover { border-color: var(--border2); color: var(--text2); }
 .minimal-kbd {
-  margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--bg);
+  margin-inline-start: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--bg);
   border: 1px solid var(--border); padding: 1px 6px; border-radius: 5px;
 }
 
@@ -310,19 +320,19 @@ a { color: var(--accent2); text-decoration: none; }
 .minimal-nav-label { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; padding: 8px 10px 4px; }
 .minimal-nav-label + .minimal-nav-label, .minimal-nav-label.later { padding-top: 14px; }
 /* Group labels are collapse toggles (Workspace / Tools / Manage). */
-button.minimal-nav-label { display: flex; align-items: center; width: 100%; background: none; border: 0; cursor: pointer; font-family: inherit; text-align: left; }
-button.minimal-nav-label svg { width: 12px; height: 12px; margin-left: auto; opacity: 0; transition: transform 0.15s ease, opacity 0.15s ease; }
+button.minimal-nav-label { display: flex; align-items: center; width: 100%; background: none; border: 0; cursor: pointer; font-family: inherit; text-align: start; }
+button.minimal-nav-label svg { width: 12px; height: 12px; margin-inline-start: auto; opacity: 0; transition: transform 0.15s ease, opacity 0.15s ease; }
 button.minimal-nav-label:hover svg, button.minimal-nav-label.collapsed svg { opacity: 0.7; }
 button.minimal-nav-label.collapsed svg { transform: rotate(-90deg); }
 button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-nav-btn {
-  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: transparent;
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: start; background: transparent;
   color: var(--text2); border: none; padding: 8px 10px; border-radius: 9px; cursor: pointer; font-size: 14.5px; font-weight: 500;
 }
 .minimal-nav-btn:hover { background: var(--hover); color: var(--text); }
 .minimal-nav-btn.active { background: var(--accent-soft); color: var(--accent2); font-weight: 600; }
-.minimal-nav-count { margin-left: auto; font-size: 12px; color: var(--text3); background: var(--panel); padding: 1px 7px; border-radius: 20px; }
-.minimal-nav-dot { margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+.minimal-nav-count { margin-inline-start: auto; font-size: 12px; color: var(--text3); background: var(--panel); padding: 1px 7px; border-radius: 20px; }
+.minimal-nav-dot { margin-inline-start: auto; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
 
 /* Notice action links — buttons inside the row; ↗ ones open a new tab. */
 .minimal-notif-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
@@ -356,9 +366,9 @@ button.minimal-nav-label:hover { color: var(--text2); }
    rows · copyable command · action buttons). Disembark is the reference. */
 .minimal-surface-status { display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; margin-bottom: 14px; }
 .minimal-sstat-head { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
-.minimal-sstat-head .minimal-sstat-actions { flex: none; margin-left: auto; }
+.minimal-sstat-head .minimal-sstat-actions { flex: none; margin-inline-start: auto; }
 /* An armed inline action form (Send a test email) needs the full row. */
-.minimal-sstat-head .minimal-sstat-actions:has(.minimal-action-fields) { flex: 1 1 100%; margin-left: 0; }
+.minimal-sstat-head .minimal-sstat-actions:has(.minimal-action-fields) { flex: 1 1 100%; margin-inline-start: 0; }
 .minimal-sstat-rows { display: flex; flex-wrap: wrap; gap: 10px 36px; }
 .minimal-sstat { min-width: 130px; }
 .minimal-sstat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text3); margin-bottom: 3px; }
@@ -381,7 +391,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-sstat-chart .minimal-chart { height: 88px; gap: 3px; }
 .minimal-sstat-cmd { min-width: 0; }
 .minimal-sstat-cmd-box {
-  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: start;
   font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--text);
   background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
   padding: 9px 12px; cursor: pointer;
@@ -451,7 +461,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
 /* Account actions: WordPress admin (a quiet, discoverable exit — the
    escape is deliberately here beside logout, never a prominent topbar
    button; the palette carries it too) then Log out. */
-.minimal-user-acts { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+.minimal-user-acts { margin-inline-start: auto; display: flex; align-items: center; gap: 2px; }
 .minimal-user-logout { color: var(--text3); background: none; border: none; cursor: pointer; padding: 6px; border-radius: 7px; display: flex; }
 .minimal-user-logout:hover { background: var(--hover); color: var(--text); }
 
@@ -484,9 +494,9 @@ button.minimal-nav-label:hover { color: var(--text2); }
   border-color: var(--accent); color: var(--text); outline: none;
 }
 .minimal-surface-switch .minimal-ac-panel {
-  min-width: 180px; right: 0; left: auto;
+  min-width: 180px; inset-inline-end: 0; inset-inline-start: auto;
 }
-.minimal-topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.minimal-topbar-actions { margin-inline-start: auto; display: flex; align-items: center; gap: 6px; }
 .minimal-icon-btn {
   position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
   background: transparent; border: 1px solid var(--border); border-radius: 9px; color: var(--text2); cursor: pointer;
@@ -501,7 +511,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-new-menu button {
   display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 11px;
   background: none; border: none; border-radius: 8px; color: var(--text);
-  font-size: 14px; font-weight: 500; cursor: pointer; text-align: left;
+  font-size: 14px; font-weight: 500; cursor: pointer; text-align: start;
 }
 .minimal-new-menu button:hover { background: var(--hover); }
 .minimal-new-menu button.danger { color: var(--red); }
@@ -545,7 +555,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
   display: flex; align-items: center; flex-wrap: wrap; gap: 10px 28px;
   padding: 13px 20px; margin-bottom: 16px;
 }
-.minimal-menu-locations .minimal-panel-title { font-size: 14.5px; margin-right: 4px; }
+.minimal-menu-locations .minimal-panel-title { font-size: 14.5px; margin-inline-end: 4px; }
 .minimal-loc-group { display: flex; align-items: center; gap: 9px; }
 .minimal-loc-group .minimal-side-key { white-space: nowrap; }
 .minimal-loc-ac { width: 200px; }
@@ -629,14 +639,14 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-vis-pop .minimal-btn-soft { align-self: flex-start; }
 .minimal-comment-replybox { margin-top: 10px; }
 .minimal-comment-replybox textarea { resize: vertical; font-size: 13.5px; }
-.minimal-unread-dot { position: absolute; top: 6px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--red); border: 2px solid var(--bg); }
+.minimal-unread-dot { position: absolute; top: 6px; inset-inline-end: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--red); border: 2px solid var(--bg); }
 .minimal-btn-primary {
   display: flex; align-items: center; gap: 7px; background: var(--accent); color: var(--accent-fg); border: none;
   padding: 8px 14px; border-radius: 9px; font-weight: 600; font-size: 14px; cursor: pointer; white-space: nowrap;
 }
 .minimal-btn-primary:hover { background: var(--accent2); }
 .minimal-btn-primary:disabled { opacity: 0.6; cursor: default; }
-.minimal-topbar .minimal-btn-primary { margin-left: 6px; }
+.minimal-topbar .minimal-btn-primary { margin-inline-start: 6px; }
 
 /* ===== Cards / panels ===== */
 .minimal-card { background: var(--panel); border: 1px solid var(--border); border-radius: 13px; }
@@ -660,11 +670,11 @@ button.minimal-nav-label:hover { color: var(--text2); }
 
 /* Store needs-attention strip (Overview, WooCommerce only) */
 .minimal-store-strip { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 17px; margin-bottom: 20px; }
-.minimal-store-label { font-size: 13.5px; font-weight: 600; color: var(--text2); margin-right: 4px; }
+.minimal-store-label { font-size: 13.5px; font-weight: 600; color: var(--text2); margin-inline-end: 4px; }
 .minimal-store-chip { border: 0; cursor: pointer; font-family: inherit; transition: filter 0.15s ease; }
 .minimal-store-chip:hover, .minimal-store-chip:focus-visible { filter: brightness(1.15); }
 .minimal-store-ok { color: var(--text3); font-size: 13px; }
-.minimal-store-view { margin-left: auto; }
+.minimal-store-view { margin-inline-start: auto; }
 
 .minimal-dash-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; }
 .minimal-panel-pad { padding: 18px 20px; }
@@ -720,7 +730,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-traf-title { font-size: 14px; font-weight: 550; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .minimal-traf-path { font-size: 12px; color: var(--text3); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mono, ui-monospace, monospace); }
 .minimal-traf-nums { display: flex; gap: 12px; flex: none; font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
-.minimal-traf-nums em { font-style: normal; font-weight: 500; font-size: 11px; color: var(--text3); margin-left: 2px; }
+.minimal-traf-nums em { font-style: normal; font-weight: 500; font-size: 11px; color: var(--text3); margin-inline-start: 2px; }
 .minimal-traf-foot { padding: 12px 0 2px; }
 .minimal-activity { display: flex; flex-direction: column; gap: 2px; margin-top: 14px; }
 .minimal-modal .minimal-activity { margin: 0; padding: 8px 18px 14px; }
@@ -744,20 +754,20 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-toolbar-views .minimal-type-select { flex: 0 1 220px; max-width: 260px; }
 /* Aux strip (Content's Trash): pinned to the row's right edge — a stretching
    flex child floated it mid-row. Icon + a step brighter than the quiet tabs. */
-.minimal-toolbar > .minimal-tabs.minimal-tabs-aux { flex: 0 0 auto; margin-left: auto; }
+.minimal-toolbar > .minimal-tabs.minimal-tabs-aux { flex: 0 0 auto; margin-inline-start: auto; }
 .minimal-tabs-aux .minimal-tab { display: flex; align-items: center; gap: 6px; color: var(--text2); }
 .minimal-tabs-aux .minimal-tab svg { width: 13px; height: 13px; }
 /* Filters row carries the bottom gap to the table (views row is tighter). */
 .minimal-toolbar.minimal-toolbar-filters { margin-bottom: 18px; }
 /* Extensions filters: quiet text links, not a second boxed pill strip —
-   two stacked bordered containers read as chrome soup (Austin). */
+   two stacked bordered containers read as chrome soup. */
 .minimal-tabs.minimal-ext-filters, .minimal-tabs.minimal-quiet-tabs { background: none; border: none; padding: 0; gap: 4px; overflow: visible; }
 .minimal-ext-filters .minimal-tab, .minimal-quiet-tabs .minimal-tab { background: none; border: none; padding: 6px 9px; color: var(--text3); font-weight: 500; }
 .minimal-ext-filters .minimal-tab:hover, .minimal-quiet-tabs .minimal-tab:hover { color: var(--text2); }
 .minimal-ext-filters .minimal-tab.active, .minimal-quiet-tabs .minimal-tab.active { color: var(--text); font-weight: 600; background: none; box-shadow: none; }
 .minimal-ext-filters .minimal-tab.active .minimal-tab-count { color: var(--accent2); }
-.minimal-ext-filters .minimal-tab .minimal-tab-count { background: none; border: none; padding: 0; margin-left: 3px; }
-.minimal-toolbar-meta { margin-left: auto; color: var(--text3); font-size: 14px; white-space: nowrap; flex-shrink: 0; }
+.minimal-ext-filters .minimal-tab .minimal-tab-count { background: none; border: none; padding: 0; margin-inline-start: 3px; }
+.minimal-toolbar-meta { margin-inline-start: auto; color: var(--text3); font-size: 14px; white-space: nowrap; flex-shrink: 0; }
 .minimal-media-svg-note {
 	margin: 8px 0 0;
 	padding: 7px 10px;
@@ -784,7 +794,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-tabs::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 .minimal-tab { background: transparent; color: var(--text3); border: none; padding: 5px 13px; border-radius: 7px; cursor: pointer; font-size: 14px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
 .minimal-tab.active { background: var(--panel2); color: var(--text); font-weight: 600; }
-.minimal-tab-count { display: inline-block; margin-left: 5px; padding: 0 6px; border-radius: 999px; background: var(--panel2); color: var(--text3); font-size: 12px; font-weight: 600; line-height: 18px; vertical-align: 1px; }
+.minimal-tab-count { display: inline-block; margin-inline-start: 5px; padding: 0 6px; border-radius: 999px; background: var(--panel2); color: var(--text3); font-size: 12px; font-weight: 600; line-height: 18px; vertical-align: 1px; }
 .minimal-tab.active .minimal-tab-count { background: var(--bg); color: var(--text2); }
 /* Quiet in-place loading: keep the toolbar, dim only the table while data refreshes. */
 .minimal-busy { opacity: 0.45; pointer-events: none; transition: opacity 0.12s ease; }
@@ -795,13 +805,13 @@ button.minimal-nav-label:hover { color: var(--text2); }
   border-bottom: 1px solid var(--border); align-items: center;
 }
 .minimal-table-head { font-size: 12.5px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
-/* Sortable column headers (Users list). */
+/* Sortable column headers (Content list, Users list, surface collections). */
 .minimal-th-sort {
   display: inline-flex; align-items: center; gap: 2px;
   margin: 0; padding: 0; border: 0; background: none;
   font: inherit; font-size: inherit; font-weight: inherit;
   color: inherit; letter-spacing: inherit; text-transform: inherit;
-  cursor: pointer; text-align: left;
+  cursor: pointer; text-align: start;
 }
 .minimal-th-sort:hover { color: var(--text); }
 .minimal-th-sort.is-active { color: var(--text2); }
@@ -823,8 +833,8 @@ button.minimal-nav-label:hover { color: var(--text2); }
 /* Surface table cells: single line, ellipsis — long URLs shouldn't wrap to three rows. */
 .minimal-row-meta.minimal-cell-clip { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .minimal-row-meta.mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
-.minimal-row-meta.minimal-num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 8px; }
-.minimal-table-head .minimal-num { text-align: right; padding-right: 8px; }
+.minimal-row-meta.minimal-num { text-align: end; font-variant-numeric: tabular-nums; padding-inline-end: 8px; }
+.minimal-table-head .minimal-num { text-align: end; padding-inline-end: 8px; }
 .minimal-row-arrow { color: var(--text3); text-align: center; }
 .minimal-cell-clip { min-width: 0; }
 
@@ -835,7 +845,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-status.private { color: var(--amber-text); background: rgba(224,164,88,0.14); }
 
 /* ===== Media ===== */
-.minimal-view-tabs { margin-left: auto; display: flex; gap: 2px; background: var(--panel); border: 1px solid var(--border); border-radius: 9px; padding: 3px; }
+.minimal-view-tabs { margin-inline-start: auto; display: flex; gap: 2px; background: var(--panel); border: 1px solid var(--border); border-radius: 9px; padding: 3px; }
 .minimal-view-tab { width: 30px; height: 28px; display: flex; align-items: center; justify-content: center; background: transparent; color: var(--text3); border: none; border-radius: 6px; cursor: pointer; }
 .minimal-view-tab.active { background: var(--panel2); color: var(--text); }
 .minimal-media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
@@ -847,7 +857,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
    top-right (appears on hover / when selected). Opposite corners so hover
    never covers the kind label. List view keeps the checkbox leading. */
 .minimal-media-check {
-  position: absolute; top: 7px; right: 7px; z-index: 2; display: flex;
+  position: absolute; top: 7px; inset-inline-end: 7px; z-index: 2; display: flex;
   padding: 3px; border-radius: 6px; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
   opacity: 0; transition: opacity 0.12s;
 }
@@ -857,7 +867,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-media-check input { cursor: pointer; width: 15px; height: 15px; accent-color: var(--accent); margin: 0; }
 .minimal-media-thumb { height: 110px; position: relative; display: flex; align-items: flex-start; background-size: cover; background-position: center; }
 .minimal-media-badge {
-  position: absolute; top: 8px; left: 8px; margin: 0;
+  position: absolute; top: 8px; inset-inline-start: 8px; margin: 0;
   font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: #fff;
   background: rgba(0,0,0,0.35); backdrop-filter: blur(4px); padding: 2px 7px; border-radius: 5px;
   z-index: 1; pointer-events: none;
@@ -872,7 +882,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-media-thumb-sm { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; background-size: cover; background-position: center; }
 .minimal-media-col { flex: 1; min-width: 0; }
 .minimal-media-dims { font-size: 13.5px; color: var(--text2); width: 90px; }
-.minimal-media-size { font-size: 13.5px; color: var(--text2); width: 70px; text-align: right; }
+.minimal-media-size { font-size: 13.5px; color: var(--text2); width: 70px; text-align: end; }
 
 /* ===== Extensions ===== */
 .minimal-btn-soft {
@@ -929,7 +939,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-state-label { font-size: 13px; font-weight: 600; color: var(--text3); }
 .minimal-state-label.on { color: var(--green); }
 .minimal-plugin-delete {
-  margin-left: auto; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  margin-inline-start: auto; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
   background: transparent; border: none; border-radius: 7px; color: var(--text3); cursor: pointer;
 }
 .minimal-plugin-delete:hover { background: rgba(228,107,107,0.12); color: var(--red); }
@@ -981,17 +991,17 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-trash-link:hover { color: var(--red); }
 .minimal-trash-link:disabled { opacity: 0.5; }
 .minimal-history-row {
-  display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left; background: none;
+  display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: start; background: none;
   border: none; border-bottom: 1px solid var(--border); padding: 6px 0; cursor: pointer;
   color: var(--text2); font-size: 13px;
 }
 .minimal-history-row:hover { color: var(--text); }
 .minimal-history-when { font-weight: 600; color: var(--text); }
-.minimal-history-who { margin-left: auto; color: var(--text3); font-size: 12px; }
+.minimal-history-who { margin-inline-start: auto; color: var(--text3); font-size: 12px; }
 .minimal-history-more {
   display: block; width: 100%; margin-top: 4px; padding: 9px 0 2px;
   background: none; border: none; color: var(--accent2); font-size: 12.5px; font-weight: 600;
-  text-align: left; cursor: pointer;
+  text-align: start; cursor: pointer;
 }
 .minimal-history-more:hover { color: var(--accent); }
 
@@ -1052,7 +1062,9 @@ button.minimal-nav-label:hover { color: var(--text2); }
   margin-top: 8px; font-size: 11px; color: var(--text3);
 }
 .minimal-rev-heat-legend .minimal-rev-heat-cell { cursor: default; pointer-events: none; }
-/* Styled hover tip (heatmap cells, schedule calendar days — not native title=). */
+/* Styled hover tip (heatmap cells, schedule calendar days — not native title=).
+   In-flow anchors mount this inside .minimal-scroll as position:absolute so it
+   rides the list; fixed overlays (date picker) keep the viewport pin. */
 .minimal-float-tip,
 .minimal-rev-heat-tip {
   position: fixed; z-index: 95;
@@ -1067,6 +1079,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
   white-space: pre-line;
   animation: minimal-float-tip-in 0.1s ease-out;
 }
+.minimal-scroll > .minimal-float-tip { position: absolute; }
 .minimal-float-tip[data-place="below"],
 .minimal-rev-heat-tip[data-place="below"] { animation-name: minimal-float-tip-in-below; }
 @keyframes minimal-float-tip-in {
@@ -1090,7 +1103,7 @@ button.minimal-nav-label:hover { color: var(--text2); }
 }
 .minimal-rev-list-row {
   display: grid; grid-template-columns: 36px 1fr auto 20px; gap: 10px; align-items: center;
-  width: 100%; text-align: left; background: none; border: none;
+  width: 100%; text-align: start; background: none; border: none;
   border-bottom: 1px solid var(--border); padding: 11px 18px; cursor: pointer; color: var(--text2); font: inherit;
 }
 .minimal-rev-list-row:hover { background: var(--bg2); color: var(--text); }
@@ -1103,12 +1116,12 @@ button.minimal-nav-label:hover { color: var(--text2); }
 /* Internal link picker — results under the link popover's URL field. */
 .minimal-link-results { margin-top: 7px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden auto; max-height: 190px; }
 .minimal-link-result {
-  display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left;
+  display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: start;
   background: none; border: 0; cursor: pointer; padding: 7px 10px; color: var(--text2); font: inherit; font-size: 13px;
 }
 .minimal-link-result:hover, .minimal-link-result.active { background: var(--bg2); color: var(--text); }
 .minimal-link-result-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.minimal-link-result-type { margin-left: auto; flex-shrink: 0; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); }
+.minimal-link-result-type { margin-inline-start: auto; flex-shrink: 0; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); }
 
 /* Focus mode — two fixed overlays fade everything above/below the caret
    block. z-30 keeps the toolbar (35), stats pill (40) and chips (69+) crisp.
@@ -1128,14 +1141,14 @@ button.minimal-nav-label:hover { color: var(--text2); }
 .minimal-sidebar { transition: width 0.25s ease, padding 0.25s ease, opacity 0.2s ease; }
 body.minimal-focus-zen .minimal-sidebar,
 body.minimal-nav-hidden .minimal-sidebar,
-body.minimal-outline-mode .minimal-sidebar { width: 0; min-width: 0; padding-left: 0; padding-right: 0; opacity: 0; overflow: hidden; border-right: 0; }
+body.minimal-outline-mode .minimal-sidebar { width: 0; min-width: 0; padding-inline-start: 0; padding-inline-end: 0; opacity: 0; overflow: hidden; border-inline-end: 0; }
 
 /* Outline mode — nav gone, every sidebar card gone except the Outline. */
 body.minimal-outline-mode .minimal-editor-side > :not(#minimal-outline-card) { display: none !important; }
 
 /* Nav show/hide — a topbar .minimal-icon-btn now (was a left-edge tab). While
    the nav is hidden the icon dims less so the way back stays discoverable. */
-#minimal-nav-tab { flex-shrink: 0; margin-left: -6px; }
+#minimal-nav-tab { flex-shrink: 0; margin-inline-start: -6px; }
 body.minimal-nav-hidden #minimal-nav-tab { color: var(--text); }
 .minimal-editor { transition: grid-template-columns 0.25s ease, gap 0.25s ease; }
 body.minimal-focus-zen .minimal-editor { grid-template-columns: minmax(0, 1fr) 0px; gap: 0; }
@@ -1144,7 +1157,7 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
 
 /* Image editor — canvas preview + drag crop box; pixels stay server-side. */
 .minimal-imged-bar { display: flex; align-items: center; gap: 8px; padding: 12px 18px 0; }
-.minimal-imged-hint { margin-left: auto; font-size: 12.5px; color: var(--text3); }
+.minimal-imged-hint { margin-inline-start: auto; font-size: 12.5px; color: var(--text3); }
 .minimal-imged-stage {
   position: relative; display: flex; align-items: center; justify-content: center;
   margin: 14px 18px; min-height: 300px; background: var(--bg2);
@@ -1174,7 +1187,7 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
   box-shadow: var(--shadow); animation: minimalScaleIn 0.12s ease;
 }
 .minimal-dp-head { display: flex; align-items: center; gap: 4px; margin-bottom: 8px; }
-.minimal-dp-month { font-weight: 700; font-size: 13.5px; margin-right: auto; padding-left: 4px; }
+.minimal-dp-month { font-weight: 700; font-size: 13.5px; margin-inline-end: auto; padding-inline-start: 4px; }
 .minimal-dp-nav {
   width: 26px; height: 26px; border: 1px solid var(--border); border-radius: 7px;
   background: none; color: var(--text2); cursor: pointer; font-size: 15px; line-height: 1;
@@ -1202,7 +1215,7 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
   content: '';
   position: absolute;
   left: 50%; bottom: 2px;
-  width: 5px; height: 5px; margin-left: -2.5px;
+  width: 5px; height: 5px; margin-inline-start: -2.5px;
   border-radius: 50%;
   background: var(--accent);
   pointer-events: none;
@@ -1233,8 +1246,8 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
    Collapsed hides everything but the title; per-card state persists. */
 .minimal-side-card.collapsible > .minimal-side-title { cursor: pointer; user-select: none; display: flex; align-items: center; }
 .minimal-side-card.collapsible > .minimal-side-title::after {
-  content: '';  margin-left: auto; width: 8px; height: 8px; flex-shrink: 0;
-  border-right: 1.8px solid var(--text3); border-bottom: 1.8px solid var(--text3);
+  content: '';  margin-inline-start: auto; width: 8px; height: 8px; flex-shrink: 0;
+  border-inline-end: 1.8px solid var(--text3); border-bottom: 1.8px solid var(--text3);
   transform: rotate(45deg) translate(-2px, -2px); transition: transform 0.15s ease;
 }
 .minimal-side-card.collapsed > .minimal-side-title { margin-bottom: 0; }
@@ -1253,7 +1266,7 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
 #minimal-outline-card { position: sticky; top: 14px; transform: translateZ(0); }
 #minimal-outline { max-height: calc(100vh - 92px); overflow-y: auto; }
 .minimal-outline-row {
-  display: block; width: 100%; text-align: left; background: none; border: 0; cursor: pointer;
+  display: block; width: 100%; text-align: start; background: none; border: 0; cursor: pointer;
   padding: 5px 8px 5px calc(8px + var(--olvl, 0) * 14px); border-radius: 7px;
   color: var(--text2); font: inherit; font-size: 13px; line-height: 1.35;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -1284,7 +1297,7 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
   background: var(--bg2); border: 1px solid var(--border); border-radius: 7px; padding: 5px 9px;
 }
 .minimal-find-row input:focus { outline: none; border-color: var(--accent); }
-#minimal-find-count { font-size: 11.5px; color: var(--text3); min-width: 30px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#minimal-find-count { font-size: 11.5px; color: var(--text3); min-width: 30px; text-align: end; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .minimal-find-btn {
   width: 26px; height: 26px; flex: none; display: flex; align-items: center; justify-content: center;
   font-size: 13px; color: var(--text2); background: transparent; border: 1px solid transparent;
@@ -1297,7 +1310,7 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
   border: 1px solid var(--border); border-radius: 7px; padding: 5px 10px; cursor: pointer;
 }
 .minimal-find-act:hover { border-color: var(--accent); color: var(--text); }
-#minimal-find-marks { position: absolute; top: 0; left: 0; width: 100%; height: 0; pointer-events: none; }
+#minimal-find-marks { position: absolute; top: 0; inset-inline-start: 0; width: 100%; height: 0; pointer-events: none; }
 .minimal-find-mark {
   position: absolute; border-radius: 3px;
   background: color-mix(in srgb, var(--accent) 22%, transparent);
@@ -1332,11 +1345,11 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
   font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3);
 }
 .minimal-diff-headrow > div { padding: 8px 14px; }
-.minimal-diff-headrow > div + div { border-left: 1px solid var(--border); }
+.minimal-diff-headrow > div + div { border-inline-start: 1px solid var(--border); }
 .minimal-diff-row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border); }
 .minimal-diff-row:last-child { border-bottom: 0; }
 .minimal-diff-cell { padding: 8px 14px; min-width: 0; overflow-wrap: break-word; }
-.minimal-diff-cell + .minimal-diff-cell { border-left: 1px solid var(--border); }
+.minimal-diff-cell + .minimal-diff-cell { border-inline-start: 1px solid var(--border); }
 .minimal-diff-cell.empty { background: repeating-linear-gradient(45deg, transparent, transparent 6px, color-mix(in srgb, var(--border) 45%, transparent) 6px, color-mix(in srgb, var(--border) 45%, transparent) 7px); }
 .minimal-diff-row.same .minimal-diff-cell { color: var(--text3); }
 .minimal-diff-row.same img { max-width: 100%; height: auto; opacity: 0.6; border-radius: 6px; }
@@ -1361,12 +1374,12 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
   aspect-ratio: 4 / 3; background: var(--panel2); background-size: cover; background-position: top center;
   position: relative; border-bottom: 1px solid var(--border);
 }
-.minimal-theme-badge { position: absolute; top: 9px; left: 9px; }
-.minimal-theme-badge-u { position: absolute; top: 9px; right: 9px; }
+.minimal-theme-badge { position: absolute; top: 9px; inset-inline-start: 9px; }
+.minimal-theme-badge-u { position: absolute; top: 9px; inset-inline-end: 9px; }
 .minimal-theme-info { padding: 12px 14px 13px; }
 .minimal-theme-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; min-height: 28px; }
 /* Extensions cards: ⋯ is always visible (cards have no row-hover affordance). */
-.minimal-ext-more { opacity: 1; margin-left: auto; flex-shrink: 0; }
+.minimal-ext-more { opacity: 1; margin-inline-start: auto; flex-shrink: 0; }
 .minimal-theme-shot-link { display: block; text-decoration: none; color: inherit; cursor: pointer; }
 .minimal-theme-shot-link:hover { opacity: 0.92; box-shadow: inset 0 0 0 2px var(--accent); }
 .minimal-theme-author { color: var(--text2); text-decoration: none; border-bottom: 1px solid var(--border2); }
@@ -1386,7 +1399,7 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18);
 }
 .minimal-scheme-swatch-dot {
-  position: absolute; right: 3px; bottom: 3px; width: 11px; height: 11px;
+  position: absolute; inset-inline-end: 3px; bottom: 3px; width: 11px; height: 11px;
   border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.55);
   box-shadow: 0 1px 2px rgba(0,0,0,0.25);
 }
@@ -1434,10 +1447,10 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
 }
 .minimal-switch.on { background: var(--accent); }
 .minimal-switch-knob {
-  position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+  position: absolute; top: 2px; inset-inline-start: 2px; width: 16px; height: 16px; border-radius: 50%;
   background: #fff; transition: left 0.18s; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
-.minimal-switch.on .minimal-switch-knob { left: 16px; }
+.minimal-switch.on .minimal-switch-knob { inset-inline-start: 16px; }
 .minimal-switch:disabled { opacity: 0.5; cursor: default; }
 
 /* ===== Settings ===== */
@@ -1446,7 +1459,7 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
    (Site, Comments). align-self:start keeps it from stretching the grid row;
    the list is short + non-scrollable, so no sticky-compositor wiggle. */
 .minimal-settings-nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 8px; align-self: start; }
-.minimal-settings-nav-item { padding: 7px 11px; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500; color: var(--text2); background: transparent; border: none; text-align: left; }
+.minimal-settings-nav-item { padding: 7px 11px; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500; color: var(--text2); background: transparent; border: none; text-align: start; }
 .minimal-settings-nav-item.active { background: var(--panel2); color: var(--text); font-weight: 600; }
 .minimal-settings-body { max-width: 560px; display: flex; flex-direction: column; gap: 26px; }
 .minimal-settings-title { font-weight: 700; font-size: 17px; margin-bottom: 3px; }
@@ -1462,7 +1475,7 @@ body.minimal-focus-zen .minimal-editor-side { opacity: 0; overflow: hidden; poin
 .minimal-spam-pill.ok { color: var(--green); background: rgba(70,184,129,0.12); }
 .minimal-spam-pill.warn { color: var(--amber); background: rgba(224,164,88,0.12); }
 .minimal-spam-blocked { font-size: 11.5px; color: var(--text3); }
-.minimal-spam-link { margin-left: auto; font-size: 12px; white-space: nowrap; }
+.minimal-spam-link { margin-inline-start: auto; font-size: 12px; white-space: nowrap; }
 /* Change key… renders as a link but is a button (spam-card keyProvider). */
 button.minimal-spam-link { background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent2); font-family: inherit; }
 .minimal-spam-keyerr { color: var(--red); margin-top: 7px; }
@@ -1471,7 +1484,7 @@ button.minimal-spam-link { background: none; border: 0; padding: 0; cursor: poin
 .minimal-lic-cat {
   font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--text3); background: var(--panel2); border: 1px solid var(--border);
-  padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px;
+  padding: 1px 6px; border-radius: 4px; margin-inline-start: 6px; vertical-align: 1px;
 }
 .minimal-lic-connlink { background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent2); font: inherit; }
 .minimal-spam-provider .minimal-toggle-rows { margin-top: 12px; }
@@ -1490,7 +1503,7 @@ button.minimal-spam-link { background: none; border: 0; padding: 0; cursor: poin
    figure cutout (:has(img)) still matches through it. */
 .minimal-editor-body .wp-block-image > a { display: contents; }
 /* Focus/outline exit chip (topbar, beside the editor status badge) */
-.minimal-mode-chip { display: inline-flex; align-items: center; gap: 5px; margin-left: 8px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); font-size: 11px; font-weight: 650; cursor: pointer; vertical-align: middle; }
+.minimal-mode-chip { display: inline-flex; align-items: center; gap: 5px; margin-inline-start: 8px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); font-size: 11px; font-weight: 650; cursor: pointer; vertical-align: middle; }
 .minimal-mode-chip:hover { color: var(--text); border-color: var(--text3); }
 .minimal-mode-chip-x { opacity: 0.7; }
 /* Parameterized action inline form (detail modal + status card) */
@@ -1499,7 +1512,7 @@ button.minimal-spam-link { background: none; border: 0; padding: 0; cursor: poin
 /* Surface settings view (adapter-served schema forms) */
 .minimal-surface-settings { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
 .minimal-spam-queue { display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--text2); }
-.minimal-spam-queue .minimal-btn-soft { margin-left: auto; white-space: nowrap; }
+.minimal-spam-queue .minimal-btn-soft { margin-inline-start: auto; white-space: nowrap; }
 
 /* Settings → Design: the Additional CSS editor. pre + horizontal scroll so
    long selectors don't soft-wrap into unreadable stair-steps. color-scheme
@@ -1514,7 +1527,7 @@ button.minimal-spam-link { background: none; border: 0; padding: 0; cursor: poin
 textarea.minimal-input { font-family: inherit; line-height: 1.5; resize: vertical; min-height: 38px; }
 .minimal-input.mono { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
 select.minimal-input {
-  -webkit-appearance: none; appearance: none; cursor: pointer; padding-right: 32px;
+  -webkit-appearance: none; appearance: none; cursor: pointer; padding-inline-end: 32px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239d9da7' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 11px center;
 }
@@ -1528,7 +1541,7 @@ select.minimal-input {
    while typing, unlike the native datalist popup. */
 .minimal-ac { position: relative; }
 .minimal-ac-input {
-  padding-right: 32px;
+  padding-inline-end: 32px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239d9da7' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 11px center;
 }
@@ -1653,7 +1666,7 @@ select.minimal-input {
 .minimal-editor-body iframe, .minimal-editor-body video { max-width: 100%; }
 .minimal-editor-body p { margin: 0 0 16px; }
 .minimal-editor-body h1, .minimal-editor-body h2 { letter-spacing: -0.4px; }
-.minimal-editor-body blockquote { border-left: 3px solid var(--accent); margin: 0 0 16px; padding: 2px 0 2px 16px; color: var(--text2); }
+.minimal-editor-body blockquote { border-inline-start: 3px solid var(--accent); margin: 0 0 16px; padding: 2px 0 2px 16px; color: var(--text2); }
 .minimal-editor-body pre, .minimal-editor-body code { font-family: 'JetBrains Mono', monospace; font-size: 14px; background: var(--panel2); border-radius: 5px; }
 .minimal-editor-body pre { padding: 12px 14px; overflow-x: auto; }
 .minimal-editor-body code { padding: 1px 6px; }
@@ -1664,9 +1677,9 @@ select.minimal-input {
 .minimal-editor-body.locked:empty::before { content: 'Nothing to preview here. This content renders dynamically on the site.'; }
 /* Gutenberg alignment classes — the serializer emits them, the front end
    styles them; the editor must preview them too. */
-.minimal-editor-body .has-text-align-left { text-align: left; }
+.minimal-editor-body .has-text-align-left { text-align: start; }
 .minimal-editor-body .has-text-align-center { text-align: center; }
-.minimal-editor-body .has-text-align-right { text-align: right; }
+.minimal-editor-body .has-text-align-right { text-align: end; }
 /* Word count / reading time / session / goal — fixed bottom-right. Click
    opens the goal popover. Below chips (69) but under modals (55+ wait —
    z 40 sits under modal 55; goal pop is 70 so it can clear the pill).
@@ -1675,7 +1688,7 @@ select.minimal-input {
    notched phones (viewport-fit=cover). */
 .minimal-editor-stats {
   position: fixed;
-  right: calc(22px + env(safe-area-inset-right, 0px));
+  inset-inline-end: calc(22px + env(safe-area-inset-right, 0px));
   bottom: calc(18px + env(safe-area-inset-bottom, 0px) + var(--minimal-kb-inset, 0px));
   z-index: 40;
   display: inline-flex; align-items: baseline; gap: 4px; padding: 8px 15px;
@@ -1706,7 +1719,7 @@ select.minimal-input {
 .minimal-side-title { font-weight: 700; font-size: 14px; margin-bottom: 12px; }
 /* Secondary meta as quiet doors → large modal (Settings, custom fields, SEO…). */
 .minimal-side-door {
-  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: start;
   background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
   padding: 13px 15px; cursor: pointer; color: inherit; font: inherit;
   transition: border-color 0.12s, background 0.12s;
@@ -1741,12 +1754,12 @@ select.minimal-input {
 /* Inline jump inside a side row (media "Attached to" → editor). */
 .minimal-side-link {
   background: none; border: none; padding: 0; font: inherit; cursor: pointer;
-  color: var(--accent); text-align: right;
+  color: var(--accent); text-align: end;
 }
 .minimal-side-link:hover { text-decoration: underline; }
 /* Sectioned surface detail (e.g. form entries): long/multiline answers stack. */
 .minimal-side-row.multi { flex-direction: column; align-items: flex-start; gap: 3px; }
-.minimal-surface-val.multi { white-space: pre-wrap; text-align: left; max-height: 200px; overflow-y: auto; }
+.minimal-surface-val.multi { white-space: pre-wrap; text-align: start; max-height: 200px; overflow-y: auto; }
 /* Block row types (code / html-preview / kv-table): full-width content. */
 .minimal-side-row.block > pre, .minimal-side-row.block > iframe, .minimal-side-row.block > table { width: 100%; }
 .minimal-detail-code {
@@ -1758,7 +1771,7 @@ select.minimal-input {
 [data-theme="light"] .minimal-detail-code { color-scheme: light; }
 .minimal-detail-frame { height: 380px; margin: 0; width: 100%; resize: vertical; overflow: auto; }
 .minimal-detail-kv { border-collapse: collapse; font-size: 13px; }
-.minimal-detail-kv th, .minimal-detail-kv td { text-align: left; padding: 5px 10px; border: 1px solid var(--border); vertical-align: top; }
+.minimal-detail-kv th, .minimal-detail-kv td { text-align: start; padding: 5px 10px; border: 1px solid var(--border); vertical-align: top; }
 .minimal-detail-kv th { color: var(--text3); font-weight: 500; white-space: nowrap; width: 1%; }
 .minimal-detail-kv td { word-break: break-word; }
 
@@ -1830,7 +1843,7 @@ a.minimal-entry-meta-chip:hover { color: var(--accent); text-decoration: underli
 @media (max-width: 560px) {
   .minimal-entry-fields { grid-template-columns: 1fr; }
 }
-.minimal-view-switch { flex-shrink: 0; padding-right: 10px; margin-right: 4px; border-right: 1px solid var(--border); }
+.minimal-view-switch { flex-shrink: 0; padding-inline-end: 10px; margin-inline-end: 4px; border-inline-end: 1px solid var(--border); }
 .minimal-side-val.green { color: var(--green); }
 .minimal-side-card .minimal-btn-primary { width: 100%; margin-top: 14px; justify-content: center; }
 .minimal-side-card .minimal-save-draft { width: 100%; margin-top: 8px; justify-content: center; }
@@ -1861,7 +1874,14 @@ input.minimal-vis-extra { width: 100%; }
 .minimal-slug-input:disabled { opacity: 0.5; cursor: default; }
 .minimal-slug-note { color: var(--amber); font-size: 11.5px; margin-top: 4px; }
 .minimal-chips { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
-.minimal-chip { background: var(--panel2); border: 1px solid var(--border); padding: 2px 8px; border-radius: 6px; font-size: 12.5px; }
+/* Colour and font are explicit because a <button> chip otherwise falls back to
+   the UA's own, which is near-black text on the dark panel. */
+.minimal-chip { background: var(--panel2); border: 1px solid var(--border); padding: 2px 8px; border-radius: 6px; font-size: 12.5px; font-family: inherit; color: var(--text2); }
+/* A chosen chip (a term on a product, a tag in the editor) is a removable
+   thing, so it reads as active rather than as a dim label. */
+.minimal-chip.sel { background: var(--accent-soft); border-color: var(--accent); color: var(--accent2); font-weight: 600; }
+button.minimal-chip.sel { cursor: pointer; }
+button.minimal-chip.sel:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 /* ===== Load more / toolbar search ===== */
 .minimal-load-more {
@@ -1871,7 +1891,7 @@ input.minimal-vis-extra { width: 100%; }
 .minimal-load-more:hover { background: var(--hover); color: var(--text); border-color: var(--border2); }
 .minimal-load-more:disabled { opacity: 0.6; cursor: default; }
 .minimal-pager { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin: 16px auto 0; flex-wrap: wrap; }
-.minimal-pager-meta { margin-right: auto; color: var(--text3); font-size: 13.5px; white-space: nowrap; padding-right: 12px; }
+.minimal-pager-meta { margin-inline-end: auto; color: var(--text3); font-size: 13.5px; white-space: nowrap; padding-inline-end: 12px; }
 .minimal-pager-btn {
   min-width: 34px; height: 34px; padding: 0 8px; display: flex; align-items: center; justify-content: center;
   background: var(--panel); border: 1px solid var(--border); border-radius: 9px;
@@ -1882,8 +1902,8 @@ input.minimal-vis-extra { width: 100%; }
 .minimal-pager-btn:disabled { opacity: 0.35; cursor: default; }
 .minimal-pager-btn.nav { font-size: 16px; }
 .minimal-pager-gap { color: var(--text3); padding: 0 3px; font-size: 13px; }
-.minimal-toolbar-search { width: 220px; margin-left: auto; }
-.minimal-toolbar-search + .minimal-toolbar-meta { margin-left: 0; }
+.minimal-toolbar-search { width: 220px; margin-inline-start: auto; }
+.minimal-toolbar-search + .minimal-toolbar-meta { margin-inline-start: 0; }
 
 /* ===== Comments ===== */
 .minimal-comment-row { display: flex; gap: 13px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
@@ -1904,7 +1924,7 @@ input.minimal-vis-extra { width: 100%; }
 .minimal-comment-postview:hover { color: var(--accent); }
 .minimal-comment-edit-meta { display: flex; gap: 8px; margin-bottom: 8px; }
 .minimal-comment-edit-meta .minimal-input { flex: 1; min-width: 0; }
-.minimal-comment-time { font-size: 12.5px; color: var(--text3); margin-left: auto; }
+.minimal-comment-time { font-size: 12.5px; color: var(--text3); margin-inline-start: auto; }
 .minimal-comment-text { font-size: 14px; color: var(--text2); line-height: 1.5; margin-top: 4px; }
 .minimal-comment-actions { display: flex; gap: 4px; margin-top: 8px; }
 .minimal-comment-action {
@@ -1936,7 +1956,7 @@ body.minimal-dragging.minimal-drag-editor::after { content: 'Drop images to inse
   background: var(--panel2); color: var(--text3);
   font-size: 11px; font-weight: 600; white-space: nowrap;
 }
-/* The whole banner is the link (Austin: one big obvious target). The inner
+/* The whole banner is the link (one big obvious target). The inner
    "Edit in X" pill is a SPAN — a nested anchor was how the old hover bug
    happened: the note's generic link rules recolored the pill's text to the
    accent while btn-primary:hover painted the accent behind it. */
@@ -1993,7 +2013,7 @@ a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2);
 .minimal-island-preview .wp-block-embed.wp-embed-aspect-9-16 .wp-block-embed__wrapper::before { padding-top: 177.77%; }
 .minimal-island-preview .wp-block-embed.wp-embed-aspect-1-2 .wp-block-embed__wrapper::before { padding-top: 200%; }
 .minimal-island-preview .wp-block-embed.wp-has-aspect-ratio .wp-block-embed__wrapper > iframe {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%; margin: 0;
+  position: absolute; top: 0; inset-inline-start: 0; width: 100%; height: 100%; margin: 0;
 }
 /* Providers without a declared aspect (tweets, generic oEmbed) simply use
    the full width they are given rather than their raw oEmbed pixel width. */
@@ -2019,7 +2039,7 @@ a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2);
    height from aspect-ratio and collapses each auto row to the intrinsic
    height of its contents (the img is height:100%, so ~nothing). The tiles
    then overflow their tracks and overlap — a 30-image gallery rendered as
-   vertically crushed strips (Austin's repro). min-content sizes the track
+   vertically crushed strips. min-content sizes the track
    from the tile's own aspect-derived height. */
 .minimal-imgedit-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
@@ -2038,7 +2058,7 @@ a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2);
 
 /* A gallery of two dozen photos previews as a column of full-width images you
    have to scroll past to reach the rest of the post, with the editing doorway
-   somewhere in the middle (Austin's 23-image repro). Clamp the card and fade
+   somewhere in the middle. Clamp the card and fade
    its foot: the hover badge carries the real count, and clicking anywhere in
    it opens the images editor. */
 .minimal-island-preview.minimal-preview-clamped {
@@ -2104,7 +2124,7 @@ a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2);
    preview's pointer-events:none inertness (same technique as
    .minimal-island-run) so the image itself receives the press. Without this the
    event falls through to the island beneath and the container gets selected
-   instead — the image looks clickable but nothing happens (Austin's repro).
+   instead — the image looks clickable but nothing happens.
    !important because the block's OWN front-end CSS is injected after this
    file and often disables pointer events on slide images (Jetpack's swiper
    does exactly that) — a plain declaration loses that cascade on real
@@ -2112,7 +2132,7 @@ a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2);
 /* The island whose ⚙ popover is open. Nested containers stack their chips in
    the same corner, so without this two popovers read as one changing its
    mind: the outer group says 2 blocks, the inner one 14, and which is which
-   is invisible (Austin's mmonroe repro). */
+   is invisible. */
 .minimal-block-island.minimal-insp-target { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* Hovering a ⚙ chip previews the same thing: which card that pill configures.
    Dashed = "about to", solid = "open". Class set by a cheap mouseover handler
@@ -2135,7 +2155,7 @@ a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2);
   opacity: 0; transition: opacity 0.15s; white-space: nowrap; z-index: 3;
   /* The badge is a real target. It sits dead centre, which is where the hand
      goes, and on a card whose slides carry text that centre may be editable
-     text that would otherwise take the press (Austin's repro). Hidden at rest,
+     text that would otherwise take the press. Hidden at rest,
      so it can only be hit while the card is offering it. */
   pointer-events: none; cursor: pointer; border: none; font: inherit; font-weight: 650;
 }
@@ -2195,19 +2215,19 @@ a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2);
 .minimal-block-island[data-cted].minimal-island-covered:hover::after { opacity: 0; }
 .minimal-imgedit-tile img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
 .minimal-imgedit-x {
-  position: absolute; top: 6px; right: 6px; width: 24px; height: 24px;
+  position: absolute; top: 6px; inset-inline-end: 6px; width: 24px; height: 24px;
   border-radius: 50%; border: none; background: rgba(0,0,0,0.55); color: #fff;
   font-size: 15px; line-height: 1; cursor: pointer; opacity: 0; transition: opacity 0.12s;
 }
 .minimal-imgedit-dup {
-  position: absolute; top: 6px; right: 34px; width: 24px; height: 24px;
+  position: absolute; top: 6px; inset-inline-end: 34px; width: 24px; height: 24px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%; border: none; background: rgba(0,0,0,0.55); color: #fff;
   cursor: pointer; opacity: 0; transition: opacity 0.12s; padding: 0;
 }
 .minimal-imgedit-dup svg { width: 13px; height: 13px; }
 .minimal-imgedit-moves {
-  position: absolute; bottom: 6px; left: 6px; right: 6px;
+  position: absolute; bottom: 6px; inset-inline-start: 6px; inset-inline-end: 6px;
   display: flex; justify-content: space-between; opacity: 0; transition: opacity 0.12s;
 }
 .minimal-imgedit-moves button {
@@ -2222,7 +2242,7 @@ a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2);
 .minimal-imgedit-tile:focus-within .minimal-imgedit-dup,
 .minimal-imgedit-tile:focus-within .minimal-imgedit-moves { opacity: 1; }
 .minimal-imgedit-new {
-  position: absolute; top: 6px; left: 6px; padding: 2px 7px; border-radius: 6px;
+  position: absolute; top: 6px; inset-inline-start: 6px; padding: 2px 7px; border-radius: 6px;
   background: var(--accent); color: #fff; font-size: 11px; font-weight: 700;
 }
 .minimal-imgedit-empty { grid-column: 1 / -1; color: var(--text2); font-size: 14px; padding: 20px 4px; }
@@ -2295,7 +2315,7 @@ a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2);
 .minimal-modal.xl { width: 1280px; }
 /* HTML email preview: real messages lay out at 600–900px; give the frame
    room (the 94vw cap still governs laptops) and a taller default viewport.
-   900px matches the large media modal — 1080 read as too big (Austin). */
+   900px matches the large media modal — 1080 read as too big. */
 .minimal-modal.mail { width: 900px; }
 .minimal-modal.mail .minimal-detail-frame { height: 56vh; }
 .minimal-modal-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
@@ -2335,7 +2355,7 @@ a.minimal-builder-note:hover .minimal-builder-open { background: var(--accent2);
 a.minimal-btn-soft { text-decoration: none; }
 
 .minimal-modal-form { padding: 16px 18px; display: flex; flex-direction: column; gap: 13px; border-bottom: 1px solid var(--border); }
-.minimal-surface-val { max-width: 60%; text-align: right; overflow-wrap: anywhere; }
+.minimal-surface-val { max-width: 60%; text-align: end; overflow-wrap: anywhere; }
 .minimal-surface-message {
   margin: 0 18px 14px; padding: 12px 14px; background: var(--bg2); border: 1px solid var(--border);
   border-radius: 10px; font-size: 13px; line-height: 1.6; color: var(--text2);
@@ -2366,8 +2386,8 @@ a.minimal-btn-soft { text-decoration: none; }
 button.minimal-chip.sel[data-tagchip] { cursor: pointer; background: var(--accent-soft); border-color: var(--accent); color: var(--accent2); font-family: inherit; }
 button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: var(--red); }
 /* Content bulk selection. */
-.minimal-content-cols { grid-template-columns: 34px 44px 1fr 110px 130px 110px 40px; }
-.minimal-content-cols.trash { grid-template-columns: 34px 44px 1fr 110px 130px 110px 158px; }
+.minimal-content-cols { grid-template-columns: 34px 44px 1fr 110px 130px 124px 40px; }
+.minimal-content-cols.trash { grid-template-columns: 34px 44px 1fr 110px 130px 124px 158px; }
 .minimal-row-actions { display: flex; gap: 6px; justify-content: flex-end; }
 .minimal-row-actions .minimal-btn-soft { padding: 4px 10px; font-size: 12.5px; }
 .minimal-cbcell { display: flex; align-items: center; justify-content: center; }
@@ -2390,7 +2410,7 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 .minimal-session-row:last-of-type { border-bottom: none; }
 .minimal-session-info { flex: 1; min-width: 0; }
 .minimal-session-ua { font-size: 13.5px; font-weight: 600; }
-.minimal-session-current { font-size: 11px; font-weight: 600; color: var(--accent2); background: var(--accent-soft); padding: 1px 7px; border-radius: 5px; margin-left: 4px; }
+.minimal-session-current { font-size: 11px; font-weight: 600; color: var(--accent2); background: var(--accent-soft); padding: 1px 7px; border-radius: 5px; margin-inline-start: 4px; }
 .minimal-session-meta { font-size: 12px; color: var(--text3); margin-top: 1px; }
 .minimal-session-empty { font-size: 13px; color: var(--text3); padding: 6px 0; }
 /* ===== Plugin install modal ===== */
@@ -2456,7 +2476,7 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 .minimal-pi-card-more {
   appearance: none; border: 0; background: none; padding: 0;
   font: inherit; font-size: 11.5px; font-weight: 600; color: var(--accent2);
-  cursor: pointer; text-align: left; margin-top: 1px;
+  cursor: pointer; text-align: start; margin-top: 1px;
 }
 .minimal-pi-card-more:hover { text-decoration: underline; }
 
@@ -2554,7 +2574,7 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 .minimal-picker-item:hover { border-color: var(--accent); }
 .minimal-picker-item.sel { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: -2px; position: relative; }
 .minimal-picker-item.sel::after {
-  content: '✓'; position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
+  content: '✓'; position: absolute; top: 6px; inset-inline-end: 6px; width: 22px; height: 22px;
   display: flex; align-items: center; justify-content: center; border-radius: 50%;
   background: var(--accent); color: var(--accent-fg); font-size: 13px; font-weight: 700;
 }
@@ -2573,8 +2593,8 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 }
 
 /* ===== Orders ===== */
-.minimal-order-cols { grid-template-columns: 120px 1fr 130px 60px 100px 40px; }
-.minimal-sub-cols { grid-template-columns: 130px 1fr 120px 120px 100px 40px; }
+.minimal-order-cols { grid-template-columns: 120px 1fr 130px minmax(0,150px) 100px 40px; }
+.minimal-sub-cols { grid-template-columns: 130px 1fr minmax(0,150px) 110px 110px 120px 100px 40px; }
 .minimal-sub-order-row {
 	display: flex;
 	align-items: center;
@@ -2589,9 +2609,34 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 	color: inherit;
 	font: inherit;
 	cursor: pointer;
-	text-align: left;
+	text-align: start;
 }
 .minimal-sub-order-row:hover { background: var(--hover, rgba(127,127,127,.08)); }
+/* The reference and its eye sit side by side. The eye follows the list's
+   reveal-on-hover idiom, and :focus-within is not optional here: revealed by
+   hover alone, a keyboard user tabs into a control at opacity 0. */
+.minimal-sub-order-line { display: flex; align-items: center; gap: 6px; }
+.minimal-sub-order-line > .minimal-sub-order-row { flex: 1; min-width: 0; }
+.minimal-sub-order-line:hover .minimal-row-more,
+.minimal-sub-order-line:focus-within .minimal-row-more { opacity: 1; }
+/* An order that belongs to a subscription. It rides beside the order number
+   rather than taking a column: most stores have none of these, and a column
+   would be empty on every row to serve a few. */
+.minimal-subrel {
+	display: inline-flex; align-items: center; justify-content: center;
+	vertical-align: middle; flex: none;
+	margin-inline-start: 6px; width: 20px; height: 20px; border-radius: 6px; cursor: pointer;
+	border: 1px solid var(--border2); background: var(--panel2); color: var(--text3);
+}
+.minimal-subrel svg { width: 12px; height: 12px; }
+.minimal-subrel:hover, .minimal-subrel:focus-visible { color: var(--text); border-color: var(--accent); outline: none; }
+/* The first order reads as the stronger of the two: it is the one that
+   started the subscription, and there is only ever one. */
+.minimal-subrel-parent { color: var(--accent2); border-color: var(--accent-soft); background: var(--accent-soft); }
+.minimal-subrel-pop { min-width: 250px; padding: 10px 12px 12px; display: block; }
+.minimal-subrel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.minimal-subrel-pop .minimal-side-row { font-size: 12.5px; }
+.minimal-subrel-pop .minimal-btn-soft { width: 100%; justify-content: center; }
 .minimal-product-cols { grid-template-columns: 1.6fr 100px 140px 100px 100px 40px; }
 .minimal-product-cols.with-cb { grid-template-columns: 36px 1.6fr 100px 140px 100px 100px 40px; }
 .minimal-coupon-cols { grid-template-columns: 1.4fr 1fr 90px 80px 100px 100px 40px; }
@@ -2614,7 +2659,7 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 }
 .minimal-order-note-body { font-size: 13.5px; color: var(--text2); white-space: pre-wrap; word-break: break-word; }
 .minimal-prod-thumb { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: var(--surface2); }
-.minimal-prod-was { text-decoration: line-through; color: var(--text3); margin-left: 4px; font-size: 12px; }
+.minimal-prod-was { text-decoration: line-through; color: var(--text3); margin-inline-start: 4px; font-size: 12px; }
 .minimal-prod-modal-img { margin: 0 0 12px; }
 .minimal-prod-modal-img img { max-width: 100%; max-height: 160px; border-radius: 8px; object-fit: cover; }
 .minimal-order-body { max-height: min(70vh, 720px); overflow-y: auto; }
@@ -2622,17 +2667,64 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 /* The /orders/{id} page hosts the same detail body as the modal, full height:
    the route's scroller does the scrolling, never an inner box. */
 .minimal-order-page { max-width: 860px; }
+/* The order page runs wider than the product page: its Shopify-style
+   two-column layout (main + sidebar) needs the room. */
+.minimal-order-page-wide { max-width: 1160px; }
 .minimal-order-page-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
 .minimal-order-page-head .minimal-modal-title-block { min-width: 0; }
-.minimal-order-page-head .minimal-status { margin-left: auto; }
+.minimal-order-page-head .minimal-status { margin-inline-start: auto; }
+/* Order head: number + status/paid chips inline with the title; actions
+   (email, payment URL, PDFs, WC escape) sit on the right, Shopify-style. */
+.minimal-order-head-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.minimal-order-head-row .minimal-status { margin-inline-start: 0; }
+.minimal-order-head-actions { margin-inline-start: auto; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.minimal-order-page-body { min-width: 0; }
 .minimal-order-page-card {
 	background: var(--panel); border: 1px solid var(--border2); border-radius: 14px;
 	overflow: hidden;
 }
 .minimal-order-page .minimal-order-body { max-height: none; overflow-y: visible; }
 .minimal-order-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-bottom: 1px solid var(--border); }
-.minimal-order-panel { padding: 14px 18px 16px; border-right: 1px solid var(--border); }
-.minimal-order-panel:last-child { border-right: none; }
+.minimal-order-panel { padding: 14px 18px 16px; border-inline-end: 1px solid var(--border); }
+.minimal-order-panel:last-child { border-inline-end: none; }
+/* The product body runs to four panels. The two-panel order body needed no
+   rule between rows; a wrapped grid does, or row two floats. */
+.minimal-grid-rows > .minimal-order-panel:nth-child(n+3) { border-top: 1px solid var(--border); }
+/* The product Images card reuses the island tile grid, inline instead of in a
+   modal: the page has the room, and it saves with the rest of the form. */
+.minimal-pimg-grid { margin-bottom: 10px; }
+/* Downloadable files: a name, a URL and a way out, per row. */
+.minimal-pdl-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+.minimal-pdl-row { display: flex; gap: 7px; align-items: center; }
+.minimal-pdl-row > input:first-child { flex: 0 1 220px; min-width: 0; }
+.minimal-pdl-row > input:nth-child(2) { flex: 1 1 auto; min-width: 0; }
+.minimal-pdl-x { flex: none; width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel2); color: var(--text3); cursor: pointer; font-size: 15px; line-height: 1; }
+.minimal-pdl-x:hover { color: var(--red); border-color: var(--red); }
+.minimal-pdl-empty { color: var(--text3); font-size: 13px; padding: 2px 0 6px; }
+/* Attributes: name, values, two flags and a way out, per row. */
+.minimal-pattr-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+.minimal-pattr-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.minimal-pattr-name { flex: 0 1 190px; min-width: 0; }
+.minimal-pattr-name > input { width: 100%; }
+.minimal-pattr-global { display: inline-block; padding: 7px 10px; font-size: 13px; font-weight: 600; color: var(--accent2); background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 8px; }
+.minimal-pattr-row > input[data-pattrvals] { flex: 1 1 200px; min-width: 0; }
+.minimal-pattr-flag { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text2); flex: none; }
+.minimal-pattr-pick { flex: 0 1 250px; }
+@media (max-width: 720px) { .minimal-pattr-name, .minimal-pattr-pick { flex-basis: 100%; } }
+/* Variations: the attribute combination, then the fields that differ by it. */
+.minimal-pvar-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+.minimal-pvar-row { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+.minimal-pvar-axes { display: flex; gap: 6px; flex: 1 1 220px; min-width: 0; }
+.minimal-pvar-axis { flex: 1 1 auto; min-width: 0; }
+.minimal-pvar-stock { position: relative; }
+.minimal-pvar-sku { flex: 0 1 150px; min-width: 0; }
+.minimal-pvar-price { flex: 0 1 92px; min-width: 0; }
+.minimal-pvar-stock { flex: 0 1 150px; min-width: 0; }
+@media (max-width: 720px) { .minimal-pvar-axes, .minimal-pvar-sku, .minimal-pvar-stock { flex-basis: 100%; } }
+.minimal-pimg-foot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+/* A group with nothing to sit beside (the short description) takes the row. */
+.minimal-order-panel.wide { grid-column: 1 / -1; border-inline-end: none; }
+@media (max-width: 720px) { .minimal-order-panel.wide { grid-column: auto; } }
 .minimal-order-fields { display: flex; flex-direction: column; gap: 8px; }
 .minimal-order-field-row { display: flex; gap: 8px; }
 .minimal-order-field-row > * { flex: 1; min-width: 0; }
@@ -2650,9 +2742,133 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 .minimal-order-status,
 .minimal-order-refund,
 .minimal-order-wcmail { /* class hooks for tests / future tweaks */ }
+/* Order detail sections: a flat, border-separated stack inside the quick-view
+   modal; the /orders/{id} page (rules below) restyles the SAME sections as
+   standalone cards on a two-column grid. */
+.minimal-order-sec { padding: 14px 18px 16px; }
+.minimal-modal .minimal-order-sec + .minimal-order-sec { border-top: 1px solid var(--border); }
+.minimal-modal .minimal-order-side > .minimal-order-sec:first-child { border-top: 1px solid var(--border); }
+.minimal-order-sec .minimal-order-items { padding: 0; border-bottom: none; }
+.minimal-order-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.minimal-order-card-head .minimal-side-title { margin-bottom: 0; }
+.minimal-order-card-head > .minimal-status:not(:first-child) { margin-inline-start: auto; }
+.minimal-order-editpen { margin-inline-start: auto; display: inline-flex; align-items: center; background: none; border: none; color: var(--text3); cursor: pointer; padding: 4px; border-radius: 7px; }
+.minimal-order-editpen:hover { color: var(--text); background: var(--hover); }
+.minimal-order-editpen svg { width: 15px; height: 15px; }
+/* Actions travel together on the right. One wrapper claims the space once:
+   with margin-inline-start:auto on each child, every button after the first
+   opened another void of its own. */
+.minimal-order-card-actions { margin-inline-start: auto; display: flex; align-items: center; gap: 6px; }
+.minimal-order-card-actions > * { margin-inline-start: 0; }
+/* Icon-only actions say what they do. The native title waits about a second
+   and never shows on keyboard focus, which is where a user who cannot see the
+   icon most needs it. aria-label is the source, so the visible text and the
+   accessible name cannot drift apart. */
+.minimal-order-editpen { position: relative; }
+.minimal-order-editpen::after {
+	content: attr(aria-label);
+	position: absolute; top: calc(100% + 6px); inset-inline-end: 0; z-index: 30;
+	padding: 4px 8px; border-radius: 6px; white-space: nowrap;
+	background: var(--panel); border: 1px solid var(--border2); box-shadow: var(--shadow);
+	color: var(--text2); font-size: 12px; font-weight: 500;
+	opacity: 0; pointer-events: none; transition: opacity 0.12s ease;
+}
+.minimal-order-editpen:hover::after, .minimal-order-editpen:focus-visible::after { opacity: 1; }
+.minimal-order-read { font-size: 13.5px; color: var(--text2); display: flex; flex-direction: column; gap: 4px; overflow-wrap: anywhere; }
+.minimal-order-read-name { font-weight: 600; color: var(--text); }
+.minimal-order-read-sub { font-weight: 600; font-size: 12px; color: var(--text); margin-top: 8px; }
+.minimal-order-read-empty { color: var(--text3); }
+.minimal-order-composer-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+/* The Items cell: the first line item by name, the rest one hover away. */
+.minimal-items-cell {
+	display: flex; align-items: center; gap: 6px; min-width: 0; width: 100%;
+	background: none; border: none; padding: 0; font: inherit; color: inherit;
+	text-align: start; cursor: pointer;
+}
+.minimal-items-cell:hover .minimal-cell-clip { color: var(--text); }
+.minimal-items-more {
+	flex: none; font-size: 11.5px; font-weight: 600; color: var(--text3);
+	background: var(--panel2); border: 1px solid var(--border);
+	border-radius: 999px; padding: 1px 6px;
+}
+.minimal-items-pop { min-width: 240px; max-width: 380px; padding: 8px; }
+.minimal-items-row { display: flex; gap: 8px; align-items: baseline; font-size: 13px; padding: 3px 2px; }
+.minimal-items-row > .minimal-cell-clip { flex: 1; min-width: 0; }
+/* Orders list filters: one row (status dropdown · search · add filter), the
+   active filters as chips beneath it, and one popover that both picks which
+   filter to add and picks its value. */
+.minimal-order-bar { gap: 8px; }
+.minimal-order-bar .minimal-toolbar-search { flex: 1; min-width: 0; }
+.minimal-of-drop { display: inline-flex; align-items: center; gap: 6px; flex: none; white-space: nowrap; }
+.minimal-of-drop svg { width: 13px; height: 13px; opacity: .7; }
+@media (max-width: 720px) {
+  .minimal-order-bar { flex-wrap: wrap; }
+  .minimal-order-bar .minimal-toolbar-search { flex-basis: 100%; order: -1; }
+}
+.minimal-of-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: -4px 0 12px; }
+.minimal-of-chip {
+	display: inline-flex; align-items: center; background: var(--panel2);
+	border: 1px solid var(--border); border-radius: 999px; overflow: hidden;
+	font-size: 13px; color: var(--text2);
+}
+.minimal-of-chip-body { background: none; border: none; color: inherit; font: inherit; cursor: pointer; padding: 5px 4px 5px 12px; }
+.minimal-of-chip-body b { color: var(--text); font-weight: 600; }
+.minimal-of-x { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 15px; line-height: 1; padding: 5px 10px 6px 6px; }
+.minimal-of-x:hover { color: var(--red); }
+.minimal-of-pop {
+	position: fixed; z-index: 60; min-width: 210px; max-width: 320px; padding: 6px;
+	background: var(--panel); border: 1px solid var(--border2); border-radius: 12px;
+	box-shadow: 0 12px 34px rgba(0,0,0,.28);
+}
+.minimal-of-row {
+	display: block; width: 100%; text-align: start; background: none; border: none;
+	color: var(--text2); font: inherit; font-size: 13.5px; padding: 7px 10px;
+	border-radius: 8px; cursor: pointer;
+}
+.minimal-of-row:hover { background: var(--hover); color: var(--text); }
+.minimal-of-row.is-on { color: var(--accent2); background: var(--accent-soft); }
+.minimal-of-foot { display: flex; justify-content: flex-end; padding: 6px 4px 2px; margin-top: 4px; border-top: 1px solid var(--border); }
+/* The picker panel sits in the popover's flow, not over the page. */
+.minimal-of-search { padding: 2px; }
+.minimal-of-search .minimal-ac-panel { position: relative; margin-top: 6px; max-height: 190px; overflow-y: auto; }
+.minimal-of-searching { padding: 8px 2px 2px; font-size: 12.5px; }
+/* Product rows carry the product's own picture, with the slot reserved so a
+   product without one still lines up. Shared by both product pickers: the
+   filter bar's and the items dialog's. The button selector matters: the
+   shared `button.minimal-ac-item` rule sets display:block, and losing to it
+   left the thumb inline, where width and height simply do not apply. */
+button.minimal-ac-item.minimal-of-item { display: flex; align-items: center; gap: 8px; }
+.minimal-of-thumb {
+	display: inline-flex; align-items: center; justify-content: center;
+	flex: none; width: 26px; height: 26px; border-radius: 6px; overflow: hidden;
+	background: var(--panel2); border: 1px solid var(--border); color: var(--text3);
+}
+/* A product with no picture keeps the slot, with a quiet placeholder mark. */
+.minimal-of-thumb:empty::after { content: ""; width: 10px; height: 10px; border-radius: 2px; border: 1.5px solid currentColor; opacity: .5; }
+.minimal-of-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Items edit dialog: name · unit price · qty · remove, per line. */
+.minimal-ei-lines { display: flex; flex-direction: column; gap: 7px; }
+.minimal-ei-line { display: flex; gap: 8px; align-items: center; }
+.minimal-ei-line > .minimal-cell-clip { flex: 1; min-width: 0; }
+.minimal-ei-unit { color: var(--text3); font-size: 12.5px; font-variant-numeric: tabular-nums; flex: none; }
+.minimal-ei-qty { flex: 0 0 72px; }
+.minimal-ei-line.removed > .minimal-cell-clip, .minimal-ei-line.removed .minimal-ei-unit { text-decoration: line-through; opacity: 0.55; }
+.minimal-ei-searching { padding: 8px 0 2px; font-size: 12.5px; }
+/* Order sub-dialogs (refund, sidebar card edits): a compact modal stacked
+   over either host, minimalConfirm-style. */
+.minimal-order-submodal .minimal-modal { width: min(92vw, 560px); }
+.minimal-order-submodal-body { padding: 4px 18px 16px; max-height: 65vh; overflow-y: auto; }
+/* The page: same sections, now cards on a main + 340px sidebar grid. */
+.minimal-order-page .minimal-order-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+.minimal-order-page .minimal-order-main, .minimal-order-page .minimal-order-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.minimal-order-page .minimal-order-sec { background: var(--panel); border: 1px solid var(--border2); border-radius: 14px; }
+.minimal-order-page .minimal-order-notes-list { max-height: 420px; }
+@media (max-width: 1020px) {
+  .minimal-order-page .minimal-order-layout { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 720px) {
   .minimal-order-grid { grid-template-columns: 1fr; }
-  .minimal-order-panel { border-right: none; border-bottom: 1px solid var(--border); }
+  .minimal-order-panel { border-inline-end: none; border-bottom: 1px solid var(--border); }
 }
 
 /* System page: summary rows + health cards that expand to a detail modal
@@ -2672,7 +2888,7 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 /* Database viewer (read-only by design) */
 .minimal-db-cols { grid-template-columns: minmax(0,1fr) 120px 100px 90px; }
 .minimal-db-cols .mono, .minimal-db-tname, .minimal-dbd-col .mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
-.minimal-db-cols .num { text-align: right; font-variant-numeric: tabular-nums; }
+.minimal-db-cols .num { text-align: end; font-variant-numeric: tabular-nums; }
 .minimal-db-cols.minimal-table-row { cursor: pointer; }
 .minimal-db-dim { color: var(--text3); }
 .minimal-db-tabs { flex-shrink: 0; overflow: visible; }
@@ -2698,20 +2914,20 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 .minimal-db-struct-cols { grid-template-columns: minmax(0,1.2fr) minmax(0,1.3fr) 62px minmax(0,1fr) 130px; }
 .minimal-db-idx-cols { grid-template-columns: minmax(0,1fr) minmax(0,1.6fr) 70px 90px 110px; }
 .minimal-db-struct-cols .mono, .minimal-db-idx-cols .mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
-.minimal-db-struct-cols .num, .minimal-db-idx-cols .num { text-align: right; font-variant-numeric: tabular-nums; }
+.minimal-db-struct-cols .num, .minimal-db-idx-cols .num { text-align: end; font-variant-numeric: tabular-nums; }
 .minimal-db-sort { cursor: pointer; user-select: none; white-space: nowrap; }
 .minimal-db-sort:hover { color: var(--text); }
 .minimal-db-tname { font-weight: 600; }
-.minimal-db-ro { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--text3); font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+.minimal-db-ro { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--text3); font-size: 12px; white-space: nowrap; flex-shrink: 0; }
 .minimal-db-ro svg { width: 13px; height: 13px; }
-.minimal-toolbar .minimal-db-ro ~ .minimal-toolbar-meta, .minimal-toolbar .minimal-toolbar-meta ~ .minimal-db-ro { margin-left: 14px; }
+.minimal-toolbar .minimal-db-ro ~ .minimal-toolbar-meta, .minimal-toolbar .minimal-toolbar-meta ~ .minimal-db-ro { margin-inline-start: 14px; }
 .minimal-db-fcol { width: auto; max-width: 220px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; flex-shrink: 0; }
 .minimal-db-window { font-size: 12px; white-space: normal; }
 .minimal-db-card { padding: 0; overflow: hidden; }
 .minimal-db-scroll { overflow-x: auto; }
 .minimal-db-grid { border-collapse: collapse; width: 100%; font-size: 12.5px; font-family: 'JetBrains Mono', monospace; }
 .minimal-db-grid th {
-	text-align: left; padding: 9px 12px; color: var(--text3); font-size: 11px;
+	text-align: start; padding: 9px 12px; color: var(--text3); font-size: 11px;
 	font-family: 'Hanken Grotesk', system-ui, sans-serif; text-transform: uppercase; letter-spacing: 0.06em;
 	border-bottom: 1px solid var(--border2); white-space: nowrap; cursor: pointer; user-select: none;
 	position: sticky; top: 0; background: var(--panel); z-index: 1;
@@ -2732,7 +2948,7 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 .minimal-dbd-row:last-child { border-bottom: none; }
 .minimal-dbd-col { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
 .minimal-dbd-type { color: var(--text3); font-size: 11.5px; }
-.minimal-dbd-copy { margin-left: auto; padding: 2px 9px; font-size: 11.5px; }
+.minimal-dbd-copy { margin-inline-start: auto; padding: 2px 9px; font-size: 11.5px; }
 .minimal-dbd-val {
 	font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.55;
 	white-space: pre-wrap; word-break: break-word; color: var(--text);
@@ -2756,7 +2972,7 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 .minimal-confirm-body { font-size: 13.5px; color: var(--text2); line-height: 1.55; }
 .minimal-confirm-scope { margin-top: 12px; }
 .minimal-confirm-scope-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); margin-bottom: 4px; }
-.minimal-confirm-scope ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--text2); }
+.minimal-confirm-scope ul { margin: 0; padding-inline-start: 18px; font-size: 13.5px; color: var(--text2); }
 .minimal-confirm-scope li { margin: 2px 0; }
 .minimal-confirm-type { margin-top: 14px; }
 .minimal-confirm-type-label { font-size: 13px; color: var(--text2); margin-bottom: 6px; }
@@ -2771,9 +2987,20 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 .minimal-refund-del { border: 0; background: none; color: var(--text3); cursor: pointer; font-size: 15px; line-height: 1; padding: 0 0 0 7px; vertical-align: baseline; }
 .minimal-refund-del:hover { color: var(--red); }
 .minimal-status.trash-status { color: var(--red); background: rgba(228,107,107,0.12); }
-/* Live post carrying unsaved edits (a newer autosave than the saved copy) */
-.minimal-status.modified { color: var(--amber-text); background: rgba(224,164,88,0.14); margin-left: 5px; }
-.minimal-status.editing { color: var(--blue-text); background: rgba(91,155,224,0.14); margin-left: 5px; }
+/* Status cell stays one line: the publish pill plus an optional flag. */
+.minimal-row-status {
+  display: flex; align-items: center; gap: 6px;
+  min-width: 0; white-space: nowrap;
+}
+/* Live post carrying unsaved edits (a newer autosave than the saved copy).
+   A dot ON the status pill, the same amber "needs attention" marker the nav
+   wears: the column already named the state, and a second pill wrapped. */
+.minimal-row-modified {
+  display: inline-block; vertical-align: middle;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--amber); margin-inline-start: 6px;
+}
+.minimal-status.editing { color: var(--blue-text); background: rgba(91,155,224,0.14); }
 
 /* ===== Users ===== */
 .minimal-user-cols { grid-template-columns: 40px 52px 1.2fr 1.4fr 130px 110px 40px; }
@@ -2791,8 +3018,8 @@ button.minimal-chip.sel[data-tagchip]:hover { border-color: var(--red); color: v
 .minimal-term-field > span { font-size: 11.5px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.04em; }
 .minimal-term-edit-actions { display: flex; gap: 8px; }
 .minimal-term-merge-copy { font-size: 13px; color: var(--text2); }
-.minimal-ac-hint { color: var(--text3); font-size: 12px; margin-left: 6px; }
-button.minimal-ac-item { display: block; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; }
+.minimal-ac-hint { color: var(--text3); font-size: 12px; margin-inline-start: 6px; }
+button.minimal-ac-item { display: block; width: 100%; text-align: start; background: none; border: 0; color: inherit; font: inherit; }
 button.minimal-ac-item:hover { background: var(--hover); }
 @media (max-width: 720px) {
   .minimal-term-cols { grid-template-columns: 1fr 80px 40px; }
@@ -2827,7 +3054,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-user-row-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 /* ===== Editor extras ===== */
-.minimal-tool-hint { margin-left: auto; align-self: center; font-size: 12px; color: var(--text3); }
+.minimal-tool-hint { margin-inline-start: auto; align-self: center; font-size: 12px; color: var(--text3); }
 .minimal-schedule { margin-top: 12px; }
 .minimal-schedule input { font-size: 13px; padding: 7px 10px; color-scheme: dark; }
 [data-theme="light"] .minimal-schedule input { color-scheme: light; }
@@ -2851,7 +3078,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 }
 /* Plugin namespace on auto-registered block entries ("Featured Product · woocommerce"). */
 .minimal-slash-ns {
-  margin-left: auto; padding-left: 8px; font-size: 10.5px; font-weight: 500; color: var(--text2);
+  margin-inline-start: auto; padding-inline-start: 8px; font-size: 10.5px; font-weight: 500; color: var(--text2);
   opacity: 0.7; flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 /* Footer row on the unfiltered menu — the door to the full block picker. */
@@ -2880,7 +3107,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-bp-group h3 span { color: var(--text2); opacity: 0.6; font-weight: 500; }
 .minimal-bp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
 .minimal-bp-item {
-  display: flex; align-items: center; gap: 10px; padding: 10px 12px; text-align: left;
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; text-align: start;
   background: var(--panel2); border: 1px solid var(--border2); border-radius: 10px;
   color: var(--text); font-size: 13.5px; font-weight: 500; cursor: pointer;
 }
@@ -2917,7 +3144,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 	border-color: var(--red);
 }
 .minimal-island-chip {
-  position: absolute; top: -10px; right: 12px; font-size: 10.5px; font-weight: 600;
+  position: absolute; top: -10px; inset-inline-end: 12px; font-size: 10.5px; font-weight: 600;
   font-family: 'JetBrains Mono', monospace; color: var(--text3); background: var(--panel);
   border: 1px solid var(--border); padding: 2px 9px; border-radius: 5px; cursor: pointer; line-height: 1.4;
   touch-action: manipulation; user-select: none;
@@ -2927,7 +3154,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
    edits live. Revealed on hover/selection only; pointer-events none so it never
    competes with the chip; hidden while armed for delete (red state is louder). */
 .minimal-island-hint {
-  position: absolute; top: -10px; left: 12px; font-size: 10.5px; font-weight: 500;
+  position: absolute; top: -10px; inset-inline-start: 12px; font-size: 10.5px; font-weight: 500;
   font-family: 'JetBrains Mono', monospace; color: var(--text3); background: var(--panel);
   border: 1px solid var(--border); padding: 2px 9px; border-radius: 5px; line-height: 1.4;
   pointer-events: none; user-select: none; opacity: 0; transition: opacity 0.15s;
@@ -3015,8 +3242,8 @@ button.minimal-ac-item:hover { background: var(--hover); }
 /* The writing slot sits INSIDE the cover's inner container, not directly in
    the cover, so a direct-child rule never lifted it above the background:
    the absolutely positioned image painted over the text and swallowed every
-   click, which left no caret and therefore no way to reach the "/" menu
-   (Austin's repro). Lift the slot at any depth, and make the background
+   click, which left no caret and therefore no way to reach the "/" menu.
+   Lift the slot at any depth, and make the background
    media inert so a press always reaches the words. */
 .minimal-media-slot-island .wp-block-cover .minimal-slot { position: relative; z-index: 1; padding: 26px; }
 .minimal-media-slot-island .wp-block-cover__inner-container { position: relative; z-index: 1; }
@@ -3032,7 +3259,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
    still applies. A faint divider marks each column's editable region. */
 .minimal-cols-island .wp-block-columns { display: flex; gap: 22px; align-items: flex-start; }
 .minimal-cols-island .wp-block-column { flex: 1; min-width: 0; }
-.minimal-cols-island .wp-block-column + .wp-block-column { border-left: 1px dashed var(--line); padding-left: 22px; }
+.minimal-cols-island .wp-block-column + .wp-block-column { border-inline-start: 1px dashed var(--line); padding-inline-start: 22px; }
 /* Shortcode island — type the shortcode in place (no browser prompt). */
 .minimal-shortcode-island {
   user-select: text;
@@ -3093,7 +3320,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 }
 .minimal-details-edit > .minimal-details-sum-row::-webkit-details-marker {
   color: var(--text2);
-  margin-right: 8px;
+  margin-inline-end: 8px;
 }
 .minimal-details-edit > .minimal-details-sum-row::marker {
   color: var(--text2);
@@ -3252,7 +3479,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
   background: var(--panel2) !important;
   color: var(--text3) !important;
   border: 1px solid var(--border) !important;
-  border-left: 3px solid #1d9bf0 !important;
+  border-inline-start: 3px solid #1d9bf0 !important;
   border-radius: 12px !important;
   padding: 14px 16px 12px !important;
   margin: 0 !important;
@@ -3308,10 +3535,10 @@ button.minimal-ac-item:hover { background: var(--hover); }
    coordinates so they ride scrolling natively. They used to be fixed on
    body, chased per scroll frame: JS repositioning lags the compositor and
    elastic overscroll reports nothing until it settles, so fast scrolling
-   made them wiggle, drift past their line and snap back (Austin's report;
-   the outline-ping rule). z-index stays below the sticky toolbar (35) so
+   made them wiggle, drift past their line and snap back
+   (the outline-ping rule). z-index stays below the sticky toolbar (35) so
    sliding under it is natural occlusion, not a JS visibility clamp. */
-#minimal-table-chips { position: absolute; top: 0; left: 0; z-index: 30; }
+#minimal-table-chips { position: absolute; top: 0; inset-inline-start: 0; z-index: 30; }
 .minimal-code-chip {
   /* nowrap is load-bearing: the chips' containing block is a zero-size
      anchor box, and absolute shrink-to-fit against it wraps "⚙ table"
@@ -3364,7 +3591,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 /* Apply · Replace · duplicate · remove read as one row (they wrapped the
    trash button onto a second line at the old width). */
 .minimal-img-pop .minimal-insp-actions { flex-wrap: nowrap; align-items: center; }
-.minimal-img-pop .minimal-insp-actions .minimal-btn-soft { padding-left: 10px; padding-right: 10px; }
+.minimal-img-pop .minimal-insp-actions .minimal-btn-soft { padding-inline-start: 10px; padding-inline-end: 10px; }
 .minimal-insp-note { color: var(--text3); font-size: 13px; line-height: 1.5; }
 /* "More settings" collapse for huge block schemas (300+ attr design suites). */
 .minimal-insp-more-btn { width: 100%; justify-content: center; margin: 10px 0 2px; }
@@ -3377,11 +3604,11 @@ button.minimal-ac-item:hover { background: var(--hover); }
   width: 64px; height: 44px; object-fit: cover; border-radius: 7px;
   border: 1px solid var(--border2); background: var(--panel2); flex-shrink: 0;
 }
-.minimal-insp-img-row button { margin-left: auto; }
+.minimal-insp-img-row button { margin-inline-start: auto; }
 .minimal-insp-actions { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; }
 /* Compact move cluster: tight icon buttons reading as one control. */
 .minimal-insp-move { display: inline-flex; gap: 3px; }
-.minimal-insp-move .minimal-btn-soft { padding-left: 8px; padding-right: 8px; }
+.minimal-insp-move .minimal-btn-soft { padding-inline-start: 8px; padding-inline-end: 8px; }
 .minimal-insp-move .minimal-btn-soft svg { width: 14px; height: 14px; }
 .minimal-insp-actions .minimal-btn-primary { flex: 1; justify-content: center; }
 .minimal-insp-actions .minimal-btn-soft.danger:only-child { flex: 1; justify-content: center; }
@@ -3389,7 +3616,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 /* ===== System (developer diagnostics) ===== */
 .minimal-sys-topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
 .minimal-sys-summary { display: flex; gap: 8px; flex-wrap: wrap; }
-.minimal-sys-topbar #minimal-sys-copy { margin-left: auto; }
+.minimal-sys-topbar #minimal-sys-copy { margin-inline-start: auto; }
 .minimal-sys-pill { font-size: 12.5px; font-weight: 600; padding: 4px 12px; border-radius: 999px; border: 1px solid; }
 .minimal-sys-pill.pass { color: var(--green-text); background: rgba(70,184,129,0.1); border-color: rgba(70,184,129,0.25); }
 .minimal-sys-pill.warn { color: var(--amber-text); background: rgba(224,164,88,0.1); border-color: rgba(224,164,88,0.25); }
@@ -3406,7 +3633,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-sys-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; margin-bottom: 22px; }
 .minimal-sys-check { display: flex; gap: 11px; padding: 13px 15px; background: var(--panel); border: 1px solid var(--border); border-radius: 11px; align-items: flex-start; position: relative; }
 /* the corner expand icon marks a check card that opens a detail modal */
-.minimal-sys-check-open { position: absolute; top: 10px; right: 11px; color: var(--text3); line-height: 0; }
+.minimal-sys-check-open { position: absolute; top: 10px; inset-inline-end: 11px; color: var(--text3); line-height: 0; }
 .minimal-sys-check-open svg { width: 13px; height: 13px; }
 .minimal-sys-check.minimal-sys-link:hover .minimal-sys-check-open { color: var(--accent); }
 .minimal-sys-dot { flex-shrink: 0; width: 24px; height: 24px; border-radius: 7px; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
@@ -3425,19 +3652,19 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-sys-row { display: flex; gap: 14px; padding: 7px 0; border-bottom: 1px solid var(--border); align-items: baseline; }
 .minimal-sys-row:last-child { border-bottom: none; }
 .minimal-sys-key { color: var(--text3); font-size: 13px; flex-shrink: 0; width: 42%; }
-.minimal-sys-val { font-size: 12.5px; color: var(--text); text-align: right; margin-left: auto; word-break: break-word; }
+.minimal-sys-val { font-size: 12.5px; color: var(--text); text-align: end; margin-inline-start: auto; word-break: break-word; }
 .minimal-sys-tables { padding: 11px 17px 15px; background: var(--bg2); border-top: 1px solid var(--border); }
 .minimal-sys-tables-head { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); margin-bottom: 8px; }
 .minimal-sys-trow { display: flex; align-items: baseline; gap: 10px; padding: 3px 0; font-size: 12.5px; }
 .minimal-sys-tname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); }
 .minimal-sys-tsize { color: var(--text); }
-.minimal-sys-trows { color: var(--text3); width: 90px; text-align: right; flex-shrink: 0; }
+.minimal-sys-trows { color: var(--text3); width: 90px; text-align: end; flex-shrink: 0; }
 .minimal-sys-foot { margin-top: 18px; text-align: center; color: var(--text3); font-size: 12.5px; }
 
 /* Debug tools card — live wp-config toggles. */
 .minimal-sys-debug { padding: 0; margin-top: 14px; margin-bottom: 14px; overflow: hidden; }
 .minimal-sys-debug .minimal-sys-card-head svg { color: var(--amber); }
-.minimal-sys-debug-hint { margin-left: auto; font-size: 11.5px; font-weight: 500; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+.minimal-sys-debug-hint { margin-inline-start: auto; font-size: 11.5px; font-weight: 500; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
 .minimal-sys-toggles { padding: 4px 17px 8px; }
 .minimal-sys-toggle { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .minimal-sys-toggle:last-child { border-bottom: none; }
@@ -3448,12 +3675,12 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-sys-toggle .minimal-switch { flex-shrink: 0; }
 .minimal-sys-locked { flex-shrink: 0; font-size: 11.5px; color: var(--text3); font-style: italic; }
 /* Debug-log row (opens the viewer) + the viewer overlay. */
-.minimal-sys-logrow { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 17px; background: var(--bg2); border: none; border-top: 1px solid var(--border); color: var(--text2); cursor: pointer; font-size: 13px; text-align: left; }
+.minimal-sys-logrow { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 17px; background: var(--bg2); border: none; border-top: 1px solid var(--border); color: var(--text2); cursor: pointer; font-size: 13px; text-align: start; }
 .minimal-sys-logrow:hover { background: var(--hover); }
 .minimal-sys-logrow svg { width: 15px; height: 15px; color: var(--text3); flex-shrink: 0; }
 .minimal-sys-logpath { color: var(--text); font-size: 12.5px; }
 .minimal-sys-logsize { color: var(--text3); font-size: 12px; }
-.minimal-sys-logopen { margin-left: auto; color: var(--accent2); font-weight: 600; font-size: 12.5px; }
+.minimal-sys-logopen { margin-inline-start: auto; color: var(--accent2); font-weight: 600; font-size: 12.5px; }
 .minimal-log-modal { width: 920px; max-width: 94vw; height: 80vh; display: flex; flex-direction: column; }
 .minimal-log-modal .minimal-modal-head { align-items: center; }
 .minimal-log-title { display: flex; align-items: center; gap: 9px; min-width: 0; flex: 1; }
@@ -3461,10 +3688,10 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-log-src .minimal-ac-input { height: 31px; font-size: 13px; }
 #minimal-log-collapse { font-variant-numeric: tabular-nums; }
 #minimal-log-collapse.on { color: var(--accent); border-color: var(--accent); }
-.minimal-log-meta { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 400; color: var(--text3); margin-left: 8px; }
+.minimal-log-meta { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 400; color: var(--text3); margin-inline-start: 8px; }
 .minimal-log-actions { display: flex; align-items: center; gap: 7px; }
 .minimal-log-actions .minimal-btn-soft { padding: 6px 9px; }
-.minimal-log-body { flex: 1; margin: 0; overflow: auto; padding: 14px 18px; background: var(--bg); font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; color: var(--text2); white-space: pre-wrap; word-break: break-word; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+.minimal-log-body { flex: 1; margin: 0; overflow: auto; padding: 14px 18px; background: var(--bg); font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; color: var(--text2); white-space: pre-wrap; word-break: break-word; border-end-start-radius: 14px; border-end-end-radius: 14px; }
 .minimal-log-loading { color: var(--text3); font-family: 'Inter', sans-serif; }
 
 /* Extensions manifest — installed plugins / mu-plugins / themes with versions. */
@@ -3478,7 +3705,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-sys-ext-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--text); }
 .minimal-sys-ext-item.off .minimal-sys-ext-name { color: var(--text2); }
 .minimal-sys-ext-ver { font-size: 11.5px; color: var(--text3); flex-shrink: 0; }
-.minimal-sys-ext-active { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--green); background: rgba(70,184,129,0.12); padding: 1px 6px; border-radius: 4px; margin-left: 4px; }
+.minimal-sys-ext-active { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--green); background: rgba(70,184,129,0.12); padding: 1px 6px; border-radius: 4px; margin-inline-start: 4px; }
 .minimal-sys-ext-parent { font-size: 11px; color: var(--text3); font-style: italic; }
 
 /* Licenses card — read-only state pills (adapters/licenses.php) */
@@ -3493,7 +3720,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-lic-actions button:hover { color: var(--text); border-color: var(--text3); }
 .minimal-lic-actions button:disabled { opacity: 0.6; cursor: default; }
 /* icon() emits 17px svgs; inside these small buttons (Turn on) shrink inline */
-.minimal-lic-actions button svg { width: 11px; height: 11px; vertical-align: -1.5px; margin-right: 2px; }
+.minimal-lic-actions button svg { width: 11px; height: 11px; vertical-align: -1.5px; margin-inline-end: 2px; }
 /* Dim inactive license rows by COLOR, not row opacity: children can never
    exceed a parent's opacity, and the Turn on button lives inside the dimmed
    name span — it must render full-strength to read as clickable. */
@@ -3536,7 +3763,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-sys-int-offsite, .minimal-sys-int-note { color: var(--text2); }
 
 @media (max-width: 640px) {
-  .minimal-inspector { width: calc(100vw - 20px); left: 10px !important; }
+  .minimal-inspector { width: calc(100vw - 20px); inset-inline-start: 10px !important; }
 }
 
 /* ===== Code syntax highlighting =====
@@ -3558,7 +3785,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
 /* ===== Editor panels (ACF etc.) ===== */
 .minimal-panel-sub {
   font-size: 11px; font-weight: 600; color: var(--text3); background: var(--panel2);
-  padding: 1px 7px; border-radius: 5px; margin-left: 6px; vertical-align: 1px;
+  padding: 1px 7px; border-radius: 5px; margin-inline-start: 6px; vertical-align: 1px;
 }
 .minimal-panel-fields { display: flex; flex-direction: column; gap: 11px; }
 .minimal-panel-group { font-size: 11.5px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
@@ -3572,13 +3799,14 @@ button.minimal-ac-item:hover { background: var(--hover); }
 /* ===== Notifications slide-over ===== */
 .minimal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; }
 .minimal-notif-panel {
-  position: absolute; top: 0; right: 0; bottom: 0; width: 400px; max-width: 92vw; background: var(--bg2);
-  border-left: 1px solid var(--border); box-shadow: var(--shadow); display: flex; flex-direction: column;
+  position: absolute; top: 0; inset-inline-end: 0; bottom: 0; width: 400px; max-width: 92vw; background: var(--bg2);
+  border-inline-start: 1px solid var(--border); box-shadow: var(--shadow); display: flex; flex-direction: column;
   animation: minimalSlideIn 0.28s cubic-bezier(0.16,1,0.3,1);
 }
+html[dir="rtl"] .minimal-notif-panel { animation-name: minimalSlideInRtl; }
 .minimal-notif-head { height: 56px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 18px; gap: 10px; }
 .minimal-notif-title { font-weight: 700; font-size: 16px; }
-.minimal-link-btn { margin-left: auto; background: transparent; border: none; color: var(--accent2); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.minimal-link-btn { margin-inline-start: auto; background: transparent; border: none; color: var(--accent2); font-size: 13.5px; font-weight: 600; cursor: pointer; }
 .minimal-x-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; color: var(--text3); cursor: pointer; font-size: 18px; }
 /* Wraps rather than clips — a fifth tab (Notices + a provider kind) was
    unreachable past the panel edge (the System jump-bar rule: wrap, never
@@ -3633,8 +3861,8 @@ button.minimal-ac-item:hover { background: var(--hover); }
 .minimal-toast-icon { width: 22px; height: 22px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .minimal-toast-icon.err { background: var(--red); }
 .minimal-toast-msg { font-size: 14.5px; font-weight: 500; }
-.minimal-toast-action { padding-right: 8px; }
-.minimal-toast-btn { margin-left: 6px; background: var(--accent-soft); color: var(--accent2); border: 1px solid var(--accent-soft); border-radius: 8px; padding: 5px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.minimal-toast-action { padding-inline-end: 8px; }
+.minimal-toast-btn { margin-inline-start: 6px; background: var(--accent-soft); color: var(--accent2); border: 1px solid var(--accent-soft); border-radius: 8px; padding: 5px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
 .minimal-toast-btn:hover { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 
 /* ===== Responsive ===== */
@@ -3672,7 +3900,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
   .minimal-tabscroll, .minimal-toolbar > .minimal-tabs { flex: 1 1 100%; }
   .minimal-toolbar > .minimal-tabs.minimal-tabs-aux { flex: 0 0 auto; }
   .minimal-toolbar-views .minimal-type-select { flex: 1 1 auto; max-width: none; }
-  .minimal-toolbar-search { flex: 1 1 140px; width: auto; margin-left: 0; }
+  .minimal-toolbar-search { flex: 1 1 140px; width: auto; margin-inline-start: 0; }
   .minimal-toolbar-meta { display: none; }
   .minimal-tax-select { flex: 1 1 40%; max-width: none; }
   .minimal-bulkbar { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
@@ -3691,7 +3919,8 @@ button.minimal-ac-item:hover { background: var(--hover); }
   .minimal-order-cols > :nth-child(6) { display: none; }
   .minimal-sub-cols { grid-template-columns: 86px 1fr 84px; }
   .minimal-sub-cols > :nth-child(3), .minimal-sub-cols > :nth-child(4),
-  .minimal-sub-cols > :nth-child(6) { display: none; }
+  .minimal-sub-cols > :nth-child(5), .minimal-sub-cols > :nth-child(6),
+  .minimal-sub-cols > :nth-child(8) { display: none; }
   .minimal-product-cols { grid-template-columns: 1fr 72px 40px; }
   .minimal-product-cols.with-cb { grid-template-columns: 36px 1fr 72px 40px; }
   .minimal-product-cols > :nth-child(2), .minimal-product-cols > :nth-child(3),
@@ -3740,8 +3969,11 @@ button.minimal-ac-item:hover { background: var(--hover); }
   .minimal-table-row[style] > .minimal-row-end,
   .minimal-table-row[style] > .minimal-row-arrow { order: -1; flex: none; }
   .minimal-table-row[style] .minimal-row-more { opacity: 1; }
+  /* Same reason on the subscription's order rows: there is no hover to
+     reveal the eye with on a touch screen. */
+  .minimal-sub-order-line .minimal-row-more { opacity: 1; }
   .minimal-table-row[style] > .minimal-row-meta { font-size: 12.5px; color: var(--text3); max-width: 100%; }
-  .minimal-table-row[style] > .minimal-row-meta.minimal-num { text-align: left; padding-right: 0; }
+  .minimal-table-row[style] > .minimal-row-meta.minimal-num { text-align: start; padding-inline-end: 0; }
   /* A primary cell that is itself a pill/meta column keeps its own look. */
   .minimal-table-row[style] > [data-primary].minimal-row-meta { color: var(--text); font-weight: 600; }
   /* Status cards: stats go 2-up instead of one tall column, and the chart
@@ -3767,7 +3999,7 @@ button.minimal-ac-item:hover { background: var(--hover); }
   /* Room under the last block so the stats pill doesn't cover typing. */
   .minimal-editor-body { padding-bottom: 72px; }
   .minimal-editor-stats {
-    right: calc(12px + env(safe-area-inset-right, 0px));
+    inset-inline-end: calc(12px + env(safe-area-inset-right, 0px));
     bottom: calc(12px + env(safe-area-inset-bottom, 0px) + var(--minimal-kb-inset, 0px));
     font-size: 12.5px; padding: 9px 14px;
   }
@@ -3828,3 +4060,55 @@ body.minimal-kb-open .minimal-editor-stats .minimal-stats-session { display: non
     scroll-behavior: auto !important;
   }
 }
+
+/* ===== Bidirectional layout =====
+ * The layout above uses logical properties, so it mirrors on its own when the
+ * document is dir="rtl" (includes/template.php sets that from is_rtl()).
+ * What is left is the part mirroring alone gets wrong.
+ *
+ * Deliberately NOT mirrored, because these are physical rather than
+ * sequential: image-crop handle coordinates (they map to real pixels and pair
+ * with directional resize cursors), centering offsets, symmetric stretches,
+ * and previous/next controls. Those keep left/right on purpose. */
+
+/* Technical values read left to right in every language. Without isolation a
+ * URL, a file path, a version number or a plugin slug renders scrambled inside
+ * an RTL run: punctuation migrates to the wrong end and the whole string reads
+ * backwards. `isolate` keeps each value its own bidi context so it cannot
+ * disturb the sentence around it either. */
+[dir="rtl"] .minimal-mono,
+[dir="rtl"] .minimal-code,
+[dir="rtl"] .minimal-kbd,
+[dir="rtl"] code,
+[dir="rtl"] pre,
+[dir="rtl"] samp,
+[dir="rtl"] kbd,
+[dir="rtl"] .minimal-slug-field,
+[dir="rtl"] .minimal-slug-input,
+[dir="rtl"] .minimal-sys-row-value,
+[dir="rtl"] input[type="url"],
+[dir="rtl"] input[type="email"],
+[dir="rtl"] input[type="tel"] {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: start;
+}
+
+/* Progress and meter fills grow from the inline start, not from the left. */
+[dir="rtl"] .minimal-progress-fill,
+[dir="rtl"] .minimal-meter-fill {
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+}
+
+/* Arrow glyphs are drawn, not laid out, so nothing mirrors them automatically.
+ * A back arrow that still points left in an RTL interface points away from
+ * where "back" is. */
+[dir="rtl"] .minimal-back-arrow,
+[dir="rtl"] .minimal-nav-arrow {
+  transform: scaleX(-1);
+}
+
+/* The switch knob travels toward the inline end when on. */
+[dir="rtl"] .minimal-switch-knob { inset-inline-start: auto; inset-inline-end: 2px; }
+[dir="rtl"] .minimal-switch.on .minimal-switch-knob { inset-inline-end: 16px; }

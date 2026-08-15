@@ -27,14 +27,22 @@ function minimal_admin_llar_active() {
 function minimal_admin_llar_can() {
 	// LLA-R has a network mode: when its "use local options" network setting
 	// is off on multisite, the log/lockouts live in SITE options shared by
-	// every subsite — network data, so a per-site cap is not enough (their
-	// own admin UI moves to Network Admin in that mode). Local mode keeps
-	// per-site options and per-site access.
-	if ( is_multisite() && ! is_super_admin()
-		&& class_exists( '\LLAR\Core\Helpers' )
-		&& method_exists( '\LLAR\Core\Helpers', 'use_local_options' )
-		&& ! \LLAR\Core\Helpers::use_local_options() ) {
-		return false;
+	// every subsite, which is network data a per-site capability cannot cover
+	// (their own admin UI moves to Network Admin in that mode). Local mode
+	// keeps per-site options and per-site access.
+	//
+	// The vendor lookup decides only whether to RELAX to per-site access, so
+	// an LLA-R that has moved or renamed the helper leaves us refusing rather
+	// than opening up. Reading it the other way round, as a condition of the
+	// refusal, made an unrecognised build hand a subsite administrator every
+	// other tenant's lockout IPs and attempted usernames.
+	if ( ! Minimal_Admin::network_owner() ) {
+		$local = class_exists( '\LLAR\Core\Helpers' )
+			&& method_exists( '\LLAR\Core\Helpers', 'use_local_options' )
+			&& \LLAR\Core\Helpers::use_local_options();
+		if ( ! $local ) {
+			return false;
+		}
 	}
 	return current_user_can( 'manage_options' ) || current_user_can( 'llar_admin' );
 }
@@ -42,11 +50,11 @@ function minimal_admin_llar_can() {
 /** Human label for a detect_gateway() value; unknown values pass through. */
 function minimal_admin_llar_gateway_label( $gateway ) {
 	$map = array(
-		'wp_login'        => 'Login form',
-		'wp_lostpassword' => 'Password reset',
+		'wp_login'        => __( 'Login form', 'minimal-admin' ),
+		'wp_lostpassword' => __( 'Password reset', 'minimal-admin' ),
 		'wp_register'     => 'Registration',
 		'xmlrpc'          => 'XML-RPC',
-		'wp_woo_login'    => 'WooCommerce login',
+		'wp_woo_login'    => __( 'WooCommerce login', 'minimal-admin' ),
 	);
 	$g = (string) $gateway;
 	return isset( $map[ $g ] ) ? $map[ $g ] : ( $g ? $g : '—' );
@@ -77,7 +85,7 @@ function minimal_admin_llar_rows() {
 			$locked   = ! $unlocked && isset( $lockouts[ $ip ] ) && (int) $lockouts[ $ip ] > time();
 			$rows[]   = array(
 				'id'       => md5( $ip . '|' . $user ),
-				'message'  => 'Locked out: ' . $user,
+				'message'  => __( 'Locked out: ', 'minimal-admin' ) . $user,
 				'who'      => (string) $user,
 				'ip'       => (string) $ip,
 				'attempts' => isset( $data['counter'] ) ? (int) $data['counter'] : 1,
@@ -124,7 +132,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['limit-login-attempts'] = array(
-		'label'      => 'Activity Log',
+		'label'      => __( 'Activity Log', 'minimal-admin' ),
 		'family'     => 'activity-log',
 		'sub'        => 'Limit Login Attempts',
 		'icon'       => 'shield',
@@ -141,24 +149,24 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'tabs'      => array(
 				'param'    => 'kind',
 				'static'   => array(
-					array( 'locked', 'Locked out now' ),
+					array( 'locked', __( 'Locked out now', 'minimal-admin' ) ),
 				),
-				'allLabel' => 'All lockouts',
+				'allLabel' => __( 'All lockouts', 'minimal-admin' ),
 			),
 			'columns'   => array(
-				array( 'key' => 'message', 'label' => 'Event', 'format' => 'title' ),
+				array( 'key' => 'message', 'label' => __( 'Event', 'minimal-admin' ), 'format' => 'title' ),
 				array( 'key' => 'ip', 'label' => 'IP' ),
-				array( 'key' => 'attempts', 'label' => 'Attempts', 'format' => 'num' ),
-				array( 'key' => 'gateway', 'label' => 'Via' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'attempts', 'label' => __( 'Attempts', 'minimal-admin' ), 'format' => 'num' ),
+				array( 'key' => 'gateway', 'label' => __( 'Via', 'minimal-admin' ) ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				'skip' => array( 'message', 'locked' ),
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Unlock IP',
+					'label'  => __( 'Unlock IP', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/llar/log/{id}/unlock',
 					'when'   => array( 'key' => 'locked', 'equals' => true ),
@@ -216,25 +224,26 @@ add_action( 'rest_api_init', function () {
 			return rest_ensure_response( array(
 				'rows'    => array(
 					array(
-						'label' => 'Locked out now',
+						'label' => __( 'Locked out now', 'minimal-admin' ),
 						'value' => $active ? count( $active ) . ' IP' . ( 1 === count( $active ) ? '' : 's' ) : 'Nobody',
 						'hint'  => $active ? implode( ' · ', array_slice( $active, 0, 3 ) ) . ( count( $active ) > 3 ? ' …' : '' ) : '',
 					),
 					array(
-						'label' => 'Failed attempts (24h)',
+						'label' => __( 'Failed attempts (24h)', 'minimal-admin' ),
 						'value' => (string) minimal_admin_llar_retries_last_day(),
 					),
 					array(
-						'label' => 'Lockouts all-time',
+						'label' => __( 'Lockouts all-time', 'minimal-admin' ),
 						'value' => (string) $total,
 					),
 					array(
-						'label' => 'Policy',
-						'value' => $retries ? sprintf( '%d retries, then a %s lockout', $retries, human_time_diff( 0, max( 60, $duration ) ) ) : '—',
+						'label' => __( 'Policy', 'minimal-admin' ),
+						/* translators: 1: allowed retries before lockout, 2: human-readable lockout duration. */
+						'value' => $retries ? sprintf( __( '%1$d retries, then a %2$s lockout', 'minimal-admin' ), $retries, human_time_diff( 0, max( 60, $duration ) ) ) : '—',
 					),
 				),
 				'actions' => array(
-					array( 'label' => 'Open Limit Login Attempts ↗', 'href' => minimal_admin_llar_admin_url() ),
+					array( 'label' => __( 'Open Limit Login Attempts ↗', 'minimal-admin' ), 'href' => minimal_admin_llar_admin_url() ),
 				),
 			) );
 		},
@@ -247,7 +256,7 @@ add_action( 'rest_api_init', function () {
 			$id  = (string) $request['id'];
 			$log = \LLAR\Core\Config::get( 'logged' );
 			if ( ! is_array( $log ) ) {
-				return new WP_Error( 'minimal_llar_missing', 'No lockout log.', array( 'status' => 404 ) );
+				return new WP_Error( 'minimal_llar_missing', __( 'No lockout log.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			foreach ( $log as $ip => $users ) {
 				foreach ( (array) $users as $user => $data ) {
@@ -266,10 +275,10 @@ add_action( 'rest_api_init', function () {
 					}
 					$log[ $ip ][ $user ]['unlocked'] = true;
 					\LLAR\Core\Config::update( 'logged', $log );
-					return rest_ensure_response( array( 'ok' => true, 'message' => 'Unlocked ' . $ip ) );
+					return rest_ensure_response( array( 'ok' => true, 'message' => __( 'Unlocked ', 'minimal-admin' ) . $ip ) );
 				}
 			}
-			return new WP_Error( 'minimal_llar_missing', 'That lockout is no longer in the log.', array( 'status' => 404 ) );
+			return new WP_Error( 'minimal_llar_missing', __( 'That lockout is no longer in the log.', 'minimal-admin' ), array( 'status' => 404 ) );
 		},
 	) );
 } );

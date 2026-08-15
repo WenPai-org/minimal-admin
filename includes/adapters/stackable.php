@@ -44,7 +44,7 @@ function minimal_admin_stackable_active() {
 add_filter( 'minimal_admin_design_sources', function ( $sources ) {
 	if ( minimal_admin_stackable_active() ) {
 		$sources['stackable'] = array(
-			'label' => 'Stackable',
+			'label' => __( 'Stackable', 'minimal-admin' ),
 			'route' => 'minimal-admin/v1/stackable/designs',
 		);
 	}

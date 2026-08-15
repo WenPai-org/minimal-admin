@@ -159,20 +159,20 @@ function minimal_admin_rri_detail( $id ) {
 		}
 	}
 	if ( null === $found ) {
-		return new WP_Error( 'not_found', 'Rewrite rule not found.', array( 'status' => 404 ) );
+		return new WP_Error( 'not_found', __( 'Rewrite rule not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 
 	$source  = (string) ( $found['source'] ?? 'other' );
 	$rewrite = (string) ( $found['rewrite'] ?? '' );
 	$rows    = array(
-		array( 'label' => 'Match', 'value' => $rule ),
-		array( 'label' => 'Rewrite', 'value' => $rewrite ),
-		array( 'label' => 'Source', 'value' => $source ),
+		array( 'label' => __( 'Match', 'minimal-admin' ), 'value' => $rule ),
+		array( 'label' => __( 'Rewrite', 'minimal-admin' ), 'value' => $rewrite ),
+		array( 'label' => __( 'Source', 'minimal-admin' ), 'value' => $source ),
 		array(
-			'label' => 'Status',
+			'label' => __( 'Status', 'minimal-admin' ),
 			'value' => 'missing' === $source
-				? 'Missing from saved rules (generated but not stored)'
-				: 'Registered',
+				? __( 'Missing from saved rules (generated but not stored)', 'minimal-admin' )
+				: __( 'Registered', 'minimal-admin' ),
 		),
 	);
 
@@ -180,7 +180,7 @@ function minimal_admin_rri_detail( $id ) {
 		'title'    => $rule,
 		'status'   => 'missing' === $source ? 'missing' : 'active',
 		'sections' => array(
-			array( 'title' => 'Rule', 'rows' => $rows ),
+			array( 'title' => __( 'Rule', 'minimal-admin' ), 'rows' => $rows ),
 		),
 		'adminUrl' => minimal_admin_rri_admin_url(),
 	);
@@ -206,46 +206,46 @@ function minimal_admin_rri_status_model() {
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Rules',
+				'label' => __( 'Rules', 'minimal-admin' ),
 				'value' => number_format_i18n( $total ),
 				'hint'  => number_format_i18n( count( $sources ) ) . ' sources',
 			),
 			array(
-				'label' => 'Missing',
+				'label' => __( 'Missing', 'minimal-admin' ),
 				'value' => number_format_i18n( $missing ),
-				'hint'  => $missing ? 'Generated but not in the saved option' : 'Saved set matches generation',
+				'hint'  => $missing ? __( 'Generated but not in the saved option', 'minimal-admin' ) : __( 'Saved set matches generation', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'Permalink structure',
-				'value' => $struct ? $struct : 'Plain (no pretty permalinks)',
-				'hint'  => $struct ? 'Pretty permalinks on' : 'Flush only helps after a structure is set',
+				'label' => __( 'Permalink structure', 'minimal-admin' ),
+				'value' => $struct ? $struct : __( 'Plain (no pretty permalinks)', 'minimal-admin' ),
+				'hint'  => $struct ? __( 'Pretty permalinks on', 'minimal-admin' ) : __( 'Flush only helps after a structure is set', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'Rewrite Rules Inspector',
+				'label' => __( 'Rewrite Rules Inspector', 'minimal-admin' ),
 				'value' => (string) $ver,
 			),
 		),
 		'actions' => array(
 			array(
-				'label'   => 'Flush rewrite rules',
+				'label'   => __( 'Flush rewrite rules', 'minimal-admin' ),
 				'method'  => 'POST',
 				'route'   => 'minimal-admin/v1/rewrite-rules/flush',
-				'confirm' => 'Flush rewrite rules? WordPress will regenerate them from the current structure and plugins.',
+				'confirm' => __( 'Flush rewrite rules? WordPress will regenerate them from the current structure and plugins.', 'minimal-admin' ),
 			),
 			array(
-				'label'  => 'Test a URL',
+				'label'  => __( 'Test a URL', 'minimal-admin' ),
 				'method' => 'POST',
 				'route'  => 'minimal-admin/v1/rewrite-rules/test',
 				'fields' => array(
 					array(
 						'key'         => 'url',
-						'label'       => 'Path or URL',
-						'placeholder' => '/sample-page/ or full URL',
+						'label'       => __( 'Path or URL', 'minimal-admin' ),
+						'placeholder' => __( '/sample-page/ or full URL', 'minimal-admin' ),
 					),
 				),
 			),
 			array(
-				'label' => 'Open Rewrite Rules Inspector ↗',
+				'label' => __( 'Open Rewrite Rules Inspector ↗', 'minimal-admin' ),
 				'href'  => minimal_admin_rri_admin_url(),
 			),
 		),
@@ -271,7 +271,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['rewrite-rules-inspector'] = array(
-		'label'      => 'Diagnostics',
+		'label'      => __( 'Diagnostics', 'minimal-admin' ),
 		'sub'        => 'Rewrites',
 		'family'     => 'diagnostics',
 		'icon'       => 'activity',
@@ -279,7 +279,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'group'      => 'tools',
 		'status'     => array( 'route' => 'minimal-admin/v1/rewrite-rules/status' ),
 		'collection' => array(
-			'viewLabel' => 'Rules',
+			'viewLabel' => __( 'Rules', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/rewrite-rules',
 			'pageQuery' => 'per_page=50&page={page}',
 			'search'    => 'search={q}',
@@ -294,20 +294,20 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					array( 'page', 'Pages' ),
 					array( 'other', 'Other / plugins' ),
 				),
-				'allLabel' => 'All rules',
+				'allLabel' => __( 'All rules', 'minimal-admin' ),
 			),
 			'columns'   => array(
-				array( 'key' => 'rule', 'label' => 'Match', 'format' => 'title' ),
-				array( 'key' => 'rewrite', 'label' => 'Query', 'format' => 'text' ),
-				array( 'key' => 'source', 'label' => 'Source', 'format' => 'text' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
+				array( 'key' => 'rule', 'label' => __( 'Match', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'rewrite', 'label' => __( 'Query', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'source', 'label' => __( 'Source', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/rewrite-rules/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label' => 'Open Rewrite Rules Inspector ↗',
+					'label' => __( 'Open Rewrite Rules Inspector ↗', 'minimal-admin' ),
 					'href'  => minimal_admin_rri_admin_url(),
 				),
 			),
@@ -356,13 +356,14 @@ add_action( 'rest_api_init', function () {
 			global $rewrite_rules_inspector;
 			if ( is_object( $rewrite_rules_inspector ) && isset( $rewrite_rules_inspector->flushing_enabled )
 				&& ! $rewrite_rules_inspector->flushing_enabled ) {
-				return new WP_Error( 'forbidden', 'Rewrite rule flushing is disabled.', array( 'status' => 403 ) );
+				return new WP_Error( 'forbidden', __( 'Rewrite rule flushing is disabled.', 'minimal-admin' ), array( 'status' => 403 ) );
 			}
 			minimal_admin_rri_flush();
 			$count = count( minimal_admin_rri_all_rules() );
 			return rest_ensure_response( array(
 				'ok'      => true,
-				'message' => sprintf( 'Rewrite rules flushed. %s rules registered.', number_format_i18n( $count ) ),
+				/* translators: %s: number of rewrite rules registered after the flush. */
+				'message' => sprintf( __( 'Rewrite rules flushed. %s rules registered.', 'minimal-admin' ), number_format_i18n( $count ) ),
 			) );
 		},
 	) );
@@ -374,17 +375,17 @@ add_action( 'rest_api_init', function () {
 			$body = $request->get_json_params();
 			$url  = isset( $body['url'] ) ? sanitize_text_field( (string) $body['url'] ) : '';
 			if ( '' === $url ) {
-				return new WP_Error( 'empty_url', 'Enter a path or URL to test.', array( 'status' => 400 ) );
+				return new WP_Error( 'empty_url', __( 'Enter a path or URL to test.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			if ( ! class_exists( '\\Automattic\\RewriteRulesInspector\\Core\\UrlTester' ) ) {
-				return new WP_Error( 'unavailable', 'URL tester is not available.', array( 'status' => 500 ) );
+				return new WP_Error( 'unavailable', __( 'URL tester is not available.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
 			$tester = new \Automattic\RewriteRulesInspector\Core\UrlTester();
 			$result = $tester->test_url_with_rules( $url, minimal_admin_rri_all_rules() );
 			if ( ! empty( $result['is_404'] ) || empty( $result['first_match'] ) ) {
 				return rest_ensure_response( array(
 					'ok'      => true,
-					'message' => 'No rewrite rule matches “' . $url . '” (would 404 on routing alone).',
+					'message' => __( 'No rewrite rule matches “', 'minimal-admin' ) . $url . '” (would 404 on routing alone).',
 				) );
 			}
 			$m = $result['first_match'];

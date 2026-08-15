@@ -143,6 +143,28 @@ const { BASE, launch, login, reporter } = require( './helpers' );
 	await page.waitForSelector( '#minimal-order-search, .minimal-table-row, .minimal-empty', { timeout: 20000 } );
 	await page.waitForTimeout( 400 );
 
+	// Case matters and so do the multi-word ones: "pending" is labelled
+	// "Pending payment". A case-insensitive check passes on "failed" alone,
+	// which is why this compares against the status WooCommerce reports for
+	// each row, exactly.
+	const rowIds = await page.evaluate( () => Array.from( document.querySelectorAll( '.minimal-table-row[data-order]' ) )
+		.slice( 0, 6 ).map( ( r ) => parseInt( r.dataset.order, 10 ) ) );
+	const wanted = {};
+	for ( const id of rowIds ) {
+		const r = await api( `wc/v3/orders/${ id }?_fields=status` );
+		wanted[ id ] = r.body && r.body.status;
+	}
+	const badge = await page.evaluate( ( want ) => {
+		const labels = window.MINIMAL.wcOrderStatuses || {};
+		const rows = Object.keys( want ).map( ( id ) => {
+			const chip = document.querySelector( `.minimal-table-row[data-order="${ id }"] .minimal-status` );
+			return { id, seen: chip ? ( chip.textContent || '' ).trim() : null, want: labels[ want[ id ] ] || null };
+		} );
+		return { known: Object.keys( labels ).length, rows, ok: rows.length > 0 && rows.every( ( r ) => r.want && r.seen === r.want ) };
+	}, wanted );
+	t.check( 'the status badge reads WooCommerce\'s label, not the slug',
+		badge.known > 0 && badge.ok, JSON.stringify( badge.rows ) );
+
 	const hasSearch = await page.$( '#minimal-order-search' );
 	t.check( 'orders toolbar has search field', !! hasSearch, '' );
 	if ( hasSearch && orderId ) {
@@ -159,6 +181,9 @@ const { BASE, launch, login, reporter } = require( './helpers' );
 		t.check( 'search by order id finds the order', found.hit && found.n >= 1, JSON.stringify( found ) );
 	}
 
+	// The badge must speak WooCommerce's vocabulary, not the slug: "Pending
+	// payment", not "pending". The list used to print the raw status while the
+	// detail page next to it printed the label.
 	const clicked = await page.evaluate( ( id ) => {
 		const row = document.querySelector( `.minimal-table-row[data-order="${ id }"]` )
 			|| document.querySelector( '.minimal-table-row[data-order]' );
@@ -192,7 +217,8 @@ const { BASE, launch, login, reporter } = require( './helpers' );
 				hasWcMail: !! document.querySelector( '[data-oc="wcemail"]' ),
 				hasPayCopy: !! document.querySelector( '#minimal-o-copy-pay, #minimal-o-copy-pay2' ),
 				hasWcEdit: /Edit in WooCommerce/.test( text ),
-				hasBilling: !! document.querySelector( '#minimal-ob-email' ),
+				// Billing edits live behind the Customer card's pencil dialog now.
+				hasBilling: !! document.querySelector( '.minimal-order-customer [data-oedit="customer"]' ),
 			};
 		} );
 		t.check( 'order row opens the full order page',

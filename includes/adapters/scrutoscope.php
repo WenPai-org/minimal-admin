@@ -229,27 +229,27 @@ function minimal_admin_scrutoscope_profile_sections( $id ) {
 	}
 	$data = $res->get_data();
 	if ( ! is_array( $data ) || empty( $data['id'] ) ) {
-		return new WP_Error( 'not_found', 'Profile not found.', array( 'status' => 404 ) );
+		return new WP_Error( 'not_found', __( 'Profile not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 
 	$summary = isset( $data['summary'] ) && is_array( $data['summary'] ) ? $data['summary'] : array();
 	$meta    = array(
-		array( 'label' => 'Route', 'value' => (string) ( $data['route'] ?? '' ) ),
-		array( 'label' => 'Duration', 'value' => ( isset( $data['duration_ms'] ) ? $data['duration_ms'] . ' ms' : '—' ) ),
-		array( 'label' => 'Memory peak', 'value' => isset( $data['memory_peak_mb'] ) ? $data['memory_peak_mb'] . ' MB' : '—' ),
-		array( 'label' => 'Callbacks', 'value' => isset( $summary['total_callbacks'] ) ? (string) (int) $summary['total_callbacks'] : '—' ),
-		array( 'label' => 'Sources', 'value' => isset( $summary['total_sources'] ) ? (string) (int) $summary['total_sources'] : '—' ),
+		array( 'label' => __( 'Route', 'minimal-admin' ), 'value' => (string) ( $data['route'] ?? '' ) ),
+		array( 'label' => __( 'Duration', 'minimal-admin' ), 'value' => ( isset( $data['duration_ms'] ) ? $data['duration_ms'] . ' ms' : '—' ) ),
+		array( 'label' => __( 'Memory peak', 'minimal-admin' ), 'value' => isset( $data['memory_peak_mb'] ) ? $data['memory_peak_mb'] . ' MB' : '—' ),
+		array( 'label' => __( 'Callbacks', 'minimal-admin' ), 'value' => isset( $summary['total_callbacks'] ) ? (string) (int) $summary['total_callbacks'] : '—' ),
+		array( 'label' => __( 'Sources', 'minimal-admin' ), 'value' => isset( $summary['total_sources'] ) ? (string) (int) $summary['total_sources'] : '—' ),
 		array(
-			'label' => 'Unattributed',
+			'label' => __( 'Unattributed', 'minimal-admin' ),
 			'value' => ( isset( $summary['unattributed_ms'] ) && null !== $summary['unattributed_ms'] )
 				? $summary['unattributed_ms'] . ' ms'
 					. ( isset( $summary['unattributed_pct'] ) ? ' (' . $summary['unattributed_pct'] . '%)' : '' )
 				: '—',
 		),
-		array( 'label' => 'Captured', 'value' => (string) ( $data['captured_at'] ?? '' ) ),
-		array( 'label' => 'Pinned', 'value' => ! empty( $data['pinned'] ) ? 'Yes' : 'No' ),
-		array( 'label' => 'Note', 'value' => (string) ( $data['note'] ?? '' ) ),
-		array( 'label' => 'Tags', 'value' => ! empty( $data['tags'] ) && is_array( $data['tags'] ) ? implode( ', ', $data['tags'] ) : '' ),
+		array( 'label' => __( 'Captured', 'minimal-admin' ), 'value' => (string) ( $data['captured_at'] ?? '' ) ),
+		array( 'label' => __( 'Pinned', 'minimal-admin' ), 'value' => ! empty( $data['pinned'] ) ? 'Yes' : 'No' ),
+		array( 'label' => __( 'Note', 'minimal-admin' ), 'value' => (string) ( $data['note'] ?? '' ) ),
+		array( 'label' => __( 'Tags', 'minimal-admin' ), 'value' => ! empty( $data['tags'] ) && is_array( $data['tags'] ) ? implode( ', ', $data['tags'] ) : '' ),
 	);
 
 	$sources = array();
@@ -316,15 +316,15 @@ function minimal_admin_scrutoscope_profile_sections( $id ) {
 
 	$sections = array_values( array_filter( array(
 		array(
-			'title' => 'Summary',
+			'title' => __( 'Summary', 'minimal-admin' ),
 			'rows'  => array_values( array_filter( $meta, function ( $r ) {
 				return '' !== (string) $r['value'] && '—' !== (string) $r['value'];
 			} ) ),
 		),
-		$sources ? array( 'title' => 'Top sources', 'rows' => $sources ) : null,
-		$queries ? array( 'title' => 'Queries', 'rows' => $queries ) : null,
-		$http ? array( 'title' => 'HTTP calls', 'rows' => $http ) : null,
-		$milestones ? array( 'title' => 'Timeline milestones', 'rows' => $milestones ) : null,
+		$sources ? array( 'title' => __( 'Top sources', 'minimal-admin' ), 'rows' => $sources ) : null,
+		$queries ? array( 'title' => __( 'Queries', 'minimal-admin' ), 'rows' => $queries ) : null,
+		$http ? array( 'title' => __( 'HTTP calls', 'minimal-admin' ), 'rows' => $http ) : null,
+		$milestones ? array( 'title' => __( 'Timeline milestones', 'minimal-admin' ), 'rows' => $milestones ) : null,
 	) ) );
 
 	$title = (string) ( $data['route'] ?? ( 'Profile #' . (int) $data['id'] ) );
@@ -402,12 +402,12 @@ function minimal_admin_scrutoscope_status_model() {
 
 	$rows = array(
 		array(
-			'label' => 'Background capture',
+			'label' => __( 'Background capture', 'minimal-admin' ),
 			'value' => $bg ? ( 'On · ' . rtrim( rtrim( sprintf( '%.1f', $rate ), '0' ), '.' ) . '% sample' ) : 'Off',
-			'hint'  => $bg ? 'Sampled front-end and admin requests' : 'Start a session or enable sampling in Scrutoscope',
+			'hint'  => $bg ? __( 'Sampled front-end and admin requests', 'minimal-admin' ) : __( 'Start a session or enable sampling in Scrutoscope', 'minimal-admin' ),
 		),
 		array(
-			'label' => 'Profiles stored',
+			'label' => __( 'Profiles stored', 'minimal-admin' ),
 			'value' => number_format_i18n( $total ),
 			'hint'  => $last
 				? trim(
@@ -418,22 +418,22 @@ function minimal_admin_scrutoscope_status_model() {
 						? ' · ' . sprintf( __( '%s pinned', 'minimal-admin' ), number_format_i18n( $stats['pinned'] ) )
 						: '' )
 				)
-				: 'None yet',
+				: __( 'None yet', 'minimal-admin' ),
 		),
 		array(
-			'label' => 'Query profiling',
+			'label' => __( 'Query profiling', 'minimal-admin' ),
 			'value' => ! empty( $qprof['active'] ) ? 'On' : 'Off',
 			'hint'  => ! empty( $qprof['managed'] )
-				? 'SAVEQUERIES via Scrutoscope settings'
-				: 'SAVEQUERIES set outside Scrutoscope',
+				? __( 'SAVEQUERIES via Scrutoscope settings', 'minimal-admin' )
+				: __( 'SAVEQUERIES set outside Scrutoscope', 'minimal-admin' ),
 		),
 		array(
-			'label' => 'Capture mode',
+			'label' => __( 'Capture mode', 'minimal-admin' ),
 			'value' => $light ? 'Lightweight' : 'Full',
-			'hint'  => $light ? 'Sources only (smaller profiles)' : 'Timeline + per-callback trace',
+			'hint'  => $light ? __( 'Sources only (smaller profiles)', 'minimal-admin' ) : __( 'Timeline + per-callback trace', 'minimal-admin' ),
 		),
 		array(
-			'label' => 'Version',
+			'label' => __( 'Version', 'minimal-admin' ),
 			'value' => defined( 'SCRUTOSCOPE_VERSION' ) ? (string) SCRUTOSCOPE_VERSION : '—',
 		),
 	);
@@ -461,7 +461,7 @@ function minimal_admin_scrutoscope_status_model() {
 		'rows'    => $rows,
 		'actions' => array(
 			array(
-				'label' => 'Open Scrutoscope ↗',
+				'label' => __( 'Open Scrutoscope ↗', 'minimal-admin' ),
 				'href'  => minimal_admin_scrutoscope_admin_url(),
 			),
 		),
@@ -520,8 +520,9 @@ function minimal_admin_scrutoscope_cron_resolve( $id ) {
 		}
 		$args = isset( $ev['args'] ) && is_array( $ev['args'] ) ? $ev['args'] : array();
 		return array(
-			'hook' => $hook,
-			'args' => $args,
+			'hook'      => $hook,
+			'args'      => $args,
+			'timestamp' => isset( $ev['timestamp'] ) ? (int) $ev['timestamp'] : 0,
 		);
 	}
 	return null;
@@ -535,6 +536,77 @@ function minimal_admin_scrutoscope_cron_resolve( $id ) {
  * @param string $id Cron row id from the inventory.
  * @return array|WP_Error
  */
+/**
+ * May the current user cause this cron hook to actually run?
+ *
+ * "Profile this hook" is not a read: Scrutoscope's profile_cron_hook() does a
+ * real do_action_ref_array(), so every callback on the hook fires with its
+ * scheduled arguments. When WP Crontrol is also installed one of those hooks
+ * is crontrol_cron_job, whose callback evals PHP the site stored, and WP
+ * Crontrol guards running it with edit_files. Core maps edit_files to
+ * do_not_allow under DISALLOW_FILE_EDIT and DISALLOW_FILE_MODS, and for every
+ * non-super-admin on multisite, so manage_options alone is a weaker gate than
+ * the one both WP Crontrol's screen and Minimal's own Crontrol adapter apply.
+ *
+ * Defers to WP Crontrol's own runnable() when it is loaded, so one predicate
+ * governs both Diagnostics providers.
+ *
+ * @param string $hook Cron hook name.
+ * @return bool
+ */
+function minimal_admin_scrutoscope_cron_runnable( $hook, $timestamp = 0 ) {
+	$hook = (string) $hook;
+
+	// WP Crontrol's find() takes hook, timestamp AND the signature, which is
+	// the key core stores the event under. Passing the hook alone raised an
+	// ArgumentCountError that the catch below swallowed, so the whole vendor
+	// deferral was dead and every hook fell to the standalone rule.
+	if ( $timestamp && function_exists( '\\Crontrol\\Event\\find' ) && class_exists( '\\Crontrol\\Context\\WordPressUserContext' ) ) {
+		try {
+			$crons = function_exists( '_get_cron_array' ) ? (array) _get_cron_array() : array();
+			$sigs  = isset( $crons[ $timestamp ][ $hook ] ) ? array_keys( (array) $crons[ $timestamp ][ $hook ] ) : array();
+			foreach ( $sigs as $sig ) {
+				$event = \Crontrol\Event\find( $hook, (int) $timestamp, (string) $sig );
+				if ( $event && method_exists( $event, 'runnable' ) ) {
+					return (bool) $event->runnable(
+						new \Crontrol\Context\WordPressUserContext(),
+						new \Crontrol\Context\WordPressFeatureContext()
+					);
+				}
+			}
+		} catch ( \Error $e ) {
+			// A vendor API that changed shape must not read as "allowed": fall
+			// through to the standalone rule, which refuses the dangerous hooks
+			// on its own.
+			return false;
+		} catch ( \Throwable $e ) {
+			return false;
+		}
+	}
+
+	// Standalone rule for when WP Crontrol is absent or the event has gone.
+	// Both of its executing hooks answer to the constants WP Crontrol offers
+	// for exactly this, which the previous version never consulted.
+	if ( 'crontrol_cron_job' === $hook ) {
+		if ( defined( 'CRONTROL_DISALLOW_PHP_EVENTS' ) && CRONTROL_DISALLOW_PHP_EVENTS ) {
+			return false;
+		}
+		if ( class_exists( 'Minimal_Admin' ) && ! Minimal_Admin::code_edits_allowed() ) {
+			return false;
+		}
+		return current_user_can( 'edit_files' );
+	}
+	if ( 'crontrol_url_cron_job' === $hook ) {
+		// Firing this makes a live outbound request to the stored URL.
+		if ( defined( 'CRONTROL_DISALLOW_URL_EVENTS' ) && CRONTROL_DISALLOW_URL_EVENTS ) {
+			return false;
+		}
+		return current_user_can( 'manage_options' );
+	}
+
+	return true;
+}
+
 function minimal_admin_scrutoscope_profile_cron( $id ) {
 	if ( ! minimal_admin_scrutoscope_can_profile_cron() ) {
 		return new WP_Error(
@@ -551,6 +623,13 @@ function minimal_admin_scrutoscope_profile_cron( $id ) {
 			'not_found',
 			__( 'Cron event not found. It may have already run.', 'minimal-admin' ),
 			array( 'status' => 404 )
+		);
+	}
+	if ( ! minimal_admin_scrutoscope_cron_runnable( $ev['hook'], $ev['timestamp'] ?? 0 ) ) {
+		return new WP_Error(
+			'forbidden',
+			__( 'This event cannot be run here.', 'minimal-admin' ),
+			array( 'status' => 403 )
 		);
 	}
 
@@ -598,8 +677,11 @@ function minimal_admin_scrutoscope_cron_list( WP_REST_Request $request ) {
 			'date'     => ! empty( $ev['timestamp'] )
 				? gmdate( 'Y-m-d\TH:i:s\Z', (int) $ev['timestamp'] )
 				: '',
-			// Gates the Profile action; always true while the method exists.
-			'can_profile' => minimal_admin_scrutoscope_can_profile_cron(),
+			// Gates the Profile action: the method has to exist AND this caller
+			// has to be allowed to make this particular hook run, so a hook
+			// they cannot run is not offered rather than refused on click.
+			'can_profile' => minimal_admin_scrutoscope_can_profile_cron()
+				&& minimal_admin_scrutoscope_cron_runnable( $hook, isset( $ev['timestamp'] ) ? (int) $ev['timestamp'] : 0 ),
 		);
 	}
 
@@ -643,7 +725,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	$surfaces['scrutoscope'] = array(
 		// Family collapses profiler/cron (and future transient tools) into one
 		// Tools nav item so Dev tools don't each claim a top-level slot.
-		'label'      => 'Diagnostics',
+		'label'      => __( 'Diagnostics', 'minimal-admin' ),
 		'sub'        => 'Scrutoscope',
 		'family'     => 'diagnostics',
 		'icon'       => 'activity',
@@ -651,7 +733,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'group'      => 'tools',
 		'status'     => array( 'route' => 'minimal-admin/v1/scrutoscope/status' ),
 		'collection' => array(
-			'viewLabel' => 'Profiles',
+			'viewLabel' => __( 'Profiles', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/scrutoscope/profiles',
 			'pageQuery' => 'per_page=25&page={page}',
 			'search'    => 'search={q}',
@@ -665,33 +747,33 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					array( 'background', 'Background' ),
 					// Profile this hook (below) writes profile_type=on_demand —
 					// without this tab Minimal's own captures land under All only.
-					array( 'on_demand', 'On demand' ),
+					array( 'on_demand', __( 'On demand', 'minimal-admin' ) ),
 				),
-				'allLabel' => 'All profiles',
+				'allLabel' => __( 'All profiles', 'minimal-admin' ),
 			),
 			'columns'   => array(
-				array( 'key' => 'route', 'label' => 'Route', 'format' => 'title' ),
-				array( 'key' => 'context', 'label' => 'Context', 'format' => 'text' ),
-				array( 'key' => 'duration', 'label' => 'Duration', 'format' => 'text' ),
-				array( 'key' => 'type', 'label' => 'Type', 'format' => 'text' ),
-				array( 'key' => 'role', 'label' => 'Role', 'format' => 'text' ),
+				array( 'key' => 'route', 'label' => __( 'Route', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'context', 'label' => __( 'Context', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'duration', 'label' => __( 'Duration', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'type', 'label' => __( 'Type', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'role', 'label' => __( 'Role', 'minimal-admin' ), 'format' => 'text' ),
 				array( 'key' => 'http', 'label' => 'HTTP', 'format' => 'text' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/scrutoscope/profiles/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label' => 'Open Scrutoscope ↗',
+					'label' => __( 'Open Scrutoscope ↗', 'minimal-admin' ),
 					'href'  => minimal_admin_scrutoscope_admin_url(),
 				),
 				array(
-					'label'   => 'Delete profile',
+					'label'   => __( 'Delete profile', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/scrutoscope/profiles/{id}',
-					'confirm' => 'Delete this profile permanently? Pinned profiles can be deleted too.',
+					'confirm' => __( 'Delete this profile permanently? Pinned profiles can be deleted too.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -709,14 +791,14 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					'static'   => array(
 						array( 'overdue', 'Overdue' ),
 					),
-					'allLabel' => 'All events',
+					'allLabel' => __( 'All events', 'minimal-admin' ),
 				),
 				'columns'   => array(
-					array( 'key' => 'hook', 'label' => 'Hook', 'format' => 'title' ),
-					array( 'key' => 'schedule', 'label' => 'Schedule', 'format' => 'text' ),
-					array( 'key' => 'source', 'label' => 'Source', 'format' => 'text' ),
-					array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
-					array( 'key' => 'date', 'label' => 'Next run', 'format' => 'ago', 'utc' => true ),
+					array( 'key' => 'hook', 'label' => __( 'Hook', 'minimal-admin' ), 'format' => 'title' ),
+					array( 'key' => 'schedule', 'label' => __( 'Schedule', 'minimal-admin' ), 'format' => 'text' ),
+					array( 'key' => 'source', 'label' => __( 'Source', 'minimal-admin' ), 'format' => 'text' ),
+					array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
+					array( 'key' => 'date', 'label' => __( 'Next run', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 				),
 				// No detail modal for cron rows — inventory + row actions only.
 				'detail'    => array(),
@@ -725,19 +807,19 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				// the confirm says so. Hidden cleanly when the method is absent.
 				'actions'   => minimal_admin_scrutoscope_can_profile_cron() ? array(
 					array(
-						'label'   => 'Profile this hook',
+						'label'   => __( 'Profile this hook', 'minimal-admin' ),
 						'method'  => 'POST',
 						'route'   => 'minimal-admin/v1/scrutoscope/cron/{id}/profile',
-						'confirm' => 'Run this cron hook now while profiling it? The hook’s normal side effects will happen (emails, updates, cleanup, queue work). A profile is saved under Profiles afterward.',
+						'confirm' => __( 'Run this cron hook now while profiling it? The hook’s normal side effects will happen (emails, updates, cleanup, queue work). A profile is saved under Profiles afterward.', 'minimal-admin' ),
 						'when'    => array( 'key' => 'can_profile', 'equals' => true ),
 					),
 					array(
-						'label' => 'Open Scrutoscope ↗',
+						'label' => __( 'Open Scrutoscope ↗', 'minimal-admin' ),
 						'href'  => minimal_admin_scrutoscope_admin_url(),
 					),
 				) : array(
 					array(
-						'label' => 'Open Scrutoscope ↗',
+						'label' => __( 'Open Scrutoscope ↗', 'minimal-admin' ),
 						'href'  => minimal_admin_scrutoscope_admin_url(),
 					),
 				),
@@ -781,10 +863,10 @@ add_action( 'rest_api_init', function () {
 				$id = (int) $request['id'];
 				$row = \Scrutoscope\Profiler\Storage::get_profile( $id );
 				if ( null === $row ) {
-					return new WP_Error( 'not_found', 'Profile not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Profile not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				\Scrutoscope\Profiler\Storage::delete_profile( $id );
-				return rest_ensure_response( array( 'ok' => true, 'message' => 'Profile deleted.' ) );
+				return rest_ensure_response( array( 'ok' => true, 'message' => __( 'Profile deleted.', 'minimal-admin' ) ) );
 			},
 		),
 	) );
