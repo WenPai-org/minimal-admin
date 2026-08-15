@@ -1,7 +1,8 @@
 /**
  * The "Modified" state — a live post carrying unsaved edits (an autosave
- * newer than the saved copy) is named in the content list: an amber chip on
- * the row and a quiet Modified toolbar filter backed by ?minimal_modified=1.
+ * newer than the saved copy) is named in the content list: an amber dot on
+ * the row's status pill and a quiet Modified toolbar filter backed by
+ * ?minimal_modified=1.
  *
  * Fixtures: two published posts; one gets a REST autosave so it enters the
  * state deterministically. Both deleted on the way out.
@@ -51,13 +52,44 @@ const { BASE, launch, login, createPost, deletePost, reporter } = require( './he
 		t.check( 'minimal_modified=1 filters to the modified post only',
 			ids.includes( idA ) && ! ids.includes( idB ), JSON.stringify( ids ) );
 
-		// The list: chip on A's row, nothing on B's.
+		// The list: amber dot on A's status pill, nothing on B's.
 		await page.goto( BASE + '/minimal-admin/content', { waitUntil: 'domcontentloaded' } );
 		await page.waitForSelector( `.minimal-table-row[data-id="${ idA }"]`, { timeout: 20000 } );
-		t.check( 'Modified chip on the autosaved row',
-			!! ( await page.$( `.minimal-table-row[data-id="${ idA }"] .minimal-status.modified` ) ), '' );
-		t.check( 'no chip on the clean row',
-			! ( await page.$( `.minimal-table-row[data-id="${ idB }"] .minimal-status.modified` ) ), '' );
+		t.check( 'Modified mark on the autosaved row',
+			!! ( await page.$( `.minimal-table-row[data-id="${ idA }"] .minimal-row-modified` ) ), '' );
+		t.check( 'no mark on the clean row',
+			! ( await page.$( `.minimal-table-row[data-id="${ idB }"] .minimal-status.modified, .minimal-table-row[data-id="${ idB }"] .minimal-row-modified` ) ), '' );
+
+		// The dot rides INSIDE the one status pill: the column never stacks
+		// a second pill, and the pill itself carries the explanation.
+		const pill = await page.evaluate( ( id ) => {
+			const row = document.querySelector( `.minimal-table-row[data-id="${ id }"]` );
+			const cell = row && row.querySelector( '.minimal-row-status' );
+			const st = cell && cell.querySelector( '.minimal-status' );
+			const dot = st && st.querySelector( '.minimal-row-modified' );
+			if ( ! st || ! dot ) return { ok: false };
+			const cs = getComputedStyle( dot );
+			return {
+				ok: true,
+				pills: cell.querySelectorAll( '.minimal-status' ).length,
+				title: st.getAttribute( 'title' ) || '',
+				label: ( st.textContent || '' ).trim(),
+				round: cs.borderTopLeftRadius,
+				width: cs.width,
+				sr: !! st.querySelector( '.minimal-sr-only' ),
+				oneLine: Math.round( cell.getBoundingClientRect().height ) <= 30,
+			};
+		}, idA );
+		t.check( 'dot lives inside the status pill', pill.ok && pill.pills === 1, JSON.stringify( pill ) );
+		t.check( 'pill explains the state on hover', /unsaved edits/i.test( pill.title ), pill.title );
+		t.check( 'pill still reads as its status', /^Published/.test( pill.label || '' ), pill.label );
+		// Chrome reports the specified 50%, not a resolved px radius.
+		t.check( 'mark is a 6px round dot', pill.width === '6px' && /^(50%|3px)$/.test( pill.round ),
+			`${ pill.width } / ${ pill.round }` );
+		t.check( 'state has an accessible name', !! pill.sr, '' );
+		t.check( 'status cell stays one line', !! pill.oneLine, JSON.stringify( pill.oneLine ) );
+		t.check( 'no bespoke float tip in the content list',
+			! ( await page.$( '#minimal-float-tip' ) ), '' );
 
 		// The toolbar filter: only modified rows remain.
 		await page.click( '#minimal-content-modified' );
@@ -68,11 +100,11 @@ const { BASE, launch, login, createPost, deletePost, reporter } = require( './he
 		}, idB, { timeout: 20000 } );
 		t.check( 'Modified filter keeps the modified post and drops the clean one',
 			!! ( await page.$( `.minimal-table-row[data-id="${ idA }"]` ) ), '' );
-		const allChipped = await page.evaluate( () => {
+		const allMarked = await page.evaluate( () => {
 			const rows = Array.from( document.querySelectorAll( '.minimal-table-row' ) );
-			return rows.length > 0 && rows.every( ( r ) => !! r.querySelector( '.minimal-status.modified' ) );
+			return rows.length > 0 && rows.every( ( r ) => !! r.querySelector( '.minimal-row-modified' ) );
 		} );
-		t.check( 'every filtered row carries the chip', allChipped, '' );
+		t.check( 'every filtered row carries the mark', allMarked, '' );
 
 		// Toggle off restores the full list.
 		await page.click( '#minimal-content-modified' );

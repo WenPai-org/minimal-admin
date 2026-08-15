@@ -88,10 +88,10 @@ function minimal_admin_fluent_forms_entry_form_id( $entry_id ) {
 function minimal_admin_fluent_forms_guard_entry( $entry_id, $permission = 'fluentform_entries_viewer' ) {
 	$form_id = minimal_admin_fluent_forms_entry_form_id( $entry_id );
 	if ( ! $form_id ) {
-		return new WP_Error( 'not_found', 'Entry not found.', array( 'status' => 404 ) );
+		return new WP_Error( 'not_found', __( 'Entry not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 	if ( ! minimal_admin_fluent_forms_can_form( $form_id, $permission ) ) {
-		return new WP_Error( 'forbidden', 'You cannot access entries for that form.', array( 'status' => 403 ) );
+		return new WP_Error( 'forbidden', __( 'You cannot access entries for that form.', 'minimal-admin' ), array( 'status' => 403 ) );
 	}
 	return $form_id;
 }
@@ -180,7 +180,7 @@ function minimal_admin_fluent_forms_summary( $map ) {
 			break;
 		}
 	}
-	return $parts ? implode( ' · ', $parts ) : '(empty entry)';
+	return $parts ? implode( ' · ', $parts ) : __( '(empty entry)', 'minimal-admin' );
 }
 
 /** Server-built model for the surface status card (SureForms parity). */
@@ -198,11 +198,11 @@ function minimal_admin_fluent_forms_status_model() {
 		if ( ! $scope ) {
 			return array(
 				'rows'    => array(
-					array( 'label' => 'Unread entries', 'value' => '0', 'hint' => '0 total' ),
-					array( 'label' => 'Forms', 'value' => '0' ),
+					array( 'label' => __( 'Unread entries', 'minimal-admin' ), 'value' => '0', 'hint' => __( '0 total', 'minimal-admin' ) ),
+					array( 'label' => __( 'Forms', 'minimal-admin' ), 'value' => '0' ),
 				),
 				'actions' => array(
-					array( 'label' => 'Open Fluent Forms ↗', 'href' => admin_url( 'admin.php?page=fluent_forms_all_entries' ) ),
+					array( 'label' => __( 'Open Fluent Forms ↗', 'minimal-admin' ), 'href' => admin_url( 'admin.php?page=fluent_forms_all_entries' ) ),
 				),
 			);
 		}
@@ -225,11 +225,11 @@ function minimal_admin_fluent_forms_status_model() {
 	}
 	return array(
 		'rows'    => array(
-			array( 'label' => 'Unread entries', 'value' => number_format_i18n( $unread ), 'hint' => $hint ),
-			array( 'label' => 'Forms', 'value' => number_format_i18n( $nforms ) ),
+			array( 'label' => __( 'Unread entries', 'minimal-admin' ), 'value' => number_format_i18n( $unread ), 'hint' => $hint ),
+			array( 'label' => __( 'Forms', 'minimal-admin' ), 'value' => number_format_i18n( $nforms ) ),
 		),
 		'actions' => array(
-			array( 'label' => 'Open Fluent Forms ↗', 'href' => admin_url( 'admin.php?page=fluent_forms_all_entries' ) ),
+			array( 'label' => __( 'Open Fluent Forms ↗', 'minimal-admin' ), 'href' => admin_url( 'admin.php?page=fluent_forms_all_entries' ) ),
 		),
 	);
 }
@@ -243,7 +243,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['fluent-forms'] = array(
-		'label'      => 'Forms',
+		'label'      => __( 'Forms', 'minimal-admin' ),
 		'family'     => 'forms',
 		'status'     => array( 'route' => 'minimal-admin/v1/fluent-forms/status' ),
 		'group'      => 'workspace', // inbox-shaped (see gravity-forms.php)
@@ -251,7 +251,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'icon'       => 'inbox',
 		'cap'        => 'read',
 		'collection' => array(
-			'viewLabel' => 'Entries',
+			'viewLabel' => __( 'Entries', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/fluent-forms/entries',
 			'pageQuery' => 'per_page=25&page={page}',
 			'search'    => 'search={q}',
@@ -262,11 +262,11 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'valueKey' => 'id',
 				'labelKey' => 'title',
 				'param'    => 'form_id',
-				'allLabel' => 'All entries',
+				'allLabel' => __( 'All entries', 'minimal-admin' ),
 			),
 			// Their status column: unread/read/spam/trashed (favorites is a separate flag).
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'inbox', 'Received' ),
 					array( 'spam', 'Spam' ),
@@ -275,125 +275,125 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'query'   => 'status={v}',
 			),
 			'columns'   => array(
-				array( 'key' => 'summary', 'label' => 'Entry', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'form_title', 'label' => 'Form' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill', 'width' => '100px' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'summary', 'label' => __( 'Entry', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'form_title', 'label' => __( 'Form', 'minimal-admin' ) ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '100px' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/fluent-forms/entries/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Mark as read',
+					'label'  => __( 'Mark as read', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/fluent-forms/entries/{id}/status',
 					'body'   => array( 'status' => 'read' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'unread' ),
 				),
 				array(
-					'label'   => 'Mark as spam',
+					'label'   => __( 'Mark as spam', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/fluent-forms/entries/{id}/status',
 					'body'    => array( 'status' => 'spam' ),
-					'confirm' => 'Mark this entry as spam? Find it under the Spam filter.',
+					'confirm' => __( 'Mark this entry as spam? Find it under the Spam filter.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'inbox' ),
 				),
 				array(
-					'label'  => 'Not spam',
+					'label'  => __( 'Not spam', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/fluent-forms/entries/{id}/status',
 					'body'   => array( 'status' => 'unread' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'spam' ),
 				),
 				array(
-					'label'   => 'Trash entry',
+					'label'   => __( 'Trash entry', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/fluent-forms/entries/{id}/status',
 					'body'    => array( 'status' => 'trashed' ),
-					'confirm' => 'Move this entry to trash?',
+					'confirm' => __( 'Move this entry to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'inbox' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/fluent-forms/entries/{id}/status',
 					'body'   => array( 'status' => 'unread' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'trashed' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/fluent-forms/entries/{id}',
-					'confirm' => 'Delete this entry permanently? There is no undo.',
+					'confirm' => __( 'Delete this entry permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'trashed' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/fluent-forms/entries/{id}',
-					'confirm' => 'Delete this entry permanently? There is no undo.',
+					'confirm' => __( 'Delete this entry permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'spam' ),
 				),
 				array(
-					'label' => 'Open in Fluent Forms ↗',
+					'label' => __( 'Open in Fluent Forms ↗', 'minimal-admin' ),
 					// Detail modal also carries adminUrl with the form-scoped entry deep link.
 					'href'  => admin_url( 'admin.php?page=fluent_forms&route=entries#/entries/{id}' ),
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'   => 'Mark as spam',
+					'label'   => __( 'Mark as spam', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/fluent-forms/entries/{id}/status',
 					'body'    => array( 'status' => 'spam' ),
-					'confirm' => 'Mark the selected entries as spam?',
+					'confirm' => __( 'Mark the selected entries as spam?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'inbox' ),
 				),
 				array(
-					'label'   => 'Trash',
+					'label'   => __( 'Trash', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/fluent-forms/entries/{id}/status',
 					'body'    => array( 'status' => 'trashed' ),
-					'confirm' => 'Move the selected entries to trash?',
+					'confirm' => __( 'Move the selected entries to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'bucket', 'equals' => 'inbox' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/fluent-forms/entries/{id}/status',
 					'body'   => array( 'status' => 'unread' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'trashed' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/fluent-forms/entries/{id}',
-					'confirm' => 'Delete the selected entries permanently?',
+					'confirm' => __( 'Delete the selected entries permanently?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'trashed' ),
 				),
 			),
 		),
 		'manage'     => array(
-			'viewLabel' => 'Forms',
+			'viewLabel' => __( 'Forms', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/fluent-forms/forms?manage=1',
 			'columns'   => array(
-				array( 'key' => 'title', 'label' => 'Form', 'format' => 'title' ),
-				array( 'key' => 'entries', 'label' => 'Entries', 'format' => 'num' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill', 'width' => '100px' ),
-				array( 'key' => 'date', 'label' => 'Updated', 'format' => 'ago' ),
+				array( 'key' => 'title', 'label' => __( 'Form', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'entries', 'label' => __( 'Entries', 'minimal-admin' ), 'format' => 'num' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '100px' ),
+				array( 'key' => 'date', 'label' => __( 'Updated', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(),
 			'actions'   => array(
 				array(
-					'label' => 'Edit in Fluent Forms ↗',
+					'label' => __( 'Edit in Fluent Forms ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=fluent_forms&route=editor&form_id={id}' ),
 				),
 			),
@@ -498,7 +498,7 @@ add_action( 'rest_api_init', function () {
 			if ( $request['form_id'] ) {
 				$form_id = (int) $request['form_id'];
 				if ( ! minimal_admin_fluent_forms_can_form( $form_id ) ) {
-					return new WP_Error( 'forbidden', 'You cannot access entries for that form.', array( 'status' => 403 ) );
+					return new WP_Error( 'forbidden', __( 'You cannot access entries for that form.', 'minimal-admin' ), array( 'status' => 403 ) );
 				}
 				$where[] = 's.form_id = %d';
 				$args[]  = $form_id;
@@ -579,7 +579,7 @@ add_action( 'rest_api_init', function () {
 					(int) $request['id']
 				) );
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Entry not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 
 				// Opening a detail marks unread → read (Fluent Forms' own screen semantics).
@@ -619,23 +619,23 @@ add_action( 'rest_api_init', function () {
 
 				$meta   = array();
 				$meta[] = array(
-					'label' => 'Submitted',
+					'label' => __( 'Submitted', 'minimal-admin' ),
 					'value' => $row->created_at
 						? date_i18n( 'M j, Y g:i a', strtotime( $row->created_at ) )
 						: '',
 				);
 				if ( $form_title ) {
-					$meta[] = array( 'label' => 'Form', 'value' => $form_title );
+					$meta[] = array( 'label' => __( 'Form', 'minimal-admin' ), 'value' => $form_title );
 				}
 				if ( ! empty( $row->source_url ) ) {
-					$meta[] = array( 'label' => 'Source', 'value' => $row->source_url, 'type' => 'url' );
+					$meta[] = array( 'label' => __( 'Source', 'minimal-admin' ), 'value' => $row->source_url, 'type' => 'url' );
 				}
 				if ( ! empty( $row->ip ) ) {
 					$meta[] = array( 'label' => 'IP', 'value' => $row->ip );
 				}
 				if ( ! empty( $row->browser ) || ! empty( $row->device ) ) {
 					$meta[] = array(
-						'label' => 'Client',
+						'label' => __( 'Client', 'minimal-admin' ),
 						'value' => trim( ( $row->device ?: '' ) . ' · ' . ( $row->browser ?: '' ), ' ·' ),
 					);
 				}
@@ -645,8 +645,8 @@ add_action( 'rest_api_init', function () {
 					'title'    => $form_title ?: ( 'Form #' . (int) $row->form_id ),
 					'status'   => $row->status ? (string) $row->status : 'unread',
 					'sections' => array(
-						array( 'title' => 'Responses', 'rows' => $answers ),
-						array( 'title' => 'Submission', 'rows' => $meta ),
+						array( 'title' => __( 'Responses', 'minimal-admin' ), 'rows' => $answers ),
+						array( 'title' => __( 'Submission', 'minimal-admin' ), 'rows' => $meta ),
 					),
 					'adminUrl' => admin_url(
 						'admin.php?page=fluent_forms&route=entries&form_id=' . (int) $row->form_id
@@ -673,21 +673,55 @@ add_action( 'rest_api_init', function () {
 				$det_table  = $wpdb->prefix . 'fluentform_entry_details';
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$row = $wpdb->get_row( $wpdb->prepare(
-					"SELECT id, status FROM `{$subs_table}` WHERE id = %d",
+					"SELECT id, status, form_id FROM `{$subs_table}` WHERE id = %d",
 					$id
 				) );
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Entry not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				// Permanent delete is for trash/spam only (Received → Trash first).
 				if ( ! in_array( (string) $row->status, array( 'trashed', 'spam' ), true ) ) {
-					return new WP_Error( 'not_trashed', 'Move the entry to trash (or spam) before deleting permanently.', array( 'status' => 400 ) );
+					return new WP_Error( 'not_trashed', __( 'Move the entry to trash (or spam) before deleting permanently.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
+
+				// Delete through Fluent Forms' own service. A submission is more
+				// than its two obvious tables: their deleteEntries() removes the
+				// files the entry uploaded, clears submission meta, the activity
+				// log (which holds rendered notification bodies and recipient
+				// addresses) and any order, transaction, subscription and
+				// scheduled-action rows, and fires the hooks add-ons use to drop
+				// their own copies. Deleting the two tables by hand answered
+				// "deleted permanently" while the uploaded file was still being
+				// served from the URL the detail view had just linked, which is
+				// the wrong answer to give someone honouring an erasure request.
+				$form_id = (int) $row->form_id;
+				if ( class_exists( '\FluentForm\App\Services\Submission\SubmissionService' ) ) {
+					try {
+						( new \FluentForm\App\Services\Submission\SubmissionService() )
+							->deleteEntries( array( $id ), $form_id );
+						return rest_ensure_response( array( 'id' => $id, 'deleted' => true, 'message' => __( 'Entry deleted permanently.', 'minimal-admin' ) ) );
+					} catch ( \Throwable $e ) {
+						// Fall through to the manual path below rather than
+						// leaving the entry half-deleted.
+					}
+				}
+
+				// Last resort when their service is absent: cover the same
+				// ground by hand and still fire their hooks, so add-on cleanup
+				// runs even here.
+				do_action( 'fluentform/before_deleting_entries', array( $id ), $form_id );
 				// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$wpdb->delete( $wpdb->prefix . 'fluentform_submission_meta', array( 'response_id' => $id ), array( '%d' ) );
+				$wpdb->delete(
+					$wpdb->prefix . 'fluentform_logs',
+					array( 'source_id' => $id, 'source_type' => 'submission_item' ),
+					array( '%d', '%s' )
+				);
 				$wpdb->delete( $det_table, array( 'submission_id' => $id ), array( '%d' ) );
 				$wpdb->delete( $subs_table, array( 'id' => $id ), array( '%d' ) );
 				// phpcs:enable
-				return rest_ensure_response( array( 'id' => $id, 'deleted' => true, 'message' => 'Entry deleted permanently.' ) );
+				do_action( 'fluentform/after_deleting_submissions', array( $id ), $form_id );
+				return rest_ensure_response( array( 'id' => $id, 'deleted' => true, 'message' => __( 'Entry deleted permanently.', 'minimal-admin' ) ) );
 			},
 		),
 	) );
@@ -710,7 +744,7 @@ add_action( 'rest_api_init', function () {
 			$allowed    = array( 'unread', 'read', 'spam', 'trashed' );
 			$subs_table = $wpdb->prefix . 'fluentform_submissions';
 			if ( ! in_array( $status, $allowed, true ) ) {
-				return new WP_Error( 'bad_status', 'Unknown status.', array( 'status' => 400 ) );
+				return new WP_Error( 'bad_status', __( 'Unknown status.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$exists = $wpdb->get_var( $wpdb->prepare(
@@ -718,7 +752,7 @@ add_action( 'rest_api_init', function () {
 				$id
 			) );
 			if ( ! $exists ) {
-				return new WP_Error( 'not_found', 'Entry not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Entry not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$wpdb->update(
 				$subs_table,
@@ -728,16 +762,16 @@ add_action( 'rest_api_init', function () {
 				array( '%d' )
 			);
 			$msgs = array(
-				'unread'  => 'Entry restored.',
-				'read'    => 'Marked as read.',
-				'spam'    => 'Marked as spam.',
-				'trashed' => 'Moved to trash.',
+				'unread'  => __( 'Entry restored.', 'minimal-admin' ),
+				'read'    => __( 'Marked as read.', 'minimal-admin' ),
+				'spam'    => __( 'Marked as spam.', 'minimal-admin' ),
+				'trashed' => __( 'Moved to trash.', 'minimal-admin' ),
 			);
 			return rest_ensure_response( array(
 				'id'      => $id,
 				'status'  => $status,
 				'ok'      => true,
-				'message' => $msgs[ $status ] ?? 'Status updated.',
+				'message' => $msgs[ $status ] ?? __( 'Status updated.', 'minimal-admin' ),
 			) );
 		},
 	) );

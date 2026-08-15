@@ -125,7 +125,11 @@ const { BASE, launch, login, reporter } = require( './helpers' );
 		await page.fill( '#minimal-c-code', newCode );
 		await page.fill( '#minimal-c-amount', '5' );
 		await page.click( '#minimal-coupon-save' );
-		await page.waitForTimeout( 1000 );
+		// A flat wait races the POST under load; wait for the created toast
+		// before verifying against the API.
+		await page.waitForFunction(
+			() => /Coupon created/i.test( ( document.querySelector( '.minimal-toast' ) || {} ).textContent || '' ),
+			null, { timeout: 15000 } ).catch( () => null );
 		const listed = await api( `wc/v3/coupons?search=${ encodeURIComponent( newCode ) }&_fields=id,code` );
 		const hit = ( listed.body || [] ).find( ( c ) => ( c.code || '' ).toLowerCase() === newCode.toLowerCase() );
 		t.check( 'Add coupon creates via UI', !! hit, JSON.stringify( listed.body ) );

@@ -34,7 +34,7 @@ function minimal_admin_srm_active() {
 function minimal_admin_srm_update_redirect( $id, $from, $to, $status_code = 301 ) {
 	$post = get_post( (int) $id );
 	if ( ! $post || 'redirect_rule' !== $post->post_type ) {
-		return new WP_Error( 'not_found', 'Redirect not found.', array( 'status' => 404 ) );
+		return new WP_Error( 'not_found', __( 'Redirect not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 
 	$allow_regex = (bool) get_post_meta( $post->ID, '_redirect_rule_from_regex', true );
@@ -47,11 +47,11 @@ function minimal_admin_srm_update_redirect( $id, $from, $to, $status_code = 301 
 	$code        = absint( $status_code );
 
 	if ( '' === $from || '' === $to ) {
-		return new WP_Error( 'invalid', 'Source and target are both required.', array( 'status' => 400 ) );
+		return new WP_Error( 'invalid', __( 'Source and target are both required.', 'minimal-admin' ), array( 'status' => 400 ) );
 	}
 	if ( function_exists( 'srm_get_valid_status_codes' )
 		&& ! in_array( $code, srm_get_valid_status_codes(), true ) ) {
-		return new WP_Error( 'invalid', 'Invalid status code.', array( 'status' => 400 ) );
+		return new WP_Error( 'invalid', __( 'Invalid status code.', 'minimal-admin' ), array( 'status' => 400 ) );
 	}
 
 	update_post_meta( $post->ID, '_redirect_rule_from', wp_slash( $from ) );
@@ -68,7 +68,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		return $surfaces;
 	}
 	$surfaces['safe-redirect-manager'] = array(
-		'label'      => 'Redirects',
+		'label'      => __( 'Redirects', 'minimal-admin' ),
 		'family'     => 'redirects',
 		'sub'        => 'Safe Redirect Manager',
 		'icon'       => 'shuffle',
@@ -81,20 +81,20 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'totalKey' => 'total',
 			'search'   => 'search={q}',
 			'columns'  => array(
-				array( 'key' => 'from', 'label' => 'Source', 'format' => 'title', 'width' => 'minmax(0,1.4fr)' ),
-				array( 'key' => 'to', 'label' => 'Target', 'format' => 'mono', 'width' => 'minmax(0,1.4fr)' ),
-				array( 'key' => 'status_code', 'label' => 'Code', 'format' => 'mono', 'width' => '64px' ),
-				array( 'key' => 'regex', 'label' => 'Regex', 'width' => '64px' ),
+				array( 'key' => 'from', 'label' => __( 'Source', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.4fr)' ),
+				array( 'key' => 'to', 'label' => __( 'Target', 'minimal-admin' ), 'format' => 'mono', 'width' => 'minmax(0,1.4fr)' ),
+				array( 'key' => 'status_code', 'label' => __( 'Code', 'minimal-admin' ), 'format' => 'mono', 'width' => '64px' ),
+				array( 'key' => 'regex', 'label' => __( 'Regex', 'minimal-admin' ), 'width' => '64px' ),
 			),
 			'create'   => array(
-				'label'    => 'Add redirect',
+				'label'    => __( 'Add redirect', 'minimal-admin' ),
 				'route'    => 'minimal-admin/v1/srm/redirects',
 				'method'   => 'POST',
 				'defaults' => array( 'status_code' => 301 ),
 				'fields'   => array(
-					array( 'key' => 'from', 'label' => 'Source URL', 'mono' => true, 'placeholder' => '/old-page' ),
-					array( 'key' => 'to', 'label' => 'Target URL', 'mono' => true, 'placeholder' => '/new-page or https://…' ),
-					array( 'key' => 'status_code', 'label' => 'HTTP status', 'type' => 'number', 'value' => 301 ),
+					array( 'key' => 'from', 'label' => __( 'Source URL', 'minimal-admin' ), 'mono' => true, 'placeholder' => __( '/old-page', 'minimal-admin' ) ),
+					array( 'key' => 'to', 'label' => __( 'Target URL', 'minimal-admin' ), 'mono' => true, 'placeholder' => __( '/new-page or https://…', 'minimal-admin' ) ),
+					array( 'key' => 'status_code', 'label' => __( 'HTTP status', 'minimal-admin' ), 'type' => 'number', 'value' => 301 ),
 				),
 			),
 			'detail'   => array(
@@ -103,27 +103,27 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					'route'  => 'minimal-admin/v1/srm/redirects/{id}',
 					'method' => 'PUT',
 					'fields' => array(
-						array( 'key' => 'from', 'label' => 'Source URL', 'mono' => true ),
-						array( 'key' => 'to', 'label' => 'Target URL', 'mono' => true ),
-						array( 'key' => 'status_code', 'label' => 'HTTP status', 'type' => 'number' ),
+						array( 'key' => 'from', 'label' => __( 'Source URL', 'minimal-admin' ), 'mono' => true ),
+						array( 'key' => 'to', 'label' => __( 'Target URL', 'minimal-admin' ), 'mono' => true ),
+						array( 'key' => 'status_code', 'label' => __( 'HTTP status', 'minimal-admin' ), 'type' => 'number' ),
 					),
 				),
 			),
 			'actions'  => array(
 				array(
-					'label'   => 'Delete redirect',
+					'label'   => __( 'Delete redirect', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/srm/redirects/{id}',
-					'confirm' => 'Delete this redirect permanently?',
+					'confirm' => __( 'Delete this redirect permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'     => array(
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/srm/redirects/{id}',
-					'confirm' => 'Delete the selected redirects permanently?',
+					'confirm' => __( 'Delete the selected redirects permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -152,7 +152,7 @@ add_action( 'rest_api_init', function () {
 				"SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'redirect_rule' AND post_status = 'publish'"
 			);
 			$rows = array(
-				array( 'label' => 'Redirect rules', 'value' => (string) $total ),
+				array( 'label' => __( 'Redirect rules', 'minimal-admin' ), 'value' => (string) $total ),
 			);
 			$codes = $wpdb->get_results(
 				"SELECT pm.meta_value AS code, COUNT(*) AS c FROM {$wpdb->posts} p
@@ -162,7 +162,7 @@ add_action( 'rest_api_init', function () {
 			);
 			if ( $codes ) {
 				$rows[] = array(
-					'label' => 'Status codes',
+					'label' => __( 'Status codes', 'minimal-admin' ),
 					'value' => implode( ' · ', array_map( function ( $r ) {
 						return $r->c . '×' . $r->code;
 					}, $codes ) ),
@@ -174,7 +174,7 @@ add_action( 'rest_api_init', function () {
 				 WHERE p.post_type = 'redirect_rule' AND p.post_status = 'publish' AND pm.meta_value = '1'"
 			);
 			if ( $regex ) {
-				$rows[] = array( 'label' => 'Regex rules', 'value' => (string) $regex );
+				$rows[] = array( 'label' => __( 'Regex rules', 'minimal-admin' ), 'value' => (string) $regex );
 			}
 			return rest_ensure_response( array( 'rows' => $rows ) );
 		},

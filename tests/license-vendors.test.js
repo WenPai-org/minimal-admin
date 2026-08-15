@@ -11,7 +11,7 @@
  * callables only attach while the vendor's code is loaded), so this
  * covers the READ layer — the highest-value, no-network part. Activation
  * plumbing is exercised per-vendor against the live vendor APIs as
- * Austin's manual step, exactly like the wave-1..4 providers.
+ * a manual step, exactly like the wave-1..4 providers.
  */
 const { launch, login, reporter, BASE } = require( './helpers' );
 
@@ -141,7 +141,7 @@ const { launch, login, reporter, BASE } = require( './helpers' );
 		const envItem = await rowState( 'Fixture Salient' );
 		t.check( 'Envato failed item token is invalid', envItem && envItem.state === 'invalid', envItem ? envItem.state : 'no row' );
 
-		// Brick-3 site connections (WooCommerce.com / Site Kit / Jetpack):
+		// Site connections (WooCommerce.com / Site Kit / Jetpack / SureCart):
 		// read-only rows with the connection chip, never vendor-action
 		// controls; an unconnected active row offers Connect ↗ instead.
 		const connRow = ( n ) => page.evaluate( ( name ) => {
@@ -156,7 +156,7 @@ const { launch, login, reporter, BASE } = require( './helpers' );
 				buttons: [ ...row.querySelectorAll( '[data-lic]' ) ].map( ( b ) => ( { k: b.dataset.lic, t: b.textContent.trim() } ) ),
 			};
 		}, n );
-		for ( const name of [ 'WooCommerce.com', 'Site Kit by Google', 'Jetpack' ] ) {
+		for ( const name of [ 'WooCommerce.com', 'Site Kit by Google', 'Jetpack', 'SureCart' ] ) {
 			const c = await connRow( name );
 			const sane = c && [ 'valid', 'missing', 'unknown' ].includes( c.state ) && c.chip === 'connection';
 			const readOnly = c && ! c.buttons.some( ( b ) => [ 'activate', 'deactivate', 'verify' ].includes( b.k ) );
@@ -178,7 +178,7 @@ const { launch, login, reporter, BASE } = require( './helpers' );
 		// Inactive components carry the dimmed off state + explanation. Use
 		// the Avada THEME row: minimaladmin's active theme is minimal-admin-theme,
 		// so Avada is reliably inactive regardless of which vendor plugins
-		// happen to be active (Austin toggles plugins live — never assume a
+		// happen to be active (plugins get toggled live — never assume a
 		// specific plugin's active state in an assertion).
 		const off = await page.evaluate( () => {
 			const row = [ ...document.querySelectorAll( '#minimal-sys-licenses .minimal-lic-item' ) ]

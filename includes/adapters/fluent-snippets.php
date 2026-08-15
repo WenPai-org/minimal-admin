@@ -76,46 +76,46 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$type_options = array(
-		array( 'PHP', 'Functions (PHP)' ),
+		array( 'PHP', __( 'Functions (PHP)', 'minimal-admin' ) ),
 		array( 'php_content', 'Content (PHP + HTML)' ),
-		array( 'css', 'Styles (CSS)' ),
-		array( 'js', 'Scripts (JS)' ),
+		array( 'css', __( 'Styles (CSS)', 'minimal-admin' ) ),
+		array( 'js', __( 'Scripts (JS)', 'minimal-admin' ) ),
 	);
 	// Common run_at values across types; Fluent validates against type.
 	$run_options = array(
 		array( 'all', 'Everywhere' ),
-		array( 'backend', 'Admin only' ),
-		array( 'frontend', 'Front-end only' ),
-		array( 'wp_head', 'Site header' ),
-		array( 'wp_footer', 'Site footer' ),
-		array( 'wp_body_open', 'Body open' ),
-		array( 'before_content', 'Before content' ),
-		array( 'after_content', 'After content' ),
+		array( 'backend', __( 'Admin only', 'minimal-admin' ) ),
+		array( 'frontend', __( 'Front-end only', 'minimal-admin' ) ),
+		array( 'wp_head', __( 'Site header', 'minimal-admin' ) ),
+		array( 'wp_footer', __( 'Site footer', 'minimal-admin' ) ),
+		array( 'wp_body_open', __( 'Body open', 'minimal-admin' ) ),
+		array( 'before_content', __( 'Before content', 'minimal-admin' ) ),
+		array( 'after_content', __( 'After content', 'minimal-admin' ) ),
 		array( 'shortcode', 'Shortcode' ),
-		array( 'admin_head', 'Admin header' ),
-		array( 'admin_footer', 'Admin footer' ),
+		array( 'admin_head', __( 'Admin header', 'minimal-admin' ) ),
+		array( 'admin_footer', __( 'Admin footer', 'minimal-admin' ) ),
 		array( 'everywhere', 'Backend + frontend (CSS)' ),
 	);
 
 	$edit_fields = array(
-		array( 'key' => 'name', 'label' => 'Name', 'placeholder' => 'Disable emojis' ),
-		array( 'key' => 'desc', 'label' => 'Description', 'type' => 'textarea', 'rows' => 2, 'required' => false ),
+		array( 'key' => 'name', 'label' => __( 'Name', 'minimal-admin' ), 'placeholder' => __( 'Disable emojis', 'minimal-admin' ) ),
+		array( 'key' => 'desc', 'label' => __( 'Description', 'minimal-admin' ), 'type' => 'textarea', 'rows' => 2, 'required' => false ),
 		array(
 			'key'         => 'code',
-			'label'       => 'Code',
+			'label'       => __( 'Code', 'minimal-admin' ),
 			'type'        => 'textarea',
 			'mono'        => true,
 			'rows'        => 14,
 			'placeholder' => "add_filter( '…', '…' );",
 		),
-		array( 'key' => 'type', 'label' => 'Type', 'type' => 'select', 'options' => $type_options ),
-		array( 'key' => 'run_at', 'label' => 'Run at', 'type' => 'select', 'options' => $run_options ),
-		array( 'key' => 'priority', 'label' => 'Priority', 'type' => 'number' ),
-		array( 'key' => 'tags', 'label' => 'Tags', 'type' => 'tags', 'required' => false ),
+		array( 'key' => 'type', 'label' => __( 'Type', 'minimal-admin' ), 'type' => 'select', 'options' => $type_options ),
+		array( 'key' => 'run_at', 'label' => __( 'Run at', 'minimal-admin' ), 'type' => 'select', 'options' => $run_options ),
+		array( 'key' => 'priority', 'label' => __( 'Priority', 'minimal-admin' ), 'type' => 'number' ),
+		array( 'key' => 'tags', 'label' => __( 'Tags', 'minimal-admin' ), 'type' => 'tags', 'required' => false ),
 	);
 
 	$surfaces['fluent-snippets'] = array(
-		'label'      => 'Snippets',
+		'label'      => __( 'Snippets', 'minimal-admin' ),
 		'family'     => 'snippets',
 		'sub'        => 'FluentSnippets',
 		'icon'       => 'code',
@@ -129,7 +129,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'itemsKey'  => 'items',
 			'totalKey'  => 'total',
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'all', 'All' ),
 					array( 'active', 'Active' ),
@@ -138,7 +138,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'query'   => 'active={v}',
 			),
 			'create'    => array(
-				'label'    => 'Add snippet',
+				'label'    => __( 'Add snippet', 'minimal-admin' ),
 				'route'    => 'minimal-admin/v1/fluent-snippets',
 				'method'   => 'POST',
 				'defaults' => array(
@@ -152,11 +152,11 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'fields'   => $edit_fields,
 			),
 			'columns'   => array(
-				array( 'key' => 'name', 'label' => 'Snippet', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'scope', 'label' => 'Type · run at', 'format' => 'mono', 'width' => 'minmax(0,1fr)' ),
-				array( 'key' => 'active', 'label' => 'Status', 'format' => 'pill', 'width' => '100px' ),
-				array( 'key' => 'priority', 'label' => 'Priority', 'format' => 'num', 'width' => '80px' ),
-				array( 'key' => 'modified', 'label' => 'Modified', 'format' => 'ago' ),
+				array( 'key' => 'name', 'label' => __( 'Snippet', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'scope', 'label' => __( 'Type · run at', 'minimal-admin' ), 'format' => 'mono', 'width' => 'minmax(0,1fr)' ),
+				array( 'key' => 'active', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '100px' ),
+				array( 'key' => 'priority', 'label' => __( 'Priority', 'minimal-admin' ), 'format' => 'num', 'width' => '80px' ),
+				array( 'key' => 'modified', 'label' => __( 'Modified', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'detailRoute' => 'minimal-admin/v1/fluent-snippets/{id}',
@@ -173,51 +173,51 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/fluent-snippets/{id}/active',
 					'body'   => array( 'active' => true ),
 					'when'   => array( 'key' => 'active', 'equals' => false ),
 				),
 				array(
-					'label'  => 'Deactivate',
+					'label'  => __( 'Deactivate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/fluent-snippets/{id}/active',
 					'body'   => array( 'active' => false ),
 					'when'   => array( 'key' => 'active', 'equals' => true ),
 				),
 				array(
-					'label' => 'Edit in FluentSnippets ↗',
+					'label' => __( 'Edit in FluentSnippets ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=fluent-snippets' ),
 				),
 				array(
-					'label'   => 'Delete snippet',
+					'label'   => __( 'Delete snippet', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/fluent-snippets/{id}',
-					'confirm' => 'Delete this snippet permanently? Its code will be gone.',
+					'confirm' => __( 'Delete this snippet permanently? Its code will be gone.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/fluent-snippets/{id}/active',
 					'body'   => array( 'active' => true ),
 					'when'   => array( 'key' => 'active', 'equals' => false ),
 				),
 				array(
-					'label'  => 'Deactivate',
+					'label'  => __( 'Deactivate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/fluent-snippets/{id}/active',
 					'body'   => array( 'active' => false ),
 					'when'   => array( 'key' => 'active', 'equals' => true ),
 				),
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/fluent-snippets/{id}',
-					'confirm' => 'Delete the selected snippets permanently?',
+					'confirm' => __( 'Delete the selected snippets permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -258,20 +258,26 @@ add_action( 'rest_api_init', function () {
 			$inactive = count( $items ) - $active;
 			$rows = array(
 				array(
-					'label' => 'Active snippets',
+					'label' => __( 'Active snippets', 'minimal-admin' ),
 					'value' => (string) $active,
-					'hint'  => $inactive ? $inactive . ' inactive' : 'nothing inactive',
+					'hint'  => $inactive ? $inactive . ' inactive' : __( 'nothing inactive', 'minimal-admin' ),
 				),
 				array(
-					'label' => 'Storage',
-					'value' => 'Standalone files',
-					'hint'  => 'FluentSnippets runs snippets from files, not the database',
+					'label' => __( 'Storage', 'minimal-admin' ),
+					'value' => __( 'Standalone files', 'minimal-admin' ),
+					'hint'  => __( 'FluentSnippets runs snippets from files, not the database', 'minimal-admin' ),
 				),
 			);
 			return rest_ensure_response( array( 'rows' => $rows ) );
 		},
 	) );
 	$can_write = function () {
+		// These snippets are PHP executed from files. DISALLOW_FILE_MODS
+		// happens to close this because core maps install_plugins to
+		// do_not_allow under it, but DISALLOW_FILE_EDIT alone does not.
+		if ( class_exists( 'Minimal_Admin' ) && ! Minimal_Admin::code_edits_allowed() ) {
+			return false;
+		}
 		return current_user_can( 'install_plugins' ) && current_user_can( 'unfiltered_html' );
 	};
 

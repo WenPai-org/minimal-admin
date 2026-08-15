@@ -34,29 +34,134 @@ function minimal_admin_wpcode_can_type( $code_type ) {
 }
 
 /**
+ * Does WPCode EXECUTE this code type?
+ *
+ * WPCode runs two types, not one: class-wpcode-snippet.php's
+ * run_activation_checks() declares array( 'php', 'universal' ), and the
+ * universal handler is documented as taking "both HTML and PHP at the same
+ * time in the same way you can write both in a .php file". Matching the
+ * literal 'php' let code_type=universal author executable PHP on a site that
+ * had turned dashboard code editing off.
+ *
+ * Anything not on the known-inert list counts as executing, so a type WPCode
+ * adds later is refused under DISALLOW_FILE_EDIT until it is classified here
+ * rather than silently allowed. The Pro-only WPCode_Access mapper resolving a
+ * type to the PHP tier is treated as executing too; it does not exist in the
+ * free plugin, which is why it cannot be the only signal.
+ *
+ * @param string $code_type WPCode code type.
+ * @return bool
+ */
+function minimal_admin_wpcode_type_executes( $code_type ) {
+	$inert = array( 'html', 'text', 'css', 'js', 'scss', 'blocks' );
+	if ( in_array( (string) $code_type, $inert, true ) ) {
+		return false;
+	}
+	return true;
+}
+
+/**
+ * Does this type put the author's MARKUP into the page?
+ *
+ * Distinct from executing: a `text` or `html` snippet never runs PHP, but
+ * WPCode emits its bytes verbatim at the snippet's location, so a <script>
+ * in one runs for every visitor and every administrator. That makes these
+ * types answer to unfiltered_html, the capability WordPress uses everywhere
+ * else to decide who may store raw markup, rather than to DISALLOW_FILE_EDIT.
+ *
+ * @param string $code_type WPCode code type.
+ * @return bool
+ */
+function minimal_admin_wpcode_type_is_markup( $code_type ) {
+	// WPCode's own capability label names the tier: "Edit HTML, JavaScript &
+	// CSS Snippets". Guarding html alone covered a third of it, and js is the
+	// worse half — an html snippet has to smuggle a script tag, a js snippet
+	// IS the script body, emitted inside <script> into wp_head and admin_head.
+	// scss compiles into the same <style> sink.
+	return in_array( (string) $code_type, array( 'html', 'text', 'js', 'css', 'scss' ), true );
+}
+
+/**
+ * Reproduce WPCode's own write-time sanitizing for a caller without
+ * unfiltered_html.
+ *
+ * WPCode turns core's kses OFF for its own saves: includes/post-type.php
+ * hooks wpcode_maybe_remove_core_content_filters() to wpcode_before_snippet_save,
+ * and that calls remove_all_filters( 'content_save_pre' ) immediately before
+ * wp_insert_post() runs. Nothing sanitizes post_content on that path, so the
+ * plugin compensates inside its own save listener instead
+ * (class-wpcode-admin-page-snippet-manager.php: a `text` snippet authored
+ * without unfiltered_html is passed through wp_kses_post). An adapter that
+ * writes through WPCode_Snippet gets the filter removal and none of the
+ * compensation, so it has to carry the same rule itself.
+ *
+ * @param string $code_type Effective code type.
+ * @param string $code      Raw code.
+ * @return string
+ */
+function minimal_admin_wpcode_clean_code( $code_type, $code ) {
+	if ( 'text' === (string) $code_type && ! current_user_can( 'unfiltered_html' ) ) {
+		return wp_kses_post( (string) $code );
+	}
+	return (string) $code;
+}
+
+/**
+ * Types that cannot be repaired by filtering, only refused.
+ *
+ * kses over a JavaScript body is meaningless, so html/js/css/scss are an
+ * outright refusal for a caller without unfiltered_html, while `text` is
+ * filtered the way the vendor filters it.
+ */
+function minimal_admin_wpcode_type_needs_raw( $code_type ) {
+	return in_array( (string) $code_type, array( 'html', 'js', 'css', 'scss' ), true );
+}
+
+/**
  * 403 unless the caller may author this code type (and, on an update, edit
  * this specific snippet — WPCode requires edit_post on the target too).
  */
-function minimal_admin_wpcode_guard_type( $code_type, $snippet_id = 0 ) {
-	// A php snippet is PHP that WPCode eval()s, so authoring one is code
-	// editing. Honour the directive a site owner sets to forbid exactly that.
-	// Markup and text snippets are unaffected.
-	if ( 'php' === $code_type && class_exists( 'Minimal_Admin' ) && ! Minimal_Admin::code_edits_allowed() ) {
+function minimal_admin_wpcode_guard_type( $code_type, $snippet_id = 0, $writes_code = true ) {
+	// html, js, css and scss are all emitted as raw code on every page, and
+	// WPCode's own capability label treats them as one tier: "Edit HTML,
+	// JavaScript & CSS Snippets". kses cannot repair a JavaScript body, so
+	// these are refused rather than filtered; `text` is filtered instead, in
+	// minimal_admin_wpcode_clean_code(). None of them answers to
+	// code_edits_allowed() below: they are not file editing, they are code
+	// going into the page, and the capability for that is unfiltered_html.
+	//
+	// Only when the request actually authors or activates. Renaming,
+	// relocating, deleting or DEACTIVATING an existing snippet stays open:
+	// telling someone a snippet is too dangerous for them to edit and then
+	// refusing to let them switch it off is not hardening.
+	if ( $writes_code
+		&& minimal_admin_wpcode_type_needs_raw( $code_type )
+		&& ! current_user_can( 'unfiltered_html' ) ) {
 		return new WP_Error(
 			'forbidden',
-			'This site disallows editing code from the dashboard, so PHP snippets cannot be created or changed here.',
+			__( 'This snippet type is emitted as raw code on every page, so authoring it needs the unfiltered_html capability.', 'minimal-admin' ),
+			array( 'status' => 403 )
+		);
+	}
+	// A snippet WPCode EXECUTES is PHP authoring, so it answers to the
+	// directive a site owner sets to forbid exactly that. Markup and text
+	// snippets are unaffected.
+	if ( $writes_code && minimal_admin_wpcode_type_executes( $code_type ) && class_exists( 'Minimal_Admin' ) && ! Minimal_Admin::code_edits_allowed() ) {
+		return new WP_Error(
+			'forbidden',
+			__( 'This site disallows editing code from the dashboard, so PHP snippets cannot be created or changed here.', 'minimal-admin' ),
 			array( 'status' => 403 )
 		);
 	}
 	if ( ! minimal_admin_wpcode_can_type( $code_type ) ) {
 		return new WP_Error(
 			'forbidden',
-			'You cannot create snippets of that type on this site.',
+			__( 'You cannot create snippets of that type on this site.', 'minimal-admin' ),
 			array( 'status' => 403 )
 		);
 	}
 	if ( $snippet_id && ! current_user_can( 'edit_post', (int) $snippet_id ) ) {
-		return new WP_Error( 'forbidden', 'You cannot edit that snippet.', array( 'status' => 403 ) );
+		return new WP_Error( 'forbidden', __( 'You cannot edit that snippet.', 'minimal-admin' ), array( 'status' => 403 ) );
 	}
 	return true;
 }
@@ -104,37 +209,37 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	);
 	$location_options = array(
 		array( 'everywhere', 'Everywhere' ),
-		array( 'frontend_only', 'Front-end only' ),
-		array( 'admin_only', 'Admin only' ),
-		array( 'site_wide_header', 'Site-wide header' ),
-		array( 'site_wide_body', 'Site-wide body' ),
-		array( 'site_wide_footer', 'Site-wide footer' ),
-		array( 'before_post', 'Before post' ),
-		array( 'after_post', 'After post' ),
-		array( 'before_content', 'Before content' ),
-		array( 'after_content', 'After content' ),
-		array( 'after_paragraph', 'After paragraph' ),
+		array( 'frontend_only', __( 'Front-end only', 'minimal-admin' ) ),
+		array( 'admin_only', __( 'Admin only', 'minimal-admin' ) ),
+		array( 'site_wide_header', __( 'Site-wide header', 'minimal-admin' ) ),
+		array( 'site_wide_body', __( 'Site-wide body', 'minimal-admin' ) ),
+		array( 'site_wide_footer', __( 'Site-wide footer', 'minimal-admin' ) ),
+		array( 'before_post', __( 'Before post', 'minimal-admin' ) ),
+		array( 'after_post', __( 'After post', 'minimal-admin' ) ),
+		array( 'before_content', __( 'Before content', 'minimal-admin' ) ),
+		array( 'after_content', __( 'After content', 'minimal-admin' ) ),
+		array( 'after_paragraph', __( 'After paragraph', 'minimal-admin' ) ),
 	);
 
 	$edit_fields = array(
-		array( 'key' => 'name', 'label' => 'Name', 'placeholder' => 'Disable comments' ),
-		array( 'key' => 'desc', 'label' => 'Note', 'type' => 'textarea', 'rows' => 2, 'required' => false ),
+		array( 'key' => 'name', 'label' => __( 'Name', 'minimal-admin' ), 'placeholder' => __( 'Disable comments', 'minimal-admin' ) ),
+		array( 'key' => 'desc', 'label' => __( 'Note', 'minimal-admin' ), 'type' => 'textarea', 'rows' => 2, 'required' => false ),
 		array(
 			'key'         => 'code',
-			'label'       => 'Code',
+			'label'       => __( 'Code', 'minimal-admin' ),
 			'type'        => 'textarea',
 			'mono'        => true,
 			'rows'        => 14,
 			'placeholder' => "add_filter( '…', '…' );",
 		),
-		array( 'key' => 'code_type', 'label' => 'Type', 'type' => 'select', 'options' => $type_options ),
-		array( 'key' => 'location', 'label' => 'Location', 'type' => 'select', 'options' => $location_options ),
-		array( 'key' => 'priority', 'label' => 'Priority', 'type' => 'number' ),
-		array( 'key' => 'tags', 'label' => 'Tags', 'type' => 'tags', 'required' => false ),
+		array( 'key' => 'code_type', 'label' => __( 'Type', 'minimal-admin' ), 'type' => 'select', 'options' => $type_options ),
+		array( 'key' => 'location', 'label' => __( 'Location', 'minimal-admin' ), 'type' => 'select', 'options' => $location_options ),
+		array( 'key' => 'priority', 'label' => __( 'Priority', 'minimal-admin' ), 'type' => 'number' ),
+		array( 'key' => 'tags', 'label' => __( 'Tags', 'minimal-admin' ), 'type' => 'tags', 'required' => false ),
 	);
 
 	$surfaces['wpcode'] = array(
-		'label'      => 'Snippets',
+		'label'      => __( 'Snippets', 'minimal-admin' ),
 		'family'     => 'snippets',
 		'sub'        => 'WPCode',
 		'icon'       => 'code',
@@ -147,7 +252,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'itemsKey'  => 'items',
 			'totalKey'  => 'total',
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'all', 'All' ),
 					array( 'active', 'Active' ),
@@ -156,7 +261,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'query'   => 'active={v}',
 			),
 			'create'    => array(
-				'label'    => 'Add snippet',
+				'label'    => __( 'Add snippet', 'minimal-admin' ),
 				'route'    => 'minimal-admin/v1/wpcode/snippets',
 				'method'   => 'POST',
 				'defaults' => array(
@@ -170,11 +275,11 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'fields'   => $edit_fields,
 			),
 			'columns'   => array(
-				array( 'key' => 'name', 'label' => 'Snippet', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'scope', 'label' => 'Type · location', 'format' => 'mono', 'width' => 'minmax(0,1fr)' ),
-				array( 'key' => 'active', 'label' => 'Status', 'format' => 'pill', 'width' => '100px' ),
-				array( 'key' => 'priority', 'label' => 'Priority', 'format' => 'num', 'width' => '80px' ),
-				array( 'key' => 'modified', 'label' => 'Modified', 'format' => 'ago' ),
+				array( 'key' => 'name', 'label' => __( 'Snippet', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'scope', 'label' => __( 'Type · location', 'minimal-admin' ), 'format' => 'mono', 'width' => 'minmax(0,1fr)' ),
+				array( 'key' => 'active', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '100px' ),
+				array( 'key' => 'priority', 'label' => __( 'Priority', 'minimal-admin' ), 'format' => 'num', 'width' => '80px' ),
+				array( 'key' => 'modified', 'label' => __( 'Modified', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'detailRoute' => 'minimal-admin/v1/wpcode/snippets/{id}',
@@ -191,51 +296,51 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpcode/snippets/{id}/active',
 					'body'   => array( 'active' => true ),
 					'when'   => array( 'key' => 'active', 'equals' => false ),
 				),
 				array(
-					'label'  => 'Deactivate',
+					'label'  => __( 'Deactivate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpcode/snippets/{id}/active',
 					'body'   => array( 'active' => false ),
 					'when'   => array( 'key' => 'active', 'equals' => true ),
 				),
 				array(
-					'label' => 'Edit in WPCode ↗',
+					'label' => __( 'Edit in WPCode ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=wpcode-snippet-manager&snippet_id={id}' ),
 				),
 				array(
-					'label'   => 'Delete snippet',
+					'label'   => __( 'Delete snippet', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/wpcode/snippets/{id}',
-					'confirm' => 'Delete this snippet permanently? Its code will be gone.',
+					'confirm' => __( 'Delete this snippet permanently? Its code will be gone.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpcode/snippets/{id}/active',
 					'body'   => array( 'active' => true ),
 					'when'   => array( 'key' => 'active', 'equals' => false ),
 				),
 				array(
-					'label'  => 'Deactivate',
+					'label'  => __( 'Deactivate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpcode/snippets/{id}/active',
 					'body'   => array( 'active' => false ),
 					'when'   => array( 'key' => 'active', 'equals' => true ),
 				),
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/wpcode/snippets/{id}',
-					'confirm' => 'Delete the selected snippets permanently?',
+					'confirm' => __( 'Delete the selected snippets permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -307,11 +412,12 @@ add_action( 'rest_api_init', function () {
 					}
 					// load_from_array (via the array constructor) can set private
 					// fields like priority/note that are not assignable from outside.
+					$create_type = sanitize_key( (string) ( $request['code_type'] ?? 'php' ) );
 					$snippet = new WPCode_Snippet(
 						array(
 							'title'       => sanitize_text_field( (string) $request['name'] ),
-							'code'        => (string) ( $request['code'] ?? '' ),
-							'code_type'   => sanitize_key( (string) ( $request['code_type'] ?? 'php' ) ),
+							'code'        => minimal_admin_wpcode_clean_code( $create_type, (string) ( $request['code'] ?? '' ) ),
+							'code_type'   => $create_type,
 							'location'    => sanitize_key( (string) ( $request['location'] ?? 'everywhere' ) ),
 							'priority'    => (int) ( $request['priority'] ?? 10 ),
 							'tags'        => array_map( 'sanitize_text_field', (array) ( $request['tags'] ?? array() ) ),
@@ -322,7 +428,7 @@ add_action( 'rest_api_init', function () {
 					);
 					$id = $snippet->save();
 					if ( ! $id ) {
-						return new WP_Error( 'wpcode_save_failed', 'Could not create the snippet.', array( 'status' => 500 ) );
+						return new WP_Error( 'wpcode_save_failed', __( 'Could not create the snippet.', 'minimal-admin' ), array( 'status' => 500 ) );
 					}
 					return rest_ensure_response( minimal_admin_wpcode_item( new WPCode_Snippet( (int) $id ) ) );
 				},
@@ -340,7 +446,7 @@ add_action( 'rest_api_init', function () {
 				'callback'            => function ( WP_REST_Request $request ) {
 					$snippet = new WPCode_Snippet( (int) $request['id'] );
 					if ( ! $snippet->get_id() ) {
-						return new WP_Error( 'not_found', 'Snippet not found.', array( 'status' => 404 ) );
+						return new WP_Error( 'not_found', __( 'Snippet not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 					}
 					return rest_ensure_response( minimal_admin_wpcode_item( $snippet ) );
 				},
@@ -351,13 +457,17 @@ add_action( 'rest_api_init', function () {
 				'callback'            => function ( WP_REST_Request $request ) {
 					$snippet = new WPCode_Snippet( (int) $request['id'] );
 					if ( ! $snippet->get_id() ) {
-						return new WP_Error( 'not_found', 'Snippet not found.', array( 'status' => 404 ) );
+						return new WP_Error( 'not_found', __( 'Snippet not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 					}
 					// The STORED type gates the edit, and when the payload
 					// carries a new code_type that type must be allowed too —
 					// otherwise a markup-only user retypes an HTML snippet to
 					// php and authors executable code.
-					$guard = minimal_admin_wpcode_guard_type( (string) $snippet->get_code_type(), (int) $request['id'] );
+					$guard = minimal_admin_wpcode_guard_type(
+						(string) $snippet->get_code_type(),
+						(int) $request['id'],
+						null !== $request['code']
+					);
 					if ( is_wp_error( $guard ) ) {
 						return $guard;
 					}
@@ -389,12 +499,24 @@ add_action( 'rest_api_init', function () {
 					// save() gate) — force it so location edits stick.
 					$snippet->get_auto_insert();
 
+					// The type in force AFTER this write decides how the code is
+					// filtered, so resolve it before touching the code: a request
+					// that sends only a new type still changes what the stored
+					// bytes mean.
+					$eff_type = null !== $new_type ? $new_type : (string) $snippet->get_code_type();
+
 					$patch = array( 'auto_insert' => 1 );
 					if ( null !== $request['name'] ) {
 						$patch['title'] = sanitize_text_field( (string) $request['name'] );
 					}
 					if ( null !== $request['code'] ) {
-						$patch['code'] = (string) $request['code'];
+						$patch['code'] = minimal_admin_wpcode_clean_code( $eff_type, (string) $request['code'] );
+					} elseif ( null !== $new_type && minimal_admin_wpcode_type_is_markup( $eff_type ) ) {
+						// Retyping is a write even when no code is sent. Creating a
+						// css snippet (never filtered, since css is not markup) and
+						// then flipping it to text would otherwise promote bytes
+						// into a markup context that never passed the markup rule.
+						$patch['code'] = minimal_admin_wpcode_clean_code( $eff_type, (string) $snippet->get_code() );
 					}
 					if ( null !== $new_type ) {
 						$patch['code_type'] = $new_type;
@@ -416,7 +538,7 @@ add_action( 'rest_api_init', function () {
 					}
 					$snippet->load_from_array( $patch );
 					if ( ! $snippet->save() ) {
-						return new WP_Error( 'wpcode_save_failed', 'Could not save the snippet.', array( 'status' => 500 ) );
+						return new WP_Error( 'wpcode_save_failed', __( 'Could not save the snippet.', 'minimal-admin' ), array( 'status' => 500 ) );
 					}
 					return rest_ensure_response( minimal_admin_wpcode_item( new WPCode_Snippet( (int) $request['id'] ) ) );
 				},
@@ -428,22 +550,22 @@ add_action( 'rest_api_init', function () {
 					$id = (int) $request['id'];
 					$post = get_post( $id );
 					if ( ! $post || 'wpcode' !== $post->post_type ) {
-						return new WP_Error( 'not_found', 'Snippet not found.', array( 'status' => 404 ) );
+						return new WP_Error( 'not_found', __( 'Snippet not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 					}
 					// Destroying a snippet needs the same bar as editing it: the
 					// stored code type's tier AND edit_post on this snippet.
 					// Without it a text/markup-tier user could permanently delete
 					// production PHP snippets they were never allowed to author.
-					$guard = minimal_admin_wpcode_guard_type( (string) ( new WPCode_Snippet( $id ) )->get_code_type(), $id );
+					$guard = minimal_admin_wpcode_guard_type( (string) ( new WPCode_Snippet( $id ) )->get_code_type(), $id, false );
 					if ( is_wp_error( $guard ) ) {
 						return $guard;
 					}
 					if ( ! current_user_can( 'delete_post', $id ) ) {
-						return new WP_Error( 'forbidden', 'You cannot delete that snippet.', array( 'status' => 403 ) );
+						return new WP_Error( 'forbidden', __( 'You cannot delete that snippet.', 'minimal-admin' ), array( 'status' => 403 ) );
 					}
 					$ok = wp_delete_post( $id, true );
 					if ( ! $ok ) {
-						return new WP_Error( 'wpcode_delete_failed', 'Could not delete the snippet.', array( 'status' => 500 ) );
+						return new WP_Error( 'wpcode_delete_failed', __( 'Could not delete the snippet.', 'minimal-admin' ), array( 'status' => 500 ) );
 					}
 					return new WP_REST_Response( null, 204 );
 				},
@@ -460,12 +582,16 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $request ) {
 				$snippet = new WPCode_Snippet( (int) $request['id'] );
 				if ( ! $snippet->get_id() ) {
-					return new WP_Error( 'not_found', 'Snippet not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Snippet not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				// Publishing a snippet runs its code, so the stored type's tier
 				// gates this too — a text-tier user must not be able to activate
 				// or deactivate someone else's PHP snippet.
-				$guard = minimal_admin_wpcode_guard_type( (string) $snippet->get_code_type(), (int) $request['id'] );
+				$guard = minimal_admin_wpcode_guard_type(
+					(string) $snippet->get_code_type(),
+					(int) $request['id'],
+					! empty( $request['active'] )
+				);
 				if ( is_wp_error( $guard ) ) {
 					return $guard;
 				}
@@ -505,9 +631,9 @@ add_action( 'rest_api_init', function () {
 			}
 			$rows = array(
 				array(
-					'label' => 'Active snippets',
+					'label' => __( 'Active snippets', 'minimal-admin' ),
 					'value' => (string) $active,
-					'hint'  => $inactive ? $inactive . ' inactive' : 'nothing inactive',
+					'hint'  => $inactive ? $inactive . ' inactive' : __( 'nothing inactive', 'minimal-admin' ),
 				),
 			);
 			$types = $wpdb->get_results(
@@ -518,7 +644,7 @@ add_action( 'rest_api_init', function () {
 			);
 			if ( $types ) {
 				$rows[] = array(
-					'label' => 'Running types',
+					'label' => __( 'Running types', 'minimal-admin' ),
 					'value' => implode( ' · ', array_map( function ( $t ) {
 						return $t->c . ' ' . $t->t;
 					}, $types ) ),
@@ -531,7 +657,7 @@ add_action( 'rest_api_init', function () {
 			);
 			if ( $last ) {
 				$rows[] = array(
-					'label' => 'Last change',
+					'label' => __( 'Last change', 'minimal-admin' ),
 					'value' => (string) $last->post_title,
 					'hint'  => substr( (string) $last->post_modified, 0, 10 ),
 				);

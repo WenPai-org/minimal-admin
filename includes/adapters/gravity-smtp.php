@@ -188,35 +188,35 @@ function minimal_admin_gsmtp_condition_summary( $conditions ) {
 	}
 	$labels = array(
 		'subject'          => 'Subject',
-		'message'          => 'Message',
+		'message'          => __( 'Message', 'minimal-admin' ),
 		'from_email'       => 'From',
-		'from_name'        => 'From name',
+		'from_name'        => __( 'From name', 'minimal-admin' ),
 		'to'               => 'To',
 		'cc'               => 'CC',
 		'bcc'              => 'BCC',
 		'reply_to'         => 'Reply-To',
 		'source'           => 'Source',
-		'source_subtype'   => 'Source type',
-		'to_count'         => 'To count',
-		'cc_count'         => 'CC count',
-		'bcc_count'        => 'BCC count',
-		'has_attachments'  => 'Has attachments',
+		'source_subtype'   => __( 'Source type', 'minimal-admin' ),
+		'to_count'         => __( 'To count', 'minimal-admin' ),
+		'cc_count'         => __( 'CC count', 'minimal-admin' ),
+		'bcc_count'        => __( 'BCC count', 'minimal-admin' ),
+		'has_attachments'  => __( 'Has attachments', 'minimal-admin' ),
 		'attachments_count'=> 'Attachments',
-		'content_type'     => 'Content type',
-		'message_size'     => 'Message size',
-		'attachment_size'  => 'Attachment size',
+		'content_type'     => __( 'Content type', 'minimal-admin' ),
+		'message_size'     => __( 'Message size', 'minimal-admin' ),
+		'attachment_size'  => __( 'Attachment size', 'minimal-admin' ),
 	);
 	$comps = array(
 		'='                 => 'is',
-		'!='                => 'is not',
+		'!='                => __( 'is not', 'minimal-admin' ),
 		'>'                 => '>',
 		'>='                => '≥',
 		'<'                 => '<',
 		'<='                => '≤',
 		'contains'          => 'contains',
-		'does_not_contain'  => 'does not contain',
-		'starts_with'       => 'starts with',
-		'ends_with'         => 'ends with',
+		'does_not_contain'  => __( 'does not contain', 'minimal-admin' ),
+		'starts_with'       => __( 'starts with', 'minimal-admin' ),
+		'ends_with'         => __( 'ends with', 'minimal-admin' ),
 	);
 	$parts = array();
 	$walk  = function ( $node ) use ( &$walk, &$parts, $labels, $comps ) {
@@ -243,7 +243,7 @@ function minimal_admin_gsmtp_condition_summary( $conditions ) {
 	};
 	$walk( $conditions );
 	if ( ! $parts ) {
-		return 'No conditions';
+		return __( 'No conditions', 'minimal-admin' );
 	}
 	// Cap for list display.
 	$shown = array_slice( $parts, 0, 3 );
@@ -310,13 +310,13 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['gravity-smtp'] = array(
-		'label'      => 'Email',
+		'label'      => __( 'Email', 'minimal-admin' ),
 		'sub'        => 'Gravity SMTP',
 		'icon'       => 'send',
 		'cap'        => minimal_admin_gsmtp_cap( 'VIEW_EMAIL_LOG' ),
 		'family'     => 'mail',
 		'collection' => array(
-			'viewLabel' => 'Log',
+			'viewLabel' => __( 'Log', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/gravity-smtp/events',
 			'pageQuery' => 'per_page=25&page={page}',
 			'itemsKey'  => 'items',
@@ -333,11 +333,11 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'allLabel' => 'All',
 			),
 			'columns'   => array(
-				array( 'key' => 'subject', 'label' => 'Subject', 'format' => 'title' ),
-				array( 'key' => 'to', 'label' => 'To', 'format' => 'text' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
+				array( 'key' => 'subject', 'label' => __( 'Subject', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'to', 'label' => __( 'To', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
 				// Event timestamps are UTC MySQL datetimes (no zone suffix).
-				array( 'key' => 'date_created', 'label' => 'Date', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'date_created', 'label' => __( 'Date', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				// v0.18.0: server-built sections (status pill, sandboxed
@@ -347,26 +347,26 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Resend',
+					'label'   => __( 'Resend', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/gravity-smtp/events/{id}/resend',
 					'method'  => 'POST',
-					'confirm' => 'Resend this email to the original recipients?',
+					'confirm' => __( 'Resend this email to the original recipients?', 'minimal-admin' ),
 					'when'    => array( 'key' => 'can_resend', 'equals' => true ),
 				),
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/gravity-smtp/events/{id}',
 					'method'  => 'DELETE',
-					'confirm' => 'Delete this log entry permanently? There is no trash.',
+					'confirm' => __( 'Delete this log entry permanently? There is no trash.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/gravity-smtp/events/{id}',
 					'method'  => 'DELETE',
-					'confirm' => 'Delete the selected log entries permanently?',
+					'confirm' => __( 'Delete the selected log entries permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -375,34 +375,34 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		// reactivate through their own model. Reads/writes gate on their
 		// granular suppression caps server-side.
 		'manage'     => array(
-			'viewLabel' => 'Suppressions',
+			'viewLabel' => __( 'Suppressions', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/gravity-smtp/suppressed',
 			'pageQuery' => 'per_page=25&page={page}',
 			'itemsKey'  => 'items',
 			'totalKey'  => 'total',
 			'search'    => 'search={q}',
 			'columns'   => array(
-				array( 'key' => 'email', 'label' => 'Email', 'format' => 'title' ),
-				array( 'key' => 'reason', 'label' => 'Reason', 'format' => 'pill' ),
-				array( 'key' => 'notes', 'label' => 'Notes' ),
+				array( 'key' => 'email', 'label' => __( 'Email', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'reason', 'label' => __( 'Reason', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'notes', 'label' => __( 'Notes', 'minimal-admin' ) ),
 				// Their model stamps current_time( 'mysql', true ) — UTC.
-				array( 'key' => 'date_created', 'label' => 'Since', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'date_created', 'label' => __( 'Since', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(),
 			'create'    => array(
-				'label'  => 'Suppress email',
+				'label'  => __( 'Suppress email', 'minimal-admin' ),
 				'route'  => 'minimal-admin/v1/gravity-smtp/suppressed',
 				'fields' => array(
-					array( 'key' => 'email', 'label' => 'Email address', 'type' => 'email' ),
-					array( 'key' => 'notes', 'label' => 'Notes', 'required' => false, 'placeholder' => 'Why sending to this address is off' ),
+					array( 'key' => 'email', 'label' => __( 'Email address', 'minimal-admin' ), 'type' => 'email' ),
+					array( 'key' => 'notes', 'label' => __( 'Notes', 'minimal-admin' ), 'required' => false, 'placeholder' => __( 'Why sending to this address is off', 'minimal-admin' ) ),
 				),
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Reactivate (allow sending again)',
+					'label'   => __( 'Reactivate (allow sending again)', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/gravity-smtp/suppressed/{id}/reactivate',
-					'confirm' => 'Allow Gravity SMTP to send to this address again?',
+					'confirm' => __( 'Allow Gravity SMTP to send to this address again?', 'minimal-admin' ),
 				),
 			),
 		),
@@ -410,7 +410,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		// wp-admin link-out on the status card until surfaces grew this slot.
 		'views'      => array_values( array_filter( array(
 			array(
-				'viewLabel' => 'Debug log',
+				'viewLabel' => __( 'Debug log', 'minimal-admin' ),
 				'cap'       => minimal_admin_gsmtp_cap( 'VIEW_DEBUG_LOG' ),
 				'route'     => 'minimal-admin/v1/gravity-smtp/debug',
 				'pageQuery' => 'per_page=25&page={page}',
@@ -428,17 +428,17 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					'allLabel' => 'All',
 				),
 				'columns'   => array(
-					array( 'key' => 'line', 'label' => 'Message', 'format' => 'title' ),
-					array( 'key' => 'priority', 'label' => 'Priority', 'format' => 'pill' ),
+					array( 'key' => 'line', 'label' => __( 'Message', 'minimal-admin' ), 'format' => 'title' ),
+					array( 'key' => 'priority', 'label' => __( 'Priority', 'minimal-admin' ), 'format' => 'pill' ),
 					// Their Debug_Log_Model stamps current_time( 'mysql', true ) — UTC.
-					array( 'key' => 'date_created', 'label' => 'Date', 'format' => 'ago', 'utc' => true ),
+					array( 'key' => 'date_created', 'label' => __( 'Date', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 				),
 				'detail'    => array(),
 			),
 			// Email Routing (2.3.0+). List + enable/disable/delete only —
 			// the condition builder stays on their React screen.
 			minimal_admin_gsmtp_routing_available() ? array(
-				'viewLabel' => 'Routing',
+				'viewLabel' => __( 'Routing', 'minimal-admin' ),
 				'cap'       => minimal_admin_gsmtp_cap( 'VIEW_ROUTING' ),
 				'route'     => 'minimal-admin/v1/gravity-smtp/routing',
 				'pageQuery' => 'per_page=50&page={page}',
@@ -446,36 +446,36 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'totalKey'  => 'total',
 				'columns'   => array(
 					array( 'key' => 'order', 'label' => '#', 'format' => 'text', 'width' => '48px' ),
-					array( 'key' => 'name', 'label' => 'Rule', 'format' => 'title' ),
-					array( 'key' => 'provider', 'label' => 'Send with', 'format' => 'text' ),
-					array( 'key' => 'conditions', 'label' => 'When', 'format' => 'text' ),
-					array( 'key' => 'enabled', 'label' => 'Enabled', 'format' => 'pill' ),
+					array( 'key' => 'name', 'label' => __( 'Rule', 'minimal-admin' ), 'format' => 'title' ),
+					array( 'key' => 'provider', 'label' => __( 'Send with', 'minimal-admin' ), 'format' => 'text' ),
+					array( 'key' => 'conditions', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'text' ),
+					array( 'key' => 'enabled', 'label' => __( 'Enabled', 'minimal-admin' ), 'format' => 'pill' ),
 				),
 				'detail'    => array(
 					'skip' => array( 'order', 'connector' ),
 				),
 				'actions'   => array(
 					array(
-						'label'  => 'Enable',
+						'label'  => __( 'Enable', 'minimal-admin' ),
 						'method' => 'POST',
 						'route'  => 'minimal-admin/v1/gravity-smtp/routing/{id}/enable',
 						'when'   => array( 'key' => 'enabled', 'equals' => 'off' ),
 					),
 					array(
-						'label'  => 'Disable',
+						'label'  => __( 'Disable', 'minimal-admin' ),
 						'method' => 'POST',
 						'route'  => 'minimal-admin/v1/gravity-smtp/routing/{id}/disable',
 						'when'   => array( 'key' => 'enabled', 'equals' => 'on' ),
 					),
 					array(
-						'label'   => 'Delete rule',
+						'label'   => __( 'Delete rule', 'minimal-admin' ),
 						'method'  => 'DELETE',
 						'route'   => 'minimal-admin/v1/gravity-smtp/routing/{id}',
-						'confirm' => 'Delete this routing rule permanently?',
+						'confirm' => __( 'Delete this routing rule permanently?', 'minimal-admin' ),
 						'danger'  => true,
 					),
 					array(
-						'label' => 'Edit in Gravity SMTP ↗',
+						'label' => __( 'Edit in Gravity SMTP ↗', 'minimal-admin' ),
 						'href'  => minimal_admin_gsmtp_routing_admin_url(),
 					),
 				),
@@ -484,8 +484,8 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'settings'   => array(
 			'cap'   => minimal_admin_gsmtp_cap( 'VIEW_GENERAL_SETTINGS' ),
 			'tabs'  => array(
-				array( 'id' => 'sending', 'label' => 'Sending' ),
-				array( 'id' => 'general', 'label' => 'General' ),
+				array( 'id' => 'sending', 'label' => __( 'Sending', 'minimal-admin' ) ),
+				array( 'id' => 'general', 'label' => __( 'General', 'minimal-admin' ) ),
 			),
 			'route' => 'minimal-admin/v1/gravity-smtp/settings/{tab}',
 		),
@@ -689,7 +689,7 @@ add_action( 'rest_api_init', function () {
 					(int) $request['id']
 				) );
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Event not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Event not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$out = array(
 					'id'           => (int) $row->id,
@@ -744,14 +744,14 @@ add_action( 'rest_api_init', function () {
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$exists = (int) $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table} WHERE id = %d", $id ) );
 				if ( ! $exists ) {
-					return new WP_Error( 'not_found', 'Event not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Event not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				if ( minimal_admin_gsmtp_delete_event_ids( array( $id ) ) < 1 ) {
-					return new WP_Error( 'delete_failed', 'Could not delete this log entry.', array( 'status' => 500 ) );
+					return new WP_Error( 'delete_failed', __( 'Could not delete this log entry.', 'minimal-admin' ), array( 'status' => 500 ) );
 				}
 				return rest_ensure_response( array(
 					'deleted' => true,
-					'message' => 'Log entry deleted.',
+					'message' => __( 'Log entry deleted.', 'minimal-admin' ),
 				) );
 			},
 		),
@@ -772,11 +772,11 @@ add_action( 'rest_api_init', function () {
 				(int) $request['id']
 			) );
 			if ( ! $row ) {
-				return new WP_Error( 'not_found', 'Event not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Event not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$delivery = array(
-				array( 'label' => 'Status', 'value' => $row->status, 'type' => 'pill' ),
-				array( 'label' => 'To', 'value' => minimal_admin_gravity_smtp_recipients( $row->extra ) ),
+				array( 'label' => __( 'Status', 'minimal-admin' ), 'value' => $row->status, 'type' => 'pill' ),
+				array( 'label' => __( 'To', 'minimal-admin' ), 'value' => minimal_admin_gravity_smtp_recipients( $row->extra ) ),
 			);
 			// Their models add from/cc/bcc/source; container services only
 			// register on their admin pages, so Throwable-guarded (the plain
@@ -792,25 +792,25 @@ add_action( 'rest_api_init', function () {
 						}
 					}
 					if ( ! empty( $full['has_attachment'] ) ) {
-						$delivery[] = array( 'label' => 'Attachments', 'value' => (string) (int) $full['has_attachment'] );
+						$delivery[] = array( 'label' => __( 'Attachments', 'minimal-admin' ), 'value' => (string) (int) $full['has_attachment'] );
 					}
 				}
 			} catch ( \Throwable $e ) { // phpcs:ignore
 				// Plain columns already listed.
 			}
-			$delivery[] = array( 'label' => 'Service', 'value' => (string) $row->service );
-			$delivery[] = array( 'label' => 'Date', 'value' => $row->date_created . ' UTC' );
+			$delivery[] = array( 'label' => __( 'Service', 'minimal-admin' ), 'value' => (string) $row->service );
+			$delivery[] = array( 'label' => __( 'Date', 'minimal-admin' ), 'value' => $row->date_created . ' UTC' );
 
 			$message  = (string) $row->message;
 			$sections = array(
-				array( 'title' => 'Delivery', 'rows' => $delivery ),
+				array( 'title' => __( 'Delivery', 'minimal-admin' ), 'rows' => $delivery ),
 				array(
-					'title' => 'Message',
+					'title' => __( 'Message', 'minimal-admin' ),
 					'rows'  => array(
-						array( 'label' => 'Subject', 'value' => (string) $row->subject ),
+						array( 'label' => __( 'Subject', 'minimal-admin' ), 'value' => (string) $row->subject ),
 						preg_match( '/<\/?[a-z][^>]*>/i', $message )
-							? array( 'label' => 'Body', 'value' => $message, 'type' => 'html-preview' )
-							: array( 'label' => 'Body', 'value' => $message, 'type' => 'code' ),
+							? array( 'label' => __( 'Body', 'minimal-admin' ), 'value' => $message, 'type' => 'html-preview' )
+							: array( 'label' => __( 'Body', 'minimal-admin' ), 'value' => $message, 'type' => 'code' ),
 					),
 				),
 			);
@@ -829,8 +829,8 @@ add_action( 'rest_api_init', function () {
 			}
 			if ( $headers ) {
 				$sections[] = array(
-					'title' => 'Headers',
-					'rows'  => array( array( 'label' => 'Stored headers', 'value' => $headers, 'type' => 'kv-table' ) ),
+					'title' => __( 'Headers', 'minimal-admin' ),
+					'rows'  => array( array( 'label' => __( 'Stored headers', 'minimal-admin' ), 'value' => $headers, 'type' => 'kv-table' ) ),
 				);
 			}
 
@@ -943,7 +943,7 @@ add_action( 'rest_api_init', function () {
 				$body  = $request->get_json_params();
 				$email = sanitize_email( (string) ( isset( $body['email'] ) ? $body['email'] : '' ) );
 				if ( ! is_email( $email ) ) {
-					return new WP_Error( 'bad_email', 'Enter a valid email address.', array( 'status' => 400 ) );
+					return new WP_Error( 'bad_email', __( 'Enter a valid email address.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				$notes = sanitize_text_field( (string) ( isset( $body['notes'] ) ? $body['notes'] : '' ) );
 				$model = new Gravity_Forms\Gravity_SMTP\Models\Suppressed_Emails_Model();
@@ -966,13 +966,13 @@ add_action( 'rest_api_init', function () {
 				(int) $request['id']
 			) );
 			if ( ! $email ) {
-				return new WP_Error( 'not_found', 'Suppressed address not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Suppressed address not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$model = new Gravity_Forms\Gravity_SMTP\Models\Suppressed_Emails_Model();
 			$model->reactivate_email( $email );
 			return rest_ensure_response( array(
 				'reactivated' => $email,
-				'message'     => 'Reactivated — Gravity SMTP can send to ' . $email . ' again.',
+				'message'     => __( 'Reactivated — Gravity SMTP can send to ', 'minimal-admin' ) . $email . ' again.',
 			) );
 		},
 	) );
@@ -994,11 +994,11 @@ add_action( 'rest_api_init', function () {
 				|| ( class_exists( 'Gravity_Forms\Gravity_SMTP\Utils\Booliesh' )
 					&& Gravity_Forms\Gravity_SMTP\Utils\Booliesh::get( $router->get_plugin_setting( 'test_mode', 'false' ) ) );
 			$rows = array(
-				array( 'label' => 'Sending through', 'value' => $title ),
+				array( 'label' => __( 'Sending through', 'minimal-admin' ), 'value' => $title ),
 				array(
-					'label' => 'Test mode',
-					'value' => $test_mode ? 'On' : 'Off',
-					'hint'  => $test_mode ? 'Emails are logged, not sent.' : '',
+					'label' => __( 'Test mode', 'minimal-admin' ),
+					'value' => $test_mode ? __( 'On', 'minimal-admin' ) : __( 'Off', 'minimal-admin' ),
+					'hint'  => $test_mode ? __( 'Emails are logged, not sent.', 'minimal-admin' ) : '',
 				),
 			);
 			// Email Routing (2.3.0+): count of recipes + whether evaluation
@@ -1010,13 +1010,18 @@ add_action( 'rest_api_init', function () {
 				} ) );
 				$active  = minimal_admin_gsmtp_active_connector_count();
 				$hint    = $active < 2
-					? 'Needs at least 2 active integrations to evaluate (same as Gravity SMTP).'
-					: ( $all ? 'First matching rule wins, top to bottom.' : 'No rules yet — add them in Gravity SMTP.' );
+					? __( 'Needs at least 2 active integrations to evaluate (same as Gravity SMTP).', 'minimal-admin' )
+					: ( $all ? __( 'First matching rule wins, top to bottom.', 'minimal-admin' ) : __( 'No rules yet — add them in Gravity SMTP.', 'minimal-admin' ) );
 				$rows[]  = array(
-					'label' => 'Routing',
+					'label' => __( 'Routing', 'minimal-admin' ),
 					'value' => $all
-						? ( count( $all ) . ' rule' . ( 1 === count( $all ) ? '' : 's' ) . ' · ' . $on . ' on' )
-						: 'None',
+						? sprintf(
+							/* translators: 1: number of routing rules; 2: number of enabled rules. */
+							_n( '%1$d rule · %2$d on', '%1$d rules · %2$d on', count( $all ), 'minimal-admin' ),
+							count( $all ),
+							$on
+						)
+						: __( 'None', 'minimal-admin' ),
 					'hint'  => $hint,
 				);
 			}
@@ -1032,17 +1037,17 @@ add_action( 'rest_api_init', function () {
 			$out['actions'] = array();
 			if ( current_user_can( minimal_admin_gsmtp_cap( 'VIEW_TOOLS_SENDATEST' ) ) ) {
 				$out['actions'][] = array(
-					'label'  => 'Send a test email',
+					'label'  => __( 'Send a test email', 'minimal-admin' ),
 					'route'  => 'minimal-admin/v1/gravity-smtp/send-test',
 					'method' => 'POST',
 					'fields' => array(
-						array( 'key' => 'email', 'label' => 'Send to', 'type' => 'email', 'placeholder' => 'you@example.com' ),
+						array( 'key' => 'email', 'label' => __( 'Send to', 'minimal-admin' ), 'type' => 'email', 'placeholder' => __( 'you@example.com', 'minimal-admin' ) ),
 					),
 				);
 			}
 			if ( minimal_admin_gsmtp_routing_available() && current_user_can( minimal_admin_gsmtp_cap( 'VIEW_ROUTING' ) ) ) {
 				$out['actions'][] = array(
-					'label' => 'Edit routing rules ↗',
+					'label' => __( 'Edit routing rules ↗', 'minimal-admin' ),
 					'href'  => minimal_admin_gsmtp_routing_admin_url(),
 				);
 			}
@@ -1081,14 +1086,14 @@ add_action( 'rest_api_init', function () {
 					$recipes = minimal_admin_gsmtp_routing_recipes();
 					$id      = (int) $request['id'];
 					if ( ! isset( $recipes[ $id ] ) || ! is_array( $recipes[ $id ] ) ) {
-						return new WP_Error( 'not_found', 'Routing rule not found.', array( 'status' => 404 ) );
+						return new WP_Error( 'not_found', __( 'Routing rule not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 					}
 					$recipes[ $id ]['enabled'] = $on;
 					minimal_admin_gsmtp_routing_save( $recipes );
 					return rest_ensure_response( array(
 						'updated' => true,
 						'enabled' => $on,
-						'message' => $on ? 'Rule enabled.' : 'Rule disabled.',
+						'message' => $on ? __( 'Rule enabled.', 'minimal-admin' ) : __( 'Rule disabled.', 'minimal-admin' ),
 					) );
 				},
 			) );
@@ -1101,13 +1106,13 @@ add_action( 'rest_api_init', function () {
 				$recipes = minimal_admin_gsmtp_routing_recipes();
 				$id      = (int) $request['id'];
 				if ( ! isset( $recipes[ $id ] ) ) {
-					return new WP_Error( 'not_found', 'Routing rule not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Routing rule not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				array_splice( $recipes, $id, 1 );
 				minimal_admin_gsmtp_routing_save( $recipes );
 				return rest_ensure_response( array(
 					'deleted' => true,
-					'message' => 'Routing rule deleted.',
+					'message' => __( 'Routing rule deleted.', 'minimal-admin' ),
 				) );
 			},
 		) );
@@ -1123,7 +1128,7 @@ add_action( 'rest_api_init', function () {
 			$body  = $request->get_json_params();
 			$email = sanitize_email( (string) ( isset( $body['email'] ) ? $body['email'] : '' ) );
 			if ( ! is_email( $email ) ) {
-				return new WP_Error( 'bad_email', 'Enter a valid email address.', array( 'status' => 400 ) );
+				return new WP_Error( 'bad_email', __( 'Enter a valid email address.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			// Their own Send_Test_Endpoint pattern: force the chosen
 			// connector for this send, then let the wp_mail interception
@@ -1139,7 +1144,7 @@ add_action( 'rest_api_init', function () {
 			// Only ONE mail plugin can own the wp_mail pipeline. If another
 			// active mailer (FluentSMTP on a typical multi-mailer site)
 			// carries the send, Gravity SMTP never sees it and nothing lands
-			// in ITS log — deliverable but invisible here (Austin's repro).
+			// in ITS log — deliverable but invisible here.
 			// Their own Event_Model fires this action when GS records the
 			// send; its absence is the honest tell.
 			$logged   = 0;
@@ -1149,20 +1154,20 @@ add_action( 'rest_api_init', function () {
 			add_action( 'gravitysmtp_after_mail_created', $listener );
 			$sent = wp_mail(
 				$email,
-				'Test email from Minimal Admin (Gravity SMTP)',
+				__( 'Test email from Minimal Admin (Gravity SMTP)', 'minimal-admin' ),
 				"This is a test email sent through the {$connector} connector, triggered from Minimal Admin's Email Log.",
 				array()
 			);
 			remove_action( 'gravitysmtp_after_mail_created', $listener );
 			if ( ! $sent ) {
-				return new WP_Error( 'send_failed', 'The mailer reported the test could not be sent.', array( 'status' => 500 ) );
+				return new WP_Error( 'send_failed', __( 'The mailer reported the test could not be sent.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
 			return rest_ensure_response( array(
 				'sent'    => true,
 				'logged'  => (bool) $logged,
 				'message' => $logged
-					? 'Test email sent and logged.'
-					: 'Test email sent, but another active mail plugin carried it, so it appears in that plugin’s log, not Gravity SMTP’s.',
+					? __( 'Test email sent and logged.', 'minimal-admin' )
+					: __( 'Test email sent, but another active mail plugin carried it, so it appears in that plugin’s log, not Gravity SMTP’s.', 'minimal-admin' ),
 			) );
 		},
 	) );
@@ -1222,7 +1227,7 @@ function minimal_admin_gsmtp_connector_options() {
 			}
 		}
 	} catch ( \Throwable $e ) {
-		return array( array( 'generic', 'Custom SMTP' ) );
+		return array( array( 'generic', __( 'Custom SMTP', 'minimal-admin' ) ) );
 	}
 	usort( $out, function ( $a, $b ) {
 		return strcasecmp( $a[1], $b[1] );
@@ -1243,14 +1248,14 @@ function minimal_admin_gsmtp_settings_shape( $tab ) {
 		$primary = minimal_admin_gsmtp_primary();
 		$groups  = array(
 			array(
-				'title'  => 'Sending service',
+				'title'  => __( 'Sending service', 'minimal-admin' ),
 				'fields' => array(
 					array(
 						'key'     => 'primary_connector',
-						'label'   => 'Primary service',
+						'label'   => __( 'Primary service', 'minimal-admin' ),
 						'type'    => 'combobox',
 						'options' => minimal_admin_gsmtp_connector_options(),
-						'help'    => 'Saving a different service reloads this tab with its settings.',
+						'help'    => __( 'Saving a different service reloads this tab with its settings.', 'minimal-admin' ),
 					),
 				),
 			),
@@ -1286,25 +1291,25 @@ function minimal_admin_gsmtp_settings_shape( $tab ) {
 	return array(
 		'groups'   => array(
 			array(
-				'title'  => 'Sending behavior',
+				'title'  => __( 'Sending behavior', 'minimal-admin' ),
 				'fields' => array(
-					array( 'key' => 'test_mode', 'label' => 'Test mode', 'type' => 'toggle', 'help' => 'Log emails without actually sending them.' ),
+					array( 'key' => 'test_mode', 'label' => __( 'Test mode', 'minimal-admin' ), 'type' => 'toggle', 'help' => 'Log emails without actually sending them.' ),
 				),
 			),
 			array(
-				'title'  => 'Email log',
+				'title'  => __( 'Email log', 'minimal-admin' ),
 				'fields' => array(
-					array( 'key' => 'event_log_enabled', 'label' => 'Keep an email log', 'type' => 'toggle' ),
-					array( 'key' => 'save_email_body_enabled', 'label' => 'Store message bodies', 'type' => 'toggle', 'help' => 'Needed for the detail preview and resend.', 'showWhen' => array( 'key' => 'event_log_enabled', 'equals' => true ) ),
-					array( 'key' => 'save_attachments_enabled', 'label' => 'Store attachments', 'type' => 'toggle', 'showWhen' => array( 'key' => 'event_log_enabled', 'equals' => true ) ),
-					array( 'key' => 'event_log_retention', 'label' => 'Retention (days)', 'type' => 'number', 'min' => 0, 'help' => '0 keeps the log forever.', 'showWhen' => array( 'key' => 'event_log_enabled', 'equals' => true ) ),
+					array( 'key' => 'event_log_enabled', 'label' => __( 'Keep an email log', 'minimal-admin' ), 'type' => 'toggle' ),
+					array( 'key' => 'save_email_body_enabled', 'label' => __( 'Store message bodies', 'minimal-admin' ), 'type' => 'toggle', 'help' => 'Needed for the detail preview and resend.', 'showWhen' => array( 'key' => 'event_log_enabled', 'equals' => true ) ),
+					array( 'key' => 'save_attachments_enabled', 'label' => __( 'Store attachments', 'minimal-admin' ), 'type' => 'toggle', 'showWhen' => array( 'key' => 'event_log_enabled', 'equals' => true ) ),
+					array( 'key' => 'event_log_retention', 'label' => __( 'Retention (days)', 'minimal-admin' ), 'type' => 'number', 'min' => 0, 'help' => '0 keeps the log forever.', 'showWhen' => array( 'key' => 'event_log_enabled', 'equals' => true ) ),
 				),
 			),
 			array(
-				'title'  => 'Debug log',
+				'title'  => __( 'Debug log', 'minimal-admin' ),
 				'fields' => array(
-					array( 'key' => 'debug_log_enabled', 'label' => 'Keep a debug log', 'type' => 'toggle' ),
-					array( 'key' => 'debug_log_retention', 'label' => 'Retention (days)', 'type' => 'number', 'min' => 0, 'showWhen' => array( 'key' => 'debug_log_enabled', 'equals' => true ) ),
+					array( 'key' => 'debug_log_enabled', 'label' => __( 'Keep a debug log', 'minimal-admin' ), 'type' => 'toggle' ),
+					array( 'key' => 'debug_log_retention', 'label' => __( 'Retention (days)', 'minimal-admin' ), 'type' => 'number', 'min' => 0, 'showWhen' => array( 'key' => 'debug_log_enabled', 'equals' => true ) ),
 				),
 			),
 		),
@@ -1386,7 +1391,7 @@ function minimal_admin_gravity_smtp_resend( WP_REST_Request $request ) {
 		(int) $request['id']
 	) );
 	if ( ! $row ) {
-		return new WP_Error( 'not_found', 'Event not found', array( 'status' => 404 ) );
+		return new WP_Error( 'not_found', __( 'Event not found', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 
 	$to          = null;
@@ -1397,7 +1402,7 @@ function minimal_admin_gravity_smtp_resend( WP_REST_Request $request ) {
 		$events    = $container->get( Gravity_Forms\Gravity_SMTP\Connectors\Connector_Service_Provider::EVENT_MODEL );
 		$event     = $events ? $events->get( (int) $row->id ) : null;
 		if ( is_array( $event ) && array_key_exists( 'can_resend', $event ) && ! $event['can_resend'] ) {
-			return new WP_Error( 'cannot_resend', 'Gravity SMTP reports this email cannot be resent (body or attachments were not stored).', array( 'status' => 422 ) );
+			return new WP_Error( 'cannot_resend', __( 'Gravity SMTP reports this email cannot be resent (body or attachments were not stored).', 'minimal-admin' ), array( 'status' => 422 ) );
 		}
 		$extra = unserialize( // phpcs:ignore -- their own endpoint's exact allowlist on their own data.
 			(string) $row->extra,
@@ -1440,7 +1445,7 @@ function minimal_admin_gravity_smtp_resend( WP_REST_Request $request ) {
 	if ( ! $to ) {
 		$addresses = array_filter( minimal_admin_gravity_smtp_to_addresses( $row->extra ), 'is_email' );
 		if ( ! $addresses ) {
-			return new WP_Error( 'no_recipients', 'No recipient address on record for this email.', array( 'status' => 422 ) );
+			return new WP_Error( 'no_recipients', __( 'No recipient address on record for this email.', 'minimal-admin' ), array( 'status' => 422 ) );
 		}
 		$to      = $addresses;
 		$is_html = (bool) preg_match( '/<\/?[a-z][\s\S]*>/i', (string) $row->message );
@@ -1457,14 +1462,14 @@ function minimal_admin_gravity_smtp_resend( WP_REST_Request $request ) {
 	$sent = wp_mail( $to, (string) $row->subject, (string) $row->message, $headers, $attachments );
 	remove_action( 'gravitysmtp_after_mail_created', $listener );
 	if ( ! $sent ) {
-		return new WP_Error( 'send_failed', 'The mailer reported the message could not be sent.', array( 'status' => 500 ) );
+		return new WP_Error( 'send_failed', __( 'The mailer reported the message could not be sent.', 'minimal-admin' ), array( 'status' => 500 ) );
 	}
 	return rest_ensure_response( array(
 		'resent'  => true,
 		'logged'  => (bool) $logged,
 		'message' => $logged
-			? 'Resent to the original recipients.'
-			: 'Resent, but another active mail plugin carried it, so the new send appears in that plugin’s log, not Gravity SMTP’s.',
+			? __( 'Resent to the original recipients.', 'minimal-admin' )
+			: __( 'Resent, but another active mail plugin carried it, so the new send appears in that plugin’s log, not Gravity SMTP’s.', 'minimal-admin' ),
 	) );
 }
 
@@ -1538,9 +1543,13 @@ function minimal_admin_gsmtp_send_chart( $days = 14 ) {
 	}
 
 	return array(
-		'title'     => 'Last ' . $days . ' days',
-		'primary'   => 'Sent',
-		'secondary' => 'Failed',
+		'title'     => sprintf(
+			/* translators: %d: number of days represented by the chart. */
+			_n( 'Last %d day', 'Last %d days', $days, 'minimal-admin' ),
+			$days
+		),
+		'primary'   => __( 'Sent', 'minimal-admin' ),
+		'secondary' => __( 'Failed', 'minimal-admin' ),
 		'points'    => $points,
 	);
 }
@@ -1550,7 +1559,7 @@ function minimal_admin_gsmtp_send_chart( $days = 14 ) {
  * unserializing it (PHP object injection would be a vulnerability here).
  */
 function minimal_admin_gravity_smtp_recipients( $extra ) {
-	$emails = minimal_admin_gravity_smtp_to_addresses( $extra );
+	$emails = minimal_admin_gravity_smtp_display_addresses( $extra );
 	if ( ! $emails ) {
 		return '';
 	}
@@ -1562,29 +1571,76 @@ function minimal_admin_gravity_smtp_recipients( $extra ) {
 }
 
 /**
- * The full To list from `extra`, scoped to the `to` Recipient_Collection so
- * cc/bcc/reply-to addresses are never treated as To recipients (Resend would
- * otherwise expose them in the To header).
+ * The To list from `extra`, scoped to the `to` key and nothing else.
+ *
+ * FAILS CLOSED: when the `to` scope cannot be located this returns an empty
+ * array, never "every address in the blob". A scope-extraction helper that
+ * guesses is worse than one that gives up, because the caller here is Resend,
+ * which puts what it returns into a real To header. Falling back to a blanket
+ * scan meant resending a message that had used bcc to keep its recipient list
+ * private republished that whole list to everyone on it, along with whatever
+ * the original body carried, which for a mail log is routinely a live
+ * password-reset or one-time-login link.
+ *
+ * Never unserializes: PHP object injection would be a vulnerability here.
+ *
+ * @param string $extra Serialized `extra` column.
+ * @return array Addresses in the `to` scope, empty when it cannot be resolved.
  */
 function minimal_admin_gravity_smtp_to_addresses( $extra ) {
 	if ( ! $extra ) {
 		return array();
 	}
-	// The `to` collection ends at the first `}}}` (recipient → array → collection).
-	if ( preg_match( '/s:2:"to";O:\d+:"[^"]*Recipient_Collection":\d+:\{.*?\}\}\}/s', $extra, $m ) ) {
-		if ( preg_match_all( '/s:5:"email";s:\d+:"([^"]+)"/', $m[0], $mm ) ) {
-			return array_values( array_unique( $mm[1] ) );
-		}
+	$extra = (string) $extra;
+
+	// Some write paths store `to` as a plain address string rather than a
+	// Recipient_Collection (Event_Model::create keeps whatever the caller
+	// passed). Accept that shape, including a multi-address string.
+	if ( preg_match( '/s:2:"to";s:\d+:"([^"]*)"/', $extra, $m ) ) {
+		$parts = array_filter( array_map( 'trim', explode( ',', $m[1] ) ), 'is_email' );
+		return array_values( array_unique( $parts ) );
+	}
+
+	$start = strpos( $extra, 's:2:"to";' );
+	if ( false === $start ) {
 		return array();
 	}
-	// Some write paths store `to` as a plain address string instead of a
-	// Recipient_Collection (Event_Model::create keeps whatever the caller
-	// passed) — accept that shape too.
-	if ( preg_match( '/s:2:"to";s:\d+:"([^"]+)"/', $extra, $m ) && is_email( $m[1] ) ) {
-		return array( $m[1] );
+	// Bound the window at the next sibling key rather than at the first `}}}`.
+	// That terminator has no relationship to serialized structure, so an empty
+	// or differently shaped `to` collection let the span run on into the cc and
+	// bcc keys that follow it.
+	$end = strlen( $extra );
+	foreach ( array( 's:2:"cc";', 's:3:"bcc";', 's:8:"reply_to";', 's:4:"from";', 's:7:"headers";', 's:11:"attachments";' ) as $sibling ) {
+		$at = strpos( $extra, $sibling, $start + 1 );
+		if ( false !== $at && $at < $end ) {
+			$end = $at;
+		}
 	}
-	if ( preg_match_all( '/s:5:"email";s:\d+:"([^"]+)"/', $extra, $m ) ) {
-		return array_values( array_unique( $m[1] ) );
+	$window = substr( $extra, $start, $end - $start );
+
+	if ( preg_match_all( '/s:5:"email";s:\d+:"([^"]+)"/', $window, $mm ) ) {
+		return array_values( array_unique( array_filter( $mm[1], 'is_email' ) ) );
+	}
+	return array();
+}
+
+/**
+ * Best-effort recipient addresses for DISPLAY only.
+ *
+ * The list column just needs something human to show, so a blanket scan is
+ * acceptable here in a way it never is on the send path. Keep the two apart:
+ * this must not be wired into Resend.
+ *
+ * @param string $extra Serialized `extra` column.
+ * @return array
+ */
+function minimal_admin_gravity_smtp_display_addresses( $extra ) {
+	$scoped = minimal_admin_gravity_smtp_to_addresses( $extra );
+	if ( $scoped ) {
+		return $scoped;
+	}
+	if ( $extra && preg_match_all( '/s:5:"email";s:\d+:"([^"]+)"/', (string) $extra, $m ) ) {
+		return array_values( array_unique( array_filter( $m[1], 'is_email' ) ) );
 	}
 	return array();
 }

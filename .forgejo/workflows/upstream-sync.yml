@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "17 */6 * * *"
   workflow_dispatch:
+  # A main-branch write (for example an approved translation sync) also checks
+  # for a missed upstream schedule. The resulting release commit triggers one
+  # harmless no-op run because upstream-lock.json is already current.
+  push:
+    branches:
+      - main
 
 concurrency:
   group: minimal-admin-upstream-sync
@@ -15,7 +21,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout downstream repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
@@ -31,16 +37,27 @@ jobs:
             | sort -V | tail -1)
           [ -n "$TAG" ] || { echo "No stable upstream tag found" >&2; exit 1; }
           CURRENT=$(jq -r '.upstream_tag // ""' upstream-lock.json)
+          VERSION="${TAG#v}.1"
+          MANIFEST_VERSION=$(jq -r '.version // ""' manifest.json)
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          if [ "$TAG" = "$CURRENT" ]; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "Already synchronized: $TAG"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [ "$TAG" != "$CURRENT" ]; then
+            echo "mode=sync" >> "$GITHUB_OUTPUT"
+          elif git ls-remote --exit-code --tags --refs origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            echo "mode=none" >> "$GITHUB_OUTPUT"
+            echo "Already synchronized and tagged: $TAG -> v$VERSION"
+          elif [ "$MANIFEST_VERSION" = "$VERSION" ]; then
+            # Covers an approved release commit merged through a protected branch:
+            # validate the exact merged commit, then create its missing tag.
+            echo "mode=tag" >> "$GITHUB_OUTPUT"
+            echo "Release source is current but tag v$VERSION is missing"
           else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Lock is current for $TAG but manifest version is $MANIFEST_VERSION, expected $VERSION" >&2
+            exit 1
           fi
 
       - name: Fetch and transform pinned upstream source
-        if: ${{ steps.upstream.outputs.changed == 'true' }}
+        if: ${{ steps.upstream.outputs.mode == 'sync' }}
         id: transform
         shell: bash
         run: |
@@ -53,6 +70,13 @@ jobs:
           COMMIT=$(git -C "$SOURCE" rev-parse HEAD)
           EXPECTED=$(git ls-remote --tags --refs \
             https://feicode.com/WPFork/minn-admin-upstream.git "refs/tags/$TAG" | awk '{print $1}')
+          CANONICAL=$(git ls-remote --tags --refs \
+            https://github.com/austinginder/minn-admin.git "refs/tags/$TAG" | awk '{print $1}')
+          [ -n "$CANONICAL" ] || { echo "Canonical upstream tag is missing: $TAG" >&2; exit 1; }
+          [ "$EXPECTED" = "$CANONICAL" ] || {
+            echo "Mirror tag target differs from canonical upstream: $TAG" >&2
+            exit 1
+          }
           [ "$COMMIT" = "$EXPECTED" ] || { echo "Pinned tag changed during fetch" >&2; exit 1; }
           if git show-ref --verify --quiet "refs/tags/v$VERSION"; then
             echo "Downstream tag v$VERSION already exists" >&2
@@ -61,14 +85,23 @@ jobs:
           python3 tools/sync_upstream.py \
             --source "$SOURCE" --output "$GITHUB_WORKSPACE" \
             --upstream-tag "$TAG" --upstream-commit "$COMMIT" --version "$VERSION"
+          if command -v opencc >/dev/null 2>&1; then
+            python3 tools/derive_zh_tw.py \
+              --source "$GITHUB_WORKSPACE/languages/minimal-admin-zh_CN.po" \
+              --output "$GITHUB_WORKSPACE/languages/minimal-admin-zh_TW.po"
+          else
+            echo "::warning::opencc is unavailable; preserving the existing zh_TW catalog"
+          fi
+          python3 tools/build_language_packs.py --root "$GITHUB_WORKSPACE" --update-manifest
           python3 tools/build_release.py --root "$GITHUB_WORKSPACE" --update-manifest
           python3 tools/verify_release.py --root "$GITHUB_WORKSPACE" \
             --zip "$GITHUB_WORKSPACE/dist/minimal-admin-$VERSION.zip"
+          python3 -m unittest discover -s tests -p '*_test.py'
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
 
       - name: Commit and tag verified source
-        if: ${{ steps.upstream.outputs.changed == 'true' }}
+        if: ${{ steps.upstream.outputs.mode == 'sync' }}
         shell: bash
         env:
           RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
@@ -97,3 +130,38 @@ jobs:
           git config --local --unset-all http.https://feicode.com/.extraheader || true
           GIT_CONFIG_GLOBAL=/dev/null GIT_ASKPASS="$ASKPASS" GIT_TERMINAL_PROMPT=0 \
             git push --atomic origin HEAD:main "refs/tags/v$VERSION"
+
+      - name: Validate and tag an approved release commit
+        if: ${{ steps.upstream.outputs.mode == 'tag' }}
+        shell: bash
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          [ -n "$RELEASE_TOKEN" ] || { echo "RELEASE_TOKEN is missing" >&2; exit 1; }
+          VERSION="${{ steps.upstream.outputs.version }}"
+          python3 tools/build_language_packs.py --root "$GITHUB_WORKSPACE"
+          python3 tools/build_release.py --root "$GITHUB_WORKSPACE"
+          python3 tools/verify_release.py --root "$GITHUB_WORKSPACE" \
+            --zip "$GITHUB_WORKSPACE/dist/minimal-admin-$VERSION.zip"
+          python3 -m unittest discover -s tests -p '*_test.py'
+          git diff --exit-code -- manifest.json languages || {
+            echo "Release source is not reproducible at the approved commit" >&2
+            exit 1
+          }
+          git config user.name "FeiCode Release Bot"
+          git config user.email "release-bot@wenpai.org"
+          git tag -a "v$VERSION" -m "Minimal Admin $VERSION"
+          ASKPASS=$(mktemp)
+          trap 'rm -f "$ASKPASS"' EXIT
+          cat > "$ASKPASS" <<'EOF'
+          #!/bin/sh
+          case "$1" in
+            *Username*) printf '%s\n' 'kekechong' ;;
+            *Password*) printf '%s\n' "$RELEASE_TOKEN" ;;
+          esac
+          EOF
+          chmod 700 "$ASKPASS"
+          git config --local --unset-all http.https://feicode.com/.extraheader || true
+          GIT_CONFIG_GLOBAL=/dev/null GIT_ASKPASS="$ASKPASS" GIT_TERMINAL_PROMPT=0 \
+            git push origin "refs/tags/v$VERSION"

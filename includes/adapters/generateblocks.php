@@ -32,7 +32,7 @@ function minimal_admin_generateblocks_active() {
 add_filter( 'minimal_admin_design_sources', function ( $sources ) {
 	if ( minimal_admin_generateblocks_active() ) {
 		$sources['generateblocks'] = array(
-			'label' => 'GenerateBlocks',
+			'label' => __( 'GenerateBlocks', 'minimal-admin' ),
 			'route' => 'minimal-admin/v1/generateblocks/designs',
 		);
 	}

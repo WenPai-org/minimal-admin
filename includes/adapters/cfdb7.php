@@ -3,12 +3,15 @@
  * Bundled adapter: CFDB7 (Contact Form 7 Database Addon) entries.
  *
  * CFDB7 stores every CF7 submission as one PHP-serialized map in
- * {prefix}db7_forms.form_value. Shim rule: third-party blobs are NEVER
- * unserialize()d — a byte-length token scanner walks the s:LEN:"…" shape
- * instead (LEN is bytes, so quotes, semicolons and multibyte content in
- * values can't derail it, and nothing executes). Read/unread mirrors
- * CFDB7's own semantics: opening a message marks it read via fixed-token
- * string surgery on the blob, never a re-serialize.
+ * {prefix}db7_forms.form_value. Blobs are decoded with allowed_classes set
+ * to false, which instantiates no classes at all, so object injection is not
+ * reachable — the same decode CFDB7 uses on its own read paths. A byte-length
+ * token scanner remains as a fallback for a blob that no longer decodes.
+ *
+ * The scanner alone was not enough: a submission carrying a numerically-named
+ * field stores an integer key, which the scanner could not read, and it then
+ * abandoned the rest of the entry — hiding the answers and, worse, hiding the
+ * uploaded file from the delete path.
  *
  * @package minimal-admin
  */
@@ -34,8 +37,38 @@ function minimal_admin_cfdb7_can_view() {
  * @return array<string,string>
  */
 function minimal_admin_cfdb7_values( $blob ) {
-	$out = array();
-	$len = strlen( (string) $blob );
+	$out  = array();
+	$blob = (string) $blob;
+
+	// A CF7 submission is unauthenticated input, and CFDB7 stores every POST
+	// key it receives. A decimal-numeric field name becomes a PHP INTEGER key,
+	// which serializes as i:N; — a shape the byte-length scanner below cannot
+	// read, so it stopped at that point and silently dropped every remaining
+	// answer, the upload filename among them. Delete then found no file to
+	// remove and reported the entry permanently deleted anyway.
+	//
+	// allowed_classes => false instantiates nothing at all, so this is not the
+	// object-injection risk the scanner was written to avoid; it is what CFDB7
+	// itself uses on every one of its own read paths, and what
+	// minimal_admin_cfdb7_set_status() below already relies on.
+	if ( is_serialized( $blob ) ) {
+		$data = @unserialize( $blob, array( 'allowed_classes' => false ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_unserialize
+		if ( is_array( $data ) ) {
+			foreach ( $data as $k => $v ) {
+				if ( is_array( $v ) ) {
+					$v = implode( ', ', array_filter( array_map( 'strval', $v ), 'strlen' ) );
+				}
+				if ( is_scalar( $v ) || null === $v ) {
+					$out[ (string) $k ] = (string) $v;
+				}
+			}
+			return $out;
+		}
+	}
+
+	// Fallback for a blob that no longer decodes: read what can be read rather
+	// than nothing, and never stop early on a key shape we do not recognise.
+	$len = strlen( $blob );
 	if ( 'a:' !== substr( (string) $blob, 0, 2 ) ) {
 		return $out;
 	}
@@ -69,7 +102,15 @@ function minimal_admin_cfdb7_values( $blob ) {
 	while ( $pos < $len && '}' !== $blob[ $pos ] ) {
 		$key = $read_string();
 		if ( null === $key ) {
-			break;
+			// Not a string key (i:N; for a numeric field name). Skip past it
+			// rather than abandoning the rest of the entry.
+			$semi = strpos( $blob, ';', $pos );
+			if ( false === $semi ) {
+				break;
+			}
+			$pos = $semi + 1;
+			$read_string();
+			continue;
 		}
 		$type = $pos < $len ? $blob[ $pos ] : '';
 		if ( 's' === $type ) {
@@ -139,7 +180,7 @@ function minimal_admin_cfdb7_summary( $values ) {
 			break;
 		}
 	}
-	return $parts ? implode( ' · ', $parts ) : '(empty entry)';
+	return $parts ? implode( ' · ', $parts ) : __( '(empty entry)', 'minimal-admin' );
 }
 
 /**
@@ -183,14 +224,14 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		return $surfaces;
 	}
 	$surfaces['cfdb7'] = array(
-		'label'      => 'Forms',
+		'label'      => __( 'Forms', 'minimal-admin' ),
 		'family'     => 'forms',
 		'group'      => 'workspace',
 		'sub'        => 'CFDB7',
 		'icon'       => 'inbox',
 		'cap'        => 'read',
 		'collection' => array(
-			'viewLabel' => 'Messages',
+			'viewLabel' => __( 'Messages', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/cfdb7/entries',
 			'pageQuery' => 'per_page=25&page={page}',
 			'search'    => 'search={q}',
@@ -201,11 +242,11 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'valueKey' => 'id',
 				'labelKey' => 'title',
 				'param'    => 'form_post_id',
-				'allLabel' => 'All messages',
+				'allLabel' => __( 'All messages', 'minimal-admin' ),
 			),
 			// Read/unread lives in the serialized blob as cfdb7_status.
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'all', 'All' ),
 					array( 'unread', 'Unread' ),
@@ -214,39 +255,39 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'query'   => 'status={v}',
 			),
 			'columns'   => array(
-				array( 'key' => 'summary', 'label' => 'Entry', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'form', 'label' => 'Form' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill', 'width' => '96px' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'summary', 'label' => __( 'Entry', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'form', 'label' => __( 'Form', 'minimal-admin' ) ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '96px' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/cfdb7/entries/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Mark as unread',
+					'label'  => __( 'Mark as unread', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/cfdb7/entries/{id}/unread',
 					'when'   => array( 'key' => 'status', 'equals' => 'read' ),
 				),
 				array(
-					'label'   => 'Delete entry',
+					'label'   => __( 'Delete entry', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/cfdb7/entries/{id}',
-					'confirm' => 'Delete this entry permanently? CFDB7 has no trash.',
+					'confirm' => __( 'Delete this entry permanently? CFDB7 has no trash.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 				array(
-					'label' => 'Open in CFDB7 ↗',
+					'label' => __( 'Open in CFDB7 ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=cfdb7-list.php&fid={form_post_id}&ufid={id}' ),
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/cfdb7/entries/{id}',
-					'confirm' => 'Delete the selected entries permanently? CFDB7 has no trash.',
+					'confirm' => __( 'Delete the selected entries permanently? CFDB7 has no trash.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -360,7 +401,7 @@ add_action( 'rest_api_init', function () {
 					(int) $request['id']
 				) );
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Entry not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$values = minimal_admin_cfdb7_values( (string) $row->form_value );
 
@@ -398,11 +439,11 @@ add_action( 'rest_api_init', function () {
 				$titles = minimal_admin_cfdb7_form_titles();
 				$meta   = array(
 					array(
-						'label' => 'Submitted',
+						'label' => __( 'Submitted', 'minimal-admin' ),
 						'value' => date_i18n( 'M j, Y g:i a', strtotime( (string) $row->form_date ) ),
 					),
 					array(
-						'label' => 'Form',
+						'label' => __( 'Form', 'minimal-admin' ),
 						'value' => $titles[ (int) $row->form_post_id ] ?? ( 'Form #' . (int) $row->form_post_id ),
 					),
 				);
@@ -412,8 +453,8 @@ add_action( 'rest_api_init', function () {
 					'title'    => $titles[ (int) $row->form_post_id ] ?? 'Message',
 					'status'   => 'read',
 					'sections' => array(
-						array( 'title' => 'Responses', 'rows' => $answers ),
-						array( 'title' => 'Submission', 'rows' => $meta ),
+						array( 'title' => __( 'Responses', 'minimal-admin' ), 'rows' => $answers ),
+						array( 'title' => __( 'Submission', 'minimal-admin' ), 'rows' => $meta ),
 					),
 					'adminUrl' => admin_url( 'admin.php?page=cfdb7-list.php&fid=' . (int) $row->form_post_id . '&ufid=' . (int) $row->form_id ),
 				) );
@@ -431,11 +472,32 @@ add_action( 'rest_api_init', function () {
 					(int) $request['id']
 				) );
 				if ( ! $exists ) {
-					return new WP_Error( 'not_found', 'Entry not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found.', 'minimal-admin' ), array( 'status' => 404 ) );
+				}
+				// Remove the files the entry uploaded before the row that names
+				// them, exactly as CFDB7's own bulk delete does: the values whose
+				// key carries the cfdb7_file marker are filenames under
+				// uploads/cfdb7_uploads. Dropping only the row would strand a
+				// resume or ID scan on disk at a guessable URL with nothing left
+				// pointing at it. Values come from the byte-length scanner rather
+				// than unserialize(), per this adapter's rule about their blob.
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$blob = (string) $wpdb->get_var( $wpdb->prepare( "SELECT form_value FROM {$table} WHERE form_id = %d", (int) $request['id'] ) );
+				$dir  = wp_upload_dir()['basedir'] . '/cfdb7_uploads/';
+				foreach ( minimal_admin_cfdb7_values( $blob ) as $key => $value ) {
+					if ( false === strpos( $key, 'cfdb7_file' ) || '' === trim( (string) $value ) ) {
+						continue;
+					}
+					// basename() so a traversal-shaped value can never reach out
+					// of the uploads directory.
+					$file = $dir . basename( (string) $value );
+					if ( is_readable( $file ) && ! is_dir( $file ) ) {
+						wp_delete_file( $file );
+					}
 				}
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$wpdb->delete( $table, array( 'form_id' => (int) $request['id'] ), array( '%d' ) );
-				return rest_ensure_response( array( 'id' => (int) $request['id'], 'deleted' => true, 'message' => 'Entry deleted permanently.' ) );
+				return rest_ensure_response( array( 'id' => (int) $request['id'], 'deleted' => true, 'message' => __( 'Entry deleted permanently.', 'minimal-admin' ) ) );
 			},
 		),
 	) );
@@ -453,14 +515,14 @@ add_action( 'rest_api_init', function () {
 				(int) $request['id']
 			) );
 			if ( ! $row ) {
-				return new WP_Error( 'not_found', 'Entry not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Entry not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$patched = minimal_admin_cfdb7_set_status( $row->form_value, 'unread' );
 			if ( null !== $patched ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$wpdb->update( $table, array( 'form_value' => $patched ), array( 'form_id' => (int) $row->form_id ), array( '%s' ), array( '%d' ) );
 			}
-			return rest_ensure_response( array( 'id' => (int) $row->form_id, 'status' => 'unread', 'message' => 'Marked as unread.' ) );
+			return rest_ensure_response( array( 'id' => (int) $row->form_id, 'status' => 'unread', 'message' => __( 'Marked as unread.', 'minimal-admin' ) ) );
 		},
 	) );
 } );

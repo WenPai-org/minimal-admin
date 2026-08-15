@@ -20,9 +20,59 @@ defined( 'ABSPATH' ) || exit;
 function minimal_admin_stream_can() {
 	// Defer entirely to Stream. view_stream is granted dynamically from its
 	// general_role_access setting, so an operator who removes administrator
-	// from Role Access means it — a manage_options backstop overrides that
-	// choice. Stream registers the cap filter for REST contexts itself.
-	return current_user_can( apply_filters( 'wp_stream_view_cap', 'view_stream' ) );
+	// from Role Access means it — a manage_options backstop would override
+	// that choice, and this must never become one.
+	$cap = apply_filters( 'wp_stream_view_cap', 'view_stream' );
+	if ( current_user_can( $cap ) ) {
+		return true;
+	}
+	// Stream grants view_stream through a user_has_cap filter that its Admin
+	// class registers, and Admin never loads in a REST request. Stream ships
+	// a REST-side equivalent in its Abilities class, but registers it inside
+	// a method that returns early unless the Abilities API integration is
+	// switched on — an unrelated, default-OFF feature flag. Verified from
+	// inside a real REST request on a default install: role_access is
+	// ["administrator"], the caller IS an administrator, no Stream callback
+	// is on user_has_cap, and view_stream comes back false. So on any site
+	// that has not opted into that flag, nobody can read Stream over REST.
+	//
+	// Falling back to Stream's OWN rule keeps the deferral honest: read
+	// their Role Access setting and match the caller's roles exactly as
+	// their filter does. Remove administrator from Role Access and this
+	// returns false for administrators, which is the whole point.
+	if ( 'view_stream' !== $cap ) {
+		return false; // A site that renamed the cap is telling us to use it.
+	}
+	try {
+		$plugin = function_exists( 'wp_stream_get_instance' ) ? wp_stream_get_instance() : null;
+		if ( ! $plugin || ! isset( $plugin->settings ) || ! method_exists( $plugin->settings, 'get_setting_value' ) ) {
+			return false;
+		}
+		// Their own reader, so the network-level option is consulted on a
+		// network-activated multisite.
+		$role_access = (array) $plugin->settings->get_setting_value( 'general_role_access', array() );
+		if ( ! $role_access ) {
+			return false;
+		}
+		$user = wp_get_current_user();
+		if ( ! $user || ! $user->exists() ) {
+			return false;
+		}
+		global $wp_roles;
+		$roles_obj = isset( $wp_roles ) ? $wp_roles : new WP_Roles();
+		$roles     = array_unique( array_merge(
+			(array) $user->roles,
+			array_filter( array_keys( (array) $user->caps ), array( $roles_obj, 'is_role' ) )
+		) );
+		foreach ( $roles as $role ) {
+			if ( in_array( $role, $role_access, true ) ) {
+				return true;
+			}
+		}
+	} catch ( \Throwable $e ) {
+		return false;
+	}
+	return false;
 }
 
 function minimal_admin_stream_admin_url() {
@@ -36,12 +86,12 @@ function minimal_admin_stream_admin_url() {
  */
 function minimal_admin_stream_status_model() {
 	global $wpdb;
-	$table = $wpdb->prefix . 'stream';
+	$table = $wpdb->base_prefix . 'stream';
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
 		return array(
-			'rows'    => array( array( 'label' => 'Events', 'value' => '—', 'hint' => 'Stream table not found' ) ),
-			'actions' => array( array( 'label' => 'Open Stream ↗', 'href' => minimal_admin_stream_admin_url() ) ),
+			'rows'    => array( array( 'label' => __( 'Events', 'minimal-admin' ), 'value' => '—', 'hint' => __( 'Stream table not found', 'minimal-admin' ) ) ),
+			'actions' => array( array( 'label' => __( 'Open Stream ↗', 'minimal-admin' ), 'href' => minimal_admin_stream_admin_url() ) ),
 		);
 	}
 	$blog      = get_current_blog_id();
@@ -75,7 +125,11 @@ function minimal_admin_stream_status_model() {
 	if ( $last ) {
 		$ts = strtotime( $last . ' UTC' );
 		if ( $ts ) {
-			$last_label = human_time_diff( $ts, time() ) . ' ago';
+			$last_label = sprintf(
+				/* translators: %s: human-readable time since the last event. */
+				__( '%s ago', 'minimal-admin' ),
+				human_time_diff( $ts, time() )
+			);
 		}
 	}
 	$top_label = '—';
@@ -87,25 +141,26 @@ function minimal_admin_stream_status_model() {
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Events (24h)',
+				'label' => __( 'Events (24h)', 'minimal-admin' ),
 				'value' => number_format_i18n( $day ),
-				'hint'  => number_format_i18n( $week ) . ' in the last 7 days',
+				/* translators: %s: number of events logged in the last 7 days. */
+				'hint'  => sprintf( __( '%s in the last 7 days', 'minimal-admin' ), number_format_i18n( $week ) ),
 			),
 			array(
-				'label' => 'Events all-time',
+				'label' => __( 'Events all-time', 'minimal-admin' ),
 				'value' => number_format_i18n( $total ),
 			),
 			array(
-				'label' => 'Last event',
+				'label' => __( 'Last event', 'minimal-admin' ),
 				'value' => $last_label,
 			),
 			array(
-				'label' => 'Top source (7d)',
+				'label' => __( 'Top source (7d)', 'minimal-admin' ),
 				'value' => $top_label,
 			),
 		),
 		'actions' => array(
-			array( 'label' => 'Open Stream ↗', 'href' => minimal_admin_stream_admin_url() ),
+			array( 'label' => __( 'Open Stream ↗', 'minimal-admin' ), 'href' => minimal_admin_stream_admin_url() ),
 		),
 	);
 }
@@ -119,7 +174,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['stream'] = array(
-		'label'      => 'Activity Log',
+		'label'      => __( 'Activity Log', 'minimal-admin' ),
 		'family'     => 'activity-log',
 		'sub'        => 'Stream',
 		'icon'       => 'clock',
@@ -137,13 +192,13 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'valueKey' => 'id',
 				'labelKey' => 'title',
 				'param'    => 'connector',
-				'allLabel' => 'All sources',
+				'allLabel' => __( 'All sources', 'minimal-admin' ),
 			),
 			'columns'   => array(
-				array( 'key' => 'summary', 'label' => 'Event', 'format' => 'title' ),
-				array( 'key' => 'who', 'label' => 'Who' ),
-				array( 'key' => 'connector', 'label' => 'Source', 'format' => 'pill' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'summary', 'label' => __( 'Event', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'who', 'label' => __( 'Who', 'minimal-admin' ) ),
+				array( 'key' => 'connector', 'label' => __( 'Source', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'skip' => array( 'summary' ),
@@ -171,7 +226,7 @@ add_action( 'rest_api_init', function () {
 		'permission_callback' => 'minimal_admin_stream_can',
 		'callback'            => function () {
 			global $wpdb;
-			$table = $wpdb->prefix . 'stream';
+			$table = $wpdb->base_prefix . 'stream';
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$cols = $wpdb->get_col( $wpdb->prepare(
 				"SELECT DISTINCT connector FROM {$table} WHERE blog_id = %d AND connector != '' ORDER BY connector ASC",
@@ -193,7 +248,7 @@ add_action( 'rest_api_init', function () {
 		'permission_callback' => 'minimal_admin_stream_can',
 		'callback'            => function ( WP_REST_Request $request ) {
 			global $wpdb;
-			$table    = $wpdb->prefix . 'stream';
+			$table    = $wpdb->base_prefix . 'stream';
 			$per_page = min( 100, max( 1, (int) ( $request['per_page'] ?: 25 ) ) );
 			$page     = max( 1, (int) ( $request['page'] ?: 1 ) );
 			$where    = array( 'blog_id = %d' );

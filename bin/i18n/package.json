@@ -1,0 +1,12 @@
+{
+	"name": "minimal-admin-i18n",
+	"private": true,
+	"description": "Translation pipeline for Minimal Admin. Dev-time only; nothing here ships in the plugin zip.",
+	"scripts": {
+		"locales": "node locales.js",
+		"coverage": "node core-glossary.js"
+	},
+	"dependencies": {
+		"@anthropic-ai/sdk": "^0.116.0"
+	}
+}

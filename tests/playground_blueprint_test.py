@@ -24,6 +24,8 @@ class PlaygroundBlueprintTest(unittest.TestCase):
                     "0.25.0.5",
                     "--locale",
                     "zh_CN",
+                    "--language-pack-path",
+                    "minimal-admin-zh_CN.zip",
                     "--output",
                     str(output),
                 ],
@@ -34,6 +36,14 @@ class PlaygroundBlueprintTest(unittest.TestCase):
                 blueprint["steps"][1]["pluginData"],
                 {"resource": "bundled", "path": "minimal-admin.zip"},
             )
+            unzip = next(step for step in blueprint["steps"] if step["step"] == "unzip")
+            self.assertEqual(
+                unzip["zipFile"],
+                {"resource": "bundled", "path": "minimal-admin-zh_CN.zip"},
+            )
+            commands = [step.get("command", "") for step in blueprint["steps"]]
+            self.assertTrue(any("Plugin translation did not load" in command for command in commands))
+            self.assertTrue(any("Language pack was not registered" in command for command in commands))
 
 
 if __name__ == "__main__":

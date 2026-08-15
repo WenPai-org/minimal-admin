@@ -152,18 +152,18 @@ function minimal_admin_performance_lab_status() {
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Active features',
-				'value' => $active . ' of ' . $total,
-				'hint'  => 'Standalone plugins managed by Performance Lab',
+				'label' => __( 'Active features', 'minimal-admin' ),
+				'value' => $active . ' / ' . $total,
+				'hint'  => __( 'Standalone plugins managed by Performance Lab', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'Performance Lab',
+				'label' => __( 'Performance Lab', 'minimal-admin' ),
 				'value' => defined( 'PERFLAB_VERSION' ) ? 'v' . PERFLAB_VERSION : '—',
 			),
 		),
 		'actions' => array(
 			array(
-				'label' => 'Open Performance features ↗',
+				'label' => __( 'Open Performance features ↗', 'minimal-admin' ),
 				'href'  => admin_url( 'options-general.php?page=' . ( defined( 'PERFLAB_SCREEN' ) ? PERFLAB_SCREEN : 'performance-lab' ) ),
 			),
 		),
@@ -179,7 +179,7 @@ function minimal_admin_performance_lab_status() {
 function minimal_admin_performance_lab_activate( $slug ) {
 	$data = perflab_get_standalone_plugin_data();
 	if ( ! isset( $data[ $slug ] ) ) {
-		return new WP_Error( 'minimal_unknown_feature', 'Unknown Performance Lab feature.', array( 'status' => 404 ) );
+		return new WP_Error( 'minimal_unknown_feature', __( 'Unknown Performance Lab feature.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 	if ( ! function_exists( 'perflab_install_and_activate_plugin' ) ) {
 		// Their helper lives in admin/plugins.php; load it for REST.
@@ -196,7 +196,7 @@ function minimal_admin_performance_lab_activate( $slug ) {
 		}
 	}
 	if ( ! function_exists( 'perflab_install_and_activate_plugin' ) ) {
-		return new WP_Error( 'minimal_no_activate', 'Performance Lab activate helper is not available.', array( 'status' => 500 ) );
+		return new WP_Error( 'minimal_no_activate', __( 'Performance Lab activate helper is not available.', 'minimal-admin' ), array( 'status' => 500 ) );
 	}
 	$result = perflab_install_and_activate_plugin( $slug );
 	if ( is_wp_error( $result ) ) {
@@ -214,19 +214,22 @@ function minimal_admin_performance_lab_activate( $slug ) {
 function minimal_admin_performance_lab_deactivate( $slug ) {
 	$data = perflab_get_standalone_plugin_data();
 	if ( ! isset( $data[ $slug ] ) ) {
-		return new WP_Error( 'minimal_unknown_feature', 'Unknown Performance Lab feature.', array( 'status' => 404 ) );
+		return new WP_Error( 'minimal_unknown_feature', __( 'Unknown Performance Lab feature.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 	$file = minimal_admin_performance_lab_file( $slug );
 	if ( ! $file ) {
-		return new WP_Error( 'minimal_not_installed', 'That feature is not installed.', array( 'status' => 400 ) );
+		return new WP_Error( 'minimal_not_installed', __( 'That feature is not installed.', 'minimal-admin' ), array( 'status' => 400 ) );
 	}
 	if ( ! function_exists( 'deactivate_plugins' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 	}
-	if ( ! current_user_can( 'activate_plugin', $file ) ) {
-		return new WP_Error( 'minimal_cannot_deactivate', 'You cannot deactivate this plugin.', array( 'status' => 403 ) );
+	// The per-object meta cap alone lets a subsite administrator network-
+	// deactivate a network-active feature; see Minimal_Admin::plugin_toggle_denied().
+	$denied = Minimal_Admin::plugin_toggle_denied( $file );
+	if ( $denied ) {
+		return new WP_Error( 'minimal_cannot_deactivate', $denied->get_error_message(), array( 'status' => 403 ) );
 	}
-	deactivate_plugins( $file, false, is_multisite() && is_plugin_active_for_network( $file ) );
+	deactivate_plugins( $file, false, Minimal_Admin::plugin_toggle_is_network( $file, false ) );
 	return true;
 }
 
@@ -235,7 +238,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		return $surfaces;
 	}
 	$surfaces['performance-lab'] = array(
-		'label'      => 'Performance',
+		'label'      => __( 'Performance', 'minimal-admin' ),
 		'sub'        => 'Performance Lab',
 		'family'     => 'performance',
 		'icon'       => 'gear',
@@ -248,26 +251,30 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'search'    => false,
 			'columns'   => array(
 				// format title = first-column weight (no undocumented "primary" key).
-				array( 'key' => 'name', 'label' => 'Feature', 'format' => 'title' ),
-				array( 'key' => 'status_label', 'label' => 'Status', 'format' => 'pill', 'width' => '120px' ),
-				array( 'key' => 'slug', 'label' => 'Slug', 'width' => '180px' ),
+				array( 'key' => 'name', 'label' => __( 'Feature', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'status_label', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '120px' ),
+				array( 'key' => 'slug', 'label' => __( 'Slug', 'minimal-admin' ), 'width' => '180px' ),
+			),
+			'detail'    => array(
+				// Action gates and internal URLs are not useful user-facing metadata.
+				'skip' => array( 'can_activate', 'can_deactivate', 'experimental', 'has_settings', 'settings_url' ),
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'route'  => 'minimal-admin/v1/performance-lab/features/{id}/activate',
 					'method' => 'POST',
 					'when'   => array( 'key' => 'can_activate', 'equals' => '1' ),
 				),
 				array(
-					'label'   => 'Deactivate',
+					'label'   => __( 'Deactivate', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/performance-lab/features/{id}/deactivate',
 					'method'  => 'POST',
-					'confirm' => 'Deactivate this Performance Lab feature?',
+					'confirm' => __( 'Deactivate this Performance Lab feature?', 'minimal-admin' ),
 					'when'    => array( 'key' => 'can_deactivate', 'equals' => '1' ),
 				),
 				array(
-					'label' => 'Settings ↗',
+					'label' => __( 'Settings ↗', 'minimal-admin' ),
 					'href'  => '{settings_url}',
 					'when'  => array( 'key' => 'has_settings', 'equals' => '1' ),
 				),

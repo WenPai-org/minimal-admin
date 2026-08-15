@@ -10,7 +10,7 @@ import zipfile
 from pathlib import Path
 
 ROOT_SLUG = "minimal-admin"
-EXCLUDED_PREFIXES = ("tests/", ".wp-playground/", ".github/", ".forgejo/", "tools/")
+EXCLUDED_PREFIXES = ("tests/", ".wp-playground/", ".github/", ".forgejo/", "tools/", "bin/")
 EXCLUDED_FILES = {".gitignore", ".upstream-files.json", "upstream-lock.json", "CLAUDE.md"}
 EXTRA_FILES = ("NOTICE", "UPSTREAM.md")
 TRANSLATION_SUFFIXES = (".po", ".mo", ".json")
@@ -26,7 +26,13 @@ def arguments() -> argparse.Namespace:
 
 
 def should_package(relative: str) -> bool:
-    return relative not in EXCLUDED_FILES and not relative.startswith(EXCLUDED_PREFIXES)
+    if relative in EXCLUDED_FILES or relative.startswith(EXCLUDED_PREFIXES):
+        return False
+    if relative.startswith("languages/") and Path(relative).suffix in {".po", ".pot"}:
+        return False
+    if relative.startswith("languages/reviewed/"):
+        return False
+    return True
 
 
 def main() -> int:
@@ -44,11 +50,12 @@ def main() -> int:
     index = json.loads((root / ".upstream-files.json").read_text())
     relative_files = [item for item in index["files"] if should_package(item)]
     relative_files.extend(item for item in EXTRA_FILES if (root / item).is_file())
-    relative_files.extend(
-        path.relative_to(root).as_posix()
-        for path in (root / "languages").glob("minimal-admin-*")
-        if path.is_file() and path.suffix in TRANSLATION_SUFFIXES
-    )
+    for locale in ("zh_CN", "zh_TW"):
+        relative_files.extend(
+            path.relative_to(root).as_posix()
+            for path in (root / "languages").glob(f"minimal-admin-{locale}*")
+            if path.is_file() and path.suffix in TRANSLATION_SUFFIXES
+        )
     for locale in ("zh_CN", "zh_TW"):
         locale_root = root / "docs" / locale
         if locale_root.is_dir():

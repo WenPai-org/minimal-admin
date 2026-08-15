@@ -18,9 +18,31 @@
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Who may read the Aryo activity log through Minimal.
+ *
+ * edit_pages is Activity Log's MENU capability, but the menu is not where the
+ * plugin draws its boundary. AAL_Activity_Log_List_Table::_get_where_by_role()
+ * appends an object_type + user_caps clause to EVERY query it runs, so in the
+ * plugin's own screen an Editor sees only Posts/Taxonomies/Attachments/Comments
+ * performed by editor/author/guest — never administrator actions, and never
+ * the Core/Export/Users/Plugins/Options/Theme/Menu/Widget modules.
+ *
+ * Minimal's shim reproduces those queries without the role clause, so copying
+ * only the menu cap would hand an Editor plugin installs, user-role changes,
+ * option changes, every acting username and every retained IP, plus the
+ * attempted usernames on failed logins. This view shows everything, so it
+ * asks for the capability that means everything, the way the Stream and WSAL
+ * adapters defer to their vendors' own resolvers. Sites that granted the
+ * lesser cap deliberately can restore it with the filter.
+ *
+ * @return bool
+ */
 function minimal_admin_aryo_can_view() {
-	return current_user_can( 'view_all_aryo_activity_log' )
-		|| current_user_can( apply_filters( 'aal_menu_page_capability', 'edit_pages' ) );
+	return (bool) apply_filters(
+		'minimal_admin_aryo_can_view',
+		current_user_can( 'view_all_aryo_activity_log' ) || current_user_can( 'manage_options' )
+	);
 }
 
 function minimal_admin_aryo_admin_url() {
@@ -38,8 +60,8 @@ function minimal_admin_aryo_status_model() {
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
 		return array(
-			'rows'    => array( array( 'label' => 'Events', 'value' => '—', 'hint' => 'Log table not found' ) ),
-			'actions' => array( array( 'label' => 'Open Activity Log ↗', 'href' => minimal_admin_aryo_admin_url() ) ),
+			'rows'    => array( array( 'label' => __( 'Events', 'minimal-admin' ), 'value' => '—', 'hint' => __( 'Log table not found', 'minimal-admin' ) ) ),
+			'actions' => array( array( 'label' => __( 'Open Activity Log ↗', 'minimal-admin' ), 'href' => minimal_admin_aryo_admin_url() ) ),
 		);
 	}
 	// hist_time is site-local epoch — compare against current_time('timestamp').
@@ -61,7 +83,11 @@ function minimal_admin_aryo_status_model() {
 	$last_label = '—';
 	if ( $last ) {
 		// Display relative to "now" in the same clock the row used (site local).
-		$last_label = human_time_diff( (int) $last, $now ) . ' ago';
+		$last_label = sprintf(
+			/* translators: %s: human-readable time since the last event. */
+			__( '%s ago', 'minimal-admin' ),
+			human_time_diff( (int) $last, $now )
+		);
 	}
 	$top_label = '—';
 	if ( $top && ! empty( $top->action ) ) {
@@ -72,25 +98,29 @@ function minimal_admin_aryo_status_model() {
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Events (24h)',
+				'label' => __( 'Events (24h)', 'minimal-admin' ),
 				'value' => number_format_i18n( $day ),
-				'hint'  => number_format_i18n( $week ) . ' in the last 7 days',
+				'hint'  => sprintf(
+					/* translators: %s: number of events recorded in the last 7 days. */
+					__( '%s in the last 7 days', 'minimal-admin' ),
+					number_format_i18n( $week )
+				),
 			),
 			array(
-				'label' => 'Events all-time',
+				'label' => __( 'Events all-time', 'minimal-admin' ),
 				'value' => number_format_i18n( $total ),
 			),
 			array(
-				'label' => 'Last event',
+				'label' => __( 'Last event', 'minimal-admin' ),
 				'value' => $last_label,
 			),
 			array(
-				'label' => 'Top action (7d)',
+				'label' => __( 'Top action (7d)', 'minimal-admin' ),
 				'value' => $top_label,
 			),
 		),
 		'actions' => array(
-			array( 'label' => 'Open Activity Log ↗', 'href' => minimal_admin_aryo_admin_url() ),
+			array( 'label' => __( 'Open Activity Log ↗', 'minimal-admin' ), 'href' => minimal_admin_aryo_admin_url() ),
 		),
 	);
 }
@@ -104,7 +134,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['aryo-activity-log'] = array(
-		'label'      => 'Activity Log',
+		'label'      => __( 'Activity Log', 'minimal-admin' ),
 		'family'     => 'activity-log',
 		// Plugin product name is just "Activity Log"; use Aryo so the
 		// family switcher can tell it apart from Simple History / Stream.
@@ -124,13 +154,13 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'valueKey' => 'id',
 				'labelKey' => 'title',
 				'param'    => 'action',
-				'allLabel' => 'All actions',
+				'allLabel' => __( 'All actions', 'minimal-admin' ),
 			),
 			'columns'   => array(
-				array( 'key' => 'message', 'label' => 'Event', 'format' => 'title' ),
-				array( 'key' => 'who', 'label' => 'Who' ),
-				array( 'key' => 'action', 'label' => 'Action', 'format' => 'pill' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'message', 'label' => __( 'Event', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'who', 'label' => __( 'Who', 'minimal-admin' ) ),
+				array( 'key' => 'action', 'label' => __( 'Action', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'skip' => array( 'message' ),

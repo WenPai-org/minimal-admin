@@ -26,15 +26,15 @@ defined( 'ABSPATH' ) || exit;
  */
 function minimal_admin_perfmatters_tabs() {
 	return array(
-		'general'   => array( 'label' => 'General', 'sections' => array( 'perfmatters_options', 'login_url', 'perfmatters_woocommerce' ) ),
-		'js'        => array( 'label' => 'JavaScript', 'sections' => array( 'assets_js_defer', 'assets_js_delay', 'assets_js_minify' ) ),
+		'general'   => array( 'label' => __( 'General', 'minimal-admin' ), 'sections' => array( 'perfmatters_options', 'login_url', 'perfmatters_woocommerce' ) ),
+		'js'        => array( 'label' => __( 'JavaScript', 'minimal-admin' ), 'sections' => array( 'assets_js_defer', 'assets_js_delay', 'assets_js_minify' ) ),
 		'css'       => array( 'label' => 'CSS', 'sections' => array( 'assets_css', 'assets_css_minify' ) ),
-		'code'      => array( 'label' => 'Code', 'sections' => array( 'assets_code' ) ),
-		'preload'   => array( 'label' => 'Preload', 'sections' => array( 'preload', 'preload_speculative', 'preload_connection' ) ),
-		'lazyload'  => array( 'label' => 'Lazy Loading', 'sections' => array( 'lazyload', 'lazyload_css_background_images', 'lazyload_elements' ) ),
-		'fonts'     => array( 'label' => 'Fonts', 'sections' => array( 'perfmatters_fonts' ) ),
+		'code'      => array( 'label' => __( 'Code', 'minimal-admin' ), 'sections' => array( 'assets_code' ) ),
+		'preload'   => array( 'label' => __( 'Preload', 'minimal-admin' ), 'sections' => array( 'preload', 'preload_speculative', 'preload_connection' ) ),
+		'lazyload'  => array( 'label' => __( 'Lazy Loading', 'minimal-admin' ), 'sections' => array( 'lazyload', 'lazyload_css_background_images', 'lazyload_elements' ) ),
+		'fonts'     => array( 'label' => __( 'Fonts', 'minimal-admin' ), 'sections' => array( 'perfmatters_fonts' ) ),
 		'cdn'       => array( 'label' => 'CDN', 'sections' => array( 'perfmatters_cdn' ) ),
-		'analytics' => array( 'label' => 'Analytics', 'sections' => array( 'perfmatters_analytics' ) ),
+		'analytics' => array( 'label' => __( 'Analytics', 'minimal-admin' ), 'sections' => array( 'perfmatters_analytics' ) ),
 	);
 }
 
@@ -146,7 +146,7 @@ function minimal_admin_perfmatters_value( $args, $type ) {
 function minimal_admin_perfmatters_tab_shape( $tab_id ) {
 	$tabs = minimal_admin_perfmatters_tabs();
 	if ( ! isset( $tabs[ $tab_id ] ) ) {
-		return new WP_Error( 'minimal_no_tab', 'Unknown settings tab.', array( 'status' => 404 ) );
+		return new WP_Error( 'minimal_no_tab', __( 'Unknown settings tab.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 	$reg    = minimal_admin_perfmatters_registry();
 	$groups = array();
@@ -190,6 +190,42 @@ function minimal_admin_perfmatters_tab_shape( $tab_id ) {
  * own sanitizer, which normalizes them to arrays exactly like its form),
  * then the whole option updates once per target option.
  */
+/**
+ * Who may read and write Perfmatters settings through Minimal.
+ *
+ * Perfmatters draws a boundary that is not a WordPress capability. Its
+ * perfmatters_network_access() reads the network option and, when the network
+ * owner has chosen "Super Admins Only", returns false for everyone else — and
+ * the plugin wraps its ENTIRE add_options_page() registration in it, so a
+ * subsite administrator has no Perfmatters screen at all on such a network.
+ * manage_options alone reproduces the capability and drops the lockout, which
+ * is the network owner's deliberate decision about their own network.
+ *
+ * @return bool
+ */
+function minimal_admin_perfmatters_can() {
+	if ( function_exists( 'perfmatters_network_access' ) && ! perfmatters_network_access() ) {
+		return false;
+	}
+	return current_user_can( 'manage_options' );
+}
+
+/**
+ * Settings fields whose value is emitted as raw markup on every page view.
+ *
+ * Perfmatters echoes these three verbatim from wp_head, after </body> and from
+ * wp_footer, and its own sanitizer does not touch them. That makes writing one
+ * the same act as authoring an HFCM or WPCode snippet, so it answers to the
+ * same two rules those adapters already apply: the capability WordPress uses
+ * for storing raw markup, and the directive a site owner sets to forbid
+ * dashboard-driven code.
+ *
+ * @return string[] Field ids within the perfmatters_options `assets` section.
+ */
+function minimal_admin_perfmatters_code_fields() {
+	return array( 'header_code', 'body_code', 'footer_code' );
+}
+
 function minimal_admin_perfmatters_save( $values ) {
 	$reg   = minimal_admin_perfmatters_registry();
 	$byKey = array();
@@ -209,6 +245,18 @@ function minimal_admin_perfmatters_save( $values ) {
 		$args   = $byKey[ $key ]['args'];
 		$type   = $byKey[ $key ]['type'];
 		$option = ! empty( $args['option'] ) ? $args['option'] : 'perfmatters_options';
+		// The three code fields go into the page as raw markup, so they carry
+		// the same rule as every other code-authoring surface here rather than
+		// riding in on manage_options with the ordinary settings.
+		if ( 'assets' === ( $args['section'] ?? '' )
+			&& in_array( $args['id'], minimal_admin_perfmatters_code_fields(), true ) ) {
+			if ( ! current_user_can( 'unfiltered_html' ) ) {
+				continue;
+			}
+			if ( class_exists( 'Minimal_Admin' ) && ! Minimal_Admin::code_edits_allowed() ) {
+				continue;
+			}
+		}
 		if ( ! isset( $pending[ $option ] ) ) {
 			$stored             = get_option( $option, array() );
 			$pending[ $option ] = is_array( $stored ) ? $stored : array();
@@ -244,18 +292,23 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	if ( ! function_exists( 'perfmatters_settings' ) ) {
 		return $surfaces;
 	}
+	// Same predicate the routes use, so the nav cannot offer a surface the
+	// routes will refuse (and vice versa).
+	if ( ! minimal_admin_perfmatters_can() ) {
+		return $surfaces;
+	}
 	$tabs = array();
 	foreach ( minimal_admin_perfmatters_tabs() as $id => $tab ) {
 		$tabs[] = array( 'id' => $id, 'label' => $tab['label'] );
 	}
 	$surfaces['perfmatters'] = array(
-		'label'    => 'Performance',
+		'label'    => __( 'Performance', 'minimal-admin' ),
 		'sub'      => 'Perfmatters',
 		'family'   => 'performance',
 		'icon'     => 'gear',
 		'cap'      => 'manage_options',
 		'settings' => array(
-			'label' => 'Settings',
+			'label' => __( 'Settings', 'minimal-admin' ),
 			'tabs'  => $tabs,
 			'route' => 'minimal-admin/v1/perfmatters/settings/{tab}',
 		),
@@ -270,18 +323,14 @@ add_action( 'rest_api_init', function () {
 	register_rest_route( 'minimal-admin/v1', '/perfmatters/settings/(?P<tab>[a-z]+)', array(
 		array(
 			'methods'             => 'GET',
-			'permission_callback' => function () {
-				return current_user_can( 'manage_options' );
-			},
+			'permission_callback' => 'minimal_admin_perfmatters_can',
 			'callback'            => function ( $req ) {
 				return rest_ensure_response( minimal_admin_perfmatters_tab_shape( $req['tab'] ) );
 			},
 		),
 		array(
 			'methods'             => 'POST',
-			'permission_callback' => function () {
-				return current_user_can( 'manage_options' );
-			},
+			'permission_callback' => 'minimal_admin_perfmatters_can',
 			'callback'            => function ( $req ) {
 				$body   = $req->get_json_params();
 				$values = isset( $body['values'] ) && is_array( $body['values'] ) ? $body['values'] : array();

@@ -52,8 +52,9 @@ function minimal_admin_spam_providers() {
 				return array(
 					'configured' => '' !== $key,
 					'note'       => '' !== $key
-						? 'API key set (' . substr( $key, 0, 4 ) . '…)'
-						: 'Needs an API key from akismet.com (free for personal sites)',
+						/* translators: %s: first characters of the API key. */
+						? sprintf( __( 'API key set (%s…)', 'minimal-admin' ), substr( $key, 0, 4 ) )
+						: __( 'Needs an API key from akismet.com (free for personal sites)', 'minimal-admin' ),
 					// Paste-a-key in place via the akismet connections
 					// provider — hidden when the key is supplied in code.
 					'keyProvider' => $predefined ? '' : 'akismet',
@@ -61,8 +62,8 @@ function minimal_admin_spam_providers() {
 					'toggles'    => array(
 						array(
 							'id'    => 'strictness',
-							'label' => 'Silently discard the worst spam',
-							'desc'  => 'The most pervasive spam never reaches the spam folder. Off keeps everything reviewable for 15 days.',
+							'label' => __( 'Silently discard the worst spam', 'minimal-admin' ),
+							'desc'  => __( 'The most pervasive spam never reaches the spam folder. Off keeps everything reviewable for 15 days.', 'minimal-admin' ),
 							'on'    => get_option( 'akismet_strictness' ) === '1',
 						),
 					),
@@ -93,19 +94,19 @@ function minimal_admin_spam_providers() {
 				$o = $asb_read();
 				return array(
 					'configured' => true, // works out of the box, no key
-					'note'       => 'Local filtering, no cloud service or key needed',
+					'note'       => __( 'Local filtering, no cloud service or key needed', 'minimal-admin' ),
 					'blocked'    => isset( $o['spam_count'] ) ? (int) $o['spam_count'] : 0,
 					'toggles'    => array(
 						array(
 							'id'    => 'flag_spam',
-							'label' => 'Keep spam for review',
-							'desc'  => 'Move detected spam to the spam folder instead of deleting it immediately.',
+							'label' => __( 'Keep spam for review', 'minimal-admin' ),
+							'desc'  => __( 'Move detected spam to the spam folder instead of deleting it immediately.', 'minimal-admin' ),
 							'on'    => ! isset( $o['flag_spam'] ) || (int) $o['flag_spam'] === 1, // default 1
 						),
 						array(
 							'id'    => 'email_notify',
-							'label' => 'Email me about new spam',
-							'desc'  => 'Send a notification when a comment lands in the spam folder.',
+							'label' => __( 'Email me about new spam', 'minimal-admin' ),
+							'desc'  => __( 'Send a notification when a comment lands in the spam folder.', 'minimal-admin' ),
 							'on'    => isset( $o['email_notify'] ) && (int) $o['email_notify'] === 1, // default 0
 						),
 					),
@@ -136,8 +137,9 @@ function minimal_admin_spam_providers() {
 				return array(
 					'configured' => '' !== $key,
 					'note'       => '' !== $key
-						? 'Access key set (' . substr( $key, 0, 4 ) . '…)'
-						: 'Needs an access key: connect it on the CleanTalk screen',
+						/* translators: %s: first characters of the access key. */
+						? sprintf( __( 'Access key set (%s…)', 'minimal-admin' ), substr( $key, 0, 4 ) )
+						: __( 'Needs an access key: connect it on the CleanTalk screen', 'minimal-admin' ),
 					'blocked'    => isset( $counter['blocked'] ) ? (int) $counter['blocked'] : 0,
 					'toggles'    => array(), // config is cloud-side; keep read-only
 					'adminUrl'   => admin_url( 'options-general.php?page=cleantalk' ),
@@ -162,7 +164,7 @@ function minimal_admin_spam_providers() {
 				$week  = isset( $total['week']['count'] ) ? (int) $total['week']['count'] : 0;
 				return array(
 					'configured' => true, // honeypot needs no setup
-					'note'       => 'Honeypot protection runs automatically on comments and supported forms' . ( $week ? ' (' . $week . ' blocked this week)' : '' ),
+					'note'       => __( 'Honeypot protection runs automatically on comments and supported forms', 'minimal-admin' ) . ( $week ? ' (' . $week . ' blocked this week)' : '' ),
 					'blocked'    => isset( $total['all_time'] ) ? (int) $total['all_time'] : 0,
 					'toggles'    => array(), // its options are field/markup tuning, not policy
 					'adminUrl'   => admin_url( 'admin.php?page=wp-armour' ),

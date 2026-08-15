@@ -15,6 +15,15 @@
 defined( 'ABSPATH' ) || exit;
 
 function minimal_admin_updraftplus_active() {
+	// UpdraftPlus free has no multisite awareness: its get_table_prefix()
+	// returns the BASE prefix and its backup walks a bare SHOW TABLES, so a
+	// "back up everything" started from any subsite dumps wp_users, wp_usermeta
+	// and every neighbouring subsite's tables to the network owner's remote
+	// storage. The plugin says so itself, in an error-level notice on its own
+	// screen that Minimal does not reproduce. Same rule as every sibling here.
+	if ( ! Minimal_Admin::network_owner() ) {
+		return false;
+	}
 	return class_exists( 'UpdraftPlus_Options' ) && class_exists( 'UpdraftPlus_Backup_History' );
 }
 
@@ -87,52 +96,56 @@ function minimal_admin_updraft_status_model() {
 	$count   = count( $history );
 
 	if ( $running ) {
-		$last_value = 'Running now…';
-		$last_hint  = 'UpdraftPlus is building or resuming a set';
+		$last_value = __( 'Running now…', 'minimal-admin' );
+		$last_hint  = __( 'UpdraftPlus is building or resuming a set', 'minimal-admin' );
 	} elseif ( $last ) {
-		$last_value = human_time_diff( $last['time'] ) . ' ago';
-		$last_hint  = $last['success'] ? 'Completed successfully' : 'Finished with errors — check UpdraftPlus';
+	$last_value = sprintf(
+		/* translators: %s: human-readable time since the last backup. */
+		__( '%s ago', 'minimal-admin' ),
+		human_time_diff( $last['time'] )
+	);
+		$last_hint  = $last['success'] ? __( 'Completed successfully', 'minimal-admin' ) : __( 'Finished with errors — check UpdraftPlus', 'minimal-admin' );
 	} else {
 		$last_value = 'Never';
-		$last_hint  = 'No finished backup recorded yet';
+		$last_hint  = __( 'No finished backup recorded yet', 'minimal-admin' );
 	}
 
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Last backup',
+				'label' => __( 'Last backup', 'minimal-admin' ),
 				'value' => $last_value,
 				'hint'  => $last_hint,
 			),
 			array(
-				'label' => 'Sets kept',
+				'label' => __( 'Sets kept', 'minimal-admin' ),
 				'value' => (string) $count,
 				'hint'  => $count
-					? 'Newest first in the list below (retention may prune older sets)'
-					: 'Nothing on disk yet',
+					? __( 'Newest first in the list below (retention may prune older sets)', 'minimal-admin' )
+					: __( 'Nothing on disk yet', 'minimal-admin' ),
 			),
 			array(
-				'label' => 'Status',
+				'label' => __( 'Status', 'minimal-admin' ),
 				'value' => $running ? 'Running' : 'Idle',
-				'hint'  => 'Jobs run through UpdraftPlus\'s own cron machinery',
+				'hint'  => __( 'Jobs run through UpdraftPlus\'s own cron machinery', 'minimal-admin' ),
 			),
 		),
 		'actions' => array(
 			array(
-				'label'   => 'Back up everything now',
+				'label'   => __( 'Back up everything now', 'minimal-admin' ),
 				'route'   => 'minimal-admin/v1/updraft/backup-now',
 				'method'  => 'POST',
 				'body'    => array( 'what' => 'all' ),
-				'confirm' => 'Start a full backup now? UpdraftPlus will run it in the background.',
+				'confirm' => __( 'Start a full backup now? UpdraftPlus will run it in the background.', 'minimal-admin' ),
 			),
 			array(
-				'label'  => 'Database only',
+				'label'  => __( 'Database only', 'minimal-admin' ),
 				'route'  => 'minimal-admin/v1/updraft/backup-now',
 				'method' => 'POST',
 				'body'   => array( 'what' => 'db' ),
 			),
 			array(
-				'label' => 'Open UpdraftPlus ↗',
+				'label' => __( 'Open UpdraftPlus ↗', 'minimal-admin' ),
 				'href'  => admin_url( 'options-general.php?page=updraftplus' ),
 			),
 		),
@@ -144,7 +157,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		return $surfaces;
 	}
 	$surfaces['updraftplus'] = array(
-		'label'      => 'Backups',
+		'label'      => __( 'Backups', 'minimal-admin' ),
 		'sub'        => 'UpdraftPlus',
 		'icon'       => 'database',
 		'cap'        => 'manage_options',
@@ -156,10 +169,10 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'itemsKey'  => 'items',
 			'totalKey'  => 'total',
 			'columns'   => array(
-				array( 'key' => 'components', 'label' => 'Backup', 'format' => 'title' ),
-				array( 'key' => 'size', 'label' => 'Size', 'format' => 'text' ),
-				array( 'key' => 'where', 'label' => 'Stored', 'format' => 'pill' ),
-				array( 'key' => 'date', 'label' => 'Date', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'components', 'label' => __( 'Backup', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'size', 'label' => __( 'Size', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'where', 'label' => __( 'Stored', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date', 'label' => __( 'Date', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 		),
 	);
@@ -171,7 +184,8 @@ add_action( 'rest_api_init', function () {
 		return;
 	}
 	$perm = function () {
-		return current_user_can( 'manage_options' );
+		// Network-shared archives (see minimal_admin_updraftplus_active).
+		return current_user_can( 'manage_options' ) && Minimal_Admin::network_owner();
 	};
 
 	register_rest_route( 'minimal-admin/v1', '/updraft/backups', array(
@@ -227,11 +241,13 @@ add_action( 'rest_api_init', function () {
 			// Kick cron immediately so the job starts without waiting for
 			// the next visitor; UpdraftPlus resumes itself from there.
 			spawn_cron();
-			$label = 'db' === $what ? 'Database backup' : 'Full backup';
+			$message = 'db' === $what
+				? __( 'Database backup started — UpdraftPlus is running it in the background.', 'minimal-admin' )
+				: __( 'Full backup started — UpdraftPlus is running it in the background.', 'minimal-admin' );
 			return rest_ensure_response( array(
 				'started' => true,
 				'what'    => 'db' === $what ? 'db' : 'all',
-				'message' => $label . ' started — UpdraftPlus is running it in the background.',
+				'message' => $message,
 			) );
 		},
 	) );

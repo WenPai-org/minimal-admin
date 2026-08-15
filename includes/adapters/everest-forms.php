@@ -248,20 +248,20 @@ function minimal_admin_everest_set_status( $entry_id, $op, $form_id = 0 ) {
 	if ( 'delete' === $op ) {
 		if ( class_exists( 'EVF_Admin_Entries' ) ) {
 			$ok = EVF_Admin_Entries::remove_entry( (int) $entry_id, (int) $form_id );
-			return $ok ? true : new WP_Error( 'delete_failed', 'Everest Forms could not delete the entry.', array( 'status' => 500 ) );
+			return $ok ? true : new WP_Error( 'delete_failed', __( 'Everest Forms could not delete the entry.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		global $wpdb;
 		do_action( 'everest_forms_before_delete_entries', $entry_id );
 		$del = $wpdb->delete( $wpdb->prefix . 'evf_entries', array( 'entry_id' => (int) $entry_id ), array( '%d' ) );
 		$wpdb->delete( $wpdb->prefix . 'evf_entrymeta', array( 'entry_id' => (int) $entry_id ), array( '%d' ) );
 		do_action( 'everest_forms_after_delete_entries', $form_id, $entry_id );
-		return $del ? true : new WP_Error( 'delete_failed', 'Could not delete the entry.', array( 'status' => 500 ) );
+		return $del ? true : new WP_Error( 'delete_failed', __( 'Could not delete the entry.', 'minimal-admin' ), array( 'status' => 500 ) );
 	}
 
 	// unspam is their alias for restore-from-spam → publish.
 	$status = 'unspam' === $op ? 'publish' : $op;
 	if ( ! in_array( $status, array( 'publish', 'trash', 'spam' ), true ) ) {
-		return new WP_Error( 'bad_status', 'Unknown status.', array( 'status' => 400 ) );
+		return new WP_Error( 'bad_status', __( 'Unknown status.', 'minimal-admin' ), array( 'status' => 400 ) );
 	}
 	if ( class_exists( 'EVF_Admin_Entries' ) ) {
 		// Their update_status handles trash prior-status meta + unspam→publish.
@@ -294,11 +294,11 @@ function minimal_admin_everest_status_model() {
 		if ( ! $scope ) {
 			return array(
 				'rows'    => array(
-					array( 'label' => 'Unread entries', 'value' => '0', 'hint' => '0 total' ),
-					array( 'label' => 'Forms', 'value' => '0' ),
+					array( 'label' => __( 'Unread entries', 'minimal-admin' ), 'value' => '0', 'hint' => __( '0 total', 'minimal-admin' ) ),
+					array( 'label' => __( 'Forms', 'minimal-admin' ), 'value' => '0' ),
 				),
 				'actions' => array(
-					array( 'label' => 'Open Everest Forms ↗', 'href' => admin_url( 'admin.php?page=evf-entries' ) ),
+					array( 'label' => __( 'Open Everest Forms ↗', 'minimal-admin' ), 'href' => admin_url( 'admin.php?page=evf-entries' ) ),
 				),
 			);
 		}
@@ -321,11 +321,11 @@ function minimal_admin_everest_status_model() {
 	}
 	return array(
 		'rows'    => array(
-			array( 'label' => 'Unread entries', 'value' => number_format_i18n( $unread ), 'hint' => $hint ),
-			array( 'label' => 'Forms', 'value' => number_format_i18n( $forms ) ),
+			array( 'label' => __( 'Unread entries', 'minimal-admin' ), 'value' => number_format_i18n( $unread ), 'hint' => $hint ),
+			array( 'label' => __( 'Forms', 'minimal-admin' ), 'value' => number_format_i18n( $forms ) ),
 		),
 		'actions' => array(
-			array( 'label' => 'Open Everest Forms ↗', 'href' => admin_url( 'admin.php?page=evf-entries' ) ),
+			array( 'label' => __( 'Open Everest Forms ↗', 'minimal-admin' ), 'href' => admin_url( 'admin.php?page=evf-entries' ) ),
 		),
 	);
 }
@@ -400,10 +400,10 @@ function minimal_admin_everest_guard_entry( $entry_id, $context = 'view' ) {
 		(int) $entry_id
 	) );
 	if ( ! $exists ) {
-		return new WP_Error( 'not_found', 'Entry not found.', array( 'status' => 404 ) );
+		return new WP_Error( 'not_found', __( 'Entry not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 	if ( ! minimal_admin_everest_can_entry( $entry_id, $context ) ) {
-		return new WP_Error( 'forbidden', 'You cannot access that entry.', array( 'status' => 403 ) );
+		return new WP_Error( 'forbidden', __( 'You cannot access that entry.', 'minimal-admin' ), array( 'status' => 403 ) );
 	}
 	return true;
 }
@@ -414,7 +414,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['everest-forms'] = array(
-		'label'      => 'Forms',
+		'label'      => __( 'Forms', 'minimal-admin' ),
 		'family'     => 'forms',
 		'group'      => 'workspace', // inbox-shaped (see gravity-forms.php)
 		'sub'        => 'Everest Forms',
@@ -422,7 +422,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'cap'        => 'read', // real gate is the filter above (their cap model)
 		'status'     => array( 'route' => 'minimal-admin/v1/everest/status' ),
 		'collection' => array(
-			'viewLabel' => 'Entries',
+			'viewLabel' => __( 'Entries', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/everest/entries',
 			'pageQuery' => 'per_page=25&page={page}',
 			'search'    => 'search={q}',
@@ -430,7 +430,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'totalKey'  => 'total',
 			// Same three buckets as their entries screen.
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'publish', 'Received' ),
 					array( 'spam', 'Spam' ),
@@ -443,109 +443,109 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'valueKey' => 'id',
 				'labelKey' => 'title',
 				'param'    => 'form_id',
-				'allLabel' => 'All entries',
+				'allLabel' => __( 'All entries', 'minimal-admin' ),
 			),
 			'columns'   => array(
-				array( 'key' => 'summary', 'label' => 'Entry', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'form_title', 'label' => 'Form' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill', 'width' => '96px' ),
+				array( 'key' => 'summary', 'label' => __( 'Entry', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'form_title', 'label' => __( 'Form', 'minimal-admin' ) ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '96px' ),
 				// date_created is current_time( 'mysql', true ) — UTC.
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/everest/entries/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Mark as spam',
+					'label'   => __( 'Mark as spam', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/everest/entries/{id}/spam',
-					'confirm' => 'Mark this entry as spam? Find it under the Spam filter.',
+					'confirm' => __( 'Mark this entry as spam? Find it under the Spam filter.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'publish' ),
 				),
 				array(
-					'label'  => 'Not spam',
+					'label'  => __( 'Not spam', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/everest/entries/{id}/unspam',
 					'when'   => array( 'key' => 'status', 'equals' => 'spam' ),
 				),
 				array(
-					'label'   => 'Trash entry',
+					'label'   => __( 'Trash entry', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/everest/entries/{id}/trash',
-					'confirm' => 'Move this entry to trash?',
+					'confirm' => __( 'Move this entry to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'publish' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/everest/entries/{id}/restore',
 					'when'   => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/everest/entries/{id}',
-					'confirm' => 'Delete this entry permanently? There is no undo.',
+					'confirm' => __( 'Delete this entry permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/everest/entries/{id}',
-					'confirm' => 'Delete this entry permanently? There is no undo.',
+					'confirm' => __( 'Delete this entry permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'spam' ),
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'   => 'Mark as spam',
+					'label'   => __( 'Mark as spam', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/everest/entries/{id}/spam',
-					'confirm' => 'Mark the selected entries as spam?',
+					'confirm' => __( 'Mark the selected entries as spam?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'publish' ),
 				),
 				array(
-					'label'   => 'Trash',
+					'label'   => __( 'Trash', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/everest/entries/{id}/trash',
-					'confirm' => 'Move the selected entries to trash?',
+					'confirm' => __( 'Move the selected entries to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'publish' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/everest/entries/{id}/restore',
 					'when'   => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/everest/entries/{id}',
-					'confirm' => 'Delete the selected entries permanently?',
+					'confirm' => __( 'Delete the selected entries permanently?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 			),
 		),
 		'manage'     => array(
-			'viewLabel' => 'Forms',
+			'viewLabel' => __( 'Forms', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/everest/forms?manage=1',
 			'columns'   => array(
-				array( 'key' => 'title', 'label' => 'Form', 'format' => 'title' ),
-				array( 'key' => 'entries', 'label' => 'Entries', 'format' => 'num' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
+				array( 'key' => 'title', 'label' => __( 'Form', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'entries', 'label' => __( 'Entries', 'minimal-admin' ), 'format' => 'num' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
 			),
 			'detail'    => array(),
 			'actions'   => array(
 				array(
-					'label' => 'Edit in Everest Forms ↗',
+					'label' => __( 'Edit in Everest Forms ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=evf-builder&tab=fields&form_id={id}' ),
 				),
 			),
@@ -627,7 +627,7 @@ add_action( 'rest_api_init', function () {
 					return rest_ensure_response( array( 'items' => array(), 'total' => 0 ) );
 				}
 				if ( $request['form_id'] && ! in_array( (int) $request['form_id'], $allowed, true ) ) {
-					return new WP_Error( 'forbidden', 'You cannot view entries for that form.', array( 'status' => 403 ) );
+					return new WP_Error( 'forbidden', __( 'You cannot view entries for that form.', 'minimal-admin' ), array( 'status' => 403 ) );
 				}
 				$where .= ' AND e.form_id IN (' . implode( ',', array_fill( 0, count( $allowed ), '%d' ) ) . ')';
 				$args   = array_merge( $args, $allowed );
@@ -679,7 +679,7 @@ add_action( 'rest_api_init', function () {
 				}
 				$items[] = array(
 					'id'         => (int) $row->entry_id,
-					'summary'    => $parts ? implode( ' · ', $parts ) : '(empty entry)',
+					'summary'    => $parts ? implode( ' · ', $parts ) : __( '(empty entry)', 'minimal-admin' ),
 					'form_title' => isset( $titles[ $form_id ] ) ? $titles[ $form_id ] : '#' . $form_id,
 					'status'     => (string) $row->status,
 					'date'       => str_replace( ' ', 'T', (string) $row->date_created ),
@@ -706,7 +706,7 @@ add_action( 'rest_api_init', function () {
 					(int) $request['id']
 				) );
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$form_id = (int) $row->form_id;
 				$fields  = minimal_admin_everest_fields( $form_id );
@@ -730,10 +730,10 @@ add_action( 'rest_api_init', function () {
 				}
 				// date_created is UTC — format in site TZ for the meta card.
 				$meta = array(
-					array( 'label' => 'Form', 'value' => isset( $titles[ $form_id ] ) ? $titles[ $form_id ] : '#' . $form_id ),
-					array( 'label' => 'Entry', 'value' => '#' . (int) $row->entry_id ),
-					array( 'label' => 'Status', 'value' => (string) $row->status ),
-					array( 'label' => 'Submitted', 'value' => date_i18n( 'M j, Y g:i a', strtotime( get_date_from_gmt( $row->date_created ) ) ) ),
+					array( 'label' => __( 'Form', 'minimal-admin' ), 'value' => isset( $titles[ $form_id ] ) ? $titles[ $form_id ] : '#' . $form_id ),
+					array( 'label' => __( 'Entry', 'minimal-admin' ), 'value' => '#' . (int) $row->entry_id ),
+					array( 'label' => __( 'Status', 'minimal-admin' ), 'value' => (string) $row->status ),
+					array( 'label' => __( 'Submitted', 'minimal-admin' ), 'value' => date_i18n( 'M j, Y g:i a', strtotime( get_date_from_gmt( $row->date_created ) ) ) ),
 				);
 				if ( ! empty( $row->user_ip_address ) ) {
 					$meta[] = array( 'label' => 'IP', 'value' => (string) $row->user_ip_address );
@@ -752,8 +752,8 @@ add_action( 'rest_api_init', function () {
 					'kind'     => 'entry',
 					'status'   => (string) $row->status,
 					'sections' => array(
-						array( 'title' => 'Answers', 'rows' => $rows ),
-						array( 'title' => 'Submission', 'rows' => $meta ),
+						array( 'title' => __( 'Answers', 'minimal-admin' ), 'rows' => $rows ),
+						array( 'title' => __( 'Submission', 'minimal-admin' ), 'rows' => $meta ),
 					),
 					'adminUrl' => admin_url( 'admin.php?page=evf-entries&form_id=' . $form_id . '&view-entry=' . (int) $row->entry_id ),
 				) );
@@ -776,11 +776,11 @@ add_action( 'rest_api_init', function () {
 					$id
 				) );
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				// Permanent delete is for trash/spam only (Received → Trash first).
 				if ( ! in_array( (string) $row->status, array( 'trash', 'spam' ), true ) ) {
-					return new WP_Error( 'not_trashed', 'Move the entry to trash (or spam) before deleting permanently.', array( 'status' => 400 ) );
+					return new WP_Error( 'not_trashed', __( 'Move the entry to trash (or spam) before deleting permanently.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				$result = minimal_admin_everest_set_status( $id, 'delete', (int) $row->form_id );
 				if ( is_wp_error( $result ) ) {
@@ -791,9 +791,9 @@ add_action( 'rest_api_init', function () {
 					$id
 				) );
 				if ( $still ) {
-					return new WP_Error( 'delete_failed', 'Everest Forms reported success but the entry still exists.', array( 'status' => 500 ) );
+					return new WP_Error( 'delete_failed', __( 'Everest Forms reported success but the entry still exists.', 'minimal-admin' ), array( 'status' => 500 ) );
 				}
-				return rest_ensure_response( array( 'ok' => true, 'message' => 'Entry deleted permanently.' ) );
+				return rest_ensure_response( array( 'ok' => true, 'message' => __( 'Entry deleted permanently.', 'minimal-admin' ) ) );
 			},
 		),
 	) );
@@ -821,20 +821,20 @@ add_action( 'rest_api_init', function () {
 					$id
 				) );
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$cur = (string) $row->status;
 				if ( 'trash' === $slug && 'publish' !== $cur ) {
-					return new WP_Error( 'bad_status', 'Only received entries can be trashed.', array( 'status' => 400 ) );
+					return new WP_Error( 'bad_status', __( 'Only received entries can be trashed.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				if ( 'restore' === $slug && 'trash' !== $cur ) {
-					return new WP_Error( 'bad_status', 'Only trashed entries can be restored.', array( 'status' => 400 ) );
+					return new WP_Error( 'bad_status', __( 'Only trashed entries can be restored.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				if ( 'spam' === $slug && 'publish' !== $cur ) {
-					return new WP_Error( 'bad_status', 'Only received entries can be marked spam.', array( 'status' => 400 ) );
+					return new WP_Error( 'bad_status', __( 'Only received entries can be marked spam.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				if ( 'unspam' === $slug && 'spam' !== $cur ) {
-					return new WP_Error( 'bad_status', 'Only spam entries can be unmarked.', array( 'status' => 400 ) );
+					return new WP_Error( 'bad_status', __( 'Only spam entries can be unmarked.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				$result = minimal_admin_everest_set_status( $id, $op, (int) $row->form_id );
 				if ( is_wp_error( $result ) ) {
@@ -845,10 +845,10 @@ add_action( 'rest_api_init', function () {
 					$id
 				) );
 				$msgs = array(
-					'trash'   => 'Entry moved to trash.',
-					'restore' => 'Entry restored.',
-					'spam'    => 'Entry marked as spam.',
-					'unspam'  => 'Entry marked not spam.',
+					'trash'   => __( 'Entry moved to trash.', 'minimal-admin' ),
+					'restore' => __( 'Entry restored.', 'minimal-admin' ),
+					'spam'    => __( 'Entry marked as spam.', 'minimal-admin' ),
+					'unspam'  => __( 'Entry marked not spam.', 'minimal-admin' ),
 				);
 				return rest_ensure_response( array(
 					'ok'      => true,

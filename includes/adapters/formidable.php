@@ -122,14 +122,14 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['formidable'] = array(
-		'label'      => 'Forms',
+		'label'      => __( 'Forms', 'minimal-admin' ),
 		'family'     => 'forms',
 		'group'      => 'workspace', // inbox-shaped (see gravity-forms.php)
 		'sub'        => 'Formidable',
 		'icon'       => 'inbox',
 		'cap'        => 'read', // real gate is the filter above (their cap model)
 		'collection' => array(
-			'viewLabel' => 'Entries',
+			'viewLabel' => __( 'Entries', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/formidable/entries',
 			'pageQuery' => 'per_page=25&page={page}',
 			'search'    => 'search={q}',
@@ -140,47 +140,47 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'valueKey' => 'id',
 				'labelKey' => 'title',
 				'param'    => 'form_id',
-				'allLabel' => 'All entries',
+				'allLabel' => __( 'All entries', 'minimal-admin' ),
 			),
 			'columns'   => array(
-				array( 'key' => 'summary', 'label' => 'Entry', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'form_title', 'label' => 'Form' ),
+				array( 'key' => 'summary', 'label' => __( 'Entry', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'form_title', 'label' => __( 'Form', 'minimal-admin' ) ),
 				// created_at is current_time( 'mysql', 1 ) — UTC.
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/formidable/entries/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/formidable/entries/{id}',
-					'confirm' => 'Delete this entry permanently? Formidable has no entry trash — there is no undo.',
+					'confirm' => __( 'Delete this entry permanently? Formidable has no entry trash — there is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/formidable/entries/{id}',
-					'confirm' => 'Delete the selected entries permanently? There is no undo.',
+					'confirm' => __( 'Delete the selected entries permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 		),
 		'manage'     => array(
-			'viewLabel' => 'Forms',
+			'viewLabel' => __( 'Forms', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/formidable/forms?manage=1',
 			'columns'   => array(
-				array( 'key' => 'title', 'label' => 'Form', 'format' => 'title' ),
-				array( 'key' => 'entries', 'label' => 'Entries', 'format' => 'num' ),
+				array( 'key' => 'title', 'label' => __( 'Form', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'entries', 'label' => __( 'Entries', 'minimal-admin' ), 'format' => 'num' ),
 			),
 			'detail'    => array(),
 			'actions'   => array(
 				array(
-					'label' => 'Edit in Formidable ↗',
+					'label' => __( 'Edit in Formidable ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=formidable&frm_action=edit&id={id}' ),
 				),
 			),
@@ -266,7 +266,7 @@ add_action( 'rest_api_init', function () {
 				}
 				$items[] = array(
 					'id'         => (int) $row->id,
-					'summary'    => $parts ? implode( ' · ', $parts ) : '(empty entry)',
+					'summary'    => $parts ? implode( ' · ', $parts ) : __( '(empty entry)', 'minimal-admin' ),
 					'form_title' => isset( $titles[ $form_id ] ) ? $titles[ $form_id ] : '#' . $form_id,
 					'date'       => str_replace( ' ', 'T', (string) $row->created_at ),
 				);
@@ -284,7 +284,7 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $request ) {
 				$entry = FrmEntry::getOne( (int) $request['id'], true );
 				if ( ! $entry ) {
-					return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$form_id = (int) $entry->form_id;
 				$fields  = minimal_admin_formidable_fields( $form_id );
@@ -301,15 +301,15 @@ add_action( 'rest_api_init', function () {
 				foreach ( $answers as $fid => $value ) {
 					if ( ! isset( $fields[ $fid ] ) && '' !== $value ) {
 						$rows[] = array(
-							'label' => 'Field ' . $fid,
+							'label' => __( 'Field ', 'minimal-admin' ) . $fid,
 							'value' => $value,
 						);
 					}
 				}
 				$meta = array(
-					array( 'label' => 'Form', 'value' => isset( $titles[ $form_id ] ) ? $titles[ $form_id ] : '#' . $form_id ),
-					array( 'label' => 'Entry', 'value' => '#' . (int) $entry->id ),
-					array( 'label' => 'Submitted', 'value' => date_i18n( 'M j, Y g:i a', strtotime( get_date_from_gmt( $entry->created_at ) ) ) ),
+					array( 'label' => __( 'Form', 'minimal-admin' ), 'value' => isset( $titles[ $form_id ] ) ? $titles[ $form_id ] : '#' . $form_id ),
+					array( 'label' => __( 'Entry', 'minimal-admin' ), 'value' => '#' . (int) $entry->id ),
+					array( 'label' => __( 'Submitted', 'minimal-admin' ), 'value' => date_i18n( 'M j, Y g:i a', strtotime( get_date_from_gmt( $entry->created_at ) ) ) ),
 				);
 				if ( ! empty( $entry->ip ) ) {
 					$meta[] = array( 'label' => 'IP', 'value' => (string) $entry->ip );
@@ -317,8 +317,8 @@ add_action( 'rest_api_init', function () {
 				return rest_ensure_response( array(
 					'kind'     => 'entry',
 					'sections' => array(
-						array( 'title' => 'Answers', 'rows' => $rows ),
-						array( 'title' => 'Submission', 'rows' => $meta ),
+						array( 'title' => __( 'Answers', 'minimal-admin' ), 'rows' => $rows ),
+						array( 'title' => __( 'Submission', 'minimal-admin' ), 'rows' => $meta ),
 					),
 					'adminUrl' => admin_url( 'admin.php?page=formidable-entries&frm_action=show&id=' . (int) $entry->id ),
 				) );
@@ -332,14 +332,14 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $request ) {
 				$id = (int) $request['id'];
 				if ( ! FrmEntry::getOne( $id ) ) {
-					return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				// Their complete flow: metas deleted, their hooks fire.
 				$result = FrmEntry::destroy( $id );
 				if ( ! $result ) {
-					return new WP_Error( 'delete_failed', 'Formidable could not delete the entry.', array( 'status' => 500 ) );
+					return new WP_Error( 'delete_failed', __( 'Formidable could not delete the entry.', 'minimal-admin' ), array( 'status' => 500 ) );
 				}
-				return rest_ensure_response( array( 'ok' => true, 'message' => 'Entry deleted permanently.' ) );
+				return rest_ensure_response( array( 'ok' => true, 'message' => __( 'Entry deleted permanently.', 'minimal-admin' ) ) );
 			},
 		),
 	) );

@@ -17,6 +17,17 @@ MINIMAL_TEST_PASS=<admin password> node media-flow.test.js # paste/drop image fi
 MINIMAL_TEST_PASS=<admin password> node editor-sidebar.test.js # slug, discussion, visibility, sticky (~20s)
 MINIMAL_TEST_PASS=<admin password> node system.test.js     # diagnostics endpoint + page + copy-report
 MINIMAL_TEST_PASS=<admin password> node undo-toast.test.js # structural-deletion Undo (islands, tables)
+MINIMAL_TEST_PASS=<admin password> node order-layout.test.js # order detail layout: columns, dialogs, items editing
+MINIMAL_TEST_PASS=<admin password> node order-filters.test.js # list filter bar: chips, server-side query, URL round trip
+MINIMAL_TEST_PASS=<admin password> node subscription-filters.test.js # the same bar on subscriptions (SKIPs without WCS)
+MINIMAL_TEST_PASS=<admin password> node subscription-page.test.js # /subscriptions/{id}: items + schedule editing, GMT dates
+
+# lab seeders (NOT suites: they leave what they create behind, so point them
+# at a throwaway site). seed-gateways enables cheque/bacs/cod so the payment
+# picker has entries on a fresh WooCommerce; seed-orders creates one order per
+# status for walking the order detail by hand.
+MINIMAL_TEST_PASS=<admin password> node seed-gateways.js
+MINIMAL_TEST_PASS=<admin password> node seed-orders.js
 
 # multisite (network) — runs against a SEPARATE subdomain-multisite lab, not
 # minimaladmin. SKIPs (exit 0) with no MINIMAL_MS_SUPER_PASS or no lab, so run-all is

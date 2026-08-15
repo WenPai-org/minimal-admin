@@ -32,7 +32,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		return $surfaces;
 	}
 	$surfaces['simple-301-redirects'] = array(
-		'label'      => 'Redirects',
+		'label'      => __( 'Redirects', 'minimal-admin' ),
 		'family'     => 'redirects',
 		'sub'        => 'Simple 301 Redirects',
 		'icon'       => 'shuffle',
@@ -45,16 +45,16 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'totalKey' => 'total',
 			'search'   => 'search={q}',
 			'columns'  => array(
-				array( 'key' => 'from', 'label' => 'Source', 'format' => 'title', 'width' => 'minmax(0,1.4fr)' ),
-				array( 'key' => 'to', 'label' => 'Target', 'format' => 'mono', 'width' => 'minmax(0,1.4fr)' ),
+				array( 'key' => 'from', 'label' => __( 'Source', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.4fr)' ),
+				array( 'key' => 'to', 'label' => __( 'Target', 'minimal-admin' ), 'format' => 'mono', 'width' => 'minmax(0,1.4fr)' ),
 			),
 			'create'   => array(
-				'label'  => 'Add redirect',
+				'label'  => __( 'Add redirect', 'minimal-admin' ),
 				'route'  => 'minimal-admin/v1/s301/redirects',
 				'method' => 'POST',
 				'fields' => array(
-					array( 'key' => 'from', 'label' => 'Source URL', 'mono' => true, 'placeholder' => '/old-page' ),
-					array( 'key' => 'to', 'label' => 'Target URL', 'mono' => true, 'placeholder' => '/new-page or https://…' ),
+					array( 'key' => 'from', 'label' => __( 'Source URL', 'minimal-admin' ), 'mono' => true, 'placeholder' => __( '/old-page', 'minimal-admin' ) ),
+					array( 'key' => 'to', 'label' => __( 'Target URL', 'minimal-admin' ), 'mono' => true, 'placeholder' => __( '/new-page or https://…', 'minimal-admin' ) ),
 				),
 			),
 			'detail'   => array(
@@ -63,26 +63,26 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 					'route'  => 'minimal-admin/v1/s301/redirects/{id}',
 					'method' => 'PUT',
 					'fields' => array(
-						array( 'key' => 'from', 'label' => 'Source URL', 'mono' => true ),
-						array( 'key' => 'to', 'label' => 'Target URL', 'mono' => true ),
+						array( 'key' => 'from', 'label' => __( 'Source URL', 'minimal-admin' ), 'mono' => true ),
+						array( 'key' => 'to', 'label' => __( 'Target URL', 'minimal-admin' ), 'mono' => true ),
 					),
 				),
 			),
 			'actions'  => array(
 				array(
-					'label'   => 'Delete redirect',
+					'label'   => __( 'Delete redirect', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/s301/redirects/{id}',
-					'confirm' => 'Delete this redirect permanently?',
+					'confirm' => __( 'Delete this redirect permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'     => array(
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/s301/redirects/{id}',
-					'confirm' => 'Delete the selected redirects permanently?',
+					'confirm' => __( 'Delete the selected redirects permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -109,10 +109,10 @@ add_action( 'rest_api_init', function () {
 			$wildcards = get_option( '301_redirects_wildcard', false );
 			return rest_ensure_response( array(
 				'rows' => array(
-					array( 'label' => 'Redirect rules', 'value' => (string) count( $rules ) ),
+					array( 'label' => __( 'Redirect rules', 'minimal-admin' ), 'value' => (string) count( $rules ) ),
 					array(
-						'label' => 'Wildcards',
-						'value' => $wildcards ? 'On' : 'Off',
+						'label' => __( 'Wildcards', 'minimal-admin' ),
+						'value' => $wildcards ? __( 'On', 'minimal-admin' ) : __( 'Off', 'minimal-admin' ),
 						'hint'  => $wildcards ? '* patterns match in sources' : '',
 					),
 				),
@@ -148,10 +148,13 @@ add_action( 'rest_api_init', function () {
 			'methods'             => 'POST',
 			'permission_callback' => $perm,
 			'callback'            => function ( WP_REST_Request $request ) {
-				$from = trim( (string) $request['from'] );
-				$to   = trim( (string) $request['to'] );
+				// sanitize_text_field on both sides, matching the vendor's own
+				// writer (Admin/Ajax.php) — without it the shared option ends
+				// up holding values the plugin itself would never store.
+				$from = sanitize_text_field( trim( (string) $request['from'] ) );
+				$to   = sanitize_text_field( trim( (string) $request['to'] ) );
 				if ( '' === $from || '' === $to ) {
-					return new WP_Error( 'invalid', 'Source and target are both required.', array( 'status' => 400 ) );
+					return new WP_Error( 'invalid', __( 'Source and target are both required.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				$rows          = (array) get_option( '301_redirects', array() );
 				$rows[ $from ] = $to;
@@ -171,14 +174,17 @@ add_action( 'rest_api_init', function () {
 			'permission_callback' => $perm,
 			'callback'            => function ( WP_REST_Request $request ) {
 				$old  = minimal_admin_s301_decode_id( $request['id'] );
-				$from = trim( (string) $request['from'] );
-				$to   = trim( (string) $request['to'] );
+				// sanitize_text_field on both sides, matching the vendor's own
+				// writer (Admin/Ajax.php) — without it the shared option ends
+				// up holding values the plugin itself would never store.
+				$from = sanitize_text_field( trim( (string) $request['from'] ) );
+				$to   = sanitize_text_field( trim( (string) $request['to'] ) );
 				if ( '' === $from || '' === $to ) {
-					return new WP_Error( 'invalid', 'Source and target are both required.', array( 'status' => 400 ) );
+					return new WP_Error( 'invalid', __( 'Source and target are both required.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				$rows = (array) get_option( '301_redirects', array() );
 				if ( ! array_key_exists( $old, $rows ) ) {
-					return new WP_Error( 'not_found', 'Redirect not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Redirect not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				// Renaming the source: drop the old key, write the new one.
 				if ( $old !== $from ) {

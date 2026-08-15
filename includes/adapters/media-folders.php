@@ -20,7 +20,7 @@
  *               // Flat list; parent 0 = root. id 0 is reserved for an
  *               // optional "Uncategorized" row (files in no folder) and is
  *               // never treated as a parent. count is optional.
- *               return array( array( 'id' => 12, 'label' => 'Logos', 'parent' => 0, 'count' => 8 ) );
+ *               return array( array( 'id' => 12, 'label' => __( 'Logos', 'minimal-admin' ), 'parent' => 0, 'count' => 8 ) );
  *           },
  *           'ids'     => function ( $folder_id ) {
  *               // Attachment ids in this folder, or WP_Error. Minimal orders
@@ -226,12 +226,12 @@ add_action( 'rest_api_init', function () {
 				if ( count( $ids ) !== $submitted ) {
 					return new WP_Error(
 						'forbidden',
-						'You cannot move one or more of those items.',
+						__( 'You cannot move one or more of those items.', 'minimal-admin' ),
 						array( 'status' => 403 )
 					);
 				}
 				if ( ! $ids ) {
-					return new WP_Error( 'minimal_move_no_ids', 'Nothing to move.', array( 'status' => 400 ) );
+					return new WP_Error( 'minimal_move_no_ids', __( 'Nothing to move.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				try {
 					$result = call_user_func( $p['move'], (int) $req['folder'], $ids );
@@ -265,7 +265,7 @@ add_filter( 'minimal_admin_media_folders', function ( $provider ) {
 			$counts = isset( $counts['display'] ) ? (array) $counts['display'] : array();
 			// FileBird's own Uncategorized (files in none of this scope's
 			// folders); it computes no count for it and neither do we.
-			$out = array( array( 'id' => 0, 'label' => 'Uncategorized', 'parent' => 0, 'count' => null ) );
+			$out = array( array( 'id' => 0, 'label' => __( 'Uncategorized', 'minimal-admin' ), 'parent' => 0, 'count' => null ) );
 			foreach ( (array) $rows as $r ) {
 				$out[] = array(
 					'id'     => (int) $r->id,
@@ -294,7 +294,7 @@ add_filter( 'minimal_admin_media_folders', function ( $provider ) {
 			}
 			$per_user = get_option( 'njt_fbv_folder_per_user', '0' ) === '1';
 			if ( ! \FileBird\Model\Folder::verifyAuthor( (int) $folder_id, get_current_user_id(), $per_user ) ) {
-				return new WP_Error( 'minimal_folder_denied', 'That folder belongs to another user.', array( 'status' => 403 ) );
+				return new WP_Error( 'minimal_folder_denied', __( 'That folder belongs to another user.', 'minimal-admin' ), array( 'status' => 403 ) );
 			}
 			return \FileBird\Classes\Helpers::getAttachmentIdsByFolderId( (int) $folder_id );
 		},
@@ -303,7 +303,7 @@ add_filter( 'minimal_admin_media_folders', function ( $provider ) {
 			// their model (fires their hooks, updates their counters).
 			$per_user = get_option( 'njt_fbv_folder_per_user', '0' ) === '1';
 			if ( ! \FileBird\Model\Folder::verifyAuthor( (int) $folder_id, get_current_user_id(), $per_user ) ) {
-				return new WP_Error( 'minimal_folder_denied', 'That folder belongs to another user.', array( 'status' => 403 ) );
+				return new WP_Error( 'minimal_folder_denied', __( 'That folder belongs to another user.', 'minimal-admin' ), array( 'status' => 403 ) );
 			}
 			\FileBird\Model\Folder::assignFolder( (int) $folder_id, $ids, '' );
 			return true;
@@ -325,7 +325,7 @@ add_filter( 'minimal_admin_media_folders', function ( $provider ) {
 		'name'    => 'Real Media Library',
 		'folders' => function () {
 			// RML calls its no-folder root "Unorganized" — the reserved id 0.
-			$out = array( array( 'id' => 0, 'label' => 'Unorganized', 'parent' => 0, 'count' => null ) );
+			$out = array( array( 'id' => 0, 'label' => __( 'Unorganized', 'minimal-admin' ), 'parent' => 0, 'count' => null ) );
 			foreach ( (array) wp_rml_objects() as $f ) {
 				if ( ! is_object( $f ) || ! method_exists( $f, 'getId' ) ) {
 					continue;
@@ -344,7 +344,7 @@ add_filter( 'minimal_admin_media_folders', function ( $provider ) {
 			// 0 = the contract's Uncategorized = RML's root (-1, Unorganized).
 			$ids = wp_rml_get_attachments( 0 === (int) $folder_id ? -1 : (int) $folder_id );
 			return null === $ids
-				? new WP_Error( 'minimal_folder_missing', 'That folder no longer exists.', array( 'status' => 404 ) )
+				? new WP_Error( 'minimal_folder_missing', __( 'That folder no longer exists.', 'minimal-admin' ), array( 'status' => 404 ) )
 				: $ids;
 		},
 		'move'    => function ( $folder_id, array $ids ) {
@@ -375,7 +375,7 @@ add_filter( 'minimal_admin_media_folders', function ( $provider ) {
 				return array();
 			}
 			// Their sidebar's "Unassigned" view (media_folder = -1) = id 0.
-			$out = array( array( 'id' => 0, 'label' => 'Unassigned', 'parent' => 0, 'count' => null ) );
+			$out = array( array( 'id' => 0, 'label' => __( 'Unassigned', 'minimal-admin' ), 'parent' => 0, 'count' => null ) );
 			foreach ( $terms as $t ) {
 				$out[] = array(
 					'id'     => (int) $t->term_id,
@@ -400,7 +400,7 @@ add_filter( 'minimal_admin_media_folders', function ( $provider ) {
 				);
 			}
 			if ( ! term_exists( (int) $folder_id, 'media_folder' ) ) {
-				return new WP_Error( 'minimal_folder_missing', 'That folder no longer exists.', array( 'status' => 404 ) );
+				return new WP_Error( 'minimal_folder_missing', __( 'That folder no longer exists.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			return get_posts( array(
 				'post_type'      => 'attachment',
@@ -417,7 +417,7 @@ add_filter( 'minimal_admin_media_folders', function ( $provider ) {
 		},
 		'move'    => function ( $folder_id, array $ids ) {
 			if ( $folder_id && ! term_exists( (int) $folder_id, 'media_folder' ) ) {
-				return new WP_Error( 'minimal_folder_missing', 'That folder no longer exists.', array( 'status' => 404 ) );
+				return new WP_Error( 'minimal_folder_missing', __( 'That folder no longer exists.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			// Plain taxonomy assignment, exactly what their drag-drop does;
 			// an empty term list is their "Unassigned".

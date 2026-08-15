@@ -4,16 +4,242 @@
   "author": "<a href=\"https://wenpai.org\">WenPai.org</a>",
   "author_profile": "https://wenpai.org",
   "donate_link": "https://wenpai.org",
-  "version": "0.28.0.1",
-  "download_url": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.28.0.1/minimal-admin-0.28.0.1.zip",
-  "sha256": "b12bed5c70c38ac5dac04756ca09ea026b808101082ac25f4fde57b9ec0390a3",
+  "version": "0.30.0.1",
+  "download_url": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-0.30.0.1.zip",
+  "sha256": "840644e8dd6f598db6a015971b6b7236fde18a3fd3171b55aa48ba43bd177c2a",
   "requires": "6.0",
   "tested": "7.0",
   "requires_php": "7.4",
   "added": "2026-07-03 16:00:00",
-  "last_updated": "2026-08-12 06:00:00",
+  "last_updated": "2026-08-14 12:00:00",
   "homepage": "https://feicode.com/WenPai-org/minimal-admin",
   "sections": {
     "description": "A reimagined WordPress admin experience. Fast, focused and beautiful. Served at /minimal-admin/."
-  }
+  },
+  "translations": [
+    {
+      "language": "ar",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-ar.zip",
+      "sha256": "71d118aa9e9d6c39e7692fde098f14534cacf11ee84fcd40de6dbdece526d65b",
+      "catalog": "c13436591d15bb2882aa9889f28d9e71760d6963208d7722271d76f95cf7a408"
+    },
+    {
+      "language": "cs_CZ",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-cs_CZ.zip",
+      "sha256": "13c511984572c6b67a4ce9780d04c1cdb45836f631d177a5368faa6a60ff1210",
+      "catalog": "30c91a55631547f78d08bc68d903bba54bd796f2bb94c5b33977228fe7e02770"
+    },
+    {
+      "language": "da_DK",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-da_DK.zip",
+      "sha256": "def660be22d2337938d38e112b3cde77cd25a91049924282b673ee6c755e8d94",
+      "catalog": "a160804faab67ca9b11b2ba05925236e0dafe3b652495d33993b77bd18ad389d"
+    },
+    {
+      "language": "de_DE",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-de_DE.zip",
+      "sha256": "4647ba9539e67ad32cb111958909b1a39df73a9760f258ca0094ac9f6f501422",
+      "catalog": "0af8a20e83cb5584e5d66f0617f024393f826e441c6bb75efb243bdfc47f7ac7"
+    },
+    {
+      "language": "en_AU",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-en_AU.zip",
+      "sha256": "9be7929221beccfbe346f9c4586e54753c69c7a3eec0f0a273dedc52aec08e78",
+      "catalog": "3dd09839d746d5fe9e2385fd9307194477a07d8472a616f31e01152cc8200e9e"
+    },
+    {
+      "language": "en_CA",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-en_CA.zip",
+      "sha256": "695b28ca1ec7c27ad3fad6846810b43b07f3f7c96b7caebc740927209b398af1",
+      "catalog": "a17e87014ac2b10cd99336a6e19e25c7e751b694018d7ecd457cfaca22f154d9"
+    },
+    {
+      "language": "en_GB",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-en_GB.zip",
+      "sha256": "e443d027d5e9b1087caf20280a78f905dbb1b01d9363f20009858c52e8549740",
+      "catalog": "c75f6bfdcf1dfcc5140e292a46b076b458c5a538545c76546ee2a215bdecea11"
+    },
+    {
+      "language": "en_NZ",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-en_NZ.zip",
+      "sha256": "1d877cc0c4112ed28d1d98aec228c857bed7cdc116358ac2ac7c167e6e675427",
+      "catalog": "164dadd380c37d72714a7994c4e728eb1d638d40f39b426f152c18a702b5d216"
+    },
+    {
+      "language": "en_ZA",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-en_ZA.zip",
+      "sha256": "8db46a66b939b1fd39c24d5dc82ad711954c6c989cda7c7410f1e2e7debcf0bd",
+      "catalog": "631284d8a62340a2afc139f621c246744c736318b704922199d53c9e4b93f9b4"
+    },
+    {
+      "language": "es_ES",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-es_ES.zip",
+      "sha256": "7b3294a4275b80f89165bb1b2414b64f03fe21461b6f8f26bccd51acfe1dcc9a",
+      "catalog": "17075f4d4063061f8fdcc15517b5ca128ec56554ef3513477b1549ac176d5ccf"
+    },
+    {
+      "language": "es_MX",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-es_MX.zip",
+      "sha256": "61f2f5540b96fbe14ba2b1bba3425e044f528519d0819aa5c1c46643fc003347",
+      "catalog": "a70ca3b4ff7571615a5352d4fba240a1beb1b20df31fdbcb95db9a11720e092b"
+    },
+    {
+      "language": "fa_IR",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-fa_IR.zip",
+      "sha256": "21272e03e392e6a5419e01d8fed0ef924763130744c25e7947741e9fd60fa10a",
+      "catalog": "c1ae24fece0653040f39b1bee5062521febc6537dcaf4b7df928236dac316fb6"
+    },
+    {
+      "language": "fr_FR",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-fr_FR.zip",
+      "sha256": "407081af312e8b2722a259f0eada5be6f59b6625039d8fe7923de3755db91bd9",
+      "catalog": "2672f899525714821103e59eb6ea04d2ab14f37af37b5f4bd0c6c91d2751da89"
+    },
+    {
+      "language": "he_IL",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-he_IL.zip",
+      "sha256": "2cc10945c200ebdf0bb363b8baf830ea6368163eac30cd46ec4721c487cb45cd",
+      "catalog": "8db3e1972d68006c81143aa068573f05f5c3bed1517a90a890ba1224f1cf2766"
+    },
+    {
+      "language": "hu_HU",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-hu_HU.zip",
+      "sha256": "ed692c02718a6f46bddea26105f109ca6a1ee27cd62e71d1385839f050635b83",
+      "catalog": "4e023ec3a337b9b9e82702a3773d9dbaf9cfd786c2dc87ad7f32a3657366281e"
+    },
+    {
+      "language": "id_ID",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-id_ID.zip",
+      "sha256": "60991835716b858b012706eda3bf3a6381ebe2fae6f41814cd871eb2a40e6639",
+      "catalog": "269f9bdad1453f550162e11ef1337354624cecd0ad69e4714008e031f93fc2f4"
+    },
+    {
+      "language": "it_IT",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-it_IT.zip",
+      "sha256": "c787e4ee9aa2175fc11cc5c88964ef81ab5dcf2599383d3f77fc3cb64d5866b0",
+      "catalog": "77014ecb2ab0c0d5174f0fe92bc4d9f9b04e9cd3e35836a65206aa7a7413b9a5"
+    },
+    {
+      "language": "ja",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-ja.zip",
+      "sha256": "82c755c7fd43ed9f28439a5fa35700fc1300d1403b071f408e664ce437a436d2",
+      "catalog": "312472d2e3571b4a41d161f61c044d9b98b073e24abc27785b53eca57a7271ec"
+    },
+    {
+      "language": "nl_NL",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-nl_NL.zip",
+      "sha256": "e76bc1b9ff3091f27cb11c108df02a329f2ec5a50273b53b92f84d4c7a406922",
+      "catalog": "f56c71bdcfd63e3bda1e2a914e517850cb8ab6f8c6f1ec85c69170eaff755ec4"
+    },
+    {
+      "language": "pl_PL",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-pl_PL.zip",
+      "sha256": "0f050f8a70ca85cad6a332693f3bb44256f9a1b3c15fb2b9b0127f45a8dd5cd1",
+      "catalog": "2b57736aabd574048102ee25e8d975b39cec0a6aa5cddbae3fe5a8fc4f7c13e5"
+    },
+    {
+      "language": "pt_BR",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-pt_BR.zip",
+      "sha256": "af7c675276207c1f8d37846e9dc7a4b574bc09548f152846c2a1ae30d6f3fe24",
+      "catalog": "bdfff5d67c52e5416e18960f58eacaa52a46e9a8ab8ad9303865e6368d7e5547"
+    },
+    {
+      "language": "pt_PT",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-pt_PT.zip",
+      "sha256": "30112610543675be9323d35c52dd5d49ad28bc477c03561b04346f03e0b11f12",
+      "catalog": "d49232495a3c2cd62681b4bf89368da597c7821b5dbac03803f59ba575d560ca"
+    },
+    {
+      "language": "ru_RU",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-ru_RU.zip",
+      "sha256": "b16e93e95c32cc68993ebace6211e8d2351d5c40c173d2c77406668b52291abb",
+      "catalog": "ca76adca811f538b930c9657bd5272fd12fe07f242f336493c57bd9cff98b0c2"
+    },
+    {
+      "language": "sv_SE",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-sv_SE.zip",
+      "sha256": "1fffbf93753e8379acfe1bb864103793cd096f5c75b0b4650540e583c330e89a",
+      "catalog": "1b2dbaba46d2cb201e2db4e99e46c3d8b5be71de7f7b4b5fdb28fdb6341d4de2"
+    },
+    {
+      "language": "tr_TR",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-tr_TR.zip",
+      "sha256": "eaf93df2ad27e9db3d92948997a530ef0a15dce5e7505fce930860df49238747",
+      "catalog": "e4e89f6e613e6fb93ba6cd17c7161a4ca72de8c5cae2479fcfcb3bbad99f6ce1"
+    },
+    {
+      "language": "vi",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-vi.zip",
+      "sha256": "3631311d7b87c72e987d48794214b972a53ca7ec0124a7ccc8b9772ceee7f40f",
+      "catalog": "f6c22b6f5b71d8b5131d59ac3807b4d0dfc228764e15baa7a21464cfcdac7b0a"
+    },
+    {
+      "language": "zh_CN",
+      "version": "0.30.0.1",
+      "updated": "2026-08-15 02:25:51",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-zh_CN.zip",
+      "sha256": "d7a6f21f8f935d4b17865ddae0e05a1d8c3864128684a9fe11741572c05a6be7",
+      "catalog": "ea965443e2b2275ea8f8cc0be276dfd9886c19119f6385f9144f0bf1f23db84a"
+    },
+    {
+      "language": "zh_TW",
+      "version": "0.30.0.1",
+      "updated": "2026-08-14 12:00:00",
+      "package": "https://feicode.com/WenPai-org/minimal-admin/releases/download/v0.30.0.1/minimal-admin-zh_TW.zip",
+      "sha256": "008bcdb30a4ec1e08605b9800f25e34533b482713b832c5dca1ec39aa1d65116",
+      "catalog": "598c3740d12823c4c62e8e10961e25e7d0d098d1c8e712a069537e687d92abeb"
+    }
+  ]
 }

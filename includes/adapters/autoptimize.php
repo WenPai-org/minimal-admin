@@ -32,19 +32,19 @@ function minimal_admin_autoptimize_active() {
 function minimal_admin_autoptimize_schema() {
 	return array(
 		'js'   => array(
-			'label'  => 'JavaScript',
+			'label'  => __( 'JavaScript', 'minimal-admin' ),
 			'groups' => array(
 				array(
-					'title'  => 'JavaScript options',
+					'title'  => __( 'JavaScript options', 'minimal-admin' ),
 					'fields' => array(
-						array( 'key' => 'autoptimize_js', 'label' => 'Optimize JavaScript code', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_js_aggregate', 'label' => 'Aggregate JS files', 'type' => 'toggle', 'help' => 'Combine JS into fewer files. Mutually exclusive with "Defer non-aggregated JS".' ),
-						array( 'key' => 'autoptimize_js_include_inline', 'label' => 'Also aggregate inline JS', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_js_forcehead', 'label' => 'Force JavaScript in head', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_js_trycatch', 'label' => 'Add try-catch wrapping', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_js_defer_not_aggregate', 'label' => 'Do not aggregate but defer', 'type' => 'toggle', 'help' => 'Defer individual scripts instead of combining them.' ),
-						array( 'key' => 'autoptimize_js_defer_inline', 'label' => 'Also defer inline JS', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_js_exclude', 'label' => 'Exclude scripts from Autoptimize', 'type' => 'text', 'help' => 'Comma-separated filename or path fragments.' ),
+						array( 'key' => 'autoptimize_js', 'label' => __( 'Optimize JavaScript code', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_js_aggregate', 'label' => __( 'Aggregate JS files', 'minimal-admin' ), 'type' => 'toggle', 'help' => 'Combine JS into fewer files. Mutually exclusive with "Defer non-aggregated JS".' ),
+						array( 'key' => 'autoptimize_js_include_inline', 'label' => __( 'Also aggregate inline JS', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_js_forcehead', 'label' => __( 'Force JavaScript in head', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_js_trycatch', 'label' => __( 'Add try-catch wrapping', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_js_defer_not_aggregate', 'label' => __( 'Do not aggregate but defer', 'minimal-admin' ), 'type' => 'toggle', 'help' => 'Defer individual scripts instead of combining them.' ),
+						array( 'key' => 'autoptimize_js_defer_inline', 'label' => __( 'Also defer inline JS', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_js_exclude', 'label' => __( 'Exclude scripts from Autoptimize', 'minimal-admin' ), 'type' => 'text', 'help' => 'Comma-separated filename or path fragments.' ),
 					),
 				),
 			),
@@ -53,16 +53,16 @@ function minimal_admin_autoptimize_schema() {
 			'label'  => 'CSS',
 			'groups' => array(
 				array(
-					'title'  => 'CSS options',
+					'title'  => __( 'CSS options', 'minimal-admin' ),
 					'fields' => array(
-						array( 'key' => 'autoptimize_css', 'label' => 'Optimize CSS code', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_css_aggregate', 'label' => 'Aggregate CSS files', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_css_include_inline', 'label' => 'Also aggregate inline CSS', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_css_datauris', 'label' => 'Generate data: URIs for images', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_css_inline', 'label' => 'Inline all CSS', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_css_defer', 'label' => 'Eliminate render-blocking CSS', 'type' => 'toggle', 'help' => 'Defers CSS load; paste critical CSS below or use the Critical CSS tab in Autoptimize.' ),
-						array( 'key' => 'autoptimize_css_defer_inline', 'label' => 'Inline critical CSS', 'type' => 'textarea' ),
-						array( 'key' => 'autoptimize_css_exclude', 'label' => 'Exclude CSS from Autoptimize', 'type' => 'text' ),
+						array( 'key' => 'autoptimize_css', 'label' => __( 'Optimize CSS code', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_css_aggregate', 'label' => __( 'Aggregate CSS files', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_css_include_inline', 'label' => __( 'Also aggregate inline CSS', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_css_datauris', 'label' => __( 'Generate data: URIs for images', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_css_inline', 'label' => __( 'Inline all CSS', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_css_defer', 'label' => __( 'Eliminate render-blocking CSS', 'minimal-admin' ), 'type' => 'toggle', 'help' => 'Defers CSS load; paste critical CSS below or use the Critical CSS tab in Autoptimize.' ),
+						array( 'key' => 'autoptimize_css_defer_inline', 'label' => __( 'Inline critical CSS', 'minimal-admin' ), 'type' => 'textarea' ),
+						array( 'key' => 'autoptimize_css_exclude', 'label' => __( 'Exclude CSS from Autoptimize', 'minimal-admin' ), 'type' => 'text' ),
 					),
 				),
 			),
@@ -71,11 +71,11 @@ function minimal_admin_autoptimize_schema() {
 			'label'  => 'HTML',
 			'groups' => array(
 				array(
-					'title'  => 'HTML options',
+					'title'  => __( 'HTML options', 'minimal-admin' ),
 					'fields' => array(
-						array( 'key' => 'autoptimize_html', 'label' => 'Optimize HTML code', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_html_minify_inline', 'label' => 'Minify inline JS and CSS', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_html_keepcomments', 'label' => 'Keep HTML comments', 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_html', 'label' => __( 'Optimize HTML code', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_html_minify_inline', 'label' => __( 'Minify inline JS and CSS', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_html_keepcomments', 'label' => __( 'Keep HTML comments', 'minimal-admin' ), 'type' => 'toggle' ),
 					),
 				),
 			),
@@ -84,25 +84,25 @@ function minimal_admin_autoptimize_schema() {
 			'label'  => 'CDN',
 			'groups' => array(
 				array(
-					'title'  => 'CDN options',
+					'title'  => __( 'CDN options', 'minimal-admin' ),
 					'fields' => array(
-						array( 'key' => 'autoptimize_cdn_url', 'label' => 'CDN base URL', 'type' => 'text', 'help' => 'Leave empty to serve optimized files from this site. Example: //cdn.example.com/' ),
+						array( 'key' => 'autoptimize_cdn_url', 'label' => __( 'CDN base URL', 'minimal-admin' ), 'type' => 'text', 'help' => 'Leave empty to serve optimized files from this site. Example: //cdn.example.com/' ),
 					),
 				),
 			),
 		),
 		'misc' => array(
-			'label'  => 'Misc',
+			'label'  => __( 'Misc', 'minimal-admin' ),
 			'groups' => array(
 				array(
-					'title'  => 'Misc options',
+					'title'  => __( 'Misc options', 'minimal-admin' ),
 					'fields' => array(
-						array( 'key' => 'autoptimize_cache_nogzip', 'label' => 'Save aggregated script/css as static files', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_minify_excluded', 'label' => 'Minify excluded CSS and JS files', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_cache_fallback', 'label' => 'Enable 404 fallbacks', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_optimize_logged', 'label' => 'Also optimize for logged-in users', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_optimize_checkout', 'label' => 'Also optimize shop cart/checkout', 'type' => 'toggle' ),
-						array( 'key' => 'autoptimize_enable_meta_ao_settings', 'label' => 'Enable configuration per post/page', 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_cache_nogzip', 'label' => __( 'Save aggregated script/css as static files', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_minify_excluded', 'label' => __( 'Minify excluded CSS and JS files', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_cache_fallback', 'label' => __( 'Enable 404 fallbacks', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_optimize_logged', 'label' => __( 'Also optimize for logged-in users', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_optimize_checkout', 'label' => __( 'Also optimize shop cart/checkout', 'minimal-admin' ), 'type' => 'toggle' ),
+						array( 'key' => 'autoptimize_enable_meta_ao_settings', 'label' => __( 'Enable configuration per post/page', 'minimal-admin' ), 'type' => 'toggle' ),
 					),
 				),
 			),
@@ -185,7 +185,7 @@ function minimal_admin_autoptimize_value( $field ) {
 function minimal_admin_autoptimize_tab_shape( $tab_id ) {
 	$schema = minimal_admin_autoptimize_schema();
 	if ( ! isset( $schema[ $tab_id ] ) ) {
-		return new WP_Error( 'minimal_no_tab', 'Unknown settings tab.', array( 'status' => 404 ) );
+		return new WP_Error( 'minimal_no_tab', __( 'Unknown settings tab.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 	$tab    = $schema[ $tab_id ];
 	$groups = array();
@@ -258,13 +258,13 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		$tabs[] = array( 'id' => $id, 'label' => $tab['label'] );
 	}
 	$surfaces['autoptimize'] = array(
-		'label'    => 'Performance',
+		'label'    => __( 'Performance', 'minimal-admin' ),
 		'sub'      => 'Autoptimize',
 		'family'   => 'performance',
 		'icon'     => 'gear',
 		'cap'      => 'manage_options',
 		'settings' => array(
-			'label' => 'Settings',
+			'label' => __( 'Settings', 'minimal-admin' ),
 			'tabs'  => $tabs,
 			'route' => 'minimal-admin/v1/autoptimize/settings/{tab}',
 		),

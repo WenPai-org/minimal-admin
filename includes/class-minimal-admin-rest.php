@@ -281,6 +281,26 @@ class Minimal_Admin_REST {
 			)
 		);
 
+		// The locale-dependent slice of the boot payload, so changing
+		// language can repaint the app instead of demanding a reload. GET,
+		// because it reads: the language was already switched by the POST
+		// that preceded it, and route_locale() has this namespace serving the
+		// user's language, so simply building the payload here yields the new
+		// one.
+		register_rest_route(
+			self::NS,
+			'/boot-locale',
+			array(
+				'methods'             => 'GET',
+				'callback'            => function () {
+					return rest_ensure_response( Minimal_Admin::locale_payload() );
+				},
+				'permission_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
 		register_rest_route(
 			self::NS,
 			'/notifications/read',
@@ -324,7 +344,7 @@ class Minimal_Admin_REST {
 							return rest_ensure_response( array( 'ok' => true, 'cleared' => true ) );
 						}
 						if ( ! preg_match( '/^[a-f0-9]{12}$/', $id ) ) {
-							return new WP_Error( 'bad_id', 'Invalid notice id.', array( 'status' => 400 ) );
+							return new WP_Error( 'bad_id', __( 'Invalid notice id.', 'minimal-admin' ), array( 'status' => 400 ) );
 						}
 						Minimal_Admin_Notices::$op( $id );
 						return rest_ensure_response( array( 'ok' => true ) );
@@ -437,7 +457,7 @@ class Minimal_Admin_REST {
 		// anonymous request has get_current_user_id() === 0, and the route
 		// regex happily matches /users/0/sessions.
 		$sessions_perm = function ( WP_REST_Request $request ) {
-			$uid = (int) $request['id'];
+			$uid = self::target_user_id( $request );
 			return is_user_logged_in() && $uid > 0
 				&& ( get_current_user_id() === $uid || current_user_can( 'edit_user', $uid ) );
 		};
@@ -511,7 +531,7 @@ class Minimal_Admin_REST {
 				'methods'             => 'GET',
 				'callback'            => function ( WP_REST_Request $request ) {
 					return rest_ensure_response( array(
-						'hidden' => Minimal_Admin_Surfaces::hidden_for_user( (int) $request['id'] ),
+						'hidden' => Minimal_Admin_Surfaces::hidden_for_user( self::target_user_id( $request ) ),
 					) );
 				},
 				'permission_callback' => $edit_user_gate,
@@ -523,7 +543,7 @@ class Minimal_Admin_REST {
 			array(
 				'methods'             => 'POST',
 				'callback'            => function ( WP_REST_Request $request ) {
-					$uid = (int) $request['id'];
+					$uid = self::target_user_id( $request );
 					Minimal_Admin_Surfaces::unhide_integration( (string) $request['integration'], $uid );
 					return rest_ensure_response( array(
 						'ok'     => true,
@@ -770,7 +790,7 @@ class Minimal_Admin_REST {
 				// Per-object meta cap — see $sessions_perm above for why the
 				// plural primitive is not enough on a WooCommerce site.
 				'permission_callback' => function ( WP_REST_Request $request ) {
-					return current_user_can( 'edit_user', (int) $request['id'] );
+					return current_user_can( 'edit_user', self::target_user_id( $request ) );
 				},
 			)
 		);
@@ -829,9 +849,15 @@ class Minimal_Admin_REST {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( __CLASS__, 'user_send_email' ),
-				// Per-object meta cap — see $sessions_perm above.
+				// Per-object meta cap — see $sessions_perm above — plus a role
+				// floor. edit_user short-circuits against one's own id, so
+				// without list_users any Subscriber could make the site send
+				// arbitrary content From its admin address, with the site's
+				// real SPF/DKIM alignment, to an inbox they control.
 				'permission_callback' => function ( WP_REST_Request $request ) {
-					return current_user_can( 'edit_user', (int) $request['id'] );
+					$uid = self::target_user_id( $request );
+					return current_user_can( 'edit_user', $uid )
+						&& ( get_current_user_id() !== $uid || current_user_can( 'list_users' ) );
 				},
 				'args'                => array(
 					'subject' => array(
@@ -851,8 +877,13 @@ class Minimal_Admin_REST {
 		// WooCommerce order helpers (email + resend WC transactional emails).
 		// Order CRUD/refunds ride wc/v3; these cover what core WC REST leaves out.
 		if ( class_exists( 'WooCommerce' ) ) {
-			$order_cap = function () {
-				return current_user_can( 'edit_shop_orders' );
+			$order_cap = function ( WP_REST_Request $request ) {
+				if ( ! current_user_can( 'edit_shop_orders' ) ) {
+					return false;
+				}
+				$url_params = $request->get_url_params();
+				$id         = absint( $url_params['id'] ?? 0 );
+				return ! $id || current_user_can( 'edit_post', $id );
 			};
 			register_rest_route(
 				self::NS,
@@ -914,6 +945,25 @@ class Minimal_Admin_REST {
 					'methods'             => 'GET',
 					'callback'            => array( __CLASS__, 'wc_order_refund_state' ),
 					'permission_callback' => $order_cap,
+				)
+			);
+			// Which orders on a list page belong to a subscription. One request
+			// for the whole page: the alternative is asking WooCommerce for
+			// every order's meta_data, which drags the entire meta bag of every
+			// row across the wire to read one key.
+			register_rest_route(
+				self::NS,
+				'/wc/orders/subscription-relations',
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( __CLASS__, 'wc_order_subscription_relations' ),
+					'permission_callback' => $order_cap,
+					'args'                => array(
+						'ids' => array(
+							'type'     => 'string',
+							'required' => true,
+						),
+					),
 				)
 			);
 		}
@@ -1441,8 +1491,14 @@ class Minimal_Admin_REST {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( __CLASS__, 'set_config_constant' ),
+				// edit_files as well as manage_options: this rewrites
+				// wp-config.php, and core gates every other dashboard-driven
+				// PHP write on edit_files, which map_meta_cap resolves
+				// separately. They coincide on stock WordPress; role plugins
+				// routinely grant manage_options to a site manager while
+				// withholding file editing.
 				'permission_callback' => function () {
-					return current_user_can( 'manage_options' );
+					return current_user_can( 'manage_options' ) && current_user_can( 'edit_files' );
 				},
 				'args'                => array(
 					'constant' => array(
@@ -1560,17 +1616,30 @@ class Minimal_Admin_REST {
 					// per item, and it tells the public which posts carry
 					// unsaved edits.
 					'context'     => array( 'edit' ),
-					'description' => 'Whether an autosave newer than the saved post exists (live post carrying unsaved edits).',
+					'description' => __( 'Whether an autosave newer than the saved post exists (live post carrying unsaved edits).', 'minimal-admin' ),
 				),
 			)
 		);
 		foreach ( $modified_types as $modified_type ) {
 			add_filter(
 				"rest_{$modified_type}_query",
-				function ( $args, $request ) {
-					if ( ! empty( $request['minimal_modified'] ) ) {
-						$args['minimal_modified'] = true;
+				function ( $args, $request ) use ( $modified_type ) {
+					if ( empty( $request['minimal_modified'] ) ) {
+						return $args;
 					}
+					// The FIELD above is context=edit for a stated reason: it
+					// tells the reader which posts carry unsaved edits. This
+					// filter reaches the same fact by selecting on it, and
+					// rest_{type}_query runs for unauthenticated collection
+					// reads too, so without the same gate a logged-out visitor
+					// could enumerate exactly the set the field withholds.
+					// Ask for the edit context AND the type's own edit cap.
+					$type_obj = get_post_type_object( $modified_type );
+					$can_edit = $type_obj && current_user_can( $type_obj->cap->edit_posts );
+					if ( 'edit' !== $request['context'] || ! $can_edit ) {
+						return $args;
+					}
+					$args['minimal_modified'] = true;
 					return $args;
 				},
 				10,
@@ -1591,7 +1660,7 @@ class Minimal_Admin_REST {
 				'get_callback' => array( __CLASS__, 'post_lock_holder' ),
 				'schema'       => array(
 					'type'        => array( 'object', 'null' ),
-					'description' => 'The other user currently editing this post (core edit lock), or null.',
+					'description' => __( 'The other user currently editing this post (core edit lock), or null.', 'minimal-admin' ),
 					// Edit-context only — the lock holder's id + display name is
 					// list-view data for editors, not for public wp/v2 reads.
 					'context'     => array( 'edit' ),
@@ -1690,7 +1759,7 @@ class Minimal_Admin_REST {
 					$type = get_post_type_object( $post->post_type );
 					return array(
 						'id'        => $post->ID,
-						'title'     => get_the_title( $post ) !== '' ? get_the_title( $post ) : '(no title)',
+						'title'     => get_the_title( $post ) !== '' ? get_the_title( $post ) : __( '(no title)', 'minimal-admin' ),
 						'type'      => $post->post_type,
 						'rest_base' => ( $type && $type->show_in_rest ) ? ( $type->rest_base ?: $post->post_type ) : null,
 						'editable'  => current_user_can( 'edit_post', $post->ID ),
@@ -1799,7 +1868,7 @@ class Minimal_Admin_REST {
 	 */
 	private static function plain_title( $post ) {
 		$t = html_entity_decode( wp_strip_all_tags( get_the_title( $post ) ), ENT_QUOTES, 'UTF-8' );
-		return '' === trim( $t ) ? '(no title)' : $t;
+		return '' === trim( $t ) ? __( '(no title)', 'minimal-admin' ) : $t;
 	}
 
 	/**
@@ -1817,14 +1886,14 @@ class Minimal_Admin_REST {
 	public static function comment_block( WP_REST_Request $request ) {
 		$comment = get_comment( (int) $request['id'] );
 		if ( ! $comment ) {
-			return new WP_Error( 'not_found', 'Comment not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Comment not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		$candidate = trim( (string) $comment->comment_author_email );
 		if ( '' === $candidate ) {
 			$candidate = trim( (string) $comment->comment_author_IP );
 		}
 		if ( '' === $candidate ) {
-			return new WP_Error( 'no_identity', 'This comment carries no email or IP to block.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_identity', __( 'This comment carries no email or IP to block.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$lines = array_filter( array_map( 'trim', explode( "\n", (string) get_option( 'disallowed_keys', '' ) ) ) );
 		$added = array();
@@ -1895,7 +1964,7 @@ class Minimal_Admin_REST {
 		$user = get_userdata( $other );
 		return array(
 			'user' => (int) $other,
-			'name' => $user ? $user->display_name : 'Someone',
+			'name' => $user ? $user->display_name : __( 'Someone', 'minimal-admin' ),
 		);
 	}
 
@@ -1973,11 +2042,11 @@ class Minimal_Admin_REST {
 			return rest_ensure_response( array( 'cleared' => true ) );
 		}
 		if ( ! wp_is_writable( $path ) ) {
-			return new WP_Error( 'not_writable', 'The debug log is not writable.', array( 'status' => 400 ) );
+			return new WP_Error( 'not_writable', __( 'The debug log is not writable.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$fh = @fopen( $path, 'w' );
 		if ( ! $fh ) {
-			return new WP_Error( 'clear_failed', 'Could not clear the debug log.', array( 'status' => 500 ) );
+			return new WP_Error( 'clear_failed', __( 'Could not clear the debug log.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		fclose( $fh );
 		return rest_ensure_response( array( 'cleared' => true ) );
@@ -2038,7 +2107,7 @@ class Minimal_Admin_REST {
 	public static function render_blocks( WP_REST_Request $request ) {
 		$blocks = $request['blocks'];
 		if ( ! is_array( $blocks ) ) {
-			return new WP_Error( 'invalid_blocks', 'Expected an array of block markup strings.', array( 'status' => 400 ) );
+			return new WP_Error( 'invalid_blocks', __( 'Expected an array of block markup strings.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		// The post these islands belong to, when the client knows it — some
 		// plugins cache per-post generated CSS the styles filter below can
@@ -2260,15 +2329,15 @@ class Minimal_Admin_REST {
 			}
 		}
 		if ( ! $surface || empty( $surface['setup'] ) || ! is_array( $surface['setup'] ) ) {
-			return new WP_Error( 'no_setup', 'That surface has no setup to run.', array( 'status' => 404 ) );
+			return new WP_Error( 'no_setup', __( 'That surface has no setup to run.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		$cap = isset( $surface['cap'] ) ? $surface['cap'] : 'manage_options';
 		if ( ! current_user_can( $cap ) ) {
-			return new WP_Error( 'forbidden', 'You cannot set up this plugin.', array( 'status' => 403 ) );
+			return new WP_Error( 'forbidden', __( 'You cannot set up this plugin.', 'minimal-admin' ), array( 'status' => 403 ) );
 		}
 		$setup = $surface['setup'];
 		if ( empty( $setup['run'] ) || ! is_callable( $setup['run'] ) ) {
-			return new WP_Error( 'no_setup', 'This setup runs on the plugin\'s own screen.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_setup', __( 'This setup runs on the plugin\'s own screen.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		if ( isset( $setup['needed'] ) && is_callable( $setup['needed'] ) && ! call_user_func( $setup['needed'] ) ) {
 			return rest_ensure_response( array( 'ok' => true, 'already' => true ) );
@@ -2288,7 +2357,7 @@ class Minimal_Admin_REST {
 			$result = call_user_func( $setup['run'], $choices );
 		} catch ( \Throwable $e ) {
 			$msg = trim( wp_strip_all_tags( (string) $e->getMessage() ) );
-			return new WP_Error( 'setup_failed', '' !== $msg ? $msg : 'The plugin reported an error during setup.', array( 'status' => 500 ) );
+			return new WP_Error( 'setup_failed', '' !== $msg ? $msg : __( 'The plugin reported an error during setup.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		if ( is_wp_error( $result ) ) {
 			$result->add_data( array( 'status' => 500 ) );
@@ -2379,7 +2448,7 @@ class Minimal_Admin_REST {
 		if ( '' !== $structure && ! preg_match( '/%[^\/%]+%/', $structure ) ) {
 			return new WP_Error(
 				'invalid_structure',
-				'A custom structure needs at least one tag, e.g. %postname%.',
+				__( 'A custom structure needs at least one tag, e.g. %postname%.', 'minimal-admin' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -2427,17 +2496,18 @@ class Minimal_Admin_REST {
 		// front end with it; mirror its cheap structural checks (balance only —
 		// full parsing stays out of scope, exactly like core).
 		$balance = array(
-			array( '{', '}', 'curly brackets' ),
-			array( '(', ')', 'parentheses' ),
-			array( '[', ']', 'square brackets' ),
+			array( '{', '}', __( 'curly brackets', 'minimal-admin' ) ),
+			array( '(', ')', __( 'parentheses', 'minimal-admin' ) ),
+			array( '[', ']', __( 'square brackets', 'minimal-admin' ) ),
 		);
 		foreach ( $balance as $pair ) {
 			if ( substr_count( $css, $pair[0] ) !== substr_count( $css, $pair[1] ) ) {
-				return new WP_Error( 'invalid_css', 'That CSS has unbalanced ' . $pair[2] . '. Fix it and save again; nothing was changed.', array( 'status' => 400 ) );
+				/* translators: %s: the bracket type that is unbalanced (e.g. "curly brackets"). */
+				return new WP_Error( 'invalid_css', sprintf( __( 'That CSS has unbalanced %s. Fix it and save again; nothing was changed.', 'minimal-admin' ), $pair[2] ), array( 'status' => 400 ) );
 			}
 		}
 		if ( substr_count( $css, '/*' ) !== substr_count( $css, '*/' ) ) {
-			return new WP_Error( 'invalid_css', 'That CSS has an unclosed comment. Fix it and save again; nothing was changed.', array( 'status' => 400 ) );
+			return new WP_Error( 'invalid_css', __( 'That CSS has an unclosed comment. Fix it and save again; nothing was changed.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		$result = wp_update_custom_css_post( $css );
@@ -2475,17 +2545,25 @@ class Minimal_Admin_REST {
 		$traffic     = $can_traffic ? apply_filters( 'minimal_admin_traffic', null, $days ) : null;
 		$traffic_out = null;
 
+		// Every stat carries a STABLE `key` alongside its label. The client
+		// used to map a card to its view by matching the label text, which
+		// works only while the label is English: the moment a locale ships,
+		// every overview card stops being a door. The key is what the client
+		// routes on; the label is free to be translated.
 		$stats = array(
 			array(
-				'label' => 'Published posts',
+				'key'   => 'posts',
+				'label' => __( 'Published posts', 'minimal-admin' ),
 				'value' => number_format_i18n( (int) $posts->publish ),
-				'delta' => (int) $posts->draft . ' draft' . ( 1 === (int) $posts->draft ? '' : 's' ),
+				/* translators: %s: number of draft posts. */
+				'delta' => sprintf( _n( '%s draft', '%s drafts', (int) $posts->draft, 'minimal-admin' ), number_format_i18n( (int) $posts->draft ) ),
 				'up'    => null,
 			),
 			array(
-				'label' => 'Pages',
+				'key'   => 'pages',
+				'label' => __( 'Pages', 'minimal-admin' ),
 				'value' => number_format_i18n( (int) $pages->publish ),
-				'delta' => 'published',
+				'delta' => __( 'published', 'minimal-admin' ),
 				'up'    => null,
 			),
 			// Many sites never use comments — an eternal zero is dead weight,
@@ -2496,20 +2574,25 @@ class Minimal_Admin_REST {
 			// comments on the site should not learn the size of the user base,
 			// so fall back to the Comments card for them instead.
 			( 0 === (int) $comments->approved && 0 === (int) $comments->moderated && current_user_can( 'list_users' ) ) ? array(
-				'label' => 'Users',
+				'key'   => 'users',
+				'label' => __( 'Users', 'minimal-admin' ),
 				'value' => number_format_i18n( self::user_count() ),
-				'delta' => 'registered',
+				'delta' => __( 'registered', 'minimal-admin' ),
 				'up'    => null,
 			) : array(
-				'label' => 'Comments',
+				'key'   => 'comments',
+				'label' => __( 'Comments', 'minimal-admin' ),
 				'value' => number_format_i18n( (int) $comments->approved ),
-				'delta' => (int) $comments->moderated . ' pending',
+				/* translators: %s: number of comments awaiting moderation. */
+				'delta' => sprintf( __( '%s pending', 'minimal-admin' ), number_format_i18n( (int) $comments->moderated ) ),
 				'up'    => (int) $comments->moderated > 0 ? 'warn' : null,
 			),
 			array(
-				'label' => 'Media files',
+				'key'   => 'media',
+				'label' => __( 'Media files', 'minimal-admin' ),
 				'value' => number_format_i18n( (int) $media->inherit ),
-				'delta' => size_format( self::uploads_size(), 1 ) . ' used',
+				/* translators: %s: disk space used by uploads, already formatted. */
+				'delta' => sprintf( __( '%s used', 'minimal-admin' ), size_format( self::uploads_size(), 1 ) ),
 				'up'    => null,
 			),
 		);
@@ -2545,7 +2628,8 @@ class Minimal_Admin_REST {
 			$offset  = ( $buckets - 1 - $i ) * $bucket_days;
 			$label   = 1 === $bucket_days
 				? date_i18n( 'M j', time() - $offset * DAY_IN_SECONDS )
-				: 'Week of ' . date_i18n( 'M j', time() - ( $offset + $bucket_days - 1 ) * DAY_IN_SECONDS );
+				/* translators: %s: the date the week starts on (e.g. "Jun 3"). */
+				: sprintf( __( 'Week of %s', 'minimal-admin' ), date_i18n( 'M j', time() - ( $offset + $bucket_days - 1 ) * DAY_IN_SECONDS ) );
 			$chart[] = array(
 				'label' => $label,
 				'value' => $count,
@@ -2596,7 +2680,8 @@ class Minimal_Admin_REST {
 				$to_ts    = time() - $offset * DAY_IN_SECONDS;
 				$label    = 1 === $bucket_days
 					? date_i18n( 'M j, Y', $to_ts )
-					: 'Week of ' . date_i18n( 'M j, Y', $from_ts );
+					/* translators: %s: the date the week starts on (e.g. "Jun 3, 2026"). */
+					: sprintf( __( 'Week of %s', 'minimal-admin' ), date_i18n( 'M j, Y', $from_ts ) );
 				$tchart[] = array(
 					'label' => $label,
 					'value' => $bucket['v'],
@@ -2613,14 +2698,17 @@ class Minimal_Admin_REST {
 			$delta = $prev > 0 ? round( ( $visitors - $prev ) / $prev * 100, 1 ) : null;
 			// Always surface pageviews on the card; when a period delta exists
 			// it leads, with pageviews as a quiet second clause.
-			$views_bit = $compact( $pageviews ) . ' pageviews';
+			/* translators: %s: page-view count, already formatted. */
+			$views_bit = sprintf( __( '%s pageviews', 'minimal-admin' ), $compact( $pageviews ) );
 			$delta_bit = null !== $delta
-				? ( $delta >= 0 ? '↑ ' : '↓ ' ) . abs( $delta ) . '% vs prior ' . $days . 'd · ' . $views_bit
+				/* translators: 1: up or down arrow, 2: percentage change, 3: number of days, 4: pageviews clause. */
+				? sprintf( __( '%1$s %2$s%% vs prior %3$sd · %4$s', 'minimal-admin' ), $delta >= 0 ? '↑' : '↓', abs( $delta ), $days, $views_bit )
 				: $views_bit;
 			array_unshift(
 				$stats,
 				array(
-					'label' => 'Visitors',
+					'key'   => 'visitors',
+					'label' => __( 'Visitors', 'minimal-admin' ),
 					'value' => $compact( $visitors ),
 					'delta' => $delta_bit,
 					'up'    => null !== $delta ? ( $delta >= 0 ? true : 'down' ) : null,
@@ -2678,13 +2766,22 @@ class Minimal_Admin_REST {
 				continue;
 			}
 			$author = get_the_author_meta( 'display_name', $p->post_author );
-			$verb   = 'publish' === $p->post_status ? 'published' : ( 'future' === $p->post_status ? 'scheduled' : 'drafted' );
+			if ( 'publish' === $p->post_status ) {
+				/* translators: 1: author display name, 2: post title. */
+				$tpl = __( '%1$s published “%2$s”', 'minimal-admin' );
+			} elseif ( 'future' === $p->post_status ) {
+				/* translators: 1: author display name, 2: post title. */
+				$tpl = __( '%1$s scheduled “%2$s”', 'minimal-admin' );
+			} else {
+				/* translators: 1: author display name, 2: post title. */
+				$tpl = __( '%1$s drafted “%2$s”', 'minimal-admin' );
+			}
 			$pto    = get_post_type_object( $p->post_type );
 			$activity[] = array(
-				'text'  => sprintf( '%s %s “%s”', $author, $verb, self::plain_title( $p ) ),
+				'text'  => sprintf( $tpl, $author, self::plain_title( $p ) ),
 				'time'  => $time,
 				'color' => 'publish' === $p->post_status ? 'green' : ( 'future' === $p->post_status ? 'blue' : 'accent' ),
-				// Rows are clickable: land in the editor (Austin's ask). The
+				// Rows are clickable: land in the editor. The
 				// editor route takes the REST base, not the post type.
 				'goto'  => array(
 					'kind' => 'editor',
@@ -2727,7 +2824,7 @@ class Minimal_Admin_REST {
 		// 4 rows keeps the Recent activity card the same height as the chart card.
 		$activity = array_slice( $activity, 0, 4 );
 		foreach ( $activity as &$item ) {
-			$item['time'] = sprintf( '%s ago', human_time_diff( $item['time'] ) );
+			$item['time'] = sprintf( /* translators: %s: human-readable time difference (e.g. "5 mins"). */ __( '%s ago', 'minimal-admin' ), human_time_diff( $item['time'] ) );
 		}
 
 		// Store needs-attention counts: the day-to-day order buckets a store
@@ -2770,12 +2867,12 @@ class Minimal_Admin_REST {
 		$from = $request['from'];
 		$to   = $request['to'];
 		if ( $from > $to ) {
-			return new WP_Error( 'bad_range', 'from must be on or before to.', array( 'status' => 400 ) );
+			return new WP_Error( 'bad_range', __( 'from must be on or before to.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		// Cap the window so a bad client can't ask for years of aggregation.
 		$span = (int) ( ( strtotime( $to . ' UTC' ) - strtotime( $from . ' UTC' ) ) / DAY_IN_SECONDS ) + 1;
 		if ( $span > 31 ) {
-			return new WP_Error( 'range_too_long', 'Pick a window of 31 days or fewer.', array( 'status' => 400 ) );
+			return new WP_Error( 'range_too_long', __( 'Pick a window of 31 days or fewer.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		/**
@@ -2855,12 +2952,13 @@ class Minimal_Admin_REST {
 		foreach ( $posts as $p ) {
 			$author  = get_the_author_meta( 'display_name', (int) $p->post_author );
 			// Titles carry HTML entities; the client escapes, so decode here.
-			$title   = html_entity_decode( $p->post_title ?: '(no title)', ENT_QUOTES );
+			$title   = html_entity_decode( $p->post_title ?: __( '(no title)', 'minimal-admin' ), ENT_QUOTES );
 			$items[] = array(
 				'kind'  => 'post',
 				'id'    => (int) $p->ID,
 				'type'  => 'page' === $p->post_type ? 'pages' : 'posts',
-				'text'  => sprintf( '%s published “%s”', $author ?: 'Someone', $title ),
+				/* translators: 1: author display name, 2: post title. */
+				'text'  => sprintf( __( '%1$s published “%2$s”', 'minimal-admin' ), $author ?: __( 'Someone', 'minimal-admin' ), $title ),
 				'time'  => strtotime( $p->post_date_gmt . ' UTC' ),
 				'color' => 'green',
 			);
@@ -2889,9 +2987,13 @@ class Minimal_Admin_REST {
 				'kind'  => 'comment',
 				'id'    => (int) $c->comment_ID,
 				'text'  => sprintf(
-					$pending ? 'Comment from %s awaiting moderation on “%s”' : '%s commented on “%s”',
-					$c->comment_author ? $c->comment_author : 'Anonymous',
-					html_entity_decode( get_the_title( (int) $c->comment_post_ID ) ?: '(no title)', ENT_QUOTES )
+					$pending
+						/* translators: 1: comment author name, 2: post title. */
+						? __( 'Comment from %1$s awaiting moderation on “%2$s”', 'minimal-admin' )
+						/* translators: 1: comment author name, 2: post title. */
+						: __( '%1$s commented on “%2$s”', 'minimal-admin' ),
+					$c->comment_author ? $c->comment_author : __( 'Anonymous', 'minimal-admin' ),
+					html_entity_decode( get_the_title( (int) $c->comment_post_ID ) ?: __( '(no title)', 'minimal-admin' ), ENT_QUOTES )
 				),
 				'time'  => strtotime( $c->comment_date_gmt . ' UTC' ),
 				'color' => $pending ? 'amber' : 'blue',
@@ -2903,7 +3005,7 @@ class Minimal_Admin_REST {
 		} );
 		$items = array_slice( $items, 0, 100 );
 		foreach ( $items as &$item ) {
-			$item['ago'] = sprintf( '%s ago', human_time_diff( $item['time'] ) );
+			$item['ago'] = sprintf( /* translators: %s: human-readable time difference (e.g. "5 mins"). */ __( '%s ago', 'minimal-admin' ), human_time_diff( $item['time'] ) );
 		}
 
 		return rest_ensure_response( array( 'items' => $items ) );
@@ -2937,17 +3039,17 @@ class Minimal_Admin_REST {
 		$id   = (int) $request['id'];
 		$post = get_post( $id );
 		if ( ! $post ) {
-			return new WP_Error( 'not_found', 'Post not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Post not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		if ( 'trash' !== $post->post_status ) {
-			return new WP_Error( 'not_trashed', 'That post is not in the trash.', array( 'status' => 400 ) );
+			return new WP_Error( 'not_trashed', __( 'That post is not in the trash.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		// Same capability wp-admin's own untrash link requires.
 		if ( ! current_user_can( 'delete_post', $id ) ) {
-			return new WP_Error( 'forbidden', 'You are not allowed to restore this item.', array( 'status' => 403 ) );
+			return new WP_Error( 'forbidden', __( 'You are not allowed to restore this item.', 'minimal-admin' ), array( 'status' => 403 ) );
 		}
 		if ( ! wp_untrash_post( $id ) ) {
-			return new WP_Error( 'restore_failed', 'Could not restore the item.', array( 'status' => 500 ) );
+			return new WP_Error( 'restore_failed', __( 'Could not restore the item.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		return rest_ensure_response(
 			array(
@@ -3002,10 +3104,11 @@ class Minimal_Admin_REST {
 			return $response;
 		}
 		$user = get_userdata( $other );
-		$name = $user ? $user->display_name : 'Someone else';
+		$name = $user ? $user->display_name : __( 'Someone else', 'minimal-admin' );
 		return new WP_Error(
 			'minimal_locked',
-			$name . ' took over editing. Your copy was not saved.',
+			/* translators: %s: display name of the user who now holds the edit lock. */
+			sprintf( __( '%s took over editing. Your copy was not saved.', 'minimal-admin' ), $name ),
 			array(
 				'status' => 409,
 				'holder' => array(
@@ -3028,10 +3131,10 @@ class Minimal_Admin_REST {
 		$id   = (int) $request['id'];
 		$post = get_post( $id );
 		if ( ! $post ) {
-			return new WP_Error( 'not_found', 'Post not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Post not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'edit_post', $id ) ) {
-			return new WP_Error( 'forbidden', 'You are not allowed to edit this item.', array( 'status' => 403 ) );
+			return new WP_Error( 'forbidden', __( 'You are not allowed to edit this item.', 'minimal-admin' ), array( 'status' => 403 ) );
 		}
 		require_once ABSPATH . 'wp-admin/includes/post.php';
 		$other = wp_check_post_lock( $id );
@@ -3042,7 +3145,7 @@ class Minimal_Admin_REST {
 					'acquired' => false,
 					'holder'   => array(
 						'id'     => $other,
-						'name'   => $user ? $user->display_name : 'Someone',
+						'name'   => $user ? $user->display_name : __( 'Someone', 'minimal-admin' ),
 						'avatar' => get_avatar_url( $other, array( 'size' => 96 ) ),
 					),
 				)
@@ -3061,10 +3164,10 @@ class Minimal_Admin_REST {
 		$id   = (int) $request['id'];
 		$post = get_post( $id );
 		if ( ! $post ) {
-			return new WP_Error( 'not_found', 'Post not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Post not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( 'edit_post', $id ) ) {
-			return new WP_Error( 'forbidden', 'You are not allowed to edit this item.', array( 'status' => 403 ) );
+			return new WP_Error( 'forbidden', __( 'You are not allowed to edit this item.', 'minimal-admin' ), array( 'status' => 403 ) );
 		}
 		$lock  = (string) get_post_meta( $id, '_edit_lock', true );
 		$parts = explode( ':', $lock );
@@ -3077,12 +3180,12 @@ class Minimal_Admin_REST {
 	private static function greeting() {
 		$hour = (int) current_time( 'G' );
 		if ( $hour < 12 ) {
-			return 'Good morning';
+			return __( 'Good morning', 'minimal-admin' );
 		}
 		if ( $hour < 17 ) {
-			return 'Good afternoon';
+			return __( 'Good afternoon', 'minimal-admin' );
 		}
-		return 'Good evening';
+		return __( 'Good evening', 'minimal-admin' );
 	}
 
 	/**
@@ -3264,7 +3367,8 @@ class Minimal_Admin_REST {
 						'id'     => 'plugin-' . $file . '-' . $data->new_version,
 						'kind'   => 'updates',
 						'icon'   => '⬆',
-						'title'  => sprintf( '%s %s is available to install', $name, $data->new_version ),
+						/* translators: 1: plugin name, 2: version number. */
+						'title'  => sprintf( __( '%1$s %2$s is available to install', 'minimal-admin' ), $name, $data->new_version ),
 						'time'   => $checked,
 						// Client renders an in-row Update button from this.
 						'update' => array(
@@ -3287,8 +3391,8 @@ class Minimal_Admin_REST {
 				'id'     => 'translations-' . $lang_count,
 				'kind'   => 'updates',
 				'icon'   => '⬆',
-				/* translators: %d is a number of translations. */
 				'title'  => sprintf(
+					/* translators: %d: how many translation packs have an update waiting. */
 					_n(
 						'%d translation is available to update',
 						'%d translations are available to update',
@@ -3318,7 +3422,8 @@ class Minimal_Admin_REST {
 						'id'     => 'theme-' . $stylesheet . '-' . $ver,
 						'kind'   => 'updates',
 						'icon'   => '⬆',
-						'title'  => sprintf( '%s theme %s is available to install', $tname, $ver ),
+						/* translators: 1: theme name, 2: version number. */
+						'title'  => sprintf( __( '%1$s theme %2$s is available to install', 'minimal-admin' ), $tname, $ver ),
 						'time'   => $tchecked,
 						'update' => array(
 							'type'       => 'theme',
@@ -3338,7 +3443,8 @@ class Minimal_Admin_REST {
 					'id'     => 'core-' . $core->updates[0]->version,
 					'kind'   => 'system',
 					'icon'   => '🛡',
-					'title'  => sprintf( 'WordPress %s is available', $core->updates[0]->version ),
+					/* translators: %s: WordPress version number. */
+					'title'  => sprintf( __( 'WordPress %s is available', 'minimal-admin' ), $core->updates[0]->version ),
 					'time'   => (int) $core->last_checked,
 					'update' => array(
 						'type'    => 'core',
@@ -3357,7 +3463,8 @@ class Minimal_Admin_REST {
 					'id'    => 'core-auto-' . $auto['version'],
 					'kind'  => 'system',
 					'icon'  => '🛡',
-					'title' => sprintf( 'WordPress updated itself to %s', $auto['version'] ),
+					/* translators: %s: WordPress version number. */
+					'title' => sprintf( __( 'WordPress updated itself to %s', 'minimal-admin' ), $auto['version'] ),
 					'time'  => (int) $auto['timestamp'],
 				);
 			}
@@ -3384,7 +3491,8 @@ class Minimal_Admin_REST {
 					'id'    => 'user-' . $u->ID,
 					'kind'  => 'system',
 					'icon'  => '👤',
-					'title' => sprintf( 'New user registered: %s', $u->display_name ),
+					/* translators: %s: the new user's display name. */
+					'title' => sprintf( __( 'New user registered: %s', 'minimal-admin' ), $u->display_name ),
 					'time'  => strtotime( $u->user_registered . ' UTC' ),
 				);
 			}
@@ -3400,8 +3508,8 @@ class Minimal_Admin_REST {
 		$today = strtotime( 'today', current_time( 'timestamp' ) ) - (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 		foreach ( $items as &$item ) {
 			$item['unread'] = $item['time'] > $read_at && ! in_array( $item['id'], $read_ids, true );
-			$item['group']  = $item['time'] >= $today ? 'Today' : 'Earlier';
-			$item['ago']    = sprintf( '%s ago', human_time_diff( $item['time'] ) );
+			$item['group']  = $item['time'] >= $today ? __( 'Today', 'minimal-admin' ) : __( 'Earlier', 'minimal-admin' );
+			$item['ago']    = sprintf( /* translators: %s: human-readable time difference (e.g. "5 mins"). */ __( '%s ago', 'minimal-admin' ), human_time_diff( $item['time'] ) );
 		}
 
 		return rest_ensure_response( array( 'items' => $items ) );
@@ -3742,12 +3850,12 @@ class Minimal_Admin_REST {
 	 */
 	public static function set_site_logo( WP_REST_Request $request ) {
 		if ( ! current_theme_supports( 'custom-logo' ) ) {
-			return new WP_Error( 'minimal_no_logo_support', 'The active theme does not support a custom logo.', array( 'status' => 400 ) );
+			return new WP_Error( 'minimal_no_logo_support', __( 'The active theme does not support a custom logo.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$id = (int) $request->get_param( 'id' );
 		if ( $id > 0 ) {
 			if ( ! wp_attachment_is_image( $id ) ) {
-				return new WP_Error( 'minimal_bad_logo', 'That attachment is not an image.', array( 'status' => 400 ) );
+				return new WP_Error( 'minimal_bad_logo', __( 'That attachment is not an image.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			set_theme_mod( 'custom_logo', $id );
 		} else {
@@ -3767,13 +3875,13 @@ class Minimal_Admin_REST {
 		$downloaded = false;
 		if ( '' !== $locale && 'en_US' !== $locale && ! in_array( $locale, get_available_languages(), true ) ) {
 			if ( ! current_user_can( 'install_languages' ) || ! wp_is_file_mod_allowed( 'download_language_pack' ) ) {
-				return new WP_Error( 'minimal_language_install', 'That language is not installed, and you cannot install languages on this site.', array( 'status' => 403 ) );
+				return new WP_Error( 'minimal_language_install', __( 'That language is not installed, and you cannot install languages on this site.', 'minimal-admin' ), array( 'status' => 403 ) );
 			}
 			require_once ABSPATH . 'wp-admin/includes/translation-install.php';
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 			$result = wp_download_language_pack( $locale );
 			if ( ! $result ) {
-				return new WP_Error( 'minimal_language_install', 'The language pack could not be downloaded. Check the site can reach wordpress.org and try again.', array( 'status' => 500 ) );
+				return new WP_Error( 'minimal_language_install', __( 'The language pack could not be downloaded. Check the site can reach wordpress.org and try again.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
 			$locale     = $result; // the API echoes the canonical code
 			$downloaded = true;
@@ -3782,6 +3890,7 @@ class Minimal_Admin_REST {
 			$locale = '';
 		}
 		update_option( 'WPLANG', $locale );
+		self::install_component_translations( $locale );
 		return rest_ensure_response(
 			array(
 				'ok'        => true,
@@ -3789,6 +3898,47 @@ class Minimal_Admin_REST {
 				'installed' => $downloaded,
 			)
 		);
+	}
+
+	/**
+	 * Install plugin and theme translation packs for one locale. Core's
+	 * wp_download_language_pack() fetches CORE only; wp-admin completes the
+	 * job from its Updates screen, so a language switched from Minimal used to
+	 * leave every plugin's strings (WooCommerce's order statuses, most
+	 * visibly) in English until someone visited wp-admin. Runs on every
+	 * switch, not only after a download: the core pack being installed says
+	 * nothing about the plugins'. Failures are swallowed — the switch itself
+	 * already succeeded, and a missing plugin pack only means English
+	 * fallbacks.
+	 */
+	private static function install_component_translations( $locale ) {
+		if ( '' === $locale || 'en_US' === $locale ) {
+			return;
+		}
+		if ( ! current_user_can( 'install_languages' ) || ! wp_is_file_mod_allowed( 'download_language_pack' ) ) {
+			return;
+		}
+		try {
+			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+			// The update transients only list translations for languages that
+			// were installed when the check ran — recompute now.
+			wp_clean_update_cache();
+			wp_update_plugins();
+			wp_update_themes();
+			$updates = array_values( array_filter(
+				wp_get_translation_updates(),
+				function ( $u ) use ( $locale ) {
+					return isset( $u->language ) && $u->language === $locale;
+				}
+			) );
+			if ( ! $updates ) {
+				return;
+			}
+			$upgrader = new Language_Pack_Upgrader( new Automatic_Upgrader_Skin() );
+			$upgrader->bulk_upgrade( $updates );
+		} catch ( \Throwable $e ) {
+			// English fallback is the worst case; never fail the switch.
+		}
 	}
 
 	/**
@@ -3801,13 +3951,13 @@ class Minimal_Admin_REST {
 		$downloaded = false;
 		if ( '' !== $locale && 'en_US' !== $locale && ! in_array( $locale, get_available_languages(), true ) ) {
 			if ( ! current_user_can( 'install_languages' ) || ! wp_is_file_mod_allowed( 'download_language_pack' ) ) {
-				return new WP_Error( 'minimal_language_install', 'That language is not installed, and you cannot install languages on this site.', array( 'status' => 403 ) );
+				return new WP_Error( 'minimal_language_install', __( 'That language is not installed, and you cannot install languages on this site.', 'minimal-admin' ), array( 'status' => 403 ) );
 			}
 			require_once ABSPATH . 'wp-admin/includes/translation-install.php';
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 			$downloaded = wp_download_language_pack( $locale );
 			if ( ! $downloaded ) {
-				return new WP_Error( 'minimal_language_install', 'The language pack could not be downloaded. Check the site can reach wordpress.org and try again.', array( 'status' => 500 ) );
+				return new WP_Error( 'minimal_language_install', __( 'The language pack could not be downloaded. Check the site can reach wordpress.org and try again.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
 			$locale = $downloaded; // the API echoes the canonical code
 			$downloaded = true;
@@ -3821,6 +3971,7 @@ class Minimal_Admin_REST {
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
+		self::install_component_translations( $locale );
 		return rest_ensure_response(
 			array(
 				'ok'        => true,
@@ -3839,7 +3990,7 @@ class Minimal_Admin_REST {
 	public static function hide_integration( WP_REST_Request $request ) {
 		$id = (string) $request->get_param( 'id' );
 		if ( ! Minimal_Admin_Surfaces::hide_integration( $id ) ) {
-			return new WP_Error( 'minimal_unknown_integration', 'That integration is not registered.', array( 'status' => 400 ) );
+			return new WP_Error( 'minimal_unknown_integration', __( 'That integration is not registered.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		return rest_ensure_response( self::integration_state() );
 	}
@@ -4171,7 +4322,7 @@ class Minimal_Admin_REST {
 	 * Active login sessions for a user, from the session_tokens user meta.
 	 */
 	public static function user_sessions( WP_REST_Request $request ) {
-		$uid    = (int) $request['id'];
+		$uid    = self::target_user_id( $request );
 		$tokens = get_user_meta( $uid, 'session_tokens', true );
 		$tokens = is_array( $tokens ) ? $tokens : array();
 
@@ -4215,7 +4366,7 @@ class Minimal_Admin_REST {
 	 * session when acting on themselves, so they aren't logged out mid-action).
 	 */
 	public static function destroy_all_sessions( WP_REST_Request $request ) {
-		$uid     = (int) $request['id'];
+		$uid     = self::target_user_id( $request );
 		$manager = WP_Session_Tokens::get_instance( $uid );
 		if ( get_current_user_id() === $uid ) {
 			$manager->destroy_others( wp_get_session_token() );
@@ -4229,11 +4380,11 @@ class Minimal_Admin_REST {
 	 * Destroy a single session by its verifier hash.
 	 */
 	public static function destroy_session( WP_REST_Request $request ) {
-		$uid      = (int) $request['id'];
+		$uid      = self::target_user_id( $request );
 		$verifier = $request['verifier'];
 		$tokens   = get_user_meta( $uid, 'session_tokens', true );
 		if ( ! is_array( $tokens ) || ! isset( $tokens[ $verifier ] ) ) {
-			return new WP_Error( 'not_found', 'Session not found', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Session not found', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		unset( $tokens[ $verifier ] );
 		update_user_meta( $uid, 'session_tokens', $tokens );
@@ -4244,17 +4395,17 @@ class Minimal_Admin_REST {
 	 * Email the user WordPress's standard password-reset link.
 	 */
 	public static function user_reset_password( WP_REST_Request $request ) {
-		$user = get_userdata( (int) $request['id'] );
+		$user = get_userdata( self::target_user_id( $request ) );
 		if ( ! $user ) {
-			return new WP_Error( 'not_found', 'User not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'User not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		// Super admins on multisite need network-level rights.
 		if ( is_multisite() && is_super_admin( $user->ID ) && ! current_user_can( 'manage_network_users' ) ) {
-			return new WP_Error( 'forbidden', 'You cannot reset a super admin password.', array( 'status' => 403 ) );
+			return new WP_Error( 'forbidden', __( 'You cannot reset a super admin password.', 'minimal-admin' ), array( 'status' => 403 ) );
 		}
 		$result = retrieve_password( $user->user_login );
 		if ( true !== $result ) {
-			$msg = is_wp_error( $result ) ? $result->get_error_message() : 'Could not send the reset email.';
+			$msg = is_wp_error( $result ) ? $result->get_error_message() : __( 'Could not send the reset email.', 'minimal-admin' );
 			return new WP_Error( 'reset_failed', $msg, array( 'status' => 500 ) );
 		}
 		return rest_ensure_response( array(
@@ -4267,17 +4418,17 @@ class Minimal_Admin_REST {
 	 * Send a styled HTML email to a user (from the current admin / site mail).
 	 */
 	public static function user_send_email( WP_REST_Request $request ) {
-		$user = get_userdata( (int) $request['id'] );
+		$user = get_userdata( self::target_user_id( $request ) );
 		if ( ! $user ) {
-			return new WP_Error( 'not_found', 'User not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'User not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		$subject = trim( (string) $request['subject'] );
 		$message = trim( (string) $request['message'] );
 		if ( '' === $subject || '' === $message ) {
-			return new WP_Error( 'invalid', 'Subject and message are required.', array( 'status' => 400 ) );
+			return new WP_Error( 'invalid', __( 'Subject and message are required.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		if ( ! is_email( $user->user_email ) ) {
-			return new WP_Error( 'invalid_email', 'This user has no valid email address.', array( 'status' => 400 ) );
+			return new WP_Error( 'invalid_email', __( 'This user has no valid email address.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		$who  = $user->display_name ? $user->display_name : $user->user_login;
@@ -4297,20 +4448,20 @@ class Minimal_Admin_REST {
 	 */
 	public static function order_send_email( WP_REST_Request $request ) {
 		if ( ! function_exists( 'wc_get_order' ) ) {
-			return new WP_Error( 'no_wc', 'WooCommerce is not available.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_wc', __( 'WooCommerce is not available.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$order = wc_get_order( (int) $request['id'] );
 		if ( ! $order ) {
-			return new WP_Error( 'not_found', 'Order not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Order not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		$to = $order->get_billing_email();
 		if ( ! is_email( $to ) ) {
-			return new WP_Error( 'invalid_email', 'This order has no valid billing email.', array( 'status' => 400 ) );
+			return new WP_Error( 'invalid_email', __( 'This order has no valid billing email.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$subject = trim( (string) $request['subject'] );
 		$message = trim( (string) $request['message'] );
 		if ( '' === $subject || '' === $message ) {
-			return new WP_Error( 'invalid', 'Subject and message are required.', array( 'status' => 400 ) );
+			return new WP_Error( 'invalid', __( 'Subject and message are required.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		$who = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
@@ -4379,13 +4530,76 @@ class Minimal_Admin_REST {
 	 * so a client can't reliably match them back to lines), and whether this
 	 * order's gateway can push money back itself.
 	 */
+	/**
+	 * Map order ids to the subscription they belong to, if any.
+	 *
+	 * WooCommerce Subscriptions owns this relation and answers it through its
+	 * own helper, which knows both storage layouts (post meta and HPOS). We
+	 * never read `_subscription_renewal` ourselves for that reason.
+	 *
+	 * Returns { orderId: { kind, subscription } } and omits unrelated orders
+	 * entirely, so a store without subscriptions answers with an empty object
+	 * rather than a page of nulls.
+	 */
+	public static function wc_order_subscription_relations( WP_REST_Request $request ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+			return new \stdClass(); // WCS inactive: nothing relates to anything.
+		}
+		$ids = array_filter( array_map( 'absint', explode( ',', (string) $request['ids'] ) ) );
+		// A list page is 20 rows; the cap is for a caller that asks for more.
+		$ids = array_slice( array_values( array_unique( $ids ) ), 0, 60 );
+		$out = array();
+		foreach ( $ids as $id ) {
+			// The route capability answers whether the caller may work with
+			// orders at all. WooCommerce's mapped meta capability answers the
+			// separate question this batch endpoint must ask for every supplied
+			// ID, including HPOS orders without a normal wp_posts row.
+			if ( ! current_user_can( 'edit_post', $id ) ) {
+				continue;
+			}
+			$found = null;
+			foreach ( array( 'parent', 'renewal', 'resubscribe', 'switch' ) as $kind ) {
+				$subs = wcs_get_subscriptions_for_order( $id, array( 'order_type' => $kind ) );
+				if ( empty( $subs ) ) {
+					continue;
+				}
+				$found = array( $kind, reset( $subs ) );
+				break;
+			}
+			if ( ! $found ) {
+				continue;
+			}
+			list( $kind, $sub ) = $found;
+			$status = $sub->get_status();
+			$out[ (string) $id ] = array(
+				'kind'         => $kind,
+				'subscription' => array(
+					'id'                     => $sub->get_id(),
+					'number'                 => (string) $sub->get_order_number(),
+					'status'                 => $status,
+					'status_label'           => function_exists( 'wcs_get_subscription_status_name' )
+						? wcs_get_subscription_status_name( $status )
+						: $status,
+					'total'                  => wc_format_decimal( $sub->get_total(), wc_get_price_decimals() ),
+					'currency'               => $sub->get_currency(),
+					'billing_period'         => $sub->get_billing_period(),
+					'billing_interval'       => $sub->get_billing_interval(),
+					// WCS returns GMT unless asked otherwise, which is the
+					// shape the rest of the subscription surface reads.
+					'next_payment_date_gmt'  => $sub->get_date( 'next_payment' ) ? $sub->get_date( 'next_payment' ) : null,
+				),
+			);
+		}
+		return empty( $out ) ? new \stdClass() : $out;
+	}
+
 	public static function wc_order_refund_state( WP_REST_Request $request ) {
 		if ( ! function_exists( 'wc_get_order' ) ) {
-			return new WP_Error( 'no_wc', 'WooCommerce is not available.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_wc', __( 'WooCommerce is not available.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$order = wc_get_order( (int) $request['id'] );
 		if ( ! $order || ! is_a( $order, 'WC_Order' ) ) {
-			return new WP_Error( 'not_found', 'Order not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Order not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 
 		$refunds = array();
@@ -4477,11 +4691,11 @@ class Minimal_Admin_REST {
 
 	public static function order_list_emails( WP_REST_Request $request ) {
 		if ( ! function_exists( 'WC' ) || ! function_exists( 'wc_get_order' ) ) {
-			return new WP_Error( 'no_wc', 'WooCommerce is not available.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_wc', __( 'WooCommerce is not available.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$order = wc_get_order( (int) $request['id'] );
 		if ( ! $order ) {
-			return new WP_Error( 'not_found', 'Order not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Order not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		$allow = self::order_email_allowlist();
 		$out = array();
@@ -4513,15 +4727,15 @@ class Minimal_Admin_REST {
 	 */
 	public static function order_trigger_email( WP_REST_Request $request ) {
 		if ( ! function_exists( 'WC' ) || ! function_exists( 'wc_get_order' ) ) {
-			return new WP_Error( 'no_wc', 'WooCommerce is not available.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_wc', __( 'WooCommerce is not available.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$order = wc_get_order( (int) $request['id'] );
 		if ( ! $order ) {
-			return new WP_Error( 'not_found', 'Order not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Order not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		$email_id = (string) $request['email_id'];
 		if ( ! in_array( $email_id, self::order_email_allowlist(), true ) ) {
-			return new WP_Error( 'unknown_email', 'That email type is not available.', array( 'status' => 400 ) );
+			return new WP_Error( 'unknown_email', __( 'That email type is not available.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$found    = null;
 		foreach ( WC()->mailer()->get_emails() as $email ) {
@@ -4531,7 +4745,7 @@ class Minimal_Admin_REST {
 			}
 		}
 		if ( ! $found || ! is_callable( array( $found, 'trigger' ) ) ) {
-			return new WP_Error( 'unknown_email', 'That email type is not available.', array( 'status' => 400 ) );
+			return new WP_Error( 'unknown_email', __( 'That email type is not available.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		// Force-send even if the email is disabled in settings (admin intent).
 		// WC_Email::trigger checks is_enabled(); temporarily enable via filter.
@@ -4590,7 +4804,7 @@ class Minimal_Admin_REST {
 		}
 		$sent = wp_mail( $to, $subject, $html, $headers );
 		if ( ! $sent ) {
-			return new WP_Error( 'send_failed', 'wp_mail() could not send the message. Check your mail configuration.', array( 'status' => 500 ) );
+			return new WP_Error( 'send_failed', __( 'wp_mail() could not send the message. Check your mail configuration.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		return true;
 	}
@@ -4706,7 +4920,20 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		$stylesheet = sanitize_text_field( $request['stylesheet'] );
 		$theme      = self::get_valid_theme( $stylesheet );
 		if ( ! $theme ) {
-			return new WP_Error( 'not_found', 'Theme not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Theme not found.', 'minimal-admin' ), array( 'status' => 404 ) );
+		}
+		// switch_theme() checks version floors but never the network allowlist,
+		// so this is the only enforcement point — wp-admin/themes.php refuses
+		// here too. switch_themes is an ordinary subsite administrator's
+		// capability, and the allowlist IS the tenancy boundary for themes, so
+		// without this a tenant activates a theme the network withheld from it.
+		// Single site: is_allowed() is unconditionally true.
+		if ( ! $theme->is_allowed() ) {
+			return new WP_Error(
+				'not_allowed',
+				__( 'That theme is not enabled for this site. A network administrator can enable it.', 'minimal-admin' ),
+				array( 'status' => 403 )
+			);
 		}
 		switch_theme( $stylesheet );
 		return rest_ensure_response( array( 'active' => get_stylesheet() ) );
@@ -4715,10 +4942,10 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 	public static function theme_delete( WP_REST_Request $request ) {
 		$stylesheet = sanitize_text_field( $request['stylesheet'] );
 		if ( ! self::get_valid_theme( $stylesheet ) ) {
-			return new WP_Error( 'not_found', 'Theme not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Theme not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		if ( get_stylesheet() === $stylesheet || get_template() === $stylesheet ) {
-			return new WP_Error( 'theme_in_use', 'The active theme (or its parent) cannot be deleted.', array( 'status' => 400 ) );
+			return new WP_Error( 'theme_in_use', __( 'The active theme (or its parent) cannot be deleted.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		require_once ABSPATH . 'wp-admin/includes/theme.php';
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -4787,7 +5014,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			$updates = get_site_transient( 'update_themes' );
 		}
 		if ( ! $updates || empty( $updates->response[ $stylesheet ] ) ) {
-			return new WP_Error( 'no_update', 'No update available for that theme.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_update', __( 'No update available for that theme.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		// Snapshot every pending offer — upgrade() wipes the transient.
@@ -4799,7 +5026,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		if ( ! $result || is_wp_error( $result ) ) {
 			self::restore_theme_update_offers( $pending_before, array() );
 			$errors = $skin->get_error_messages();
-			return new WP_Error( 'update_failed', $errors ? implode( ' ', (array) $errors ) : 'Update failed.', array( 'status' => 500 ) );
+			return new WP_Error( 'update_failed', $errors ? implode( ' ', (array) $errors ) : __( 'Update failed.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 
 		// Put every other pending offer back.
@@ -4874,18 +5101,18 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 
 		$tax = get_taxonomy( $taxonomy );
 		if ( ! $tax || ! $tax->show_in_rest ) {
-			return new WP_Error( 'bad_taxonomy', 'Unknown taxonomy.', array( 'status' => 404 ) );
+			return new WP_Error( 'bad_taxonomy', __( 'Unknown taxonomy.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		if ( ! current_user_can( $tax->cap->delete_terms ) || ! current_user_can( $tax->cap->edit_terms ) ) {
-			return new WP_Error( 'forbidden', 'You cannot manage terms in this taxonomy.', array( 'status' => 403 ) );
+			return new WP_Error( 'forbidden', __( 'You cannot manage terms in this taxonomy.', 'minimal-admin' ), array( 'status' => 403 ) );
 		}
 		if ( $from_id === $into_id ) {
-			return new WP_Error( 'same_term', 'Pick a different term to merge into.', array( 'status' => 400 ) );
+			return new WP_Error( 'same_term', __( 'Pick a different term to merge into.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$from = get_term( $from_id, $taxonomy );
 		$into = get_term( $into_id, $taxonomy );
 		if ( ! $from || is_wp_error( $from ) || ! $into || is_wp_error( $into ) ) {
-			return new WP_Error( 'bad_term', 'Both terms must exist in this taxonomy.', array( 'status' => 404 ) );
+			return new WP_Error( 'bad_term', __( 'Both terms must exist in this taxonomy.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 
 		// Term counts only include published posts; count real assignments.
@@ -4899,7 +5126,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			return $result;
 		}
 		if ( true !== $result ) {
-			return new WP_Error( 'merge_failed', 'The merge did not complete.', array( 'status' => 500 ) );
+			return new WP_Error( 'merge_failed', __( 'The merge did not complete.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		clean_term_cache( $into_id, $taxonomy );
 		return rest_ensure_response( array(
@@ -4976,7 +5203,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 
 		if ( ! $result || is_wp_error( $result ) ) {
 			$errors = $skin->get_error_messages();
-			return new WP_Error( 'install_failed', $errors ? implode( ' ', (array) $errors ) : 'Install failed.', array( 'status' => 500 ) );
+			return new WP_Error( 'install_failed', $errors ? implode( ' ', (array) $errors ) : __( 'Install failed.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		return rest_ensure_response( array( 'installed' => true, 'stylesheet' => $slug ) );
 	}
@@ -4987,10 +5214,10 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 	public static function upload_theme( WP_REST_Request $request ) {
 		$files = $request->get_file_params();
 		if ( empty( $files['file'] ) || empty( $files['file']['tmp_name'] ) ) {
-			return new WP_Error( 'no_file', 'No file uploaded.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_file', __( 'No file uploaded.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		if ( ! preg_match( '/\.zip$/i', $files['file']['name'] ) ) {
-			return new WP_Error( 'not_zip', 'Theme uploads must be .zip files.', array( 'status' => 400 ) );
+			return new WP_Error( 'not_zip', __( 'Theme uploads must be .zip files.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
@@ -5000,7 +5227,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 
 		$package = wp_tempnam( $files['file']['name'] );
 		if ( ! $package || ! move_uploaded_file( $files['file']['tmp_name'], $package ) ) {
-			return new WP_Error( 'move_failed', 'Could not store the upload.', array( 'status' => 500 ) );
+			return new WP_Error( 'move_failed', __( 'Could not store the upload.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 
 		$skin     = new WP_Ajax_Upgrader_Skin();
@@ -5010,7 +5237,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 
 		if ( ! $result || is_wp_error( $result ) ) {
 			$errors = $skin->get_error_messages();
-			return new WP_Error( 'install_failed', $errors ? implode( ' ', (array) $errors ) : 'Install failed.', array( 'status' => 500 ) );
+			return new WP_Error( 'install_failed', $errors ? implode( ' ', (array) $errors ) : __( 'Install failed.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		return rest_ensure_response( array( 'installed' => true, 'stylesheet' => $upgrader->theme_info() ? $upgrader->theme_info()->get_stylesheet() : null ) );
 	}
@@ -5083,7 +5310,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 	public static function plugin_info( WP_REST_Request $request ) {
 		$slug = sanitize_title( (string) $request['slug'] );
 		if ( ! $slug ) {
-			return new WP_Error( 'no_slug', 'Plugin slug is required.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_slug', __( 'Plugin slug is required.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		// Non-wp.org catalog entries (GitHub-only) answer from a small local map
@@ -5158,7 +5385,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 				'slug'        => 'disembark',
 				'name'        => 'Disembark',
 				'author'      => 'Disembark Host',
-				'description' => 'Generate a full WordPress backup (files + database) and pull it off-site with the Disembark CLI or disembark.host.',
+				'description' => __( 'Generate a full WordPress backup (files + database) and pull it off-site with the Disembark CLI or disembark.host.', 'minimal-admin' ),
 				'installs'    => 0,
 				'version'     => '',
 				'rating'      => 0,
@@ -5176,10 +5403,10 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 	public static function upload_plugin( WP_REST_Request $request ) {
 		$files = $request->get_file_params();
 		if ( empty( $files['file'] ) || empty( $files['file']['tmp_name'] ) ) {
-			return new WP_Error( 'no_file', 'No file uploaded.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_file', __( 'No file uploaded.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		if ( ! preg_match( '/\.zip$/i', $files['file']['name'] ) ) {
-			return new WP_Error( 'not_zip', 'Plugin uploads must be .zip files.', array( 'status' => 400 ) );
+			return new WP_Error( 'not_zip', __( 'Plugin uploads must be .zip files.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
@@ -5189,7 +5416,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 
 		$package = wp_tempnam( $files['file']['name'] );
 		if ( ! $package || ! move_uploaded_file( $files['file']['tmp_name'], $package ) ) {
-			return new WP_Error( 'move_failed', 'Could not store the upload.', array( 'status' => 500 ) );
+			return new WP_Error( 'move_failed', __( 'Could not store the upload.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 
 		$skin     = new WP_Ajax_Upgrader_Skin();
@@ -5199,7 +5426,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 
 		if ( ! $result || is_wp_error( $result ) ) {
 			$errors = $skin->get_error_messages();
-			return new WP_Error( 'install_failed', $errors ? implode( ' ', (array) $errors ) : 'Install failed.', array( 'status' => 500 ) );
+			return new WP_Error( 'install_failed', $errors ? implode( ' ', (array) $errors ) : __( 'Install failed.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 
 		return rest_ensure_response(
@@ -5233,7 +5460,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		}
 
 		if ( ! $url ) {
-			return new WP_Error( 'no_source', 'Provide a zip URL or a github owner/repo.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_source', __( 'Provide a zip URL or a github owner/repo.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		$allowed = self::plugin_install_url_allowed( $url );
@@ -5254,7 +5481,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 
 		if ( ! $result || is_wp_error( $result ) ) {
 			$errors = $skin->get_error_messages();
-			return new WP_Error( 'install_failed', $errors ? implode( ' ', (array) $errors ) : 'Install failed.', array( 'status' => 500 ) );
+			return new WP_Error( 'install_failed', $errors ? implode( ' ', (array) $errors ) : __( 'Install failed.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 
 		return rest_ensure_response(
@@ -5275,7 +5502,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 	 */
 	private static function github_release_zip_url( $repo, $asset = '' ) {
 		if ( ! preg_match( '#^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$#', $repo ) ) {
-			return new WP_Error( 'bad_github', 'Invalid GitHub repository.', array( 'status' => 400 ) );
+			return new WP_Error( 'bad_github', __( 'Invalid GitHub repository.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$api = 'https://api.github.com/repos/' . $repo . '/releases/latest';
 		$res = wp_remote_get(
@@ -5294,7 +5521,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		$code = (int) wp_remote_retrieve_response_code( $res );
 		$body = json_decode( (string) wp_remote_retrieve_body( $res ), true );
 		if ( 200 !== $code || ! is_array( $body ) ) {
-			return new WP_Error( 'github_api', 'Could not read the latest GitHub release.', array( 'status' => 502 ) );
+			return new WP_Error( 'github_api', __( 'Could not read the latest GitHub release.', 'minimal-admin' ), array( 'status' => 502 ) );
 		}
 		$assets = isset( $body['assets'] ) && is_array( $body['assets'] ) ? $body['assets'] : array();
 		$pick   = null;
@@ -5315,7 +5542,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			}
 		}
 		if ( ! $pick ) {
-			return new WP_Error( 'github_no_zip', 'That release has no zip asset.', array( 'status' => 404 ) );
+			return new WP_Error( 'github_no_zip', __( 'That release has no zip asset.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		return $pick;
 	}
@@ -5329,7 +5556,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 	private static function plugin_install_url_allowed( $url ) {
 		$parts = wp_parse_url( $url );
 		if ( empty( $parts['scheme'] ) || 'https' !== strtolower( $parts['scheme'] ) ) {
-			return new WP_Error( 'bad_url', 'Install URL must be HTTPS.', array( 'status' => 400 ) );
+			return new WP_Error( 'bad_url', __( 'Install URL must be HTTPS.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$host = isset( $parts['host'] ) ? strtolower( $parts['host'] ) : '';
 		$ok   = array(
@@ -5341,13 +5568,13 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			'downloads.w.org',
 		);
 		if ( ! in_array( $host, $ok, true ) ) {
-			return new WP_Error( 'host_not_allowed', 'That download host is not allowed.', array( 'status' => 400 ) );
+			return new WP_Error( 'host_not_allowed', __( 'That download host is not allowed.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		// GitHub release assets: /…/releases/download/…/*.zip
 		// wp.org packages: /plugin/*.zip
 		$path = isset( $parts['path'] ) ? $parts['path'] : '';
 		if ( ! preg_match( '/\.zip$/i', $path ) ) {
-			return new WP_Error( 'not_zip', 'Install URL must point at a .zip file.', array( 'status' => 400 ) );
+			return new WP_Error( 'not_zip', __( 'Install URL must point at a .zip file.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		return true;
 	}
@@ -5424,7 +5651,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			$updates = get_site_transient( 'update_plugins' );
 		}
 		if ( ! $updates || empty( $updates->response[ $file ] ) ) {
-			return new WP_Error( 'no_update', 'No update available for that plugin.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_update', __( 'No update available for that plugin.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		// Snapshot every pending offer — bulk_upgrade wipes the transient.
@@ -5445,7 +5672,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			// Even on failure the upgrader may have cleaned the cache — put offers back.
 			self::restore_plugin_update_offers( $pending_before, array() );
 			$errors = $skin->get_error_messages();
-			return new WP_Error( 'update_failed', $errors ? implode( ' ', (array) $errors ) : 'Update failed.', array( 'status' => 500 ) );
+			return new WP_Error( 'update_failed', $errors ? implode( ' ', (array) $errors ) : __( 'Update failed.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 
 		// Safety net: whatever the upgrade path did, an active plugin stays active.
@@ -5517,7 +5744,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		$offers = get_core_updates();
 		$offer  = is_array( $offers ) && $offers && 'upgrade' === $offers[0]->response ? $offers[0] : null;
 		if ( ! $offer ) {
-			return new WP_Error( 'no_update', 'WordPress is already up to date.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_update', __( 'WordPress is already up to date.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		$skin     = new WP_Ajax_Upgrader_Skin();
@@ -5525,7 +5752,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		$result   = $upgrader->upgrade( $offer );
 
 		if ( is_wp_error( $result ) ) {
-			return new WP_Error( 'update_failed', $result->get_error_message() ?: 'Core update failed.', array( 'status' => 500 ) );
+			return new WP_Error( 'update_failed', $result->get_error_message() ?: __( 'Core update failed.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 
 		// Run any database migration with the NEW code — the standard
@@ -5645,7 +5872,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			}
 		}
 		if ( ! $matched ) {
-			return new WP_Error( 'no_cache', 'No cache layer detected on this site.', array( 'status' => 400 ) );
+			return new WP_Error( 'no_cache', __( 'No cache layer detected on this site.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		return rest_ensure_response(
 			array(
@@ -5754,7 +5981,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 	public static function duplicate_post( WP_REST_Request $request ) {
 		$post = get_post( (int) $request['id'] );
 		if ( ! $post || 'trash' === $post->post_status ) {
-			return new WP_Error( 'not_found', 'Post not found.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Post not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		$new_id = wp_insert_post(
 			array(
@@ -5879,25 +6106,36 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		$cron   = defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON;
 
 		$wordpress = array(
-			'Version'          => get_bloginfo( 'version' ),
-			'Environment'      => function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : 'production',
-			'Site URL'         => site_url(),
-			'Home URL'         => home_url(),
+			__( 'Version', 'minimal-admin' )     => get_bloginfo( 'version' ),
+			__( 'Environment', 'minimal-admin' ) => function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : 'production',
+			__( 'Site URL', 'minimal-admin' )    => site_url(),
+			__( 'Home URL', 'minimal-admin' )    => home_url(),
 			// The REAL login URL — wp_login_url() honors login-hiders (WPS Hide
 			// Login and friends filter it), so this shows the custom slug when
 			// one is active rather than a wp-login.php that would 404.
-			'Login URL'        => wp_login_url(),
-			'Multisite'        => is_multisite() ? 'Yes (' . get_blog_count() . ' sites)' : 'No',
-			'Language'         => get_locale(),
-			'Timezone'         => wp_timezone_string() ? wp_timezone_string() : (string) get_option( 'gmt_offset' ),
-			'Permalinks'       => get_option( 'permalink_structure' ) ? get_option( 'permalink_structure' ) : 'Plain',
-			'Debug mode'       => ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? 'On' . ( ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) ? ' + log' : '' ) : 'Off',
-			'Object cache'     => wp_using_ext_object_cache() ? 'External (persistent)' : 'None (transient)',
-			'WP-Cron'          => $cron ? 'Disabled (external)' : 'Enabled',
-			'Memory limit'     => defined( 'WP_MEMORY_LIMIT' ) ? WP_MEMORY_LIMIT : '(default)',
-			'Max memory limit' => defined( 'WP_MAX_MEMORY_LIMIT' ) ? WP_MAX_MEMORY_LIMIT : '(default)',
-			'Active theme'     => $theme->get( 'Name' ) . ' ' . $theme->get( 'Version' ) . ( $parent ? ' (child of ' . $parent->get( 'Name' ) . ')' : '' ),
-			'Active plugins'   => (string) count( (array) get_option( 'active_plugins', array() ) ) . ( count( (array) ( function_exists( 'wp_get_mu_plugins' ) ? wp_get_mu_plugins() : array() ) ) ? ' + ' . count( wp_get_mu_plugins() ) . ' mu' : '' ),
+			__( 'Login URL', 'minimal-admin' )   => wp_login_url(),
+			__( 'Multisite', 'minimal-admin' )   => is_multisite()
+				/* translators: %s: how many sites the multisite network contains. */
+				? sprintf( _n( 'Yes (%s site)', 'Yes (%s sites)', get_blog_count(), 'minimal-admin' ), get_blog_count() )
+				: __( 'No', 'minimal-admin' ),
+			__( 'Language', 'minimal-admin' )    => get_locale(),
+			__( 'Timezone', 'minimal-admin' )    => wp_timezone_string() ? wp_timezone_string() : (string) get_option( 'gmt_offset' ),
+			__( 'Permalinks', 'minimal-admin' )  => get_option( 'permalink_structure' ) ? get_option( 'permalink_structure' ) : __( 'Plain', 'minimal-admin' ),
+			__( 'Debug mode', 'minimal-admin' )  => ( defined( 'WP_DEBUG' ) && WP_DEBUG )
+				? ( ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) ? __( 'On + log', 'minimal-admin' ) : __( 'On', 'minimal-admin' ) )
+				: __( 'Off', 'minimal-admin' ),
+			__( 'Object cache', 'minimal-admin' ) => wp_using_ext_object_cache() ? __( 'External (persistent)', 'minimal-admin' ) : __( 'None (transient)', 'minimal-admin' ),
+			'WP-Cron'                          => $cron ? __( 'Disabled (external)', 'minimal-admin' ) : __( 'Enabled', 'minimal-admin' ),
+			__( 'Memory limit', 'minimal-admin' ) => defined( 'WP_MEMORY_LIMIT' ) ? WP_MEMORY_LIMIT : __( '(default)', 'minimal-admin' ),
+			__( 'Max memory limit', 'minimal-admin' ) => defined( 'WP_MAX_MEMORY_LIMIT' ) ? WP_MAX_MEMORY_LIMIT : __( '(default)', 'minimal-admin' ),
+			__( 'Active theme', 'minimal-admin' ) => $parent
+				/* translators: 1: theme name, 2: theme version, 3: parent theme name. */
+				? sprintf( __( '%1$s %2$s (child of %3$s)', 'minimal-admin' ), $theme->get( 'Name' ), $theme->get( 'Version' ), $parent->get( 'Name' ) )
+				: $theme->get( 'Name' ) . ' ' . $theme->get( 'Version' ),
+			__( 'Active plugins', 'minimal-admin' ) => count( (array) ( function_exists( 'wp_get_mu_plugins' ) ? wp_get_mu_plugins() : array() ) )
+				/* translators: 1: how many plugins are active, 2: how many must-use plugins are installed. */
+				? sprintf( __( '%1$s + %2$s mu', 'minimal-admin' ), count( (array) get_option( 'active_plugins', array() ) ), count( wp_get_mu_plugins() ) )
+				: (string) count( (array) get_option( 'active_plugins', array() ) ),
 		);
 
 		// --- PHP -----------------------------------------------------------
@@ -5910,16 +6148,16 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		}
 		$opcache = function_exists( 'opcache_get_status' ) ? @opcache_get_status( false ) : false;
 		$php     = array(
-			'Version'             => PHP_VERSION,
-			'Interface (SAPI)'    => PHP_SAPI,
+			__( 'Version', 'minimal-admin' )          => PHP_VERSION,
+			__( 'Interface (SAPI)', 'minimal-admin' ) => PHP_SAPI,
 			'memory_limit'        => ini_get( 'memory_limit' ),
 			'max_execution_time'  => ini_get( 'max_execution_time' ) . 's',
 			'upload_max_filesize' => ini_get( 'upload_max_filesize' ),
 			'post_max_size'       => ini_get( 'post_max_size' ),
 			'max_input_vars'      => ini_get( 'max_input_vars' ),
 			'max_input_time'      => ini_get( 'max_input_time' ) . 's',
-			'OPcache'             => ( is_array( $opcache ) && ! empty( $opcache['opcache_enabled'] ) ) ? 'Enabled' : ( function_exists( 'opcache_get_status' ) ? 'Disabled' : 'Not installed' ),
-			'Extensions'          => implode( ', ', $loaded ),
+			'OPcache'             => ( is_array( $opcache ) && ! empty( $opcache['opcache_enabled'] ) ) ? __( 'Enabled', 'minimal-admin' ) : ( function_exists( 'opcache_get_status' ) ? __( 'Disabled', 'minimal-admin' ) : __( 'Not installed', 'minimal-admin' ) ),
+			__( 'Extensions', 'minimal-admin' ) => implode( ', ', $loaded ),
 			'cURL'                => function_exists( 'curl_version' ) ? ( curl_version()['version'] ?? 'yes' ) : 'no',
 		);
 
@@ -6013,22 +6251,29 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 				$cron_next = (int) $ts; // the array is time-ordered
 			}
 		}
-		$cron_disabled     = defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON;
-		$wordpress['Cron'] = $cron_events . ' event' . ( 1 === $cron_events ? '' : 's' )
-			. ( $cron_next ? ( $cron_next <= time() ? ', next due now' : ', next in ' . human_time_diff( time(), $cron_next ) ) : '' )
-			. ( $cron_disabled ? ' · WP-Cron disabled (system cron expected)' : '' );
+		$cron_disabled = defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON;
+		/* translators: %s: how many cron events are scheduled. */
+		$cron_bits = array( sprintf( _n( '%s event', '%s events', $cron_events, 'minimal-admin' ), $cron_events ) );
+		if ( $cron_next ) {
+			$cron_bits[] = $cron_next <= time()
+				? __( 'next due now', 'minimal-admin' )
+				/* translators: %s: human-readable time until the next cron event (e.g. "4 mins"). */
+				: sprintf( __( 'next in %s', 'minimal-admin' ), human_time_diff( time(), $cron_next ) );
+		}
+		$wordpress[ __( 'Cron', 'minimal-admin' ) ] = implode( ', ', $cron_bits )
+			. ( $cron_disabled ? ' · ' . __( 'WP-Cron disabled (system cron expected)', 'minimal-admin' ) : '' );
 
 		$database = array(
-			'Engine'             => $is_maria ? 'MariaDB' : 'MySQL',
-			'Version'            => $server_info ? $server_info : $db_version,
-			'Host'               => DB_HOST,
-			'Name'               => DB_NAME,
-			'Charset'            => defined( 'DB_CHARSET' ) ? DB_CHARSET : $wpdb->charset,
-			'Collation'          => $wpdb->collate ? $wpdb->collate : '(default)',
-			'Prefix'             => $wpdb->prefix,
-			'Tables'             => (string) count( (array) $tables ),
-			'Size'               => size_format( $db_size, 1 ),
-			'Expired transients' => number_format_i18n( (int) $expired_transients->c )
+			__( 'Engine', 'minimal-admin' )    => $is_maria ? 'MariaDB' : 'MySQL',
+			__( 'Version', 'minimal-admin' )   => $server_info ? $server_info : $db_version,
+			__( 'Host', 'minimal-admin' )      => DB_HOST,
+			__( 'Name', 'minimal-admin' )      => DB_NAME,
+			__( 'Charset', 'minimal-admin' )   => defined( 'DB_CHARSET' ) ? DB_CHARSET : $wpdb->charset,
+			__( 'Collation', 'minimal-admin' ) => $wpdb->collate ? $wpdb->collate : __( '(default)', 'minimal-admin' ),
+			__( 'Prefix', 'minimal-admin' )    => $wpdb->prefix,
+			__( 'Tables', 'minimal-admin' )    => (string) count( (array) $tables ),
+			__( 'Size', 'minimal-admin' )      => size_format( $db_size, 1 ),
+			__( 'Expired transients', 'minimal-admin' ) => number_format_i18n( (int) $expired_transients->c )
 				. ( (int) $expired_transients->s > 0 ? ' (' . size_format( (int) $expired_transients->s, 1 ) . ')' : '' ),
 		);
 
@@ -6041,82 +6286,113 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		$disk_total       = function_exists( 'disk_total_space' ) ? @disk_total_space( ABSPATH ) : false;
 		$has_uname        = function_exists( 'php_uname' );
 		$server           = array(
-			'Web server'      => isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : 'Unknown',
-			'Protocol'        => isset( $_SERVER['SERVER_PROTOCOL'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_PROTOCOL'] ) ) : '',
-			'HTTPS'           => is_ssl() ? 'Yes' : 'No',
-			'Operating system'=> $has_uname ? php_uname( 's' ) . ' ' . php_uname( 'r' ) : PHP_OS,
-			'Architecture'    => $has_uname ? php_uname( 'm' ) : ( PHP_INT_SIZE === 8 ? '64-bit' : '32-bit' ),
-			'Server IP'       => isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : '',
-			'Uploads writable'=> $uploads_writable ? 'Yes' : 'No',
-			'Disk free'       => ( $disk_free && $disk_total ) ? size_format( $disk_free ) . ' free of ' . size_format( $disk_total ) : 'Unknown',
+			__( 'Web server', 'minimal-admin' )       => isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : __( 'Unknown', 'minimal-admin' ),
+			__( 'Protocol', 'minimal-admin' )         => isset( $_SERVER['SERVER_PROTOCOL'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_PROTOCOL'] ) ) : '',
+			'HTTPS'                                => is_ssl() ? __( 'Yes', 'minimal-admin' ) : __( 'No', 'minimal-admin' ),
+			__( 'Operating system', 'minimal-admin' ) => $has_uname ? php_uname( 's' ) . ' ' . php_uname( 'r' ) : PHP_OS,
+			__( 'Architecture', 'minimal-admin' )     => $has_uname ? php_uname( 'm' ) : ( PHP_INT_SIZE === 8 ? '64-bit' : '32-bit' ),
+			__( 'Server IP', 'minimal-admin' )        => isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : '',
+			__( 'Uploads writable', 'minimal-admin' ) => $uploads_writable ? __( 'Yes', 'minimal-admin' ) : __( 'No', 'minimal-admin' ),
+			__( 'Disk free', 'minimal-admin' )        => ( $disk_free && $disk_total )
+				/* translators: 1: free disk space, 2: total disk space. */
+				? sprintf( __( '%1$s free of %2$s', 'minimal-admin' ), size_format( $disk_free ), size_format( $disk_total ) )
+				: __( 'Unknown', 'minimal-admin' ),
 		);
 
 		// --- Health checks (pass / warn / fail) ----------------------------
 		$php_ok    = version_compare( PHP_VERSION, '8.1', '>=' );
 		$php_warn  = ! $php_ok && version_compare( PHP_VERSION, '7.4', '>=' );
 		$mem_bytes = $bytes( ini_get( 'memory_limit' ) );
-		$env       = $wordpress['Environment'];
+		// Read the raw value, not the info-card row: that array's display keys
+		// are translated now, so a literal key lookup would miss.
+		$env       = function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : 'production';
 		$debug_on  = defined( 'WP_DEBUG' ) && WP_DEBUG;
 		$core_t     = get_site_transient( 'update_core' );
 		$core_offer = ( $core_t && ! empty( $core_t->updates ) && 'upgrade' === $core_t->updates[0]->response )
 			? $core_t->updates[0]->version : '';
 		$checks    = array(
 			array(
-				'label'  => 'WordPress version',
+				'key'    => 'core',
+				'label'  => __( 'WordPress version', 'minimal-admin' ),
 				'status' => $core_offer ? 'warn' : 'pass',
 				'detail' => $core_offer
-					? get_bloginfo( 'version' ) . ' installed — WordPress ' . $core_offer . ' is available'
-					: get_bloginfo( 'version' ) . ' is current',
+					/* translators: 1: installed WordPress version, 2: available WordPress version. */
+					? sprintf( __( '%1$s installed — WordPress %2$s is available', 'minimal-admin' ), get_bloginfo( 'version' ), $core_offer )
+					/* translators: %s: installed WordPress version. */
+					: sprintf( __( '%s is current', 'minimal-admin' ), get_bloginfo( 'version' ) ),
 			),
 			array(
-				'label'  => 'PHP version',
+				'key'    => 'php',
+				'label'  => __( 'PHP version', 'minimal-admin' ),
 				'status' => $php_ok ? 'pass' : ( $php_warn ? 'warn' : 'fail' ),
-				'detail' => $php_ok ? PHP_VERSION . ' is current' : PHP_VERSION . ' is past its supported life — upgrade to 8.2+',
+				'detail' => $php_ok
+					/* translators: %s: the PHP version in use. */
+					? sprintf( __( '%s is current', 'minimal-admin' ), PHP_VERSION )
+					/* translators: %s: the PHP version in use. */
+					: sprintf( __( '%s is past its supported life — upgrade to 8.2+', 'minimal-admin' ), PHP_VERSION ),
 			),
 			array(
-				'label'  => 'HTTPS',
+				'key'    => 'https',
+				'label'  => __( 'HTTPS', 'minimal-admin' ),
 				'status' => is_ssl() ? 'pass' : 'warn',
-				'detail' => is_ssl() ? 'Served over TLS' : 'This request is not over HTTPS',
+				'detail' => is_ssl() ? __( 'Served over TLS', 'minimal-admin' ) : __( 'This request is not over HTTPS', 'minimal-admin' ),
 			),
 			array(
-				'label'  => 'Persistent object cache',
+				'key'    => 'object-cache',
+				'label'  => __( 'Persistent object cache', 'minimal-admin' ),
 				'status' => wp_using_ext_object_cache() ? 'pass' : 'warn',
-				'detail' => wp_using_ext_object_cache() ? 'A drop-in is active' : 'Redis/Memcached would speed up repeat queries',
+				'detail' => wp_using_ext_object_cache() ? __( 'A drop-in is active', 'minimal-admin' ) : __( 'Redis/Memcached would speed up repeat queries', 'minimal-admin' ),
 			),
 			array(
-				'label'  => 'Memory limit',
+				'key'    => 'memory',
+				'label'  => __( 'Memory limit', 'minimal-admin' ),
 				'status' => ( $mem_bytes < 0 || $mem_bytes >= 256 * 1024 * 1024 ) ? 'pass' : ( $mem_bytes >= 128 * 1024 * 1024 ? 'warn' : 'fail' ),
-				'detail' => ini_get( 'memory_limit' ) . ' available to PHP',
+				/* translators: %s: the configured PHP memory limit (e.g. "256M"). */
+				'detail' => sprintf( __( '%s available to PHP', 'minimal-admin' ), ini_get( 'memory_limit' ) ),
 			),
 			array(
-				'label'  => 'OPcache',
+				'key'    => 'opcache',
+				'label'  => __( 'OPcache', 'minimal-admin' ),
 				'status' => ( is_array( $opcache ) && ! empty( $opcache['opcache_enabled'] ) ) ? 'pass' : 'warn',
-				'detail' => ( is_array( $opcache ) && ! empty( $opcache['opcache_enabled'] ) ) ? 'Bytecode caching is on' : 'Not enabled — pages recompile each request',
+				'detail' => ( is_array( $opcache ) && ! empty( $opcache['opcache_enabled'] ) ) ? __( 'Bytecode caching is on', 'minimal-admin' ) : __( 'Not enabled — pages recompile each request', 'minimal-admin' ),
 			),
 			array(
-				'label'  => 'Debug mode',
+				'key'    => 'debug',
+				'label'  => __( 'Debug mode', 'minimal-admin' ),
 				'status' => ( $debug_on && 'production' === $env ) ? 'warn' : 'pass',
-				'detail' => ( $debug_on && 'production' === $env ) ? 'WP_DEBUG is on in a production environment' : ( $debug_on ? 'On (fine for ' . $env . ')' : 'Off' ),
+				'detail' => ( $debug_on && 'production' === $env )
+					? __( 'WP_DEBUG is on in a production environment', 'minimal-admin' )
+					/* translators: %s: the environment type (e.g. "staging"). */
+					: ( $debug_on ? sprintf( __( 'On (fine for %s)', 'minimal-admin' ), $env ) : __( 'Off', 'minimal-admin' ) ),
 			),
 			array(
-				'label'  => 'Uploads writable',
+				'key'    => 'uploads',
+				'label'  => __( 'Uploads writable', 'minimal-admin' ),
 				'status' => $uploads_writable ? 'pass' : 'fail',
-				'detail' => $uploads_writable ? 'The uploads directory accepts writes' : 'Uploads directory is not writable',
+				'detail' => $uploads_writable ? __( 'The uploads directory accepts writes', 'minimal-admin' ) : __( 'Uploads directory is not writable', 'minimal-admin' ),
 			),
 			array(
-				'label'  => 'Autoload size',
+				'key'    => 'autoload',
+				'label'  => __( 'Autoload size', 'minimal-admin' ),
 				// The usual guidance: under ~800 KB is healthy, past a few MB
 				// every request pays a real tax.
 				'status' => $autoload_size < 800 * 1024 ? 'pass' : ( $autoload_size < 3 * 1024 * 1024 ? 'warn' : 'fail' ),
-				'detail' => $autoload['size_human'] . ' across ' . number_format_i18n( $autoload['count'] ) . ' options'
-					. ( $autoload_size < 800 * 1024 ? ' — healthy' : ' loads on every request — see the top offenders in the Database card' ),
+				'detail' => $autoload_size < 800 * 1024
+					/* translators: 1: total autoloaded size (e.g. "412 KB"), 2: how many autoloaded options. */
+					? sprintf( __( '%1$s across %2$s options — healthy', 'minimal-admin' ), $autoload['size_human'], number_format_i18n( $autoload['count'] ) )
+					/* translators: 1: total autoloaded size (e.g. "3.1 MB"), 2: how many autoloaded options. */
+					: sprintf( __( '%1$s across %2$s options loads on every request — see the top offenders in the Database card', 'minimal-admin' ), $autoload['size_human'], number_format_i18n( $autoload['count'] ) ),
 			),
 			array(
-				'label'  => 'Cron',
+				'key'    => 'cron',
+				'label'  => __( 'Cron', 'minimal-admin' ),
 				'status' => $cron_overdue > 0 ? 'warn' : 'pass',
 				'detail' => $cron_overdue > 0
-					? $cron_overdue . ' overdue event' . ( 1 === $cron_overdue ? '' : 's' ) . ' — cron may be stalled' . ( $cron_disabled ? ' (WP-Cron is disabled; is the system cron running?)' : '' )
-					: $cron_events . ' scheduled event' . ( 1 === $cron_events ? '' : 's' ) . ', none overdue',
+					/* translators: %s: how many cron events are past their scheduled run time. */
+					? sprintf( _n( '%s overdue event — cron may be stalled', '%s overdue events — cron may be stalled', $cron_overdue, 'minimal-admin' ), $cron_overdue )
+						. ( $cron_disabled ? ' ' . __( '(WP-Cron is disabled; is the system cron running?)', 'minimal-admin' ) : '' )
+					/* translators: %s: how many cron events are scheduled. */
+					: sprintf( _n( '%s scheduled event, none overdue', '%s scheduled events, none overdue', $cron_events, 'minimal-admin' ), $cron_events ),
 			),
 		);
 
@@ -6157,20 +6433,22 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		};
 		if ( isset( $self['loopback'] ) ) {
 			$checks[] = array(
-				'label'  => 'Loopback requests',
+				'key'    => 'loopback',
+				'label'  => __( 'Loopback requests', 'minimal-admin' ),
 				'status' => $grade( $self['loopback']['status'] ),
 				'detail' => 'good' === $self['loopback']['status']
-					? 'The site can reach itself (cron and scheduled posts depend on this)'
-					: ( $self['loopback']['message'] ? $self['loopback']['message'] : 'Loopback requests are failing' ),
+					? __( 'The site can reach itself (cron and scheduled posts depend on this)', 'minimal-admin' )
+					: ( $self['loopback']['message'] ? $self['loopback']['message'] : __( 'Loopback requests are failing', 'minimal-admin' ) ),
 			);
 		}
 		if ( isset( $self['rest'] ) ) {
 			$checks[] = array(
-				'label'  => 'REST API self-check',
+				'key'    => 'rest',
+				'label'  => __( 'REST API self-check', 'minimal-admin' ),
 				'status' => $grade( $self['rest']['status'] ),
 				'detail' => 'good' === $self['rest']['status']
-					? 'The REST API answers external requests (Minimal itself rides it)'
-					: ( $self['rest']['message'] ? $self['rest']['message'] : 'The REST API did not answer' ),
+					? __( 'The REST API answers external requests (Minimal itself rides it)', 'minimal-admin' )
+					: ( $self['rest']['message'] ? $self['rest']['message'] : __( 'The REST API did not answer', 'minimal-admin' ) ),
 			);
 		}
 
@@ -6190,22 +6468,28 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			$age = $bk ? time() - $bk['time'] : null;
 			if ( ! $bk ) {
 				$bk_status = 'warn';
-				$bk_detail = $bk_provider . ' is active but no backup has completed yet';
+				/* translators: %s: the backup plugin's name. */
+				$bk_detail = sprintf( __( '%s is active but no backup has completed yet', 'minimal-admin' ), $bk_provider );
 			} elseif ( ! $bk['success'] ) {
 				$bk_status = 'fail';
-				$bk_detail = 'The last backup reported errors (' . human_time_diff( $bk['time'] ) . ' ago)';
+				/* translators: %s: human-readable time since the failed backup (e.g. "3 hours"). */
+				$bk_detail = sprintf( __( 'The last backup reported errors (%s ago)', 'minimal-admin' ), human_time_diff( $bk['time'] ) );
 			} elseif ( $age <= 36 * HOUR_IN_SECONDS ) {
 				$bk_status = 'pass';
-				$bk_detail = 'Last backup completed ' . human_time_diff( $bk['time'] ) . ' ago';
+				/* translators: %s: human-readable time since the last backup (e.g. "3 hours"). */
+				$bk_detail = sprintf( __( 'Last backup completed %s ago', 'minimal-admin' ), human_time_diff( $bk['time'] ) );
 			} elseif ( $age <= 8 * DAY_IN_SECONDS ) {
 				$bk_status = 'warn';
-				$bk_detail = 'Last backup was ' . human_time_diff( $bk['time'] ) . ' ago — consider a fresher schedule';
+				/* translators: %s: human-readable time since the last backup (e.g. "4 days"). */
+				$bk_detail = sprintf( __( 'Last backup was %s ago — consider a fresher schedule', 'minimal-admin' ), human_time_diff( $bk['time'] ) );
 			} else {
 				$bk_status = 'fail';
-				$bk_detail = 'Last backup was ' . human_time_diff( $bk['time'] ) . ' ago';
+				/* translators: %s: human-readable time since the last backup (e.g. "2 weeks"). */
+				$bk_detail = sprintf( __( 'Last backup was %s ago', 'minimal-admin' ), human_time_diff( $bk['time'] ) );
 			}
 			array_splice( $checks, 1, 0, array( array(
-				'label'  => 'Backups',
+				'key'    => 'backups',
+				'label'  => __( 'Backups', 'minimal-admin' ),
 				'status' => $bk_status,
 				'detail' => $bk_detail,
 			) ) );
@@ -6281,15 +6565,31 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 
 		// Licenses — read-only visibility (adapters/licenses.php); the health
 		// check only renders when the site has license-wanting components.
-		$licenses = function_exists( 'minimal_admin_licenses' ) ? minimal_admin_licenses() : null;
+		// /system is manage_options, so on multisite this re-export would hand
+		// a subsite administrator the network's licensing inventory and the
+		// account identities in each note. Defer to the same gate the licenses
+		// routes use rather than re-deciding it here.
+		$licenses = function_exists( 'minimal_admin_licenses' ) && function_exists( 'minimal_admin_licenses_can_manage' ) && minimal_admin_licenses_can_manage()
+			? minimal_admin_licenses()
+			: null;
 		if ( $licenses && ! empty( $licenses['items'] ) ) {
 			$sum  = $licenses['summary'];
 			$bad  = $sum['expired'] + $sum['invalid'];
 			$soft = $sum['missing'] + $sum['unknown'];
-			$bits = array();
+			$bits       = array();
+			$bit_labels = array(
+				/* translators: %s: how many licenses are expired. */
+				'expired' => __( '%s expired', 'minimal-admin' ),
+				/* translators: %s: how many licenses are invalid. */
+				'invalid' => __( '%s invalid', 'minimal-admin' ),
+				/* translators: %s: how many licenses are missing. */
+				'missing' => __( '%s missing', 'minimal-admin' ),
+				/* translators: %s: how many licenses are in an unknown state. */
+				'unknown' => __( '%s unknown', 'minimal-admin' ),
+			);
 			foreach ( array( 'expired', 'invalid', 'missing', 'unknown' ) as $k ) {
 				if ( $sum[ $k ] ) {
-					$bits[] = $sum[ $k ] . ' ' . $k;
+					$bits[] = sprintf( $bit_labels[ $k ], $sum[ $k ] );
 				}
 			}
 			// Denominator = summary total, NOT count(items): read-only core
@@ -6297,20 +6597,44 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 			// design (an AI provider with no key must not tip this check).
 			$lic_total = array_sum( $sum );
 			$checks[]  = array(
-				'label'  => 'Licenses',
+				'key'    => 'licenses',
+				'label'  => __( 'Licenses', 'minimal-admin' ),
 				'goto'   => 'licenses',
 				'status' => $bad ? 'fail' : ( $soft ? 'warn' : 'pass' ),
 				'detail' => $bits
-					? implode( ', ', $bits ) . ' of ' . $lic_total . ' components; see the Licenses tab'
-					: 'All ' . $lic_total . ' components are licensed or connected',
+					/* translators: 1: comma-separated problem counts (e.g. "2 expired, 1 missing"), 2: how many licensed components exist. */
+					? sprintf( __( '%1$s of %2$s components; see the Licenses tab', 'minimal-admin' ), implode( ', ', $bits ), $lic_total )
+					/* translators: %s: how many licensed components exist. */
+					: sprintf( __( 'All %s components are licensed or connected', 'minimal-admin' ), $lic_total ),
 			);
+		}
+
+		// Most of this page describes the SERVER and the install, which on
+		// multisite every tenant shares and none of them owns: the database
+		// connection, the machine's address and kernel, its free disk, the
+		// full plugin/theme inventory, whether wp-config is writable. This
+		// route is manage_options, which is per site there, so a subsite
+		// administrator would read the operator's fingerprint and the exact
+		// list of third-party code running on every neighbour. Core draws the
+		// same line on its own equivalent screen: Site Health Info sits behind
+		// view_site_health_checks, which is granted only to super admins on
+		// multisite. Their own site's WordPress and PHP facts stay.
+		$network_owner = Minimal_Admin::network_owner();
+
+		$groups = array(
+			array( 'title' => 'WordPress', 'icon' => 'wp', 'rows' => self::kv_rows( $wordpress ) ),
+			array( 'title' => 'PHP', 'icon' => 'php', 'rows' => self::kv_rows( $php ) ),
+		);
+		if ( $network_owner ) {
+			$groups[] = array( 'title' => __( 'Database', 'minimal-admin' ), 'icon' => 'database', 'rows' => self::kv_rows( $database ), 'tables' => $top_tables, 'autoload' => $autoload );
+			$groups[] = array( 'title' => __( 'Server', 'minimal-admin' ), 'icon' => 'server', 'rows' => self::kv_rows( $server ) );
 		}
 
 		return rest_ensure_response(
 			array(
 				'generated'  => current_time( 'c' ),
 				'checks'     => $checks,
-				'config'     => self::config_state(),
+				'config'     => $network_owner ? self::config_state() : null,
 				// The log routes are network-gated on multisite (wp-content's
 				// debug.log is shared by every subsite), so don't advertise
 				// sources this user's reads would 403 on — an empty list also
@@ -6318,17 +6642,12 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 				// toggles are super-admin-locked too.
 				'logs'       => self::can_read_logs() ? Minimal_Admin_Logs::list_payload() : array(),
 				'licenses'   => $licenses,
-				'extensions' => self::extensions_manifest(),
+				'extensions' => $network_owner ? self::extensions_manifest() : null,
 				// Live registry of everything hooked into Minimal, with owner
 				// attribution + descriptor-contract problems — the feedback
 				// loop for integration authors (class-minimal-admin-surfaces.php).
-				'integrations' => Minimal_Admin_Surfaces::integrations(),
-				'groups'     => array(
-					array( 'title' => 'WordPress', 'icon' => 'wp', 'rows' => self::kv_rows( $wordpress ) ),
-					array( 'title' => 'PHP', 'icon' => 'php', 'rows' => self::kv_rows( $php ) ),
-					array( 'title' => 'Database', 'icon' => 'database', 'rows' => self::kv_rows( $database ), 'tables' => $top_tables, 'autoload' => $autoload ),
-					array( 'title' => 'Server', 'icon' => 'server', 'rows' => self::kv_rows( $server ) ),
-				),
+				'integrations' => $network_owner ? Minimal_Admin_Surfaces::integrations() : null,
+				'groups'     => $groups,
 			)
 		);
 	}
@@ -6406,11 +6725,11 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 	 */
 	private static function debug_constants() {
 		return array(
-			'WP_DEBUG'         => array( 'label' => 'Debug mode', 'desc' => 'Master switch for WordPress debugging.' ),
-			'WP_DEBUG_LOG'     => array( 'label' => 'Log to file', 'desc' => 'Write notices and errors to wp-content/debug.log.' ),
-			'WP_DEBUG_DISPLAY' => array( 'label' => 'Show errors on screen', 'desc' => 'Render errors in the page. Leave off in production and read the log instead.' ),
-			'SCRIPT_DEBUG'     => array( 'label' => 'Unminified assets', 'desc' => 'Load the full-length core and plugin JS/CSS.' ),
-			'SAVEQUERIES'      => array( 'label' => 'Log database queries', 'desc' => 'Record every query for inspection — a real performance cost; turn off when done.' ),
+			'WP_DEBUG'         => array( 'label' => __( 'Debug mode', 'minimal-admin' ), 'desc' => __( 'Master switch for WordPress debugging.', 'minimal-admin' ) ),
+			'WP_DEBUG_LOG'     => array( 'label' => __( 'Log to file', 'minimal-admin' ), 'desc' => __( 'Write notices and errors to wp-content/debug.log.', 'minimal-admin' ) ),
+			'WP_DEBUG_DISPLAY' => array( 'label' => __( 'Show errors on screen', 'minimal-admin' ), 'desc' => __( 'Render errors in the page. Leave off in production and read the log instead.', 'minimal-admin' ) ),
+			'SCRIPT_DEBUG'     => array( 'label' => __( 'Unminified assets', 'minimal-admin' ), 'desc' => __( 'Load the full-length core and plugin JS/CSS.', 'minimal-admin' ) ),
+			'SAVEQUERIES'      => array( 'label' => __( 'Log database queries', 'minimal-admin' ), 'desc' => __( 'Record every query for inspection — a real performance cost; turn off when done.', 'minimal-admin' ) ),
 		);
 	}
 
@@ -6560,18 +6879,18 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 
 		$consts = self::debug_constants();
 		if ( ! isset( $consts[ $name ] ) ) {
-			return new WP_Error( 'bad_constant', 'That constant is not editable.', array( 'status' => 400 ) );
+			return new WP_Error( 'bad_constant', __( 'That constant is not editable.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		if ( ! Minimal_Admin::code_edits_allowed() || ( is_multisite() && ! is_super_admin() ) ) {
-			return new WP_Error( 'forbidden', 'File modifications are disabled on this site.', array( 'status' => 403 ) );
+			return new WP_Error( 'forbidden', __( 'File modifications are disabled on this site.', 'minimal-admin' ), array( 'status' => 403 ) );
 		}
 		$path = self::wpconfig_path();
 		if ( ! $path || ! wp_is_writable( $path ) ) {
-			return new WP_Error( 'not_writable', 'wp-config.php is not writable.', array( 'status' => 400 ) );
+			return new WP_Error( 'not_writable', __( 'wp-config.php is not writable.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$contents = file_get_contents( $path );
 		if ( false === $contents ) {
-			return new WP_Error( 'read_failed', 'Could not read wp-config.php.', array( 'status' => 500 ) );
+			return new WP_Error( 'read_failed', __( 'Could not read wp-config.php.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 
 		$line    = "define( '" . $name . "', " . ( $value ? 'true' : 'false' ) . " );";
@@ -6591,11 +6910,11 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 				$new = preg_replace( "/(require_once\\s*\\(?\\s*ABSPATH\\s*\\.\\s*['\"]wp-settings\\.php['\"])/", $line . "\n\n\$1", $contents, 1 );
 			}
 			if ( null === $new || $new === $contents ) {
-				return new WP_Error( 'place_failed', 'Could not find a safe place to add the constant.', array( 'status' => 500 ) );
+				return new WP_Error( 'place_failed', __( 'Could not find a safe place to add the constant.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
 		}
 		if ( null === $new ) {
-			return new WP_Error( 'edit_failed', 'The edit could not be applied.', array( 'status' => 500 ) );
+			return new WP_Error( 'edit_failed', __( 'The edit could not be applied.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 
 		// Validate the transformed file parses BEFORE writing it. TOKEN_PARSE
@@ -6603,7 +6922,7 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		try {
 			token_get_all( $new, TOKEN_PARSE );
 		} catch ( \ParseError $e ) {
-			return new WP_Error( 'parse_error', 'The change would break wp-config.php, so it was not saved.', array( 'status' => 500 ) );
+			return new WP_Error( 'parse_error', __( 'The change would break wp-config.php, so it was not saved.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 
 		// Honour the backup's return value: a write that proceeds without a
@@ -6612,13 +6931,13 @@ Sent from <a href="' . esc_url( $url ) . '" style="color:#5a4ef0;text-decoration
 		if ( '' === $backup ) {
 			return new WP_Error(
 				'minimal_backup_failed',
-				'Could not write a rollback copy of wp-config.php, so the change was not made.',
+				__( 'Could not write a rollback copy of wp-config.php, so the change was not made.', 'minimal-admin' ),
 				array( 'status' => 500 )
 			);
 		}
 		if ( false === file_put_contents( $path, $new ) ) {
 			self::drop_wpconfig_backup( $path );
-			return new WP_Error( 'write_failed', 'Could not write wp-config.php.', array( 'status' => 500 ) );
+			return new WP_Error( 'write_failed', __( 'Could not write wp-config.php.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 
 		// The write landed and was syntax-checked before it went out, so the

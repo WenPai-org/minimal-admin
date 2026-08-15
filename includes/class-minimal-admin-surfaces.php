@@ -509,7 +509,7 @@ class Minimal_Admin_Surfaces {
 			);
 		}
 		$client = array(
-			'title' => (string) ( $setup['title'] ?? 'This plugin needs a one-time setup' ),
+			'title' => (string) ( $setup['title'] ?? __( 'This plugin needs a one-time setup', 'minimal-admin' ) ),
 			'note'  => (string) ( $setup['note'] ?? '' ),
 		);
 		if ( $options ) {

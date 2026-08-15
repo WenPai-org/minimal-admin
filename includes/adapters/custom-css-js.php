@@ -54,7 +54,18 @@ function minimal_admin_ccj_can_write_code( $opts ) {
 	$sides    = array_filter( array_map( 'trim', explode( ',', isset( $opts['side'] ) ? (string) $opts['side'] : '' ) ) );
 	$scripty  = in_array( $language, array( 'js', 'html' ), true );
 	$admin    = (bool) array_intersect( $sides, array( 'admin', 'login' ) );
-	if ( ! $scripty && ! $admin ) {
+	// "CSS is not an execution context" holds only while the bytes never
+	// reach an HTML parser, and that is a property of the SINK, not the
+	// language. With linking=internal (the default) or 'both',
+	// minimal_admin_ccj_rebuild_tree() concatenates the caller's bytes between
+	// literal <style type="text/css"> and </style> and the plugin echoes that
+	// file into the page, so a payload can close the element and run script.
+	// Only linking=external is genuinely inert: the file is loaded through
+	// wp_enqueue_style and cannot break out. The 'block' side routes into
+	// block_css.css and is inlined the same way, so it is not exempt either.
+	$linking = isset( $opts['linking'] ) ? (string) $opts['linking'] : 'internal';
+	$inlined = 'external' !== $linking || in_array( 'block', $sides, true );
+	if ( ! $scripty && ! $admin && ! $inlined ) {
 		return true;
 	}
 	// Executable snippets are code, so a site that forbids dashboard code
@@ -231,7 +242,17 @@ function minimal_admin_ccj_normalize_options( $input, $existing = array() ) {
 	$sides = array_values( array_intersect( $sides, $ok ) );
 	$base['side']     = $sides ? implode( ',', $sides ) : 'frontend';
 	$base['priority'] = (int) $base['priority'];
-	return $base;
+	// Return ONLY the settings. Merging the raw body meant name, code and any
+	// attacker-chosen key were persisted into the options meta too, so the
+	// snippet's source was duplicated into a store nothing surfaces and CCJ's
+	// own delete path does not know about, and other code regex-scans it.
+	return array(
+		'language' => $base['language'],
+		'type'     => $base['type'],
+		'linking'  => $base['linking'],
+		'side'     => $base['side'],
+		'priority' => $base['priority'],
+	);
 }
 
 function minimal_admin_ccj_rows( $args = array() ) {
@@ -282,29 +303,29 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		array( 'login', 'Login' ),
 	);
 	$link_options = array(
-		array( 'internal', 'Internal' ),
-		array( 'external', 'External file' ),
+		array( 'internal', __( 'Internal', 'minimal-admin' ) ),
+		array( 'external', __( 'External file', 'minimal-admin' ) ),
 	);
 
 	$edit_fields = array(
-		array( 'key' => 'name', 'label' => 'Name', 'placeholder' => 'Site tweaks' ),
+		array( 'key' => 'name', 'label' => __( 'Name', 'minimal-admin' ), 'placeholder' => __( 'Site tweaks', 'minimal-admin' ) ),
 		array(
 			'key'         => 'code',
-			'label'       => 'Code',
+			'label'       => __( 'Code', 'minimal-admin' ),
 			'type'        => 'textarea',
 			'mono'        => true,
 			'rows'        => 14,
-			'placeholder' => '/* your CSS */',
+			'placeholder' => __( '/* your CSS */', 'minimal-admin' ),
 		),
-		array( 'key' => 'language', 'label' => 'Language', 'type' => 'select', 'options' => $lang_options ),
-		array( 'key' => 'type', 'label' => 'Where', 'type' => 'select', 'options' => $type_options ),
-		array( 'key' => 'side', 'label' => 'Side', 'type' => 'select', 'options' => $side_options ),
-		array( 'key' => 'linking', 'label' => 'Linking', 'type' => 'select', 'options' => $link_options ),
-		array( 'key' => 'priority', 'label' => 'Priority', 'type' => 'number' ),
+		array( 'key' => 'language', 'label' => __( 'Language', 'minimal-admin' ), 'type' => 'select', 'options' => $lang_options ),
+		array( 'key' => 'type', 'label' => __( 'Where', 'minimal-admin' ), 'type' => 'select', 'options' => $type_options ),
+		array( 'key' => 'side', 'label' => __( 'Side', 'minimal-admin' ), 'type' => 'select', 'options' => $side_options ),
+		array( 'key' => 'linking', 'label' => __( 'Linking', 'minimal-admin' ), 'type' => 'select', 'options' => $link_options ),
+		array( 'key' => 'priority', 'label' => __( 'Priority', 'minimal-admin' ), 'type' => 'number' ),
 	);
 
 	$surfaces['custom-css-js'] = array(
-		'label'      => 'Snippets',
+		'label'      => __( 'Snippets', 'minimal-admin' ),
 		'family'     => 'snippets',
 		'sub'        => 'Simple Custom CSS and JS',
 		'icon'       => 'code',
@@ -318,7 +339,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'totalKey'  => 'total',
 			'search'    => 'search={q}',
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'all', 'All' ),
 					array( '1', 'Active' ),
@@ -327,7 +348,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'query'   => 'active={v}',
 			),
 			'create'    => array(
-				'label'    => 'Add code',
+				'label'    => __( 'Add code', 'minimal-admin' ),
 				'route'    => 'minimal-admin/v1/ccj/snippets',
 				'method'   => 'POST',
 				'defaults' => array(
@@ -342,11 +363,11 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'fields'   => $edit_fields,
 			),
 			'columns'   => array(
-				array( 'key' => 'name', 'label' => 'Snippet', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'scope', 'label' => 'Type · where', 'format' => 'mono', 'width' => 'minmax(0,1.2fr)' ),
-				array( 'key' => 'active', 'label' => 'Status', 'format' => 'pill', 'width' => '100px' ),
-				array( 'key' => 'priority', 'label' => 'Priority', 'format' => 'num', 'width' => '80px' ),
-				array( 'key' => 'modified', 'label' => 'Modified', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'name', 'label' => __( 'Snippet', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'scope', 'label' => __( 'Type · where', 'minimal-admin' ), 'format' => 'mono', 'width' => 'minmax(0,1.2fr)' ),
+				array( 'key' => 'active', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '100px' ),
+				array( 'key' => 'priority', 'label' => __( 'Priority', 'minimal-admin' ), 'format' => 'num', 'width' => '80px' ),
+				array( 'key' => 'modified', 'label' => __( 'Modified', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				'detailRoute' => 'minimal-admin/v1/ccj/snippets/{id}',
@@ -360,51 +381,51 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/ccj/snippets/{id}/active',
 					'body'   => array( 'active' => true ),
 					'when'   => array( 'key' => 'active', 'equals' => false ),
 				),
 				array(
-					'label'  => 'Deactivate',
+					'label'  => __( 'Deactivate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/ccj/snippets/{id}/active',
 					'body'   => array( 'active' => false ),
 					'when'   => array( 'key' => 'active', 'equals' => true ),
 				),
 				array(
-					'label' => 'Edit in Simple Custom CSS and JS ↗',
+					'label' => __( 'Edit in Simple Custom CSS and JS ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'post.php?post={id}&action=edit' ),
 				),
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/ccj/snippets/{id}',
-					'confirm' => 'Delete this custom code permanently?',
+					'confirm' => __( 'Delete this custom code permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'  => 'Activate',
+					'label'  => __( 'Activate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/ccj/snippets/{id}/active',
 					'body'   => array( 'active' => true ),
 					'when'   => array( 'key' => 'active', 'equals' => false ),
 				),
 				array(
-					'label'  => 'Deactivate',
+					'label'  => __( 'Deactivate', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/ccj/snippets/{id}/active',
 					'body'   => array( 'active' => false ),
 					'when'   => array( 'key' => 'active', 'equals' => true ),
 				),
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/ccj/snippets/{id}',
-					'confirm' => 'Delete the selected codes permanently?',
+					'confirm' => __( 'Delete the selected codes permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -452,15 +473,21 @@ add_action( 'rest_api_init', function () {
 			}
 			$rows = array(
 				array(
-					'label' => 'Active codes',
+					'label' => __( 'Active codes', 'minimal-admin' ),
 					'value' => (string) $active,
-					'hint'  => $inactive ? $inactive . ' inactive' : 'nothing inactive',
+					'hint'  => $inactive
+						? sprintf(
+							/* translators: %d: number of inactive codes. */
+							__( '%d inactive', 'minimal-admin' ),
+							$inactive
+						)
+						: __( 'nothing inactive', 'minimal-admin' ),
 				),
 			);
 			if ( $langs ) {
 				arsort( $langs );
 				$rows[] = array(
-					'label' => 'Running languages',
+					'label' => __( 'Running languages', 'minimal-admin' ),
 					'value' => implode( ' · ', array_map( function ( $c, $l ) {
 						return $c . ' ' . $l;
 					}, $langs, array_keys( $langs ) ) ),
@@ -502,11 +529,15 @@ add_action( 'rest_api_init', function () {
 				}
 				$name = isset( $body['name'] ) ? sanitize_text_field( $body['name'] ) : '';
 				if ( ! $name ) {
-					return new WP_Error( 'missing_name', 'Name is required.', array( 'status' => 400 ) );
+					return new WP_Error( 'missing_name', __( 'Name is required.', 'minimal-admin' ), array( 'status' => 400 ) );
 				}
 				$code = isset( $body['code'] ) ? (string) $body['code'] : '';
 				$opts = minimal_admin_ccj_normalize_options( $body );
-				if ( '' !== $code && ! minimal_admin_ccj_can_write_code( $opts ) ) {
+				// Unconditional, matching the PUT path and HFCM: creating the
+				// container for an execution context is the same privilege as
+				// filling it, and an empty pre-activated js/admin-side shell is
+				// exactly what a later write would need.
+				if ( ! minimal_admin_ccj_can_write_code( $opts ) ) {
 					return minimal_admin_ccj_code_error( $opts );
 				}
 				$id   = wp_insert_post( array(
@@ -534,7 +565,7 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $request ) {
 				$item = minimal_admin_ccj_item( (int) $request['id'] );
 				if ( ! $item ) {
-					return new WP_Error( 'not_found', 'Code not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Code not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				return rest_ensure_response( $item );
 			},
@@ -546,7 +577,7 @@ add_action( 'rest_api_init', function () {
 				$id   = (int) $request['id'];
 				$post = get_post( $id );
 				if ( ! $post || 'custom-css-js' !== $post->post_type ) {
-					return new WP_Error( 'not_found', 'Code not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Code not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$body = $request->get_json_params();
 				if ( ! is_array( $body ) ) {
@@ -591,7 +622,7 @@ add_action( 'rest_api_init', function () {
 				$id   = (int) $request['id'];
 				$post = get_post( $id );
 				if ( ! $post || 'custom-css-js' !== $post->post_type ) {
-					return new WP_Error( 'not_found', 'Code not found.', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Code not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				// Deleting is a write to the same store, and it takes the file
 				// in CCJ_UPLOAD_DIR with it.
@@ -612,7 +643,7 @@ add_action( 'rest_api_init', function () {
 			$id   = (int) $request['id'];
 			$post = get_post( $id );
 			if ( ! $post || 'custom-css-js' !== $post->post_type ) {
-				return new WP_Error( 'not_found', 'Code not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Code not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$body   = $request->get_json_params();
 			$active = is_array( $body ) ? ! empty( $body['active'] ) : true;

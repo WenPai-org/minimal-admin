@@ -45,7 +45,7 @@ const { launch, login, reporter, BASE } = require( './helpers' );
 	t.check( 'Filter-pill re-render does not re-steal focus', ( await focusedId() ) !== 'minimal-ext-search' );
 
 	// 3b. Switching Extensions tabs is a navigation too: the Themes tab must
-	// hand focus to the themes filter box (Austin's follow-up report).
+	// hand focus to the themes filter box.
 	await page.click( '[data-xtab="themes"]' );
 	await page.waitForSelector( '#minimal-ext-search', { timeout: 15000 } );
 	await page.waitForTimeout( 600 );
@@ -65,8 +65,20 @@ const { launch, login, reporter, BASE } = require( './helpers' );
 	// 5. SPA nav to Media covers a second list view generically.
 	await page.click( '.minimal-nav-btn[data-nav="media"]' );
 	await page.waitForSelector( '#minimal-media-search', { timeout: 15000 } );
-	await page.waitForTimeout( 600 );
-	t.check( 'SPA nav to Media focuses its search box', ( await focusedId() ) === 'minimal-media-search' );
+	// Media's box is disabled until its list loads, so the caret arrives on
+	// the post-load render rather than within a fixed slice of time. A flat
+	// wait here just raced the load.
+	const landed = await page.waitForFunction(
+		() => document.activeElement && document.activeElement.id === 'minimal-media-search',
+		null, { timeout: 15000 }
+	).then( () => true ).catch( () => false );
+	t.check( 'SPA nav to Media focuses its search box', landed, await focusedId() );
+
+	// And it has to STAY: finishing the load re-renders the toolbar, which
+	// destroyed the focused input and dropped the caret on <body>, so the
+	// next keystroke went nowhere.
+	await page.waitForTimeout( 3000 );
+	t.check( 'the caret survives the post-load re-render', ( await focusedId() ) === 'minimal-media-search', await focusedId() );
 
 	// 6. Typing-elsewhere disarm: navigate via JS with a text field already
 	// focused — the armed autofocus must back off and never rob the caret.

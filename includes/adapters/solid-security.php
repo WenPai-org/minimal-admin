@@ -39,7 +39,7 @@ function minimal_admin_solid_security_can() {
 	// lockout IPs and attempted usernames. Same class (and same fix) as the
 	// All-In-One Security scoping in v0.28.0, except here scoping is
 	// impossible: network data needs a network administrator.
-	if ( is_multisite() && ! is_super_admin() ) {
+	if ( ! Minimal_Admin::network_owner() ) {
 		return false;
 	}
 	try {
@@ -75,7 +75,7 @@ function minimal_admin_solid_security_row( $r ) {
 	}
 	return array(
 		'id'      => (int) $r->lockout_id,
-		'message' => 'Locked out: ' . ( $who ? $who : ( $r->lockout_host ? $r->lockout_host : 'unknown' ) ),
+		'message' => __( 'Locked out: ', 'minimal-admin' ) . ( $who ? $who : ( $r->lockout_host ? $r->lockout_host : 'unknown' ) ),
 		'type'    => (string) $r->lockout_type,
 		'who'     => $who ? $who : '—',
 		'ip'      => $r->lockout_host ? (string) $r->lockout_host : '—',
@@ -92,7 +92,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['solid-security'] = array(
-		'label'      => 'Activity Log',
+		'label'      => __( 'Activity Log', 'minimal-admin' ),
 		'family'     => 'activity-log',
 		'sub'        => 'Solid Security',
 		'icon'       => 'shield',
@@ -109,23 +109,23 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'tabs'      => array(
 				'param'    => 'kind',
 				'static'   => array(
-					array( 'locked', 'Locked out now' ),
+					array( 'locked', __( 'Locked out now', 'minimal-admin' ) ),
 				),
-				'allLabel' => 'All lockouts',
+				'allLabel' => __( 'All lockouts', 'minimal-admin' ),
 			),
 			'columns'   => array(
-				array( 'key' => 'message', 'label' => 'Event', 'format' => 'title' ),
+				array( 'key' => 'message', 'label' => __( 'Event', 'minimal-admin' ), 'format' => 'title' ),
 				array( 'key' => 'ip', 'label' => 'IP' ),
-				array( 'key' => 'type', 'label' => 'Type' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'type', 'label' => __( 'Type', 'minimal-admin' ) ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				'skip' => array( 'message', 'locked' ),
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Release lockout',
+					'label'  => __( 'Release lockout', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/solid-security/lockouts/{id}/release',
 					'when'   => array( 'key' => 'locked', 'equals' => true ),
@@ -187,18 +187,18 @@ add_action( 'rest_api_init', function () {
 			global $itsec_lockout, $wpdb;
 			$id = (int) $request['id'];
 			if ( ! $itsec_lockout || ! method_exists( $itsec_lockout, 'release_lockout' ) ) {
-				return new WP_Error( 'no_api', 'Solid Security\'s lockout API is not available.', array( 'status' => 500 ) );
+				return new WP_Error( 'no_api', __( 'Solid Security\'s lockout API is not available.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
 			$row = $wpdb->get_row( $wpdb->prepare(
 				"SELECT * FROM {$wpdb->base_prefix}itsec_lockouts WHERE lockout_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$id
 			) );
 			if ( ! $row ) {
-				return new WP_Error( 'not_found', 'Lockout not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Lockout not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$itsec_lockout->release_lockout( $id );
 			$freed = minimal_admin_solid_security_row( $row );
-			return rest_ensure_response( array( 'ok' => true, 'message' => 'Released ' . ( '—' !== $freed['who'] ? $freed['who'] : $freed['ip'] ) ) );
+			return rest_ensure_response( array( 'ok' => true, 'message' => __( 'Released ', 'minimal-admin' ) . ( '—' !== $freed['who'] ? $freed['who'] : $freed['ip'] ) ) );
 		},
 	) );
 
@@ -223,13 +223,13 @@ add_action( 'rest_api_init', function () {
 				$modules = array();
 			}
 			$names   = array(
-				'brute-force'         => 'Brute force',
-				'network-brute-force' => 'Network brute force',
-				'firewall'            => 'Firewall',
-				'two-factor'          => 'Two-factor',
-				'ban-users'           => 'Ban hosts',
-				'file-change'         => 'File change detection',
-				'malware-scheduling'  => 'Scheduled scans',
+				'brute-force'         => __( 'Brute force', 'minimal-admin' ),
+				'network-brute-force' => __( 'Network brute force', 'minimal-admin' ),
+				'firewall'            => __( 'Firewall', 'minimal-admin' ),
+				'two-factor'          => __( 'Two-factor', 'minimal-admin' ),
+				'ban-users'           => __( 'Ban hosts', 'minimal-admin' ),
+				'file-change'         => __( 'File change detection', 'minimal-admin' ),
+				'malware-scheduling'  => __( 'Scheduled scans', 'minimal-admin' ),
 			);
 			$on = array();
 			foreach ( $names as $slug => $label ) {
@@ -240,24 +240,24 @@ add_action( 'rest_api_init', function () {
 			return rest_ensure_response( array(
 				'rows'    => array(
 					array(
-						'label' => 'Locked out now',
+						'label' => __( 'Locked out now', 'minimal-admin' ),
 						'value' => $active ? (string) $active : 'Nobody',
 					),
 					array(
-						'label' => 'Lockouts all-time',
+						'label' => __( 'Lockouts all-time', 'minimal-admin' ),
 						'value' => (string) $total,
 					),
 					array(
-						'label' => 'Banned hosts',
+						'label' => __( 'Banned hosts', 'minimal-admin' ),
 						'value' => (string) $bans,
 					),
 					array(
-						'label' => 'Protection on',
-						'value' => $on ? implode( ' · ', $on ) : 'No protection modules active',
+						'label' => __( 'Protection on', 'minimal-admin' ),
+						'value' => $on ? implode( ' · ', $on ) : __( 'No protection modules active', 'minimal-admin' ),
 					),
 				),
 				'actions' => array(
-					array( 'label' => 'Open Solid Security ↗', 'href' => minimal_admin_solid_security_admin_url() ),
+					array( 'label' => __( 'Open Solid Security ↗', 'minimal-admin' ), 'href' => minimal_admin_solid_security_admin_url() ),
 				),
 			) );
 		},
@@ -272,6 +272,12 @@ add_action( 'rest_api_init', function () {
  * @return array[] of { label, status, detail }
  */
 function minimal_admin_solid_security_checks() {
+	// The System page reads this directly at manage_options, which is per
+	// site on multisite. Firewall mode, scan age and unresolved-issue counts
+	// describe the network, so gate here rather than at the call site.
+	if ( ! Minimal_Admin::network_owner() ) {
+		return array();
+	}
 	if ( ! class_exists( 'ITSEC_Core' ) || ! class_exists( 'ITSEC_Modules' ) ) {
 		return array();
 	}
@@ -287,16 +293,16 @@ function minimal_admin_solid_security_checks() {
 				$extra[] = 'two-factor';
 			}
 			$rows[] = array(
-				'label'  => 'Solid Security',
+				'label'  => __( 'Solid Security', 'minimal-admin' ),
 				'status' => 'pass',
-				'detail' => 'Brute force protection is on' . ( $extra ? ' (with ' . implode( ' and ', $extra ) . ')' : '' ),
+				'detail' => __( 'Brute force protection is on', 'minimal-admin' ) . ( $extra ? ' (with ' . implode( ' and ', $extra ) . ')' : '' ),
 				'href'   => minimal_admin_solid_security_admin_url(),
 			);
 		} else {
 			$rows[] = array(
-				'label'  => 'Solid Security',
+				'label'  => __( 'Solid Security', 'minimal-admin' ),
 				'status' => 'warn',
-				'detail' => 'Brute force protection is turned off',
+				'detail' => __( 'Brute force protection is turned off', 'minimal-admin' ),
 				'href'   => minimal_admin_solid_security_admin_url(),
 			);
 		}

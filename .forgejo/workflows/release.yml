@@ -11,7 +11,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout tagged source
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
@@ -27,6 +27,7 @@ jobs:
             echo "Version mismatch: tag=$VERSION manifest=$MANIFEST_VERSION" >&2
             exit 1
           }
+          python3 tools/build_language_packs.py --root "$GITHUB_WORKSPACE"
           python3 tools/build_release.py --root "$GITHUB_WORKSPACE"
           ZIP="$GITHUB_WORKSPACE/dist/minimal-admin-$VERSION.zip"
           python3 tools/verify_release.py --root "$GITHUB_WORKSPACE" --zip "$ZIP"
@@ -58,9 +59,18 @@ jobs:
           ZIP="${{ steps.build.outputs.zip }}"
           cp "$ZIP" "$RUNNER_TEMP/"
           for LOCALE in zh_CN zh_TW; do
+            PACK="$GITHUB_WORKSPACE/dist/languages/minimal-admin-$LOCALE.zip"
+            PACK_ARGS=()
+            if [ -f "$PACK" ]; then
+              cp "$PACK" "$RUNNER_TEMP/"
+              PACK_ARGS=( --language-pack-path "$(basename "$PACK")" )
+            else
+              echo "::warning::No language pack built for $LOCALE; testing source-language fallback"
+            fi
             python3 tools/create_playground_blueprint.py \
               --plugin-path "$(basename "$ZIP")" \
               --version "$VERSION" --locale "$LOCALE" \
+              "${PACK_ARGS[@]}" \
               --output "$RUNNER_TEMP/playground-$LOCALE.json"
             npx --yes @wp-playground/cli@3.1.48 run-blueprint \
               --blueprint="$RUNNER_TEMP/playground-$LOCALE.json" \
@@ -99,9 +109,26 @@ jobs:
             exit 1
           fi
           RELEASE_ID=$(jq -r .id "$RUNNER_TEMP/release.json")
-          for FILE in "$ZIP" "$CHECKSUM"; do
+          FILES=( "$ZIP" "$CHECKSUM" )
+          while IFS= read -r FILE; do FILES+=( "$FILE" ); done \
+            < <(find "$GITHUB_WORKSPACE/dist/languages" -maxdepth 1 -type f \
+              \( -name 'minimal-admin-*.zip' -o -name 'minimal-admin-*.zip.sha256' \) | sort)
+          for FILE in "${FILES[@]}"; do
             NAME=$(basename "$FILE")
             ENCODED=$(printf '%s' "$NAME" | jq -sRr @uri)
+            EXISTING=$(jq -r --arg name "$NAME" '.assets[]? | select(.name == $name) | .browser_download_url' \
+              "$RUNNER_TEMP/release.json" | head -1)
+            if [ -n "$EXISTING" ]; then
+              curl -fsSL --retry 3 -o "$RUNNER_TEMP/existing-$NAME" "$EXISTING"
+              LOCAL_SHA=$(sha256sum "$FILE" | awk '{print $1}')
+              REMOTE_SHA=$(sha256sum "$RUNNER_TEMP/existing-$NAME" | awk '{print $1}')
+              [ "$LOCAL_SHA" = "$REMOTE_SHA" ] || {
+                echo "Existing immutable release asset differs: $NAME" >&2
+                exit 1
+              }
+              echo "Existing release asset already matches: $NAME"
+              continue
+            fi
             curl -fsS --retry 3 --retry-all-errors -X POST -H "$AUTH" \
               -F "attachment=@$FILE" "$API/releases/$RELEASE_ID/assets?name=$ENCODED" >/dev/null
           done
@@ -117,3 +144,10 @@ jobs:
           curl -fsSL --retry 3 -o "$RUNNER_TEMP/$NAME" "$BASE/$NAME"
           curl -fsSL --retry 3 -o "$RUNNER_TEMP/$NAME.sha256" "$BASE/$NAME.sha256"
           (cd "$RUNNER_TEMP" && sha256sum -c "$NAME.sha256")
+          while IFS= read -r CHECKSUM; do
+            PACK=$(basename "${CHECKSUM%.sha256}")
+            curl -fsSL --retry 3 -o "$RUNNER_TEMP/$PACK" "$BASE/$PACK"
+            curl -fsSL --retry 3 -o "$RUNNER_TEMP/$PACK.sha256" "$BASE/$PACK.sha256"
+            (cd "$RUNNER_TEMP" && sha256sum -c "$PACK.sha256")
+          done < <(find "$GITHUB_WORKSPACE/dist/languages" -maxdepth 1 -type f \
+            -name 'minimal-admin-*.zip.sha256' | sort)

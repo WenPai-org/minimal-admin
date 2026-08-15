@@ -33,8 +33,18 @@ function minimal_admin_ninja_forms_active() {
 }
 
 function minimal_admin_ninja_forms_can() {
-	$cap = apply_filters( 'ninja_forms_admin_menu_capabilities', 'manage_options' );
-	$cap = apply_filters( 'ninja_forms_admin_submissions_capabilities', $cap );
+	// Resolve this the way Ninja Forms resolves it: seed the submissions
+	// filter with the literal manage_options, exactly as their own
+	// blocks/bootstrap.php does when deciding who may see submission data.
+	//
+	// Chaining ninja_forms_admin_menu_capabilities into it first was wrong.
+	// That filter governs one hidden options.php-parented Processing page and
+	// nothing else, but its name makes it the obvious one to reach for when
+	// opening the Ninja Forms menu to editors. A site that had done so was
+	// handing the lower role every submission's answers plus trash, restore
+	// and permanent delete here, while Ninja Forms' own Submissions screen
+	// still asked for manage_options.
+	$cap = apply_filters( 'ninja_forms_admin_submissions_capabilities', 'manage_options' );
 	return current_user_can( $cap );
 }
 
@@ -146,14 +156,17 @@ function minimal_admin_ninja_forms_status_model() {
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Submissions',
+				'label' => __( 'Submissions', 'minimal-admin' ),
 				'value' => number_format_i18n( $subs ),
-				'hint'  => $trash ? number_format_i18n( $trash ) . ' in trash' : 'All stored submissions',
+				'hint'  => $trash
+					/* translators: %s: number of trashed submissions. */
+					? sprintf( _n( '%s in trash', '%s in trash', $trash, 'minimal-admin' ), number_format_i18n( $trash ) )
+					: __( 'All stored submissions', 'minimal-admin' ),
 			),
-			array( 'label' => 'Forms', 'value' => number_format_i18n( $forms ) ),
+			array( 'label' => __( 'Forms', 'minimal-admin' ), 'value' => number_format_i18n( $forms ) ),
 		),
 		'actions' => array(
-			array( 'label' => 'Open Ninja Forms ↗', 'href' => admin_url( 'admin.php?page=nf-submissions' ) ),
+			array( 'label' => __( 'Open Ninja Forms ↗', 'minimal-admin' ), 'href' => admin_url( 'admin.php?page=nf-submissions' ) ),
 		),
 	);
 }
@@ -164,7 +177,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['ninja-forms'] = array(
-		'label'      => 'Forms',
+		'label'      => __( 'Forms', 'minimal-admin' ),
 		'family'     => 'forms',
 		'group'      => 'workspace', // inbox-shaped (see gravity-forms.php)
 		'sub'        => 'Ninja Forms',
@@ -172,7 +185,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'status'     => array( 'route' => 'minimal-admin/v1/ninja-forms/status' ),
 		'cap'        => 'read', // real gate is the filter above (their cap filter)
 		'collection' => array(
-			'viewLabel' => 'Entries',
+			'viewLabel' => __( 'Entries', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/ninja-forms/entries',
 			'pageQuery' => 'per_page=25&page={page}',
 			'search'    => 'search={q}',
@@ -183,10 +196,10 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'valueKey' => 'id',
 				'labelKey' => 'title',
 				'param'    => 'form_id',
-				'allLabel' => 'All entries',
+				'allLabel' => __( 'All entries', 'minimal-admin' ),
 			),
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'publish', 'Received' ),
 					array( 'trash', 'Trash' ),
@@ -194,76 +207,76 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'query'   => 'status={v}',
 			),
 			'columns'   => array(
-				array( 'key' => 'summary', 'label' => 'Entry', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'form_title', 'label' => 'Form' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill', 'width' => '96px' ),
+				array( 'key' => 'summary', 'label' => __( 'Entry', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'form_title', 'label' => __( 'Form', 'minimal-admin' ) ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '96px' ),
 				array( 'key' => 'seq', 'label' => '#', 'format' => 'num' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/ninja-forms/entries/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Trash entry',
+					'label'   => __( 'Trash entry', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/ninja-forms/entries/{id}/trash',
-					'confirm' => 'Move this entry to trash?',
+					'confirm' => __( 'Move this entry to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'publish' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/ninja-forms/entries/{id}/restore',
 					'when'   => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/ninja-forms/entries/{id}',
-					'confirm' => 'Delete this entry permanently? There is no undo.',
+					'confirm' => __( 'Delete this entry permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'   => 'Trash',
+					'label'   => __( 'Trash', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/ninja-forms/entries/{id}/trash',
-					'confirm' => 'Move the selected entries to trash?',
+					'confirm' => __( 'Move the selected entries to trash?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'publish' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/ninja-forms/entries/{id}/restore',
 					'when'   => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/ninja-forms/entries/{id}',
-					'confirm' => 'Delete the selected entries permanently?',
+					'confirm' => __( 'Delete the selected entries permanently?', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 			),
 		),
 		'manage'     => array(
-			'viewLabel' => 'Forms',
+			'viewLabel' => __( 'Forms', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/ninja-forms/forms?manage=1',
 			'columns'   => array(
-				array( 'key' => 'title', 'label' => 'Form', 'format' => 'title' ),
-				array( 'key' => 'entries', 'label' => 'Entries', 'format' => 'num' ),
-				array( 'key' => 'date', 'label' => 'Created', 'format' => 'ago' ),
+				array( 'key' => 'title', 'label' => __( 'Form', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'entries', 'label' => __( 'Entries', 'minimal-admin' ), 'format' => 'num' ),
+				array( 'key' => 'date', 'label' => __( 'Created', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(),
 			'actions'   => array(
 				array(
-					'label' => 'Edit in Ninja Forms ↗',
+					'label' => __( 'Edit in Ninja Forms ↗', 'minimal-admin' ),
 					'href'  => admin_url( 'admin.php?page=ninja-forms&form_id={id}' ),
 				),
 			),
@@ -368,7 +381,7 @@ add_action( 'rest_api_init', function () {
 				}
 				$items[] = array(
 					'id'         => (int) $post->ID,
-					'summary'    => $parts ? implode( ' · ', $parts ) : '(empty entry)',
+					'summary'    => $parts ? implode( ' · ', $parts ) : __( '(empty entry)', 'minimal-admin' ),
 					'form_title' => isset( $titles[ $form_id ] ) ? $titles[ $form_id ] : '#' . $form_id,
 					'status'     => (string) $post->post_status,
 					'seq'        => (int) get_post_meta( $post->ID, '_seq_num', true ),
@@ -386,7 +399,7 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$post = get_post( (int) $request['id'] );
 			if ( ! $post || 'nf_sub' !== $post->post_type ) {
-				return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$form_id = (int) get_post_meta( $post->ID, '_form_id', true );
 			$fields  = minimal_admin_ninja_forms_fields( $form_id );
@@ -404,23 +417,23 @@ add_action( 'rest_api_init', function () {
 			foreach ( $answers as $fid => $value ) {
 				if ( ! isset( $fields[ $fid ] ) && '' !== $value ) {
 					$rows[] = array(
-						'label' => 'Field ' . $fid,
+						'label' => __( 'Field ', 'minimal-admin' ) . $fid,
 						'value' => $value,
 					);
 				}
 			}
 			$meta = array(
-				array( 'label' => 'Form', 'value' => isset( $titles[ $form_id ] ) ? $titles[ $form_id ] : '#' . $form_id ),
-				array( 'label' => 'Entry', 'value' => '#' . (int) get_post_meta( $post->ID, '_seq_num', true ) ),
-				array( 'label' => 'Status', 'value' => (string) $post->post_status ),
-				array( 'label' => 'Submitted', 'value' => date_i18n( 'M j, Y g:i a', strtotime( $post->post_date ) ) ),
+				array( 'label' => __( 'Form', 'minimal-admin' ), 'value' => isset( $titles[ $form_id ] ) ? $titles[ $form_id ] : '#' . $form_id ),
+				array( 'label' => __( 'Entry', 'minimal-admin' ), 'value' => '#' . (int) get_post_meta( $post->ID, '_seq_num', true ) ),
+				array( 'label' => __( 'Status', 'minimal-admin' ), 'value' => (string) $post->post_status ),
+				array( 'label' => __( 'Submitted', 'minimal-admin' ), 'value' => date_i18n( 'M j, Y g:i a', strtotime( $post->post_date ) ) ),
 			);
 			return rest_ensure_response( array(
 				'kind'     => 'entry',
 				'status'   => (string) $post->post_status,
 				'sections' => array(
-					array( 'title' => 'Answers', 'rows' => $rows ),
-					array( 'title' => 'Submission', 'rows' => $meta ),
+					array( 'title' => __( 'Answers', 'minimal-admin' ), 'rows' => $rows ),
+					array( 'title' => __( 'Submission', 'minimal-admin' ), 'rows' => $meta ),
 				),
 				'adminUrl' => admin_url( 'admin.php?page=nf-submissions&form_id=' . $form_id ),
 			) );
@@ -433,18 +446,18 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$post = get_post( (int) $request['id'] );
 			if ( ! $post || 'nf_sub' !== $post->post_type ) {
-				return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			// Their own model's trash (their screen's semantics).
 			try {
 				Ninja_Forms()->form()->sub( $post->ID )->get()->trash();
 			} catch ( \Throwable $e ) {
-				return new WP_Error( 'trash_failed', 'Ninja Forms could not trash: ' . $e->getMessage(), array( 'status' => 500 ) );
+				return new WP_Error( 'trash_failed', __( 'Ninja Forms could not trash: ', 'minimal-admin' ) . $e->getMessage(), array( 'status' => 500 ) );
 			}
 			if ( 'trash' !== get_post_status( $post->ID ) ) {
-				return new WP_Error( 'trash_failed', 'Ninja Forms reported success but the entry is not in the trash.', array( 'status' => 500 ) );
+				return new WP_Error( 'trash_failed', __( 'Ninja Forms reported success but the entry is not in the trash.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
-			return rest_ensure_response( array( 'ok' => true, 'status' => 'trash', 'message' => 'Moved to trash.' ) );
+			return rest_ensure_response( array( 'ok' => true, 'status' => 'trash', 'message' => __( 'Moved to trash.', 'minimal-admin' ) ) );
 		},
 	) );
 
@@ -454,17 +467,17 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$post = get_post( (int) $request['id'] );
 			if ( ! $post || 'nf_sub' !== $post->post_type ) {
-				return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			if ( 'trash' !== $post->post_status ) {
-				return new WP_Error( 'not_trashed', 'Only trashed entries can be restored.', array( 'status' => 400 ) );
+				return new WP_Error( 'not_trashed', __( 'Only trashed entries can be restored.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			// Ninja has no restore helper — wp_untrash_post matches core trash.
 			$result = wp_untrash_post( $post->ID );
 			if ( ! $result ) {
-				return new WP_Error( 'restore_failed', 'Could not restore the entry.', array( 'status' => 500 ) );
+				return new WP_Error( 'restore_failed', __( 'Could not restore the entry.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
-			return rest_ensure_response( array( 'ok' => true, 'status' => 'publish', 'message' => 'Entry restored.' ) );
+			return rest_ensure_response( array( 'ok' => true, 'status' => 'publish', 'message' => __( 'Entry restored.', 'minimal-admin' ) ) );
 		},
 	) );
 
@@ -474,20 +487,20 @@ add_action( 'rest_api_init', function () {
 		'callback'            => function ( WP_REST_Request $request ) {
 			$post = get_post( (int) $request['id'] );
 			if ( ! $post || 'nf_sub' !== $post->post_type ) {
-				return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			if ( 'trash' !== $post->post_status ) {
-				return new WP_Error( 'not_trashed', 'Move the entry to trash before deleting permanently.', array( 'status' => 400 ) );
+				return new WP_Error( 'not_trashed', __( 'Move the entry to trash before deleting permanently.', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			try {
 				Ninja_Forms()->form()->sub( $post->ID )->get()->delete();
 			} catch ( \Throwable $e ) {
-				return new WP_Error( 'delete_failed', 'Ninja Forms could not delete: ' . $e->getMessage(), array( 'status' => 500 ) );
+				return new WP_Error( 'delete_failed', __( 'Ninja Forms could not delete: ', 'minimal-admin' ) . $e->getMessage(), array( 'status' => 500 ) );
 			}
 			if ( get_post( $post->ID ) ) {
-				return new WP_Error( 'delete_failed', 'Entry still exists after delete.', array( 'status' => 500 ) );
+				return new WP_Error( 'delete_failed', __( 'Entry still exists after delete.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
-			return rest_ensure_response( array( 'ok' => true, 'message' => 'Entry deleted permanently.' ) );
+			return rest_ensure_response( array( 'ok' => true, 'message' => __( 'Entry deleted permanently.', 'minimal-admin' ) ) );
 		},
 	) );
 } );

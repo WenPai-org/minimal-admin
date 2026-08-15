@@ -59,9 +59,12 @@ class Minimal_Admin_CPT {
 			'labels'       => array(
 				'name'          => $plural,
 				'singular_name' => $singular,
-				'add_new_item'  => 'Add New ' . $singular,
-				'edit_item'     => 'Edit ' . $singular,
-				'not_found'     => 'No ' . strtolower( $plural ) . ' found.',
+				/* translators: %s: the post type's singular label. */
+				'add_new_item'  => sprintf( __( 'Add New %s', 'minimal-admin' ), $singular ),
+				/* translators: %s: the post type's singular label. */
+				'edit_item'     => sprintf( __( 'Edit %s', 'minimal-admin' ), $singular ),
+				/* translators: %s: the post type's lowercased plural label. */
+				'not_found'     => sprintf( __( 'No %s found.', 'minimal-admin' ), strtolower( $plural ) ),
 			),
 			'description'  => (string) ( $def['description'] ?? '' ),
 			'public'       => ! empty( $def['public'] ),
@@ -99,8 +102,10 @@ class Minimal_Admin_CPT {
 			'labels'            => array(
 				'name'          => $plural,
 				'singular_name' => $singular,
-				'add_new_item'  => 'Add New ' . $singular,
-				'edit_item'     => 'Edit ' . $singular,
+				/* translators: %s: the taxonomy's singular label. */
+				'add_new_item'  => sprintf( __( 'Add New %s', 'minimal-admin' ), $singular ),
+				/* translators: %s: the taxonomy's singular label. */
+				'edit_item'     => sprintf( __( 'Edit %s', 'minimal-admin' ), $singular ),
 			),
 			'public'            => ! empty( $def['public'] ),
 			'hierarchical'      => ! empty( $def['hierarchical'] ),
@@ -312,7 +317,7 @@ class Minimal_Admin_CPT {
 	public static function create_type( WP_REST_Request $request ) {
 		$slug = sanitize_key( (string) $request['slug'] );
 		if ( ! $slug || strlen( $slug ) > 20 ) {
-			return new WP_Error( 'invalid_slug', 'Slug is required: lowercase letters, numbers, dashes or underscores, 20 characters max.', array( 'status' => 400 ) );
+			return new WP_Error( 'invalid_slug', __( 'Slug is required: lowercase letters, numbers, dashes or underscores, 20 characters max.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		if ( post_type_exists( $slug ) ) {
 			return new WP_Error( 'exists', "A “{$slug}” post type already exists.", array( 'status' => 409 ) );
@@ -321,7 +326,7 @@ class Minimal_Admin_CPT {
 		$backends = self::writable_backends();
 		$backend  = in_array( $request['backend'], $backends, true ) ? $request['backend'] : $backends[0];
 		if ( ! $def['singular'] || ! $def['plural'] ) {
-			return new WP_Error( 'missing_labels', 'Singular and plural labels are required.', array( 'status' => 400 ) );
+			return new WP_Error( 'missing_labels', __( 'Singular and plural labels are required.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		if ( 'acf' === $backend ) {
@@ -342,14 +347,14 @@ class Minimal_Admin_CPT {
 		$slug   = sanitize_key( (string) $request['slug'] );
 		$source = self::source_of( $slug );
 		if ( ! post_type_exists( $slug ) ) {
-			return new WP_Error( 'not_found', 'No such post type.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'No such post type.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		if ( ! in_array( $source, array( 'acf', 'cptui', 'minimal' ), true ) ) {
-			return new WP_Error( 'not_editable', 'This post type is registered in code and can only be changed there.', array( 'status' => 400 ) );
+			return new WP_Error( 'not_editable', __( 'This post type is registered in code and can only be changed there.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$def = self::def_from_request( $request );
 		if ( ! $def['singular'] || ! $def['plural'] ) {
-			return new WP_Error( 'missing_labels', 'Singular and plural labels are required.', array( 'status' => 400 ) );
+			return new WP_Error( 'missing_labels', __( 'Singular and plural labels are required.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		if ( 'acf' === $source ) {
@@ -377,7 +382,7 @@ class Minimal_Admin_CPT {
 		} elseif ( 'acf' === $source ) {
 			$existing = self::acf_types()[ $slug ] ?? null;
 			if ( ! $existing || empty( $existing['ID'] ) ) {
-				return new WP_Error( 'not_found', 'ACF definition not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'ACF definition not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			wp_trash_post( (int) $existing['ID'] ); // trash, not delete — recoverable in ACF's UI
 		} elseif ( 'cptui' === $source ) {
@@ -385,10 +390,10 @@ class Minimal_Admin_CPT {
 			unset( $types[ $slug ] );
 			update_option( 'cptui_post_types', $types );
 		} else {
-			return new WP_Error( 'not_editable', 'This post type is registered in code and can only be removed there.', array( 'status' => 400 ) );
+			return new WP_Error( 'not_editable', __( 'This post type is registered in code and can only be removed there.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		flush_rewrite_rules();
-		return rest_ensure_response( array( 'deleted' => $slug, 'note' => 'Definition removed; existing content stays in the database.' ) );
+		return rest_ensure_response( array( 'deleted' => $slug, 'note' => __( 'Definition removed; existing content stays in the database.', 'minimal-admin' ) ) );
 	}
 
 	/* ===== Taxonomies ===== */
@@ -470,14 +475,14 @@ class Minimal_Admin_CPT {
 	public static function create_taxonomy( WP_REST_Request $request ) {
 		$slug = sanitize_key( (string) $request['slug'] );
 		if ( ! $slug || strlen( $slug ) > 32 ) {
-			return new WP_Error( 'invalid_slug', 'Slug is required: lowercase letters, numbers, dashes or underscores, 32 characters max.', array( 'status' => 400 ) );
+			return new WP_Error( 'invalid_slug', __( 'Slug is required: lowercase letters, numbers, dashes or underscores, 32 characters max.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		if ( taxonomy_exists( $slug ) ) {
 			return new WP_Error( 'exists', "A “{$slug}” taxonomy already exists.", array( 'status' => 409 ) );
 		}
 		$def = self::tax_def_from_request( $request );
 		if ( ! $def['singular'] || ! $def['plural'] ) {
-			return new WP_Error( 'missing_labels', 'Singular and plural labels are required.', array( 'status' => 400 ) );
+			return new WP_Error( 'missing_labels', __( 'Singular and plural labels are required.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$backends = self::writable_backends();
 		$backend  = in_array( $request['backend'], $backends, true ) ? $request['backend'] : $backends[0];
@@ -500,14 +505,14 @@ class Minimal_Admin_CPT {
 		$slug   = sanitize_key( (string) $request['slug'] );
 		$source = self::tax_source_of( $slug );
 		if ( ! taxonomy_exists( $slug ) ) {
-			return new WP_Error( 'not_found', 'No such taxonomy.', array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'No such taxonomy.', 'minimal-admin' ), array( 'status' => 404 ) );
 		}
 		if ( ! in_array( $source, array( 'acf', 'cptui', 'minimal' ), true ) ) {
-			return new WP_Error( 'not_editable', 'This taxonomy is registered in code and can only be changed there.', array( 'status' => 400 ) );
+			return new WP_Error( 'not_editable', __( 'This taxonomy is registered in code and can only be changed there.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		$def = self::tax_def_from_request( $request );
 		if ( ! $def['singular'] || ! $def['plural'] ) {
-			return new WP_Error( 'missing_labels', 'Singular and plural labels are required.', array( 'status' => 400 ) );
+			return new WP_Error( 'missing_labels', __( 'Singular and plural labels are required.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 
 		if ( 'acf' === $source ) {
@@ -535,7 +540,7 @@ class Minimal_Admin_CPT {
 		} elseif ( 'acf' === $source ) {
 			$existing = self::acf_taxonomies()[ $slug ] ?? null;
 			if ( ! $existing || empty( $existing['ID'] ) ) {
-				return new WP_Error( 'not_found', 'ACF definition not found.', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'ACF definition not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			wp_trash_post( (int) $existing['ID'] ); // trash, not delete — recoverable in ACF's UI
 		} elseif ( 'cptui' === $source ) {
@@ -543,10 +548,10 @@ class Minimal_Admin_CPT {
 			unset( $taxes[ $slug ] );
 			update_option( 'cptui_taxonomies', $taxes );
 		} else {
-			return new WP_Error( 'not_editable', 'This taxonomy is registered in code and can only be removed there.', array( 'status' => 400 ) );
+			return new WP_Error( 'not_editable', __( 'This taxonomy is registered in code and can only be removed there.', 'minimal-admin' ), array( 'status' => 400 ) );
 		}
 		flush_rewrite_rules();
-		return rest_ensure_response( array( 'deleted' => $slug, 'note' => 'Definition removed; existing terms stay in the database.' ) );
+		return rest_ensure_response( array( 'deleted' => $slug, 'note' => __( 'Definition removed; existing terms stay in the database.', 'minimal-admin' ) ) );
 	}
 
 	private static function minimal_tax_write( $slug, array $def ) {
@@ -583,7 +588,7 @@ class Minimal_Admin_CPT {
 			$saved = acf_import_internal_post_type( $settings, 'acf-taxonomy' );
 		}
 		if ( empty( $saved ) ) {
-			return new WP_Error( 'acf_failed', 'ACF could not save the taxonomy.', array( 'status' => 500 ) );
+			return new WP_Error( 'acf_failed', __( 'ACF could not save the taxonomy.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		return true;
 	}
@@ -653,7 +658,7 @@ class Minimal_Admin_CPT {
 			$saved = acf_import_internal_post_type( $settings, 'acf-post-type' );
 		}
 		if ( empty( $saved ) ) {
-			return new WP_Error( 'acf_failed', 'ACF could not save the post type.', array( 'status' => 500 ) );
+			return new WP_Error( 'acf_failed', __( 'ACF could not save the post type.', 'minimal-admin' ), array( 'status' => 500 ) );
 		}
 		return true;
 	}

@@ -33,7 +33,7 @@ function minimal_admin_duplicator_active() {
 	// Duplicator keeps ONE packages table on base_prefix and its archives
 	// hold the WHOLE network's database — on multisite that's super-admin
 	// data (its own menu lives in Network Admin there).
-	if ( is_multisite() && ! is_super_admin() ) {
+	if ( ! Minimal_Admin::network_owner() ) {
 		return false;
 	}
 	$table = $wpdb->base_prefix . 'duplicator_packages';
@@ -104,7 +104,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['duplicator'] = array(
-		'label'      => 'Backups',
+		'label'      => __( 'Backups', 'minimal-admin' ),
 		'sub'        => 'Duplicator',
 		'icon'       => 'database',
 		'cap'        => 'export',
@@ -116,21 +116,21 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			'itemsKey'  => 'items',
 			'totalKey'  => 'total',
 			'columns'   => array(
-				array( 'key' => 'name', 'label' => 'Package', 'format' => 'title' ),
-				array( 'key' => 'size', 'label' => 'Size', 'format' => 'text' ),
-				array( 'key' => 'owner', 'label' => 'By', 'format' => 'text' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
-				array( 'key' => 'created', 'label' => 'Created', 'format' => 'ago' ),
+				array( 'key' => 'name', 'label' => __( 'Package', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'size', 'label' => __( 'Size', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'owner', 'label' => __( 'By', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'created', 'label' => __( 'Created', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				'skip' => array( 'name' ),
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Delete package',
+					'label'   => __( 'Delete package', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/duplicator/packages/{id}',
-					'confirm' => 'Delete this package and its archive files permanently?',
+					'confirm' => __( 'Delete this package and its archive files permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -145,7 +145,7 @@ add_action( 'rest_api_init', function () {
 	}
 	$perm = function () {
 		// Network-shared packages table (see minimal_admin_duplicator_active).
-		return current_user_can( 'export' ) && ( ! is_multisite() || is_super_admin() );
+		return current_user_can( 'export' ) && Minimal_Admin::network_owner();
 	};
 
 	register_rest_route( 'minimal-admin/v1', '/duplicator/packages', array(
@@ -177,16 +177,16 @@ add_action( 'rest_api_init', function () {
 			try {
 				$package = DUP_Package::getByID( $id );
 				if ( ! $package ) {
-					return new WP_Error( 'not_found', 'Package not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Package not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				$package->ID = $id;
 				$package->delete();
 			} catch ( \Throwable $e ) {
-				return new WP_Error( 'delete_failed', 'Duplicator could not delete: ' . $e->getMessage(), array( 'status' => 500 ) );
+				return new WP_Error( 'delete_failed', __( 'Duplicator could not delete: ', 'minimal-admin' ) . $e->getMessage(), array( 'status' => 500 ) );
 			}
 			$table = $wpdb->base_prefix . 'duplicator_packages';
 			if ( $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table} WHERE id = %d", $id ) ) ) { // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				return new WP_Error( 'delete_failed', 'Duplicator reported success but the package row is still there.', array( 'status' => 500 ) );
+				return new WP_Error( 'delete_failed', __( 'Duplicator reported success but the package row is still there.', 'minimal-admin' ), array( 'status' => 500 ) );
 			}
 			return rest_ensure_response( array( 'deleted' => true ) );
 		},
@@ -214,28 +214,29 @@ add_action( 'rest_api_init', function () {
 			$when   = '';
 			if ( $newest && $newest['created'] ) {
 				$ts   = strtotime( $gmt ? $newest['created'] : get_gmt_from_date( $newest['created'] ) . 'Z' );
-				$when = $ts ? human_time_diff( $ts ) . ' ago' : '';
+				/* translators: %s: human-readable elapsed time. */
+				$when = $ts ? sprintf( __( '%s ago', 'minimal-admin' ), human_time_diff( $ts ) ) : '';
 			}
 			return rest_ensure_response( array(
 				'rows'    => array(
 					array(
-						'label' => 'Newest package',
-						'value' => $newest ? $newest['name'] : 'None yet',
+						'label' => __( 'Newest package', 'minimal-admin' ),
+						'value' => $newest ? $newest['name'] : __( 'None yet', 'minimal-admin' ),
 						'hint'  => $newest ? trim( $when . ' · ' . $newest['size'], ' ·' ) : 'Packages are built manually from Duplicator\'s screen.',
 					),
 					array(
-						'label' => 'Packages',
+						'label' => __( 'Packages', 'minimal-admin' ),
 						'value' => (string) count( $rows ),
-						'hint'  => 'Manual builds; Minimal makes no freshness claims for Duplicator.',
+						'hint'  => __( 'Manual builds; Minimal makes no freshness claims for Duplicator.', 'minimal-admin' ),
 					),
 					array(
-						'label' => 'On disk',
+						'label' => __( 'On disk', 'minimal-admin' ),
 						'value' => $disk ? size_format( $disk ) : '0 B',
 						'hint'  => basename( $dir ),
 					),
 				),
 				'actions' => array(
-					array( 'label' => 'Build a package ↗', 'href' => admin_url( 'admin.php?page=duplicator' ) ),
+					array( 'label' => __( 'Build a package ↗', 'minimal-admin' ), 'href' => admin_url( 'admin.php?page=duplicator' ) ),
 				),
 			) );
 		},

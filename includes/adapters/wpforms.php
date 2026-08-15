@@ -107,10 +107,10 @@ function minimal_admin_wpforms_entry_form_id( $entry_id ) {
 function minimal_admin_wpforms_guard_entry( $entry_id, $cap = 'view_entries_form_single' ) {
 	$form_id = minimal_admin_wpforms_entry_form_id( $entry_id );
 	if ( ! $form_id ) {
-		return new WP_Error( 'not_found', 'Entry not found.', array( 'status' => 404 ) );
+		return new WP_Error( 'not_found', __( 'Entry not found.', 'minimal-admin' ), array( 'status' => 404 ) );
 	}
 	if ( ! minimal_admin_wpforms_can_form( $form_id, $cap ) ) {
-		return new WP_Error( 'forbidden', 'You cannot access entries for that form.', array( 'status' => 403 ) );
+		return new WP_Error( 'forbidden', __( 'You cannot access entries for that form.', 'minimal-admin' ), array( 'status' => 403 ) );
 	}
 	return $form_id;
 }
@@ -121,6 +121,27 @@ function minimal_admin_wpforms_table() {
 }
 
 /** Map of wpforms form id => title, for tabs and entry meta. */
+/**
+ * Form titles this user may actually SEE, for the tab strip and status card.
+ *
+ * WPForms' own getter defaults $args['cap'] to view_form_single once Access
+ * Controls are on, so a user provisioned for their own forms does not see
+ * other authors' form names in the plugin. The entry routes were scoped in
+ * 0.26.0; these two siblings in the same file were not, and a form TITLE is
+ * business structure ("Legal Complaint Intake") and a targeting aid.
+ *
+ * @return array<int, string> id => title
+ */
+function minimal_admin_wpforms_visible_form_titles() {
+	$titles = array();
+	foreach ( minimal_admin_wpforms_form_titles() as $id => $title ) {
+		if ( minimal_admin_wpforms_can_form( $id, 'view_form_single' ) ) {
+			$titles[ (int) $id ] = $title;
+		}
+	}
+	return $titles;
+}
+
 function minimal_admin_wpforms_form_titles() {
 	$titles = array();
 	foreach ( get_posts( array(
@@ -181,7 +202,7 @@ function minimal_admin_wpforms_summary( $fields_json ) {
 	if ( strlen( $summary ) > 80 ) {
 		$summary = substr( $summary, 0, 80 ) . '…';
 	}
-	return $summary ?: '(empty entry)';
+	return $summary ?: __( '(empty entry)', 'minimal-admin' );
 }
 
 /** Display status: spam/trash win outright, else read state from `viewed`. */
@@ -197,23 +218,40 @@ function minimal_admin_wpforms_display_status( $row ) {
 function minimal_admin_wpforms_status_model() {
 	global $wpdb;
 	$table = minimal_admin_wpforms_table();
+	// Confine the tallies to the forms this user may read, the way the entry
+	// routes are confined; site-wide counts told a per-form user how much
+	// traffic every other form gets.
+	$allowed = minimal_admin_wpforms_allowed_form_ids();
+	$scope   = '';
+	if ( is_array( $allowed ) ) {
+		if ( ! $allowed ) {
+			return array(
+				'rows'    => array(
+					array( 'label' => __( 'Unread entries', 'minimal-admin' ), 'value' => '0' ),
+					array( 'label' => __( 'Forms', 'minimal-admin' ), 'value' => '0' ),
+				),
+				'actions' => array(),
+			);
+		}
+		$scope = ' AND form_id IN (' . implode( ',', array_map( 'intval', $allowed ) ) . ')';
+	}
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$unread = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status NOT IN ('spam','trash') AND viewed = 0" );
-	$total  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status NOT IN ('spam','trash')" );
-	$spam   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status = 'spam'" );
+	$unread = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status NOT IN ('spam','trash') AND viewed = 0{$scope}" );
+	$total  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status NOT IN ('spam','trash'){$scope}" );
+	$spam   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status = 'spam'{$scope}" );
 	// phpcs:enable
-	$forms = count( minimal_admin_wpforms_form_titles() );
+	$forms = count( minimal_admin_wpforms_visible_form_titles() );
 	$hint  = number_format_i18n( $total ) . ' total';
 	if ( $spam ) {
 		$hint .= ', ' . number_format_i18n( $spam ) . ' spam';
 	}
 	return array(
 		'rows'    => array(
-			array( 'label' => 'Unread entries', 'value' => number_format_i18n( $unread ), 'hint' => $hint ),
-			array( 'label' => 'Forms', 'value' => number_format_i18n( $forms ) ),
+			array( 'label' => __( 'Unread entries', 'minimal-admin' ), 'value' => number_format_i18n( $unread ), 'hint' => $hint ),
+			array( 'label' => __( 'Forms', 'minimal-admin' ), 'value' => number_format_i18n( $forms ) ),
 		),
 		'actions' => array(
-			array( 'label' => 'Open WPForms ↗', 'href' => admin_url( 'admin.php?page=wpforms-entries' ) ),
+			array( 'label' => __( 'Open WPForms ↗', 'minimal-admin' ), 'href' => admin_url( 'admin.php?page=wpforms-entries' ) ),
 		),
 	);
 }
@@ -224,7 +262,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['wpforms'] = array(
-		'label'      => 'Forms',
+		'label'      => __( 'Forms', 'minimal-admin' ),
 		'family'     => 'forms',
 		'group'      => 'workspace', // inbox-shaped (see gravity-forms.php)
 		'sub'        => 'WPForms',
@@ -232,7 +270,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 		'cap'        => 'read', // real gate is minimal_admin_wpforms_can().
 		'status'     => array( 'route' => 'minimal-admin/v1/wpforms/status' ),
 		'collection' => array(
-			'viewLabel' => 'Entries',
+			'viewLabel' => __( 'Entries', 'minimal-admin' ),
 			'route'     => 'minimal-admin/v1/wpforms/entries',
 			'pageQuery' => 'per_page=25&page={page}',
 			'search'    => 'search={q}',
@@ -243,10 +281,10 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'valueKey' => 'id',
 				'labelKey' => 'title',
 				'param'    => 'form_id',
-				'allLabel' => 'All entries',
+				'allLabel' => __( 'All entries', 'minimal-admin' ),
 			),
 			'filter'    => array(
-				'label'   => 'Status',
+				'label'   => __( 'Status', 'minimal-admin' ),
 				'options' => array(
 					array( 'unread', 'Unread' ),
 					array( 'read', 'Read' ),
@@ -257,90 +295,90 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'query'   => 'status={v}',
 			),
 			'columns'   => array(
-				array( 'key' => 'summary', 'label' => 'Entry', 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
-				array( 'key' => 'form_title', 'label' => 'Form' ),
+				array( 'key' => 'summary', 'label' => __( 'Entry', 'minimal-admin' ), 'format' => 'title', 'width' => 'minmax(0,1.8fr)' ),
+				array( 'key' => 'form_title', 'label' => __( 'Form', 'minimal-admin' ) ),
 				array( 'key' => 'starred', 'label' => '★', 'width' => '40px' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill', 'width' => '96px' ),
-				array( 'key' => 'date', 'label' => 'When', 'format' => 'ago', 'utc' => true ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill', 'width' => '96px' ),
+				array( 'key' => 'date', 'label' => __( 'When', 'minimal-admin' ), 'format' => 'ago', 'utc' => true ),
 			),
 			'detail'    => array(
 				'sectionsRoute' => 'minimal-admin/v1/wpforms/entries/{id}',
 			),
 			'actions'   => array(
 				array(
-					'label'  => 'Mark read',
+					'label'  => __( 'Mark read', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpforms/entries/{id}/status',
 					'body'   => array( 'status' => 'read' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'unread' ),
 				),
 				array(
-					'label'  => 'Mark unread',
+					'label'  => __( 'Mark unread', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpforms/entries/{id}/status',
 					'body'   => array( 'status' => 'unread' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'read' ),
 				),
 				array(
-					'label'  => 'Star',
+					'label'  => __( 'Star', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpforms/entries/{id}/star',
 					'body'   => array( 'on' => 1 ),
 					'when'   => array( 'key' => 'starred', 'equals' => '' ),
 				),
 				array(
-					'label'  => 'Unstar',
+					'label'  => __( 'Unstar', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpforms/entries/{id}/star',
 					'body'   => array( 'on' => 0 ),
 					'when'   => array( 'key' => 'starred', 'equals' => '★' ),
 				),
 				array(
-					'label'  => 'Mark spam',
+					'label'  => __( 'Mark spam', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpforms/entries/{id}/status',
 					'body'   => array( 'status' => 'spam' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'read' ),
 				),
 				array(
-					'label'  => 'Not spam',
+					'label'  => __( 'Not spam', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpforms/entries/{id}/status',
 					'body'   => array( 'status' => 'restore' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'spam' ),
 				),
 				array(
-					'label'  => 'Trash',
+					'label'  => __( 'Trash', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpforms/entries/{id}/status',
 					'body'   => array( 'status' => 'trash' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'read' ),
 				),
 				array(
-					'label'  => 'Restore',
+					'label'  => __( 'Restore', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpforms/entries/{id}/status',
 					'body'   => array( 'status' => 'restore' ),
 					'when'   => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 				array(
-					'label'   => 'Delete permanently',
+					'label'   => __( 'Delete permanently', 'minimal-admin' ),
 					'method'  => 'DELETE',
 					'route'   => 'minimal-admin/v1/wpforms/entries/{id}',
-					'confirm' => 'Delete this entry permanently? There is no undo.',
+					'confirm' => __( 'Delete this entry permanently? There is no undo.', 'minimal-admin' ),
 					'danger'  => true,
 					'when'    => array( 'key' => 'status', 'equals' => 'trash' ),
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'  => 'Mark read',
+					'label'  => __( 'Mark read', 'minimal-admin' ),
 					'method' => 'POST',
 					'route'  => 'minimal-admin/v1/wpforms/entries/{id}/status',
 					'body'   => array( 'status' => 'read' ),
 				),
 				array(
-					'label'   => 'Trash',
+					'label'   => __( 'Trash', 'minimal-admin' ),
 					'method'  => 'POST',
 					'route'   => 'minimal-admin/v1/wpforms/entries/{id}/status',
 					'body'    => array( 'status' => 'trash' ),
@@ -369,7 +407,7 @@ add_action( 'rest_api_init', function () {
 		'permission_callback' => $view,
 		'callback'            => function () {
 			$out = array();
-			foreach ( minimal_admin_wpforms_form_titles() as $id => $title ) {
+			foreach ( minimal_admin_wpforms_visible_form_titles() as $id => $title ) {
 				$out[] = array( 'id' => $id, 'title' => $title );
 			}
 			return rest_ensure_response( $out );
@@ -406,7 +444,7 @@ add_action( 'rest_api_init', function () {
 			}
 			if ( $form_id ) {
 				if ( ! minimal_admin_wpforms_can_form( $form_id ) ) {
-					return new WP_Error( 'forbidden', 'You cannot access entries for that form.', array( 'status' => 403 ) );
+					return new WP_Error( 'forbidden', __( 'You cannot access entries for that form.', 'minimal-admin' ), array( 'status' => 403 ) );
 				}
 				$where[]  = 'form_id = %d';
 				$params[] = $form_id;
@@ -435,7 +473,7 @@ add_action( 'rest_api_init', function () {
 				array_merge( $params, array( $per_page, ( $page - 1 ) * $per_page ) )
 			) );
 			// phpcs:enable
-			$titles = minimal_admin_wpforms_form_titles();
+			$titles = minimal_admin_wpforms_visible_form_titles();
 			$items  = array_map( function ( $r ) use ( $titles ) {
 				return array(
 					'id'         => (int) $r->entry_id,
@@ -464,7 +502,7 @@ add_action( 'rest_api_init', function () {
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE entry_id = %d", (int) $request['id'] ) );
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				// Their entry screen marks an opened entry viewed; mirror it
 				// through their handler (hooks fire). Never for spam/trash.
@@ -479,26 +517,26 @@ add_action( 'rest_api_init', function () {
 				foreach ( minimal_admin_wpforms_answers( $row->fields ) as $label => $value ) {
 					$answers[] = array( 'label' => $label, 'value' => '' !== $value ? $value : '—' );
 				}
-				$titles = minimal_admin_wpforms_form_titles();
+				$titles = minimal_admin_wpforms_visible_form_titles();
 				$meta   = array(
-					array( 'label' => 'Form', 'value' => isset( $titles[ (int) $row->form_id ] ) ? $titles[ (int) $row->form_id ] : ( '#' . (int) $row->form_id ) ),
-					array( 'label' => 'Entry', 'value' => '#' . (int) $row->entry_id ),
-					array( 'label' => 'Status', 'value' => minimal_admin_wpforms_display_status( $row ) ),
+					array( 'label' => __( 'Form', 'minimal-admin' ), 'value' => isset( $titles[ (int) $row->form_id ] ) ? $titles[ (int) $row->form_id ] : ( '#' . (int) $row->form_id ) ),
+					array( 'label' => __( 'Entry', 'minimal-admin' ), 'value' => '#' . (int) $row->entry_id ),
+					array( 'label' => __( 'Status', 'minimal-admin' ), 'value' => minimal_admin_wpforms_display_status( $row ) ),
 				);
 				if ( $row->date ) {
-					$meta[] = array( 'label' => 'Submitted', 'value' => gmdate( 'c', strtotime( $row->date . ' UTC' ) ) );
+					$meta[] = array( 'label' => __( 'Submitted', 'minimal-admin' ), 'value' => gmdate( 'c', strtotime( $row->date . ' UTC' ) ) );
 				}
 				if ( '' !== (string) $row->ip_address ) {
-					$meta[] = array( 'label' => 'IP address', 'value' => (string) $row->ip_address );
+					$meta[] = array( 'label' => __( 'IP address', 'minimal-admin' ), 'value' => (string) $row->ip_address );
 				}
 				if ( (int) $row->starred ) {
-					$meta[] = array( 'label' => 'Starred', 'value' => '★' );
+					$meta[] = array( 'label' => __( 'Starred', 'minimal-admin' ), 'value' => '★' );
 				}
 				return rest_ensure_response( array(
 					'kind'     => 'entry',
 					'sections' => array(
-						array( 'title' => 'Answers', 'rows' => $answers ),
-						array( 'title' => 'Submission', 'rows' => $meta ),
+						array( 'title' => __( 'Answers', 'minimal-admin' ), 'rows' => $answers ),
+						array( 'title' => __( 'Submission', 'minimal-admin' ), 'rows' => $meta ),
 					),
 					'adminUrl' => admin_url( 'admin.php?page=wpforms-entries&view=details&entry_id=' . (int) $row->entry_id ),
 				) );
@@ -520,7 +558,7 @@ add_action( 'rest_api_init', function () {
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$exists = (int) $wpdb->get_var( $wpdb->prepare( "SELECT entry_id FROM {$table} WHERE entry_id = %d", $id ) );
 				if ( ! $exists ) {
-					return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				// Their delete cleans entry_fields/entry_meta and fires hooks.
 				try {
@@ -529,9 +567,9 @@ add_action( 'rest_api_init', function () {
 					return new WP_Error( 'delete_failed', $e->getMessage(), array( 'status' => 500 ) );
 				}
 				if ( ! $ok ) {
-					return new WP_Error( 'delete_failed', 'WPForms could not delete this entry.', array( 'status' => 500 ) );
+					return new WP_Error( 'delete_failed', __( 'WPForms could not delete this entry.', 'minimal-admin' ), array( 'status' => 500 ) );
 				}
-				return rest_ensure_response( array( 'deleted' => true, 'message' => 'Entry deleted.' ) );
+				return rest_ensure_response( array( 'deleted' => true, 'message' => __( 'Entry deleted.', 'minimal-admin' ) ) );
 			},
 		),
 	) );
@@ -546,7 +584,7 @@ add_action( 'rest_api_init', function () {
 			}
 			$op = sanitize_key( (string) $request->get_param( 'status' ) );
 			if ( ! in_array( $op, array( 'read', 'unread', 'spam', 'trash', 'restore' ), true ) ) {
-				return new WP_Error( 'bad_status', 'Unknown status', array( 'status' => 400 ) );
+				return new WP_Error( 'bad_status', __( 'Unknown status', 'minimal-admin' ), array( 'status' => 400 ) );
 			}
 			global $wpdb;
 			$id    = (int) $request['id'];
@@ -554,7 +592,7 @@ add_action( 'rest_api_init', function () {
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$exists = (int) $wpdb->get_var( $wpdb->prepare( "SELECT entry_id FROM {$table} WHERE entry_id = %d", $id ) );
 			if ( ! $exists ) {
-				return new WP_Error( 'not_found', 'Entry not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Entry not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$data = array();
 			if ( 'read' === $op ) {

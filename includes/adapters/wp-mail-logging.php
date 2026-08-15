@@ -69,7 +69,7 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 	}
 
 	$surfaces['wp-mail-logging'] = array(
-		'label'      => 'Email',
+		'label'      => __( 'Email', 'minimal-admin' ),
 		'sub'        => 'WP Mail Logging',
 		'icon'       => 'send',
 		'family'     => 'mail',
@@ -92,10 +92,10 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 				'allLabel' => 'All',
 			),
 			'columns'   => array(
-				array( 'key' => 'subject', 'label' => 'Subject', 'format' => 'title' ),
-				array( 'key' => 'to', 'label' => 'To', 'format' => 'text' ),
-				array( 'key' => 'status', 'label' => 'Status', 'format' => 'pill' ),
-				array( 'key' => 'timestamp', 'label' => 'Date', 'format' => 'ago' ),
+				array( 'key' => 'subject', 'label' => __( 'Subject', 'minimal-admin' ), 'format' => 'title' ),
+				array( 'key' => 'to', 'label' => __( 'To', 'minimal-admin' ), 'format' => 'text' ),
+				array( 'key' => 'status', 'label' => __( 'Status', 'minimal-admin' ), 'format' => 'pill' ),
+				array( 'key' => 'timestamp', 'label' => __( 'Date', 'minimal-admin' ), 'format' => 'ago' ),
 			),
 			'detail'    => array(
 				// v0.18.0: server-built sections (status pill, sandboxed HTML
@@ -104,25 +104,25 @@ add_filter( 'minimal_admin_surfaces', function ( $surfaces ) {
 			),
 			'actions'   => array(
 				array(
-					'label'   => 'Resend',
+					'label'   => __( 'Resend', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/wpml/emails/{id}/resend',
 					'method'  => 'POST',
-					'confirm' => 'Resend this email to the original recipients?',
+					'confirm' => __( 'Resend this email to the original recipients?', 'minimal-admin' ),
 				),
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/wpml/emails/{id}',
 					'method'  => 'DELETE',
-					'confirm' => 'Delete this log entry permanently? There is no trash.',
+					'confirm' => __( 'Delete this log entry permanently? There is no trash.', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
 			'bulk'      => array(
 				array(
-					'label'   => 'Delete',
+					'label'   => __( 'Delete', 'minimal-admin' ),
 					'route'   => 'minimal-admin/v1/wpml/emails/{id}',
 					'method'  => 'DELETE',
-					'confirm' => 'Delete the selected log entries permanently?',
+					'confirm' => __( 'Delete the selected log entries permanently?', 'minimal-admin' ),
 					'danger'  => true,
 				),
 			),
@@ -138,7 +138,7 @@ function minimal_admin_wpml_status_model() {
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	if ( ! $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) ) {
 		return array(
-			'rows'    => array( array( 'label' => 'Email log', 'value' => 'Not ready', 'hint' => 'WP Mail Logging has not created its table yet' ) ),
+			'rows'    => array( array( 'label' => __( 'Email log', 'minimal-admin' ), 'value' => 'Not ready', 'hint' => __( 'WP Mail Logging has not created its table yet', 'minimal-admin' ) ) ),
 			'actions' => array(),
 		);
 	}
@@ -170,19 +170,19 @@ function minimal_admin_wpml_status_model() {
 	return array(
 		'rows'    => array(
 			array(
-				'label' => 'Logged emails',
+				'label' => __( 'Logged emails', 'minimal-admin' ),
 				'value' => number_format_i18n( $total ),
-				'hint'  => $failed ? number_format_i18n( $failed ) . ' failed' : 'All logged sends',
+				'hint'  => $failed ? number_format_i18n( $failed ) . ' failed' : __( 'All logged sends', 'minimal-admin' ),
 			),
 		),
 		'chart'   => array(
-			'title'     => 'Last 14 days',
+			'title'     => __( 'Last 14 days', 'minimal-admin' ),
 			'primary'   => 'Sent',
 			'secondary' => 'Failed',
 			'points'    => array_values( $by_day ),
 		),
 		'actions' => array(
-			array( 'label' => 'Open WP Mail Logging ↗', 'href' => admin_url( 'admin.php?page=wpml_plugin_log' ) ),
+			array( 'label' => __( 'Open WP Mail Logging ↗', 'minimal-admin' ), 'href' => admin_url( 'admin.php?page=wpml_plugin_log' ) ),
 		),
 	);
 }
@@ -230,7 +230,7 @@ add_action( 'rest_api_init', function () {
 			$items = array_map( function ( $row ) {
 				return array(
 					'id'        => (int) $row->mail_id,
-					'subject'   => $row->subject ? $row->subject : '(no subject)',
+					'subject'   => $row->subject ? $row->subject : __( '(no subject)', 'minimal-admin' ),
 					'to'        => minimal_admin_wpml_receivers( $row->receiver ),
 					'status'    => ( null === $row->error || '' === $row->error ) ? 'sent' : 'failed',
 					'timestamp' => $row->timestamp,
@@ -255,46 +255,46 @@ add_action( 'rest_api_init', function () {
 				(int) $request['id']
 			) );
 			if ( ! $row ) {
-				return new WP_Error( 'not_found', 'Email not found', array( 'status' => 404 ) );
+				return new WP_Error( 'not_found', __( 'Email not found', 'minimal-admin' ), array( 'status' => 404 ) );
 			}
 			$failed   = ! ( null === $row->error || '' === $row->error );
 			$delivery = array(
-				array( 'label' => 'Status', 'value' => $failed ? 'failed' : 'sent', 'type' => 'pill' ),
-				array( 'label' => 'To', 'value' => minimal_admin_wpml_receivers( $row->receiver ) ),
+				array( 'label' => __( 'Status', 'minimal-admin' ), 'value' => $failed ? 'failed' : 'sent', 'type' => 'pill' ),
+				array( 'label' => __( 'To', 'minimal-admin' ), 'value' => minimal_admin_wpml_receivers( $row->receiver ) ),
 			);
 			$host = '0' === (string) $row->host ? '' : (string) $row->host;
 			if ( '' !== $host ) {
-				$delivery[] = array( 'label' => 'Host', 'value' => $host );
+				$delivery[] = array( 'label' => __( 'Host', 'minimal-admin' ), 'value' => $host );
 			}
 			$attachments = trim( (string) $row->attachments, "0 \n" );
 			if ( '' !== $attachments ) {
-				$delivery[] = array( 'label' => 'Attachments', 'value' => $attachments );
+				$delivery[] = array( 'label' => __( 'Attachments', 'minimal-admin' ), 'value' => $attachments );
 			}
-			$delivery[] = array( 'label' => 'Date', 'value' => (string) $row->timestamp );
+			$delivery[] = array( 'label' => __( 'Date', 'minimal-admin' ), 'value' => (string) $row->timestamp );
 			$body     = (string) $row->message;
 			$sections = array(
-				array( 'title' => 'Delivery', 'rows' => $delivery ),
+				array( 'title' => __( 'Delivery', 'minimal-admin' ), 'rows' => $delivery ),
 				array(
-					'title' => 'Message',
+					'title' => __( 'Message', 'minimal-admin' ),
 					'rows'  => array(
-						array( 'label' => 'Subject', 'value' => (string) $row->subject ),
+						array( 'label' => __( 'Subject', 'minimal-admin' ), 'value' => (string) $row->subject ),
 						preg_match( '/<\/?[a-z][^>]*>/i', $body )
-							? array( 'label' => 'Body', 'value' => $body, 'type' => 'html-preview' )
-							: array( 'label' => 'Body', 'value' => $body, 'type' => 'code' ),
+							? array( 'label' => __( 'Body', 'minimal-admin' ), 'value' => $body, 'type' => 'html-preview' )
+							: array( 'label' => __( 'Body', 'minimal-admin' ), 'value' => $body, 'type' => 'code' ),
 					),
 				),
 			);
 			$headers = trim( (string) $row->headers );
 			if ( '' !== $headers ) {
 				$sections[] = array(
-					'title' => 'Headers',
-					'rows'  => array( array( 'label' => 'Raw headers', 'value' => $headers, 'type' => 'code' ) ),
+					'title' => __( 'Headers', 'minimal-admin' ),
+					'rows'  => array( array( 'label' => __( 'Raw headers', 'minimal-admin' ), 'value' => $headers, 'type' => 'code' ) ),
 				);
 			}
 			if ( $failed ) {
 				$sections[] = array(
-					'title' => 'Failure',
-					'rows'  => array( array( 'label' => 'Error', 'value' => (string) $row->error, 'type' => 'code' ) ),
+					'title' => __( 'Failure', 'minimal-admin' ),
+					'rows'  => array( array( 'label' => __( 'Error', 'minimal-admin' ), 'value' => (string) $row->error, 'type' => 'code' ) ),
 				);
 			}
 			return rest_ensure_response( array( 'sections' => $sections ) );
@@ -312,7 +312,7 @@ add_action( 'rest_api_init', function () {
 					(int) $request['id']
 				) );
 				if ( ! $row ) {
-					return new WP_Error( 'not_found', 'Email not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Email not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				return rest_ensure_response( array(
 					'id'          => (int) $row->mail_id,
@@ -339,9 +339,9 @@ add_action( 'rest_api_init', function () {
 					(int) $request['id']
 				) );
 				if ( ! $deleted ) {
-					return new WP_Error( 'not_found', 'Email not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Email not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
-				return rest_ensure_response( array( 'deleted' => true, 'message' => 'Log entry deleted.' ) );
+				return rest_ensure_response( array( 'deleted' => true, 'message' => __( 'Log entry deleted.', 'minimal-admin' ) ) );
 			},
 		),
 	) );
@@ -364,15 +364,15 @@ add_action( 'rest_api_init', function () {
 			try {
 				$mail = \No3x\WPML\Model\WPML_Mail::find_one( (int) $request['id'] );
 				if ( ! $mail ) {
-					return new WP_Error( 'not_found', 'Email not found', array( 'status' => 404 ) );
+					return new WP_Error( 'not_found', __( 'Email not found', 'minimal-admin' ), array( 'status' => 404 ) );
 				}
 				\No3x\WPML\WPML_Init::getInstance()->getService( 'emailResender' )->resendMail( $mail );
 			} catch ( \Throwable $e ) {
-				return new WP_Error( 'resend_failed', 'WP Mail Logging could not resend: ' . $e->getMessage(), array( 'status' => 500 ) );
+				return new WP_Error( 'resend_failed', __( 'WP Mail Logging could not resend: ', 'minimal-admin' ) . $e->getMessage(), array( 'status' => 500 ) );
 			}
 			return rest_ensure_response( array(
 				'resent'  => true,
-				'message' => 'Handed back to the mailer — the new attempt appears as its own log entry.',
+				'message' => __( 'Handed back to the mailer — the new attempt appears as its own log entry.', 'minimal-admin' ),
 			) );
 		},
 	) );
