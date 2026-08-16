@@ -1,10 +1,10 @@
 {
-  "translated": 4485,
-  "total": 4886,
+  "translated": 4307,
+  "total": 5732,
   "files": {
     "RELEASE.md": {
-      "translated": 25,
-      "total": 25,
+      "translated": 23,
+      "total": 30,
       "state": "partial"
     },
     "TRANSLATIONS.md": {
@@ -13,8 +13,8 @@
       "state": "partial"
     },
     "adapter-coverage.md": {
-      "translated": 190,
-      "total": 220,
+      "translated": 189,
+      "total": 225,
       "state": "partial"
     },
     "block-inspector.md": {
@@ -77,9 +77,14 @@
       "total": 42,
       "state": "partial"
     },
+    "i18n-roadmap.md": {
+      "translated": 0,
+      "total": 401,
+      "state": "pending"
+    },
     "license-manager.md": {
-      "translated": 447,
-      "total": 447,
+      "translated": 444,
+      "total": 489,
       "state": "partial"
     },
     "mail-plugins.md": {
@@ -98,29 +103,44 @@
       "state": "partial"
     },
     "plugin-support.md": {
-      "translated": 296,
-      "total": 296,
+      "translated": 292,
+      "total": 297,
       "state": "partial"
     },
     "roadmap.md": {
-      "translated": 51,
-      "total": 74,
+      "translated": 2,
+      "total": 115,
       "state": "partial"
     },
     "shim-tutorial.md": {
       "translated": 133,
-      "total": 133,
+      "total": 138,
       "state": "partial"
     },
     "user-guide.md": {
-      "translated": 250,
-      "total": 317,
+      "translated": 243,
+      "total": 392,
       "state": "partial"
     },
     "v1-readiness.md": {
-      "translated": 231,
-      "total": 234,
+      "translated": 119,
+      "total": 125,
       "state": "partial"
+    },
+    "woocommerce-orders.md": {
+      "translated": 0,
+      "total": 107,
+      "state": "pending"
+    },
+    "woocommerce-products.md": {
+      "translated": 0,
+      "total": 139,
+      "state": "pending"
+    },
+    "woocommerce-subscriptions.md": {
+      "translated": 0,
+      "total": 134,
+      "state": "pending"
     },
     "wp-cli-roadmap.md": {
       "translated": 0,

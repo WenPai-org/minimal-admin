@@ -91,7 +91,7 @@
 | simple-history | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-15 | 真实 REST 列表；**状态**卡（24 小时/7 天/总数/严重性） |
 | wp-activity-log | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-15 | 绝不反序列化 meta；**状态**卡（24 小时/7 天/高危+严重） |
 | aryo-activity-log | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-15 | 本地 epoch 陷阱；**状态**卡（24 小时/7 天/顶部操作） |
-| stream | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-15 | **状态**卡（24 小时/7 天/顶部连接器）；按 blog_id 限定 |
+| stream | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-15 | **status** card (24h/7d/top connector); blog_id scoped **2026-08-12**: view_stream is only grantable in wp-admin — Stream registers its cap filter in Admin (never loaded over REST), and its REST-side equivalent sits inside Abilities::register(), which returns early unless the default-OFF `advanced_enable_abilities_api` flag is on. Verified inside a real REST request: administrator, role_access ['administrator'], no Stream callback on user_has_cap, view_stream false. minimal_admin_stream_can() now falls back to Stream's OWN general_role_access rule (never a manage_options backstop; suite proves an administrator is refused once administrator leaves Role Access). |
 | wordfence | Y | Y | — | Y | — | Y | — | — | — | Y | 2026-07-14 | 登录日志 + 安全状态行；未启用 fixture（系列） |
 | limit-login-attempts | Y | · | — | Y | — | Y | — | — | — | Y | 2026-07-14 | 解锁操作；活动常驻项 |
 | solid-security | Y | · | — | Y | — | Y | — | — | — | Y | 2026-07-14 | 发布 + 安全状态；当前在 minimaladmin 上**已启用**（此前采用停用约定） |
@@ -111,6 +111,12 @@
 | custom-css-js | Y | Y | Y | Y | — | Y | — | · | — | Y | 2026-07-17 | CPT shim；写入时重建树；**状态卡**（活动代码、通过正则预览运行中的语言） |
 | hfcm | Y | Y | Y | Y | — | Y | — | · | — | Y | 2026-07-17 | hfcm_scripts；页面定位 = **L**；**状态卡**（启用/停用、运行类型、最近变更） |
 
+### automation
+
+| 适配器 | 列表 | 标签页 | 批量 | 详情 | 管理 | 状态 | 图表 | 设置 | 视图 | 套件 | 已审查 | 备注 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ottokit | Y | Y | Y | Y | — | Y | · | · | · | Y | 2026-08-12 | Connector. Workflows, recipes and run history are CLOUD state with no local copy, so they stay **L** link-outs; their REST is machine-to-machine (`st_authorization` shared secret) and is never called. Local table `{prefix}suretriggers_webhook_requests`; retry through their `WebhookRequestsController::suretriggers_retry_trigger_request` (fires a real `wp_remote_post`, so fixtures point at 127.0.0.1:9 to stay offline); `created_at` is `current_time('mysql')` = site-local, emitted raw; installed-inactive |
+
 ### 仅设置 / 其他表面
 
 | 适配器 | 形态 | 套件 | 已审查 | 备注 |
@@ -121,7 +127,7 @@
 | performance-lab | 功能列表 + 状态 + 启用/停用；系列 `performance` | Y | 2026-07-14 | WordPress Performance Team 独立插件中心 |
 | licenses | Extensions → Licenses（筛选提供方） | Y | | 新供应商使用 license-manager skill 循环 |
 | spam | 设置 → Spam 卡片 | Y | | |
-| seo | 编辑器面板（提供方） | Y | | |
+| seo | Editor panel (providers) | Y | 2026-08-12 | SureRank added (6th provider): GROUPED postmeta blobs read via their Get::all_post_meta() flatten + written via Post::update_post_meta_common(); empty values UNSET the key inside the group because their save path substitutes the site-wide template ('%title% - %site_name%') and would store it as the post's own; social thumbnail maps facebook_image_url/_id |
 | meta-box | 编辑器面板（简单字段） | Y | 2026-07-14 | 克隆/媒体 = 锁定 + 深链接 |
 | seriously-simple-podcasting | 编辑器面板（ssp_post_types 上的 episode 详情） | Y | 2026-07-17 | Schema 直接来自其 CPT_Podcast_Handler::custom_fields()（容器服务）；采用 'on'/'' 复选框约定；封面图锁定；Castos 同步未触碰；活动 fixture + 固定演示 episode |
 | the-events-calendar | 编辑器面板（tribe_events 上的 Event 详情）+ `suggest` 面板原语 | Y | 2026-07-17 | 通过其自有 REST 端点 payload 形状中的 Tribe__Events__API::saveEventMeta 写入；场地/组织者使用新的异步建议字段（minimal-admin/v1/tec/suggest）；多组织者事件锁定该字段；重复事件/票务/时区 = **L**。活动 fixture（六件套） |
@@ -273,3 +279,5 @@ touched adapters (or stamp `// last-sweep: YYYY-MM-DD` in the adapter header).
 并将开发环境细节排除在其中。
 and keep development-environment details out of them.
 | 2026-08-12 | v0.28.0 release pre-flight | Fixture set already current: only perfmatters (2.6.6→2.6.7) and searchwp (4.6.0→4.6.1) had updates, both license-gated and unavailable, both patch bumps. No adapter-relevant deltas to skim, no smoke needed. Audit-of-the-audit over the release own three security fix classes found the form-entry ownership sweep complete (the six peer form plugins have no own/others split, so no lower-privileged role to leak to) and the network-shared table sweep complete (all five base_prefix adapters guarded; Solid Security denies where its table has no site column, AIOS scopes by site_id where it has one). One gap: the DISALLOW_FILE_EDIT pass covered WPCode and Custom CSS and JS but not Code Snippets, which shares the same Snippets surface and authors PHP. Fixed. |
+| 2026-08-13 | v0.29.0 release pre-flight | Twelve fixture updates applied; perfmatters (2.6.6→2.6.7) and searchwp (4.6.0→4.6.1) failed as license-gated, both patch bumps, same as the previous sweep. Four minor bumps back adapters and were skimmed: Formidable 6.34 (XSS hardening on submitted HTML, Address fields promoted to Lite; entry storage and the FrmEntry model unchanged), Forminator 1.57.0 (custom Submission ID and prefix, both display-level; entry model unchanged), Ninja Forms 3.15.0 (AI form builder, signature and rendering fixes; nf_sub postmeta unchanged), Seriously Simple Podcasting 3.17.0 (feed generation, episode duration, and removal of per-pageload tag lookups; episode meta unchanged). No storage moves, no API or capability changes, nothing breaking. Smoke: ten surfaces across the Forms, Email, Activity Log and Snippets families answered 200 with data; suites formidable 12/12, forminator 12/12, ninja-forms 13/13, mail-log 37/37, llar-log 15/15. Backlog unchanged. |
+| 2026-08-14 | v0.30.0 release pre-flight | Nine fixture updates applied; perfmatters (2.6.7), searchwp (4.6.1) and wpforms (2.0.0.4) failed as license-gated, all patch-level. One minor bump backs an adapter and was skimmed: Everest Forms 3.6.0 (revamped Style Customizer plus integration and coupon-field fixes; evf_entries/evf_entrymeta storage and the evf()/EVF_Admin_Entries model unchanged). Patch bumps behind adapters verified by dependency grep: Pods 3.3.9.1 (pods_api present), Scrutoscope 1.6.1 (Profiler namespaces present), SiteSEO 1.4.1 (_siteseo_titles_* keys present, resident inactive), SeedProd 6.20.8 (enable_coming_soon_mode key present, resident inactive), PowerPress 11.17.4 (powerpress_get_contenttype present, inactive). Smoke: everest, pods and scrutoscope surfaces answered 200 with data. No storage moves, no API or capability changes, nothing breaking. Backlog unchanged. |

@@ -50,9 +50,15 @@ require_once __DIR__ . '/includes/minimal-admin.php';
 
 ```php
 function campfire_can() {
-	return current_user_can( 'edit_posts' );
+	return current_user_can( 'moderate_comments' );
 }
 ```
+
+Pick the capability for the **data**, not for the screen. These rows hold
+visitor names, email addresses and message bodies, so the bar is the one you
+would set for reading comments. `edit_posts` would have handed the whole
+inbox to every Contributor. A surface is only ever as private as its
+capability, and the default in an example is what gets copied.
 
 Minimal 會在介面中建立該介面之前，先檢查描述元的 `cap`
 全部如此，但那是 UI 閘控，只是便利功能。**你路由本身的

@@ -67,7 +67,7 @@ slug。下面的设计记录了构建内容及其原因。
 | Elementor Pro | `elementor_pro_license_key` + `_elementor_pro_license_v2_data`（12h 缓存；包含 `expired`/`site_inactive`/`disabled` 和 `expires`，或 `lifetime`） | 完整分类 + 到期时间 |
 | ACF Pro | `acf_pro_license` + `acf_pro_license_status`（状态 + 到期数组） | 完整分类 + 到期时间 |
 | WP Rocket | 密钥位于 `wp_rocket_settings`；无效标志位于 `wp_rocket_no_licence`；到期时间位于 1 天的 `wp_rocket_customer_data` transient 中 | 缓存预热时完整；始终提供密钥 + 无效标志 |
-| Astra / Brainstorm Force | `brainstrom_products`（原文如此）、每个产品的 `purchase_key` + `status === 'registered'`（涵盖 Astra Pro、UAE、Spectra Pro） | 完整分类 |
+| Astra / Brainstorm Force | `brainstrom_products` (sic), per-product `purchase_key` + `status === 'registered'`, plus `expires` (their bsf-core 1.29.14 and later stores it from the license-status call) | Full classification + expiry |
 | Kadence（StellarWP Uplink） | 每个插件的 `stellarwp_uplink_license_key_{slug}` + status 选项 | 完整分类 |
 | Bricks | `bricks_license_key` + `bricks_license_status` transient（7d TTL） | 缓存有效期间的状态，否则为 unknown-stale |
 | Beaver Builder | `fl_themes_subscription_email` + `fl_get_subscription_info` transient（`active`、`expiration`） | 缓存有效期间的状态 |
@@ -327,6 +327,55 @@ init）不会在 REST 请求中加载，而复现该启动顺序
 命名，因此专门读取器可以覆盖全部项目；Perfmatters 可能属于任一类
 按构建版本处理，并由其专用读取器优先，以避免重复行。
 
+### Brainstorm Force family (SHIPPED 2026-08-12)
+
+Astra Pro, the two Ultimate Addons, Convert Pro, Schema Pro, WP Portfolio,
+Premium Starter Templates and Spectra Blocks Pro all share one licensing
+core: bsf-core, internally "graupi", bundled inside every product under
+`admin/bsf-core` (the newest copy on the site wins). One registry option
+holds them all, but each product carries its own purchase key and its own
+registration, so Minimal registers ONE PROVIDER PER PRODUCT
+(`bsf-{product_id}`), built by walking the registry. A BSF product Minimal has
+never heard of is covered the day it ships.
+
+The vendor entry points, all public and all reachable outside wp-admin:
+
+- **activate** — `BSF_License_Manager::instance()->bsf_process_license_activation( [ 'license_key' => …, 'product_id' => … ] )`.
+  The nonce check lives in the `admin_init` wrapper (`bsf_activate_license`),
+  not in this method, which is why their own WP-CLI command
+  (`wp brainstormforce license`) can drive it too. On acceptance their code
+  writes the key, status and message into the registry itself.
+- **deactivate** — `process_license_deactivation( $product_id )`. A real
+  API-side deregistration: the seat frees and the stored key, status and
+  expiry are cleared.
+- **verify** — `get_remote_license_status( $purchase_key, $product_id )`.
+
+Facts worth keeping:
+
+- **`product_id` is not the plugin slug.** It comes from each product's
+  `admin/bsf.yml` — `uabb`, `uael`, `astra-addon`, `astra-pro-sites`,
+  `wp-schema-pro`, `convertpro`, `astra-portfolio`, `spectra-blocks-pro`.
+  Convert Pro's addon (`convertpro-addon`) ships no bsf.yml: it is licensed
+  through Convert Pro and never appears as its own row.
+- **Their registry only refreshes on `admin_init`.** `init_bsf_core()` is
+  what discovers installed BSF products, and it is hooked to admin_init
+  alone, so under REST the registry is whatever a wp-admin pageload last
+  wrote. On a CLI-provisioned site (the whole CaptainCore fleet) a freshly
+  installed product is simply absent. Minimal self-heals it behind a 12 hour
+  transient on read and always before an activate; `init_bsf_core()` needs
+  `wp-admin/includes/plugin.php` required first, the same trap perfmatters
+  and Gravity Forms sprang.
+- **Expiry only arrives from a verify.** Their activation response omits
+  it; `get_remote_license_status()` is what stores `expires`, and it caches
+  its answer for six hours, so a verify has to drop the
+  `{product_id}_license_status` transient first or it replays a stale yes.
+- **Their API answers in sentences, not codes.** A rejected key comes back
+  as "License Key is not valid." with no machine-readable field, so the
+  seat-limit case is recognized by wording. That mapping is the one part of
+  this provider not proven against the live service: every one of Austin's
+  BSF licenses is unlimited-activation, so there was no way to make their
+  API refuse for seats.
+
 ## 下一批候选项，按实际舰队影响排名（2026-07-10）
 
 在 CaptainCore 舰队的 2,790 个生产站点上进行测量（
@@ -468,8 +517,9 @@ TEC 系列、Smash Balloon 系列以及 Yoast SEO Premium 的 MyYoast
 | Smash Balloon 家族（8 个产品） | activate / deactivate / verify | 真实 All Plugins 密钥 | 2026-07-15 | smashballoon.com 上的 EDD；按 item_name 区分多产品密钥 |
 | WPForms Pro | 激活 / 停用 / 验证 | 虚假密钥（实时 wpforms.com 拒绝，不写入任何内容，且绝不回显密钥） | 2026-08-06 | 选项 `wpforms_license` {key, type, is_* flags}；其停用操作会将其重置为 ''（字符串）；WPFORMS_LICENSE_KEY 常量优先并阻止 Minimal 停用；class-license.php 受管理员/cron/CLI 门控，因此操作需要手动执行；首个 Awesome Motive 家族供应商 |
 | Akismet | activate / deactivate / verify | 伪造密钥（实时 akismet.com 拒绝，未写入任何内容；也通过垃圾邮件卡片粘贴字段驱动） | 2026-08-06 | 服务密钥，第一个连接中心行；`Akismet_Admin::save_key()` 是完整的 activate（verify + 订阅检查 + 存储）；admin 类在 REST 下手动 require；alert 选项是本地有效性信号；predefined_api_key（常量/过滤器）以只读方式呈现 |
-| WooCommerce.com、Site Kit、Jetpack 连接 | 读取 + Connect ↗ 外链 | 读取（minimaladmin 上的实时状态：WC 未连接 → 缺失，Site Kit 半连接 → 未知，Jetpack 关闭） | 2026-08-06 | connections-center brick 3；仅检查存在性，绝不解码令牌；按设计不提供操作（OAuth 保留在供应商页面） |
-| Freemius / EDD / SureCart 通用项、Avada、Smush Pro、AnalyticsWP、BSF 家族 | read | 实验室中的真实已存储数据 | 2026-07-10 | 参见上面的验证图 |
+| WooCommerce.com, Site Kit, Jetpack, SureCart connections | read + Connect ↗ link-out | read (live states on minimaladmin: WC unconnected → missing, Site Kit half-connected → unknown, Jetpack off) | 2026-08-06 | connections-center brick 3; presence-only reads, tokens never decoded; no actions by design (OAuth stays on vendor screens). SureCart added 2026-08-12: its store token (`sc_api_token`) is read for PRESENCE only, never decrypted, and everything SureCart sells lives in their cloud behind it |
+| Brainstorm Force family (Convert Pro, Schema Pro, WP Portfolio, Premium Starter Templates, Spectra Blocks Pro, UABB, UAEL) | activate / deactivate / verify | real keys, full loop on all seven | 2026-08-12 | one provider per product off their registry; Astra Pro shares the identical path but was not on hand to install. Seat-limit wording is unproven (every key is unlimited-activation) |
+| Freemius / EDD / SureCart generics, Avada, Smush Pro, AnalyticsWP | read | real stored data on labs | 2026-07-10 | see the verification map above |
 | StellarWP Uplink / PUE 通用项 | read | 真实已存储数据（TEC 六件套） | 2026-07-11 | 注册表读取器；跳过已由专用提供商声明的 slug |
 
 当供应商通过真实密钥验证或新增提供商时，保持此表为最新。

@@ -9,9 +9,15 @@
 可重現的 ZIP，更新 `manifest.json`，提交固定的來源追蹤資訊、標記
 該提交，並建立包含 ZIP 與 SHA-256 資產的 FeiCode 發布版本。
 
+When a prepared release commit is merged through protected-branch review, the
+next `main` push run detects that its downstream tag is missing. It rebuilds and
+verifies the exact merged commit before creating the tag. This recovery path
+does not rewrite `main`; the tag push then starts the normal release workflow.
+
 在發布資產之前，發布工作流程會啟動 WordPress Playground，
-安裝本機建置的 ZIP，驗證 `minimal-admin` 已啟用，並
-檢查執行階段版本是否符合發布標籤。
+installs the locally built ZIP plus the Simplified and Traditional Chinese
+language packs, verifies that `minimal-admin` is active, and checks the runtime
+version, locale, translation registration, and a translated runtime string.
 
 上游同步不会联系 GlotPress，而是打包最新
 已提交至代码库的翻译目录（如有）。翻译

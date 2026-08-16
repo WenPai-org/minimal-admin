@@ -1,93 +1,136 @@
-# 路线图 — 目标及衡量目标的数字
+# Roadmap
 
-*原则位于 [goals.md](goals.md)。深入的技术计划位于各领域文档中
-（[editor-roadmap.md](editor-roadmap.md) 和 [editor-direction.md](editor-direction.md) 中的编辑器，
-[plugin-support.md](plugin-support.md) 和 [adapter-coverage.md](adapter-coverage.md) 中的适配器，
-v1.0 章程（[wp-cli-roadmap.md](wp-cli-roadmap.md)））。本文档就是记分板：
-[v1-readiness.md](v1-readiness.md)). This document is the scoreboard:
-a short list of outcomes, each judged by a real-world number we can measure honestly.*
+*This file is about what has not happened yet. Principles live in
+[goals.md](goals.md); what already shipped lives in
+[changelog.md](../changelog.md); the technical plans behind each area live in
+the per-area docs (the editor in [editor-roadmap.md](editor-roadmap.md),
+adapters in [plugin-support.md](plugin-support.md), WooCommerce products in
+[woocommerce-products.md](woocommerce-products.md), WooCommerce orders in
+[woocommerce-orders.md](woocommerce-orders.md), WooCommerce subscriptions in
+[woocommerce-subscriptions.md](woocommerce-subscriptions.md), WP-CLI in
+[wp-cli-roadmap.md](wp-cli-roadmap.md), and the v1.0 charter in
+[v1-readiness.md](v1-readiness.md)).*
 
-GitHub 的公开计数器、模式语料库探测、套件账本，以及有纪律的
-内部试用。每次裁剪版本时刷新状态；功能检查清单位于
-领域文档，并在交付后收缩为一行账本条目。
-area docs and collapse to one-line ledger entries once shipped.
+Two kinds of thing live here. **Goals** are outcomes with a number attached, so
+progress is a measurement rather than an opinion. **Unlocks** are pieces of work
+not started, each one a step change rather than an increment.
+
+Minimal phones home to no one, so every number here is one that can be read without
+telemetry: GitHub's public counters, the pattern-corpus probes, the suite ledger,
+and disciplined dogfooding. Nothing here is a promise. A goal's number moving the
+wrong way is information, not an obligation to build.
 
 ## Goal 1 — Minimal is someone's whole admin
 
-证明这一点的诚实方式，就是亲自使用它。
-honest way to prove it is to live it.
+The founding claim is that daily WordPress work needs nothing wp-admin has. The
+only honest way to prove it is to live it.
 
-- Minimal。通过 Minimal 自己提供的链接打开 wp-admin（区块编辑器退出入口，
-  插件自己的设置界面）算作 Minimal 正常工作；如果 Minimal
-  无法完成任务就会打破连续记录并提交一个 issue。
-  **现在：** 未跟踪。连续记录从 v0.26.0 的内部试用期开始。
-- **目标：** 连续 30 天，达成两次。第一次跨越一个平静的月份，然后跨越一个
-- 版本裁剪（版本本身通过 Minimal 管理）。
-  release cut (the release itself managed through Minimal).
+- **Metric:** consecutive days running anchor.host and FeiCode repository entirely
+  through Minimal. Opening wp-admin through a link Minimal itself offers (the block
+  editor escape, a plugin's own settings screen) counts as Minimal working; opening
+  wp-admin because Minimal could not do the job breaks the streak and files an issue.
+- **Now:** untracked.
+- **Target:** 30 consecutive days, twice. First across a quiet month, then across
+  a release cut, with the release itself managed through Minimal.
 
-## Goal 2 — the editor writes real pages, not just posts
+## Goal 2 — real people do real work in it
 
-真实站点的构成。嵌套周期（2026-08-08/09）就是该目标的实现过程。
-what real sites are made of. The nesting cycle (2026-08-08/09) was this goal's build-out.
+Not stars for a screenshot. Sites that update, and users who file the kind of bug
+you only hit doing real work.
 
-- 494 个容器单元）会在 Minimal 中以可写状态打开，并且对未触碰的内容保持字节级一致性
-  保存过程中的内容，由测试套件强制保证。
-  **现在：** 每个可解析的组、列、封面和媒体与文本容器都会打开为
-- 带有复杂子项的写入界面作为受保护卡片。2026-08-08 基线
-  探测显示顶层容器中只有 2% 可写；该周期最终以门禁
-  自身被删除。字节级一致性由测试套件固定保证（嵌套岛屿、容器槽位、
-  属性传递、岛屿运行：119 项检查）。
-  **目标：** 让语料库保持实际上 100% 可写，同时对未触碰的内容实现零字节级一致性
-- 回归问题，逐个版本持续检查。这里的回归会阻止版本发布。
-  regressions, release over release. A regression here blocks the release.
-
-## Goal 3 — real people do real work in it
-
-只命中真正完成工作的场景。
-only hit doing real work.
-
-- 过去 30 天内最大的一批完整闭环版本下载用户群。自动更新器
+- **Metric:** an active-sites estimate computed from public release counters: the
   只服务当前版本，因此已被取代版本的下载量会被
-  在其生命周期内完成更新的不同站点，并且每个版本的数据都会饱和
-  在两到三天内 — 最近最大的一批用户群是诚实的下限。
-  再加上由作者以外的人提交的 issue。
-  **当前（2026-08-09）：**≈69 个活跃站点 · 27 个版本共计 644 次下载 ·
-- 43 个 star · 10 个外部 issue，其中有几个正是那种真正投入使用后才会出现的 issue
-  （分组内容编辑、过时更新提示、实体渲染）。
-  **目标：** 约 100 个活跃站点，然后约 500 个。营销站点的理念区展示
-- 活跃站点的主张会自动从约 50 个开始增长。保留外部 issue
-  接收流程保持健康：每个真实工作报告都得到回复，并且修复会在
-  它到达时所在的发布周期。
-  the release cycle it arrives in.
+  serves only the current release, so a superseded release's downloads approximate
+  the distinct sites that updated during its reign. Plus issues filed by people
+  other than the author.
+- **Now (2026-08-13):** 84 stars, 1,685 downloads across 30 releases, 3 open
+  issues. The active-sites estimate is **not currently trustworthy**: the v0.27.0
+  cohort reads 608 against 17 to 69 for every neighbouring release, which is
+  burst-shaped rather than ten-fold growth. The defensible read of the last few
+  months is a few dozen active sites. Fixing the estimate is an unlock below.
+- **Target:** a trustworthy estimate first, then 100 and 500 real sites. Keep
+  external issue intake healthy: every real-work report answered, and the fix
+  suite-pinned, in the cycle it arrives in.
 
-## Goal 4 — plugin authors wire in without us
+## Goal 3 — plugin authors wire in without us
 
-当我们从未见过的作者发布他们自己的版本时得到证明。
-proven when authors we have never met ship their own.
+Fifty-plus bundled adapters prove the primitives generalize. The ecosystem claim
+is only proven when authors nobody here has met ship their own.
 
-- Minimal 的仓库。
-  **当前：**1 个（Anchor Blocks），且它与 Minimal 由同一作者开发，所以坦率地说：0
-- 外部。
-  **目标：** 前 3 个外部适配器。供给方：以快速入门为先的作者
-- 指南、带有套件强制示例插件的 shim 教程，以及
-  集成卡会标记契约问题，而不是静默失败。
-  Integrations card flagging contract problems instead of failing silently.
+- **Metric:** third-party plugins shipping their own Minimal adapter, from their own
+  repository, not bundled in Minimal's.
+- **Now:** zero external. The one that exists (Anchor Blocks) shares an author
+  with Minimal, so it does not count.
+- **Target:** the first three. The feeders are already built: the quickstart-first
+  author guide, the shim tutorial with its suite-enforced example plugin, and the
+  Integrations card that flags contract problems instead of failing silently.
 
-## Goal 5 — v1.0 ships when the promises hold
+## Goal 4 — v1.0 ships when the promises hold
 
-v1.0 is not a feature count. The two promises and their gates live in
-[v1-readiness.md](v1-readiness.md): authors enjoy wiring in, and authors cannot abuse
-Minimal. The charter's eleven audit items all shipped at v0.17.0.
+v1.0 is not a feature count. It is two promises, with gates, in
+[v1-readiness.md](v1-readiness.md): authors enjoy wiring in, and authors cannot
+abuse Minimal.
 
-- （完成连续 30 天记录；活跃站点在真实外部使用中增长）。
-  **当前：**架构和作者体验门禁保持通过；真实世界证据是
-- 剩下的内容。
-  **目标：** 当发布一个没有改变这两项内容的版本时，发布 v1.0
+- **Metric:** the charter gates green, plus Goals 1 and 2 showing real-world proof.
+- **Now:** the architecture and author-experience gates hold. One gate is open:
+  a developer who has never seen Minimal wiring a plugin in using only the docs, in
+  under half a day, verified with a real outside tester. That is scheduling work
+  rather than engineering work.
 - 承诺告终，因为没有任何需要改变的内容。
-  promises because nothing needed changing.
+  promises, because nothing needed changing.
+
+## Unlocks not started
+
+Each of these is a step change rather than an increment, and none has been begun.
+
+- **A `wp minimal` command namespace.** Minimal's operational model is currently only
+  reachable by hand. A command line makes it scriptable across a fleet: license
+  state normalized across vendors, integration-contract diagnostics, the System
+  health model, provider-aware cache clearing, site-visibility state. The audit
+  and the proposed command set are in [wp-cli-roadmap.md](wp-cli-roadmap.md). The
+  rule there is the important part: a command earns its place only when it
+  normalizes several plugins behind one interface, exposes a judgment Minimal owns,
+  or produces state worth reading across many sites. Anything core WP-CLI already
+  does stays core WP-CLI's.
+- **An active-sites estimate that survives a burst.** The current formula trusts
+  the largest recent cohort, which a single scraper or a link on an aggregator
+  can inflate by an order of magnitude. Until it is robust, the number on the
+  marketing site is a claim that cannot be defended. Likely shape: a median or
+  trimmed mean across closed cohorts, with an outlier guard and a floor on how
+  much one cohort may exceed its neighbours.
+- **Minimal in a language other than English.** Asked for by a user (German), and
+  the machinery is already built: the text domain loads, PHP uses the core
+  functions, and the app carries its own `__()`, `_n()` and `sprintf()` fed from
+  the boot payload, so a locale is a matter of dropping the normal `.mo` and
+  `wp i18n make-json` output into `languages/`. The gap is coverage, not
+  plumbing. 585 strings are extractable today and roughly the same number is
+  still hardcoded in the app: about 340 unique pieces of visible text and 226
+  placeholder, title and aria-label attributes. The shipped `.pot` compounds it
+  by being four releases stale, stamped 0.25.0 against 353 strings. So a
+  translator handed today's file would produce an admin that reverts to English
+  the moment anyone does real work, since Cancel, Save changes, Status and most
+  placeholders are still literals, and a half-translated interface reads worse
+  than an English one. The order is: regenerate the `.pot`, sweep the remaining
+  literals view by view the way the convention already says, then ship a locale.
+  German is the natural first because the suite already exercises it as a
+  fixture. The open question is not engineering but upkeep. Minimal is distributed
+  from GitHub rather than wp.org, so there is no translate.wordpress.org and no
+  volunteer translation community attached, which means every locale shipped
+  becomes a standing obligation on each release. The answer taken is to generate
+  the catalogs from the `.pot` and correct them by hand over time, which puts
+  the standing obligation on one pipeline rather than on twenty relationships.
+  Right-to-left support rides along, proposed with a tested implementation in
+  [issue #19](https://feicode.com/WenPai-org/minimal-admin/issues/19). The full
+  plan, including the locale set, the language-pack delivery model and the
+  release automation, is in [i18n-roadmap.md](i18n-roadmap.md).
+- **Somebody else's fleet.** Every install today is one person's or one agency's
+  choice. The unlock is a host or an agency standardizing on Minimal for client
+  sites, which is the first time the multi-user and per-user-hiding work gets
+  tested by people who did not choose it themselves.
 
 ## What this file is not
 
-（[editor-roadmap.md](editor-roadmap.md)）保持不变。这里没有任何功能承诺；某个目标的
-([goals.md](goals.md)) stand unchanged. Nothing here is a feature commitment; a goal's
-metric moving the wrong way is information, not an obligation to build.
+Not a feature list. Feature-level plans live in the per-area docs and collapse
+into the changelog once they ship. The never-build list
+([editor-roadmap.md](editor-roadmap.md)) and the non-goals
+([goals.md](goals.md)) stand unchanged.

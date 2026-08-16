@@ -4,7 +4,7 @@
 檢查各項狀態、讓外掛保持最新。這裡沒有程式碼。如果您建立
 外掛時，您需要 [for-plugin-authors.md](for-plugin-authors.md)。*
 
-*截至 v0.27.0 的目前狀態。本檔案會隨外掛一同發布，因此其中的文案你
+*Current as of v0.30.0. This file ships inside the plugin, so the copy you
 所閱讀的內容始終符合您已安裝的版本。*
 
 ## Minimal 是什麼（以及不是什麼）
@@ -41,6 +41,10 @@ Minimal Admin 是通往 WordPress 網站的第二個入口。它位於
 
 點選後群組標題會收合，側邊欄也會記住你的
 排列方式。內容、留言與訂單上的數字會顯示待處理工作。
+Lists show recent dates as a day and month and add the year once a date
+is from a different year, so an old site's content list reads in order at
+a glance. On Content you can sort by clicking the Title or Date heading,
+and clicking the same heading again reverses it.
 點選目前所在檢視畫面的側邊欄項目，會重新整理其
 原處更新清單，因此整天開啟的分頁也能保持最新狀態，無需重新載入頁面
 重新載入。
@@ -70,8 +74,10 @@ Minimal Admin 是通往 WordPress 網站的第二個入口。它位於
 and network setup stay with WordPress. The palette knows the sites too: press
 寫作
 not appear when you belong to only one site. Its menu opens with search already
-按下 **新增**（或 ⌘K，「建立新文章」）並開始撰寫。編輯器是以
-用於撰寫內容，從快速文章到由群組組成的完整頁面，皆可
+focused and lists up to eight sites. Typing fuzzy-matches names and addresses
+across every site you can use, not just the ones already listed, and narrows to
+the five closest, so a shorthand like "tm10" still finds Team 10 on a large
+network.
 
 離開：
 lists every site with its address, members and state, filters for archived
@@ -96,7 +102,7 @@ Network users lists every account on the network, shows how many sites each
 
 並輸入內容，Markdown、斜線選單與貼上功能都能正常運作
 其中，每個欄位都有自己的編輯區域，排列方式就像前端畫面。
-版面配置本身（寬度、色彩、間距）會完全保留，而
+a View site link, the theme toggle (click switches light and dark; right-click to follow the system), notifications,
 你未觸碰的任何內容都會逐位元組寫回，因此該區塊
 編輯器每次都會乾淨地重新開啟頁面。
 
@@ -165,7 +171,9 @@ Network users lists every account on the network, shows how many sites each
 - **Saving is status-aware.** Drafts autosave as you write. Published
   **更新**：更新分頁會顯示所有待處理項目，而 **更新
   所有內容**會依序執行外掛、佈景主題，然後執行 WordPress 核心，告訴您
-  在開始之前，會明確說明哪些內容將變更、哪些內容不會變更。在某個
+  unsaved work in your browser and offers to restore it. A live post
+  holding edits you never published wears a small amber dot on its status
+  in the content list, and the Modified filter there shows only those.
 - 執行時，頂端列的進度提示會顯示目前階段，並
   會在每個畫面上持續顯示，因此您可以關閉面板或四處瀏覽
   Minimal，仍然可以看到更新正常運作；點選它即可返回
@@ -196,8 +204,12 @@ Minimal 自有檢視畫面的其中一些項目（從未使用留言功能的網
 地址。
 
 從您的選單中移除區塊或設計。
-在通知分頁中隱藏任何通知。
-如果開發者已使用程式碼隱藏 wp-admin 中的管理選單（這很常見
+everything** runs plugins, then themes, then any waiting translations, then
+WordPress core, telling you exactly what will change and what is untouched
+before it starts. Translations are worth calling out because WordPress keeps
+language packs apart from everything else: a site can be current on plugins,
+themes and core and still owe translations, so they are counted here rather
+than left for the WordPress updates screen to mention. While a
 客戶網站設定），Minimal 會顯示通知，並將這些項目排除在其
 側邊欄也會自動顯示。和原本的 wp-admin 一樣，這是
 僅是外觀上的改變；這些畫面仍可透過網址和調色盤存取。
@@ -243,6 +255,80 @@ WordPress 自動更新的自動切換鈕，與 wp-admin 中相同的設定
 少用選項的末端部分會刻意留在 wp-admin 中，一個
 按一下即可離開。如果您尋找某項設定卻找不到，那就是
 原因，而不是錯誤。
+
+## Minimal in your language
+
+Pick a language on **Your profile** and all of Minimal follows: buttons,
+table headings, empty states, confirmations, error messages, counts.
+Twenty-three languages ship with the plugin, and a language you have not
+installed yet is downloaded for you when you save the choice. Your pick
+is yours alone; it never changes what anybody else sees.
+
+Right-to-left languages such as Arabic, Hebrew and Persian get a
+genuinely mirrored interface: the sidebar, menus and settings move to
+the correct side, while addresses, file paths and version numbers stay
+readable left to right inside the surrounding text.
+
+Translations arrive as WordPress language packs through the same
+Updates screen as everything else and update alongside the plugin, so
+there is nothing extra to install or maintain.
+
+## Your store
+
+With WooCommerce active, the sidebar gains Orders, Products, Coupons and
+Customers, and with WooCommerce Subscriptions it gains Subscriptions too.
+
+- **Orders** open as their own page, at their own address, so an order can
+  be linked to or kept in a second tab. The main column holds the work:
+  items with the money broken down, status, payment, refunds, mail and the
+  timeline. The sidebar holds the context: customer, shipping,
+  attribution and other orders from the same customer, each card showing
+  text until its pencil opens the form. You can take a payment by hand,
+  refund whole lines or an arbitrary amount, apply or remove a coupon,
+  resend an email and read the order's notes without leaving Minimal, and
+  the Back button returns you to wherever the visit started.
+- **The orders list filters like a storefront back office.** One row
+  holds a status view, the search box and Add filter; active filters sit
+  beneath as removable chips. Status accepts more than one at a time, and
+  a date window, customer or product filter narrows on the server, so it
+  survives paging. Filters live in the address, so a filtered list can be
+  reloaded or pasted to someone else. Orders that belong to a
+  subscription carry a small badge that opens a summary of it.
+- **Subscriptions** open on their own page in the order page's shape,
+  with editable items and schedule, coupons, a notes timeline and a quick
+  view of related orders. The subscriptions list wears the same filter
+  bar with its own status vocabulary.
+- **Products** open as a page too. It holds on one screen what WooCommerce
+  spreads across the tabs of its Product data box: name and status, pricing
+  with an optional sale schedule and tax class, inventory (SKU, GTIN,
+  whether you track quantity, backorders, a low stock threshold, the
+  one-per-order limit), shipping (weight, dimensions, shipping class),
+  images, organization (categories, tags, brands, the address slug,
+  featured), attributes, upsells and cross-sells, and a purchase note.
+  Everything saves together with one Save changes.
+
+  A few things follow the product rather than sitting there always. Marking
+  a product virtual removes the shipping fields, because nothing ships.
+  Marking it downloadable adds a Downloads card where you name each file
+  and either paste a URL or pick it from your media library. An external
+  product asks for the address and button text that send shoppers away. A
+  variable product gains a Variations card: give an attribute some values
+  and turn on its Variations switch, then Generate from attributes builds
+  every combination you do not already have, each with its own SKU, price
+  and stock.
+
+  Images are tiles you drag to reorder. The first one is the picture your
+  shop shows, so promoting a gallery photo is a drag rather than a trip to
+  WooCommerce. Click a tile to swap it, hover it for the × that removes it.
+
+  The long description opens in Minimal's own editor, with blocks, autosave
+  and revisions, rather than sending you elsewhere. If you would rather see
+  a product without leaving the list, hover its row and click the eye for a
+  quick look with the same fields.
+
+  Two jobs stay in WooCommerce on purpose: creating a brand new store-wide
+  attribute, which belongs to the whole shop rather than to one product,
+  and the children of a grouped product.
 
 ## 已安裝項目的活動檢視，以及有人需要時可使用的除錯工具
 
