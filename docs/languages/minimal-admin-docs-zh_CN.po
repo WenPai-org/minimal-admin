@@ -114,7 +114,7 @@ msgstr "客户端站点设置），Minimal 会发出通知，并将这些条目�
 #: docs/user-guide.md:112
 msgctxt "docs/user-guide.md"
 msgid "divider, triple backticks for a code block. All applied as you type."
-msgstr "点击「Block editor ↗」后，只要你"
+msgstr "点击“Block editor ↗”后，只要你"
 
 #: docs/user-guide.md:122
 msgctxt "docs/user-guide.md"
@@ -179,7 +179,7 @@ msgstr "将鼠标悬停在卡片上会显示一条简短说明，解释它为何
 #: docs/user-guide.md:114
 msgctxt "docs/user-guide.md"
 msgid "images, embeds, tables and more. **⌘/** opens the full block library,"
-msgstr "Bricks、Divi 及同类工具）会以只读方式打开，并显示「在你的构建器中编辑」"
+msgstr "Bricks、Divi 及同类工具）会以只读方式打开，并显示“在你的构建器中编辑”"
 
 #: docs/user-guide.md:95
 msgctxt "docs/user-guide.md"
@@ -189,7 +189,7 @@ msgstr "**布局区块会打开以供编辑。** 组、列、封面和"
 #: docs/user-guide.md:126
 msgctxt "docs/user-guide.md"
 msgid "pattern drops in as a detached copy you can edit freely."
-msgstr "**样式化文本组会打开「编辑内容」窗口。** 一个容器"
+msgstr "**样式化文本组会打开“编辑内容”窗口。** 一个容器"
 
 #: docs/user-guide.md:116
 msgctxt "docs/user-guide.md"
@@ -199,7 +199,7 @@ msgstr "**图库和滑块会打开图像编辑器。** 将鼠标悬停在图库�
 #: docs/user-guide.md:131
 msgctxt "docs/user-guide.md"
 msgid "The layout itself (widths, colors, spacing) is preserved exactly, and"
-msgstr "（「内容 · N 个区块」），或者在受保护卡片上点击卡片"
+msgstr "（“内容 · N 个区块”），或者在受保护卡片上点击卡片"
 
 #: docs/roadmap.md:36
 msgctxt "docs/roadmap.md"
@@ -494,7 +494,7 @@ msgstr "遵循 __MA_DOC_TOKEN_1__ 中的约定；顺序式全套件运行器是"
 #: docs/editor-roadmap.md:104
 msgctxt "docs/editor-roadmap.md"
 msgid "windows are closed (v0.19.0 __MA_DOC_TOKEN_1__ save verification; \"Load theirs\""
-msgstr "窗口已关闭（v0.19.0 __MA_DOC_TOKEN_1__ 保存验证；「加载他们的版本」"
+msgstr "窗口已关闭（v0.19.0 __MA_DOC_TOKEN_1__ 保存验证；“加载他们的版本”"
 
 #: docs/editor-roadmap.md:144
 msgctxt "docs/editor-roadmap.md"
@@ -539,7 +539,7 @@ msgstr "开放：app.js 不携带连接意识。该兜底已有套件覆盖"
 #: docs/editor-roadmap.md:105
 msgctxt "docs/editor-roadmap.md"
 msgid "on regain), the content list shows a \"{name} is editing\" chip (v0.20.0), and public"
-msgstr "重新获得焦点时），内容列表会显示「{name} 正在编辑」芯片（v0.20.0），而公开"
+msgstr "重新获得焦点时），内容列表会显示“{name} 正在编辑”芯片（v0.20.0），而公开"
 
 #: docs/editor-roadmap.md:4
 msgctxt "docs/editor-roadmap.md"
@@ -599,7 +599,7 @@ msgstr "就地 island 文本、容器插槽、任意深度嵌套的 island 和�
 #: docs/editor-roadmap.md:116
 msgctxt "docs/editor-roadmap.md"
 msgid "gone. Remaining: the editor-led hero itself; readme.md still opens on \"a reimagined"
-msgstr "已不复存在。剩余部分：编辑器主导的 hero 本身；readme.md 仍以「一个重新构想的"
+msgstr "已不复存在。剩余部分：编辑器主导的 hero 本身；readme.md 仍以“一个重新构想的"
 
 #: docs/editor-roadmap.md:98
 msgctxt "docs/editor-roadmap.md"
@@ -624,7 +624,7 @@ msgstr "编辑器渲染，并通过替换资源文件与上一个标签进行 A/
 #: docs/editor-roadmap.md:94
 msgctxt "docs/editor-roadmap.md"
 msgid "duplicate + move, comment tolerance, and the deepest-wins chrome pass — is documented"
-msgstr "重复 + 移动、评论容错，以及「最深层优先」的界面处理——均已记录"
+msgstr "重复 + 移动、评论容错，以及“最深层优先”的界面处理——均已记录"
 
 #: docs/editor-roadmap.md:93
 msgctxt "docs/editor-roadmap.md"
@@ -669,7 +669,7 @@ msgstr "写作统计（会话增量、字数目标）——2026-07-12——__MA_
 #: docs/editor-roadmap.md:117
 msgctxt "docs/editor-roadmap.md"
 msgid "WordPress admin experience\" with an Overview screenshot, not the writing surface."
-msgstr "WordPress 管理体验」配一张概览截图，而不是写作界面。"
+msgstr "WordPress 管理体验”配一张概览截图，而不是写作界面。"
 
 #: docs/editor-roadmap.md:67
 msgctxt "docs/editor-roadmap.md"
@@ -984,7 +984,7 @@ msgstr "背景/媒体字节逐字保留，就像其他所有内容一样。重�
 #: docs/editor-direction.md:322
 msgctxt "docs/editor-direction.md"
 msgid "the \"stay unbuilt\" exit does NOT hold.** Of 494 units (columns counted with their"
-msgstr "「保持未构建」的退出条件并不成立。** 在 494 个单元中（列按其"
+msgstr "“保持未构建”的退出条件并不成立。** 在 494 个单元中（列按其"
 
 #: docs/editor-direction.md:315
 msgctxt "docs/editor-direction.md"
@@ -1039,7 +1039,7 @@ msgstr "过期的已存储原始内容，并静默丢弃嵌套编辑；(d) __MA_
 #: docs/editor-direction.md:387
 msgctxt "docs/editor-direction.md"
 msgid "stackable's remaining fail ('add clones the static column', 1 column where 2"
-msgstr "可堆叠项剩余的失败（「添加会克隆静态列」，2 列中出现 1"
+msgstr "可堆叠项剩余的失败（“添加会克隆静态列”，2 列中出现 1"
 
 #: docs/editor-direction.md:364
 msgctxt "docs/editor-direction.md"
@@ -1149,7 +1149,7 @@ msgstr "post-*/site-*/query-*、导航、模板部件）占据了语料库的大
 #: docs/editor-direction.md:395
 msgctxt "docs/editor-direction.md"
 msgid "phase-2 runs island — where Enter is blocked BY DESIGN, which read as \"I can't"
-msgstr "阶段 2 运行岛——Enter 按设计被阻止，这会被理解为「我无法"
+msgstr "阶段 2 运行岛——Enter 按设计被阻止，这会被理解为“我无法"
 
 #: docs/editor-direction.md:184
 msgctxt "docs/editor-direction.md"
@@ -1259,7 +1259,7 @@ msgstr "每次预览渲染后，嵌套 __MA_DOC_TOKEN_1__ 跨度中的节点，�
 #: docs/editor-direction.md:379
 msgctxt "docs/editor-direction.md"
 msgid "no input — the ⌘/ path never types a \"/\" so it can't rely on the typing stamp);"
-msgstr "无输入——⌘/ 路径从不输入「/」，因此不能依赖输入标记）；"
+msgstr "无输入——⌘/ 路径从不输入“/”，因此不能依赖输入标记）；"
 
 #: docs/editor-direction.md:430
 msgctxt "docs/editor-direction.md"
@@ -1319,7 +1319,7 @@ msgstr "标记每一列的区域。任何列中的复杂子项 → 整个区块�
 #: docs/editor-direction.md:396
 msgctxt "docs/editor-direction.md"
 msgid "make line returns.\" Comment-only freeform (__MA_DOC_TOKEN_1__) now passes the"
-msgstr "生成换行符。」仅注释的自由格式（__MA_DOC_TOKEN_1__）现在通过了"
+msgstr "生成换行符。”仅注释的自由格式（__MA_DOC_TOKEN_1__）现在通过了"
 
 #: docs/editor-direction.md:341
 msgctxt "docs/editor-direction.md"
@@ -1684,7 +1684,7 @@ msgstr "区块。当选区包含在其中时，复制/剪切现在会退出并�
 #: docs/editor-direction.md:226
 msgctxt "docs/editor-direction.md"
 msgid "block within that root. Every \"walk to the top-level block\" that should treat"
-msgstr "该根节点内的区块。所有应该将其视为顶层区块的「遍历到顶层区块」操作"
+msgstr "该根节点内的区块。所有应该将其视为顶层区块的“遍历到顶层区块”操作"
 
 #: docs/editor-direction.md:162
 msgctxt "docs/editor-direction.md"
@@ -2119,7 +2119,7 @@ msgstr "（第 4 项）将其提升到 26（20%）；其余 105 个需要嵌套�
 #: docs/editor-direction.md:357
 msgctxt "docs/editor-direction.md"
 msgid "(e) \"nearest wrapper\" rule for editability checks (image click, link click, table"
-msgstr "（e）可编辑性检查的「最近包装器」规则（图像点击、链接点击、表格"
+msgstr "（e）可编辑性检查的“最近包装器”规则（图像点击、链接点击、表格"
 
 #: docs/editor-direction.md:414
 msgctxt "docs/editor-direction.md"
@@ -2184,12 +2184,12 @@ msgstr "(21)、__MA_DOC_TOKEN_1__ (34)。对 slot/run/carry 机制的任何更�
 #: docs/editor-direction.md:295
 msgctxt "docs/editor-direction.md"
 msgid "\"content container\" locator so the parse yields head/open/**preamble**/inner/tail, with"
-msgstr "「content container」 定位器，因此解析结果为 head/open/**preamble**/inner/tail，其中"
+msgstr "“content container” 定位器，因此解析结果为 head/open/**preamble**/inner/tail，其中"
 
 #: docs/editor-direction.md:400
 msgctxt "docs/editor-direction.md"
 msgid "\"Enter doesn't work in runs\" is always MORE SLOTTING, never Enter-in-runs —"
-msgstr "「运行中 Enter 不起作用」始终表示 MORE SLOTTING，绝不是运行中的 Enter——"
+msgstr "“运行中 Enter 不起作用”始终表示 MORE SLOTTING，绝不是运行中的 Enter——"
 
 #: docs/block-suites.md:84
 msgctxt "docs/block-suites.md"
@@ -16804,7 +16804,7 @@ msgstr "根据*写入位置*切换工具。"
 #: docs/editor-roadmap.md:114
 msgctxt "docs/editor-roadmap.md"
 msgid "surface, the admin is \"and it comes with a better admin around it.\" Landed:"
-msgstr "界面，管理端就是「它周围还有一个更好的管理界面」。已上线："
+msgstr "界面，管理端就是“它周围还有一个更好的管理界面”。已上线："
 
 #: docs/editor-roadmap.md:21
 msgctxt "docs/editor-roadmap.md"

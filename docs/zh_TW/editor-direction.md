@@ -223,7 +223,7 @@ slot（mini-body）、island 文字 run（僅文字）與 live-field island—�
 
 - **单一规范解析器。** `blockRootOf( node, body )` 返回节点的
   容器插槽，否則使用本文；`topBlockIn( node, body )` 回傳其頂層
-  该根节点中的区块。所有「遍历到顶层区块」的逻辑，只要应将
+  该根节点中的区块。所有“遍历到顶层区块”的逻辑，只要应将
   slots 作為 mini-bodies 都會經過這些流程（markdown 前綴、工具列的區塊
   以及对齐按钮、行内代码、斜杠菜单、专注模式条带、
   程式碼片段空間啟發式）。使用這些功能的新功能會繼承插槽支援
@@ -292,7 +292,7 @@ phase-2 island，支援就地文字編輯，這是可運作的體驗，而不是
    子項直接位於 wrapper 的開頭標籤內：`cover` 是
    `wrapper → background span/img → inner-container div → children`，`media-text` 是
    `wrapper → figure → div.wp-block-media-text__content → children`。为每个区块添加
-   「content container」 定位器，使解析结果包含 head/open/**preamble**/inner/tail，其中
+   “content container” 定位器，使解析结果包含 head/open/**preamble**/inner/tail，其中
    背景／媒體位元組與其他內容一樣原封不動保留。重新組裝 gate
    仍由它決定：沒有位元組完全相同的解析結果，就沒有 slot。維持相同的 dirty-flush 合約。
 
@@ -336,7 +336,7 @@ phase-2 island，支援就地文字編輯，這是可運作的體驗，而不是
    相較於 writer 的 post 中實際存在的內容，過度描述 template constructs。
 
    ✅ *Slice 1 已於 2026-08-09 上線——巢狀 islands + 巢狀容器已啟用。* 該
-   「全简单」门槛已删除：所有内部标记能够解析的 group／columns 都会变成一个
+   “全简单”门槛已删除：所有内部标记能够解析的 group／columns 都会变成一个
    slot island；複雜子項會以受保護的巢狀 islands 渲染（預覽、runs、
    live fields、inspector、⚙ chips 都能透過既有的 per-root machinery 運作）
    并且容器子项会递归处理（group 嵌套 group、columns 嵌套 group，以及任意深度）。哪些
@@ -354,7 +354,7 @@ phase-2 island，支援就地文字編輯，這是可運作的體驗，而不是
    根範圍（SELECTION 中的 `blockRootOf`；`isRootChild` = body 的直接子項
    或 slot），而不是因為 slots 就退出——Backspace 會啟動／移除巢狀 islands，並且
    相同的兩次按鍵 + undo-toast 模型；`.minimal-island-run` 的中止仍保留；
-   （e）用于可编辑性检查的「最近包装器」规则（图像点击、链接点击、表格
+   （e）用于可编辑性检查的“最近包装器”规则（图像点击、链接点击、表格
    上下文選單）：`.minimal-block-island, .minimal-slot` 中最接近的項目——插槽表示正在寫入
    surface，island 代表預覽 chrome；(f) 針對 slot 範圍的 CSS twins，用於
    table/image cutouts 與儲存格格線（`.minimal-slot > …` 旁邊
@@ -397,7 +397,7 @@ phase-2 island，支援就地文字編輯，這是可運作的體驗，而不是
    slot gate：它會以 DOM comment nodes 的形式進入 slot，`serializeToBlocks`
    重新輸出 COMMENT_NODE（僅限一般註解——絕不包含 `wp:`），而欄
    flush 會從儲存的 raw 重新輸出欄間 comment segs。修正方式是
-   「在运行中按 Enter 不起作用」始终意味着 MORE SLOTTING，绝不是 Enter-in-runs——
+   “在运行中按 Enter 不起作用”始终意味着 MORE SLOTTING，绝不是 Enter-in-runs——
    會依位元組偏移拼接文字，而結構鍵會造成損毀。測試套件：
    nested-islands 30（comment-labeled group slots；在 comment 旁按 Enter；
    髒狀態，重新 flush 時會重新輸出）。

@@ -1684,7 +1684,7 @@ msgstr "区块。当选区包含在其中时，复制／剪切现在会退出并
 #: docs/editor-direction.md:226
 msgctxt "docs/editor-direction.md"
 msgid "block within that root. Every \"walk to the top-level block\" that should treat"
-msgstr "该根节点中的区块。所有「遍历到顶层区块」的逻辑，只要应将"
+msgstr "该根节点中的区块。所有“遍历到顶层区块”的逻辑，只要应将"
 
 #: docs/editor-direction.md:162
 msgctxt "docs/editor-direction.md"
@@ -1734,7 +1734,7 @@ msgstr "一个全简单的 __MA_DOC_TOKEN_1__ 区块会变成多插槽岛屿—�
 #: docs/editor-direction.md:339
 msgctxt "docs/editor-direction.md"
 msgid "all-simple gate is DELETED: every group/columns whose inner markup parses becomes a"
-msgstr "「全简单」门槛已删除：所有内部标记能够解析的 group／columns 都会变成一个"
+msgstr "“全简单”门槛已删除：所有内部标记能够解析的 group／columns 都会变成一个"
 
 #: docs/editor-direction.md:279
 msgctxt "docs/editor-direction.md"
@@ -2119,7 +2119,7 @@ msgstr "（第 4 项）将其提升至 26（20%）；其余 105 项需要嵌套�
 #: docs/editor-direction.md:357
 msgctxt "docs/editor-direction.md"
 msgid "(e) \"nearest wrapper\" rule for editability checks (image click, link click, table"
-msgstr "（e）用于可编辑性检查的「最近包装器」规则（图像点击、链接点击、表格"
+msgstr "（e）用于可编辑性检查的“最近包装器”规则（图像点击、链接点击、表格"
 
 #: docs/editor-direction.md:414
 msgctxt "docs/editor-direction.md"
@@ -2184,12 +2184,12 @@ msgstr "(21)、__MA_DOC_TOKEN_1__ (34)。对 slot/run/carry 机制的任何变�
 #: docs/editor-direction.md:295
 msgctxt "docs/editor-direction.md"
 msgid "\"content container\" locator so the parse yields head/open/**preamble**/inner/tail, with"
-msgstr "「content container」 定位器，使解析结果包含 head/open/**preamble**/inner/tail，其中"
+msgstr "“content container” 定位器，使解析结果包含 head/open/**preamble**/inner/tail，其中"
 
 #: docs/editor-direction.md:400
 msgctxt "docs/editor-direction.md"
 msgid "\"Enter doesn't work in runs\" is always MORE SLOTTING, never Enter-in-runs —"
-msgstr "「在运行中按 Enter 不起作用」始终意味着 MORE SLOTTING，绝不是 Enter-in-runs——"
+msgstr "“在运行中按 Enter 不起作用”始终意味着 MORE SLOTTING，绝不是 Enter-in-runs——"
 
 #: docs/block-suites.md:84
 msgctxt "docs/block-suites.md"
